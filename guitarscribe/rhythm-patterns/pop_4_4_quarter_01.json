@@ -1,0 +1,9 @@
+{
+  "id": "pop_4_4_quarter_01",
+  "name": "Simple Quarter Note Strum",
+  "time_signature": "4/4",
+  "subdivision": 4,
+  "events": ["D", "D", "D", "D"],
+  "accents": [1.0, 0.5, 0.8, 0.5],
+  "description": "Simple four-on-the-floor downstroke pattern for beginners"
+}

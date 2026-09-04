@@ -1,0 +1,28 @@
+from pydantic import BaseModel, Field
+from pathlib import Path
+from enum import Enum
+from typing import Optional
+import os
+
+class ChordEngine(str, Enum):
+    AUTO = "auto"
+    CHORDINO = "chordino"
+    CHROMAGRAM = "chromagram"
+
+class Settings(BaseModel):
+    max_duration_seconds: int = 600
+    work_dir: Path = Path("/tmp/guitarscribe")
+    chord_engine: ChordEngine = ChordEngine.AUTO
+    melody_engine: str = "basic_pitch"
+    rhythm_patterns_dir: Path = Path("/app/rhythm-patterns")
+    log_level: str = "INFO"
+    
+    @classmethod
+    def from_env(cls) -> "Settings":
+        return cls(
+            max_duration_seconds=int(os.environ.get("GUITARSCRIBE_MAX_DURATION_SECONDS", "600")),
+            work_dir=Path(os.environ.get("GUITARSCRIBE_WORK_DIR", "/tmp/guitarscribe")),
+            chord_engine=ChordEngine(os.environ.get("GUITARSCRIBE_CHORD_ENGINE", "auto")),
+            melody_engine=os.environ.get("GUITARSCRIBE_MELODY_ENGINE", "basic_pitch"),
+            log_level=os.environ.get("GUITARSCRIBE_LOG_LEVEL", "INFO"),
+        )

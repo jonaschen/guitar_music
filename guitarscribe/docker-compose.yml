@@ -1,0 +1,14 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./fixtures:/app/fixtures:ro
+      - ./output:/app/output
+      - ./rhythm-patterns:/app/rhythm-patterns:ro
+    env_file:
+      - .env
+    environment:
+      - GUITARSCRIBE_WORK_DIR=/tmp/guitarscribe
+      - PYTHONUNBUFFERED=1

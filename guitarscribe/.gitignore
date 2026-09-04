@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+dist/
+build/
+.env
+output/
+*.wav
+*.mp3
+*.flac
+!fixtures/audio/*.wav
+.pytest_cache/
+.ruff_cache/

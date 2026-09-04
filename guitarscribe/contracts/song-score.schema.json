@@ -1,0 +1,115 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["schema_version", "song", "analysis", "beats", "chords", "melody", "rhythm", "provenance"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "song": {
+      "type": "object",
+      "required": ["title", "source_type", "duration_seconds"],
+      "additionalProperties": false,
+      "properties": {
+        "title": { "type": "string" },
+        "source_type": { "type": "string" },
+        "source_url": { "type": "string" },
+        "duration_seconds": { "type": "number" }
+      }
+    },
+    "analysis": {
+      "type": "object",
+      "required": ["key", "mode", "bpm", "time_signature", "capo", "confidence", "warnings"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "type": "string" },
+        "mode": { "type": "string" },
+        "bpm": { "type": "number" },
+        "time_signature": { "type": "string" },
+        "capo": { "type": "integer" },
+        "confidence": { "type": "number" },
+        "warnings": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "beats": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["time", "beat", "measure", "confidence"],
+        "additionalProperties": false,
+        "properties": {
+          "time": { "type": "number" },
+          "beat": { "type": "integer" },
+          "measure": { "type": "integer" },
+          "confidence": { "type": "number" }
+        }
+      }
+    },
+    "chords": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "start", "end", "symbol", "confidence", "origin", "edited"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "start": { "type": "number" },
+          "end": { "type": "number" },
+          "symbol": { "type": "string" },
+          "confidence": { "type": "number" },
+          "origin": { "type": "string", "enum": ["model", "user"] },
+          "edited": { "type": "boolean" }
+        }
+      }
+    },
+    "melody": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "start", "end", "midi", "note", "confidence", "string", "fret", "origin", "edited"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "start": { "type": "number" },
+          "end": { "type": "number" },
+          "midi": { "type": "integer" },
+          "note": { "type": "string" },
+          "confidence": { "type": "number" },
+          "string": { "type": ["integer", "null"] },
+          "fret": { "type": ["integer", "null"] },
+          "origin": { "type": "string", "enum": ["model", "user"] },
+          "edited": { "type": "boolean" }
+        }
+      }
+    },
+    "rhythm": {
+      "type": "object",
+      "required": ["subdivision", "pattern_id", "display", "confidence", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "subdivision": { "type": "integer" },
+        "pattern_id": { "type": "string" },
+        "display": {
+          "type": "array",
+          "items": { "type": ["string", "null"] }
+        },
+        "confidence": { "type": "number" },
+        "label": { "type": "string" }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["beat_engine", "chord_engine", "melody_engine"],
+      "additionalProperties": false,
+      "properties": {
+        "beat_engine": { "type": "string" },
+        "chord_engine": { "type": "string" },
+        "melody_engine": { "type": "string" }
+      }
+    }
+  }
+}

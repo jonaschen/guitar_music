@@ -1,0 +1,32 @@
+[project]
+name = "guitarscribe"
+version = "0.1.0"
+description = "Guitar practice materials generator"
+authors = [{name = "Developer"}]
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "pydantic>=2.0,<3",
+    "librosa>=0.10,<1",
+    "soundfile>=0.12",
+    "numpy>=1.23,<2",
+    "click>=8.0",
+    "jsonschema>=4.0",
+]
+
+[project.optional-dependencies]
+melody = [
+    "basic-pitch>=0.3",
+]
+chordino = [
+    "vamp>=1.1",
+]
+dev = [
+    "pytest>=7",
+    "pytest-asyncio>=0.21",
+]
+
+[project.scripts]
+guitarscribe = "app.cli:main"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

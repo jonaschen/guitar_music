@@ -1,0 +1,9 @@
+{
+  "id": "pop_4_4_8th_01",
+  "name": "Basic Pop 8th Note Strum",
+  "time_signature": "4/4",
+  "subdivision": 8,
+  "events": ["D", null, "D", "U", null, "U", "D", "U"],
+  "accents": [1.0, 0.0, 0.7, 0.4, 0.0, 0.5, 0.8, 0.4],
+  "description": "Standard pop/rock down-up pattern with accent on beats 1 and 3"
+}
