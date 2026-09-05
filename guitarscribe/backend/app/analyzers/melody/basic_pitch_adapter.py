@@ -1,4 +1,5 @@
 import logging
+from numbers import Real
 from collections.abc import Mapping, Sequence
 from ...models.audio import NormalizedAudio
 from ...models.analysis import BeatAnalysis, MelodyAnalysis, MelodyNote, MelodyMode
@@ -89,10 +90,10 @@ def _parse_note_event(note) -> tuple[float, float, int, float] | None:
 
 
 def _coerce_note_values(start, end, pitch, confidence) -> tuple[float, float, int, float] | None:
-    if not all(isinstance(value, (int, float)) for value in (start, end, pitch)):
+    if not all(isinstance(value, Real) for value in (start, end, pitch)):
         return None
 
-    if not isinstance(confidence, (int, float)):
+    if not isinstance(confidence, Real):
         confidence = 1.0
 
     return float(start), float(end), int(pitch), float(confidence)
