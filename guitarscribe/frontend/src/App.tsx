@@ -1,5 +1,6 @@
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 import type { AccidentalPreference, AnalysisJob, SongScore } from "./types";
+import { ChordDiagram } from "./ChordDiagram";
 
 const API_BASE = "http://localhost:8000";
 const KEY_OPTIONS = [
@@ -924,6 +925,7 @@ export function App() {
                   {candidateVoicings && candidateVoicings.length > 0 ? (
                     candidateVoicings.map((voicing) => (
                       <button key={voicing.id} type="button" className="voicing-card" onClick={() => applyVoicing(voicing)}>
+                        <ChordDiagram frets={voicing.frets} baseFret={voicing.base_fret} label={voicing.shape_symbol} />
                         <strong>{voicing.shape_symbol}</strong>
                         <span>Frets: {voicing.frets.map((fret) => (fret === null ? "x" : fret)).join(" ")}</span>
                         <span>Position {voicing.base_fret} · Difficulty {voicing.difficulty}/5</span>
