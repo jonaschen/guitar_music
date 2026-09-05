@@ -963,6 +963,11 @@ export function App() {
                   <div className="melody-timeline" aria-label="Detected melody notes">{score.melody.map((note) => <button key={note.id} type="button" className="melody-note" title={note.note + " · " + note.start.toFixed(2) + "s"} onClick={() => seekTo(note.start)} style={{ left: String((note.start / Math.max(score.song.duration_seconds, 1)) * 100) + "%", width: String(Math.max(((note.end - note.start) / Math.max(score.song.duration_seconds, 1)) * 100, 0.5)) + "%", bottom: String(Math.max(0, Math.min(85, (note.midi - 40) * 1.8))) + "%" }}>{note.note}</button>)}</div>
                 </section>
 
+                <section className="tab-panel">
+                  <div><h3>Playable Tab</h3><p>Mapped from the detected melody; notes without a confident string/fret mapping are omitted.</p></div>
+                  <div className="tab-notes">{score.melody.filter((note) => note.string !== null && note.string !== undefined && note.fret !== null && note.fret !== undefined).map((note) => <button key={note.id} type="button" className="tab-note" onClick={() => seekTo(note.start)}><strong>{note.note}</strong><span>String {note.string} · Fret {note.fret}</span><small>{note.start.toFixed(2)}s</small></button>)}</div>
+                </section>
+
                 <div className="chord-sheet">
                   {Array.from(groupedChords.entries()).map(([measure, group]) => (
                     <div key={`measure-`} className="measure-card">
