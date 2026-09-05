@@ -3,7 +3,7 @@ from pathlib import Path
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import PlainTextResponse, Response
 from pydantic import BaseModel, Field
 
 from .core.config import Settings
@@ -20,6 +20,7 @@ from .models.score import SongScore
 from .services.jobs import AnalysisJobService, JobStore
 from .exporters.chordpro import ChordProExporter
 from .exporters.lrc import export_lrc
+from .exporters.midi import export_midi
 from .services.revisions import RevisionStore
 from .services.transposition import TranspositionService
 
@@ -212,6 +213,10 @@ async def load_revision(
 async def export_chordpro(score: SongScore) -> str:
     """Export an editable score as a chord-only ChordPro document."""
     return ChordProExporter().export(score)
+
+@app.post("/scores/midi")
+async def export_midi_score(score: SongScore) -> Response:
+    return Response(content=export_midi(score), media_type="audio/midi", headers={"Content-Disposition": "attachment; filename=\"guitarscribe-melody.mid\""})
 
 class LyricsImportRequest(BaseModel):
     score: SongScore
