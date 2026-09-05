@@ -4,6 +4,7 @@
 > 參考規格文件：  
 > 1. `GuitarScribe_Web_UI_AI_Handoff.md`（主交接文件）  
 > 2. `GuitarScribe_UI_Key_and_Chord_Voicings_Addendum.md`（升降 Key 與和弦指型追加規格）  
+> 3. `GuitarScribe_Lyrics_and_Score_Playback_Addendum.md`（歌詞與按譜演奏追加規格）
 >  
 > 若兩份文件在移調、Capo 或和弦指型上衝突，以追加文件為準。
 
@@ -415,3 +416,70 @@
 4. **和弦分組不依小節** — UI 每 4 和弦一組，與音樂結構無關
 5. **指板映射為貪婪演算法** — 不考慮前後音符的手位轉換成本
 6. **無 Major/Minor 模式切換** — 追加文件 §4.2 提到「若功能未實作，UI 不提供模式切換」
+
+---
+
+## Milestone 6：歌詞與按譜演奏
+
+> 依據 `GuitarScribe_Lyrics_and_Score_Playback_Addendum.md` v1.0。需求已確認，尚未實作。
+
+**目標**：使用者可匯入並修正逐行歌詞；原曲或合成樂譜播放時，歌詞、和弦、小節與旋律以同一主時鐘同步高亮。
+
+### 第一階段：資料與歌詞 MVP
+
+- [ ] **Lyrics data model 與 schema**
+  - 新增 `LyricsTrack`、`LyricLine`、預留 `WordTiming`、source/raw_text/revision/origin/confidence。
+  - `SongScore` 與 JSON Schema 納入 lyrics；原始匯入內容與使用者修正版分開保存。
+- [ ] **歌詞儲存與 revision API**
+  - 先完成 SQLite scores/revisions 持久化，提供 score-based lyrics API。
+  - 實作讀取、整體更新、行 PATCH、分割與合併；所有變更可保存 revision。
+- [ ] **TXT/LRC 匯入與 LRC 匯出**
+  - 使用者貼上文字、TXT、LRC；保留重複段落。
+  - 依換行/空行建立 lyric lines，解析與輸出逐行 timestamps。
+  - 顯示使用權提示；不抓取第三方歌詞網站，也不提交商業歌詞 fixture。
+- [ ] **歌詞編輯與手動對時 UI**
+  - Lyrics panel、文字編輯、逐行打點、前後行重打、拖曳 start/end/整段、beat/onset snapping。
+  - 播放時高亮目前行與下一行，點擊行可 seek；文字輸入時不攔截快捷鍵。
+- [ ] **ChordPro lyrics export**
+  - 逐行 timing 時輸出獨立和弦行/小節格並保留 metadata；僅逐字 timing 才將 chord 精確插入歌詞字前。
+
+### 第二階段：播放時鐘與原曲同步
+
+- [ ] **TransportController / master clock abstraction**
+  - 原曲模式以 media player 為 master；合成模式以 Web Audio transport 為 master。
+  - React render 與 `setInterval` 不得作為音樂時鐘；UI 用 animation frame 讀取 playhead。
+- [ ] **本機音訊播放器與 score sync**
+  - Play/Pause/Stop/Seek、前後小節、目前 beat/chord/measure/melody/lyric 高亮與跟隨播放。
+  - 點擊和弦、小節或歌詞可跳轉；保存 `media_offset_seconds` 並提供 ±0.1s 校正。
+- [ ] **練習控制列**
+  - A–B loop、目前小節 loop、速度 50–150%、count-in 0/1/2 小節、metronome、follow-playhead。
+  - 上傳音訊的 time-stretch 未完成前明確顯示限制；YouTube iframe 只使用其支援的速度與容許 drift 校正。
+
+### 第三階段：合成按譜演奏
+
+- [ ] **Playback compiler 與 immutable event sequence**
+  - 定義 canonical playback event、manifest 與 compilation revision invalidation。
+  - 由 score、key/capo、selected voicing、rhythm 與 melody 編譯事件；UI 不直接從 `ChordEvent` 播音。
+- [ ] **Web Audio synth 與分軌控制**
+  - Guitar、melody、metronome、original tracks 的 enabled/mute/solo/volume。
+  - 強弱拍、count-in、速度與 loop 一致；背景回復後重新同步而非補播。
+- [ ] **Voicing-aware chord playback**
+  - 納入 tuning、capo、frets、muted/open strings、actual sounding pitch。
+  - 實作 down/up stroke spread、velocity 與 arpeggio templates；key/capo/voicing 變更後重新編譯受影響 events。
+- [ ] **Playback API 與 exports**
+  - Playback manifest/compile/render endpoints，以及 LRC、ChordPro、MIDI export endpoints。
+
+### 後續實驗與明確排除
+
+- [ ] **歌詞自動對時**：先做結構輔助 fallback，再評估 vocal/ASR timing 或 forced alignment；每行須有 confidence。
+- [ ] **歌詞辨識初稿**：feature flag `FEATURE_LYRICS_TRANSCRIPTION=false`；保留 raw result、不可視為確定歌詞。
+- [ ] **逐字 karaoke timing**：不阻塞逐行 MVP。
+- [ ] **麥克風追譜與演奏評分**：獨立專案階段，不納入目前 MVP。
+
+### M6 驗收條件
+
+- [ ] 使用者可合法貼上或匯入 LRC，完成逐行修正與手動對時。
+- [ ] 原曲播放時 lyric/chord/measure/melody highlighter 以同一 media clock 同步。
+- [ ] 合成播放時所有音符由 Web Audio clock 排程，並能依 selected voicing 正確發聲。
+- [ ] Key、Capo、voicing 改變不重跑 DSP；lyrics timestamps 不被改寫，playback compilation 會失效並重建。
+- [ ] 不自動抓取/保存未授權歌詞，且含 lyrics 的 JSON/LRC/ChordPro export 可用。

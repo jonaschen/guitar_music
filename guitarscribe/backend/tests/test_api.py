@@ -198,7 +198,7 @@ async def test_save_revision_endpoint(tmp_path):
         revision_store=store,
     )
 
-    assert (tmp_path / "revisions" / f"{response.revision_id}.json").exists()
+    assert store.load(response.revision_id).song.title == "Saved Song"
 
 
 @pytest.mark.asyncio
@@ -244,3 +244,10 @@ async def test_job_endpoints_queue_poll_and_return_completed_score(tmp_path):
         assert body["score"]["analysis"]["key"] == "G"
     finally:
         app.dependency_overrides.clear()
+
+def test_revision_store_uses_sqlite(tmp_path):
+    store = RevisionStore(tmp_path / "revisions")
+    revision_id = store.save(make_score(), "sqlite-revision")
+
+    assert (tmp_path / "revisions" / "guitarscribe.sqlite3").exists()
+    assert store.load(revision_id).song.title == "Saved Song"
