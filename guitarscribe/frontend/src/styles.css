@@ -646,3 +646,15 @@ h2 {
   flex-wrap: wrap;
   gap: 0.6rem;
 }
+
+@media (max-width: 640px) {
+  .guitar-settings { grid-template-columns: 1fr 1fr; }
+  .transport-bar { flex-wrap: wrap; gap: 0.5rem; }
+  .transport-timeline { order: 3; flex-basis: 100%; width: 100%; }
+  .rhythm-panel { align-items: flex-start; flex-direction: column; }
+  .rhythm-steps { width: 100%; justify-content: space-between; }
+  .rhythm-step { width: 2.15rem; height: 2.15rem; }
+  .export-actions, .lyrics-actions { flex-wrap: wrap; justify-content: flex-start; }
+  .measure-chords { grid-template-columns: 1fr; }
+  .timing-fields { grid-template-columns: 1fr; }
+}
