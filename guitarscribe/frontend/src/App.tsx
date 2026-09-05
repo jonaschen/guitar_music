@@ -282,6 +282,17 @@ export function App() {
     setFile(event.target.files?.[0] ?? null);
   }
 
+  function downloadScoreJson() {
+    if (!score) return;
+    const blob = new Blob([JSON.stringify(score, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "guitarscribe-score.json";
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
   function updateChords(transform: (chords: ScoreChord[]) => ScoreChord[]) {
     setScore((currentScore) => {
       if (!currentScore) return currentScore;
@@ -591,6 +602,10 @@ export function App() {
                     <span>{playbackTime.toFixed(1)}s / {score.song.duration_seconds.toFixed(1)}s</span>
                   </section>
                 ) : null}
+
+                <div className="export-actions">
+                  <button type="button" className="ghost-button" onClick={downloadScoreJson}>Download JSON</button>
+                </div>
 
                 <div className="summary-grid">
                   <article className="metric-card">
