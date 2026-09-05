@@ -579,3 +579,9 @@ h2 {
   flex: 1 1 12rem;
   accent-color: #7dd3fc;
 }
+
+.lyrics-panel { display: grid; gap: 0.65rem; margin: 1rem 0; }
+.lyrics-panel textarea { width: 100%; min-height: 7rem; resize: vertical; }
+.lyrics-lines { display: grid; gap: 0.35rem; }
+.lyric-line { text-align: left; padding: 0.45rem; border-radius: 0.45rem; border: 1px solid transparent; background: transparent; color: var(--text-muted); }
+.lyric-line-active { border-color: #7dd3fc; color: var(--text); background: rgba(125, 211, 252, 0.12); }

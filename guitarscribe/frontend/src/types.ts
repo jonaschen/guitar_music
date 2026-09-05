@@ -74,6 +74,7 @@ export type SongScore = {
     confidence: number;
     label: string;
   };
+  lyrics?: LyricsTrack | null;
   provenance: {
     beat_engine: string;
     chord_engine: string;
@@ -105,3 +106,13 @@ export interface AnalysisJob {
   error: string | null;
   score: SongScore | null;
 }
+
+export type LyricsTrack = {
+  id: string;
+  language: string;
+  source: string;
+  timing_level: string;
+  raw_text: string;
+  revision: number;
+  lines: Array<{ id: string; order: number; start?: number | null; end?: number | null; text: string; confidence: number; origin: string; edited: boolean }>;
+};

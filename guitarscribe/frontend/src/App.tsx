@@ -92,6 +92,16 @@ async function cancelAnalysisJob(jobId: string): Promise<AnalysisJob> {
   return response.json();
 }
 
+async function importLyrics(score: SongScore, content: string): Promise<SongScore> {
+  const response = await fetch(`/scores/lyrics/import-text`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ score, content, language: "und" }),
+  });
+  if (!response.ok) throw new Error(await response.text());
+  return response.json();
+}
+
 async function postTranspose(
   score: SongScore,
   semitones: number,
@@ -157,6 +167,8 @@ export function App() {
   const [loopStart, setLoopStart] = useState<number | null>(null);
   const [loopEnd, setLoopEnd] = useState<number | null>(null);
   const [error, setError] = useState<string>("");
+  const [lyricsDraft, setLyricsDraft] = useState("");
+  const [isImportingLyrics, setIsImportingLyrics] = useState(false);
   const [accidentalPreference, setAccidentalPreference] = useState<AccidentalPreference>("auto");
   const [capo, setCapo] = useState(0);
   const [isRetuningScore, setIsRetuningScore] = useState(false);
@@ -284,6 +296,18 @@ export function App() {
 
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     setFile(event.target.files?.[0] ?? null);
+  }
+
+  async function saveLyrics() {
+    if (!score || !lyricsDraft.trim()) return;
+    setIsImportingLyrics(true);
+    try {
+      setScore(await importLyrics(score, lyricsDraft));
+    } catch (lyricsError) {
+      setError(lyricsError instanceof Error ? lyricsError.message : "Lyrics import failed.");
+    } finally {
+      setIsImportingLyrics(false);
+    }
   }
 
   function downloadScoreJson() {
@@ -658,6 +682,13 @@ export function App() {
                     <span>{playbackTime.toFixed(1)}s / {score.song.duration_seconds.toFixed(1)}s</span>
                   </section>
                 ) : null}
+
+                <section className="lyrics-panel">
+                  <h3>Lyrics</h3>
+                  <textarea value={lyricsDraft} onChange={(event) => setLyricsDraft(event.target.value)} placeholder="Paste lyrics you are allowed to use. One line per lyric line." rows={5} />
+                  <button type="button" className="ghost-button" disabled={isImportingLyrics || !lyricsDraft.trim()} onClick={() => void saveLyrics}>{isImportingLyrics ? "Importing..." : "Import lyrics"}</button>
+                  {score.lyrics?.lines.length ? <div className="lyrics-lines">{score.lyrics.lines.map((line) => <button key={line.id} type="button" className={playbackTime >= (line.start ?? Infinity) && playbackTime < (line.end ?? Infinity) ? "lyric-line lyric-line-active" : "lyric-line"} onClick={() => line.start !== null && line.start !== undefined && seekTo(line.start)}>{line.text}</button>)}</div> : null}
+                </section>
 
                 <div className="export-actions">
                   <button type="button" className="ghost-button" onClick={downloadScoreJson}>Download JSON</button>
