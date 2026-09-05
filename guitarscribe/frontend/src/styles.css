@@ -317,6 +317,23 @@ h2 {
   color: var(--danger);
 }
 
+.guitar-settings {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  align-items: end;
+  margin: 0 0 0.85rem;
+  padding: 0.9rem;
+  border-radius: 22px;
+  background: var(--bg-panel-strong);
+}
+
+.guitar-settings h3 {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
 .summary-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

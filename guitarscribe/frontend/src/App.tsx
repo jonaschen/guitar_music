@@ -399,7 +399,7 @@ export function App() {
     try {
       const nextSemitones = semitoneDelta(score.key_context.source.key, nextKey);
       const updated = await postTranspose(score, nextSemitones, nextPreference, nextCapo);
-      recordScoreChange(updated);
+      recordScoreChange({ ...updated, guitar: { ...updated.guitar, capo: nextCapo } });
     } catch (transposeError) {
       setError(transposeError instanceof Error ? transposeError.message : "Transposition failed.");
     } finally {
@@ -488,6 +488,11 @@ export function App() {
     link.download = "guitarscribe-score.chopro";
     link.click();
     URL.revokeObjectURL(url);
+  }
+
+  function updateGuitarSetting<Key extends keyof SongScore["guitar"]>(key: Key, value: SongScore["guitar"][Key]) {
+    if (!score) return;
+    recordScoreChange({ ...score, guitar: { ...score.guitar, [key]: value } });
   }
 
   function updateChords(transform: (chords: ScoreChord[]) => ScoreChord[]) {
@@ -872,6 +877,14 @@ export function App() {
                   <button type="button" className="ghost-button" onClick={undoScoreChange} disabled={undoHistory.length === 0}>Undo</button>
                   <button type="button" className="ghost-button" onClick={redoScoreChange} disabled={redoHistory.length === 0}>Redo</button>
                 </div>
+
+                <section className="guitar-settings">
+                  <h3>Guitar settings</h3>
+                  <label className="field compact-field"><span>Max capo</span><select value={score.guitar.max_capo} onChange={(event) => updateGuitarSetting("max_capo", Number(event.target.value))}>{Array.from({ length: 13 }, (_, value) => <option key={value} value={value}>{value}</option>)}</select></label>
+                  <label className="field compact-field"><span>Max fret</span><select value={score.guitar.max_fret} onChange={(event) => updateGuitarSetting("max_fret", Number(event.target.value))}>{[5, 7, 9, 12, 15, 17, 19, 21, 24].map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
+                  <label className="field compact-field"><span>Handedness</span><select value={score.guitar.handedness} onChange={(event) => updateGuitarSetting("handedness", event.target.value)}><option value="right">Right-handed</option><option value="left">Left-handed</option></select></label>
+                  <label className="field compact-field"><span>Difficulty</span><select value={score.guitar.difficulty} onChange={(event) => updateGuitarSetting("difficulty", event.target.value)}><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option></select></label>
+                </section>
 
                 {!score.key_context.audio_matches_notation ? (
                   <p className="warning-banner">
