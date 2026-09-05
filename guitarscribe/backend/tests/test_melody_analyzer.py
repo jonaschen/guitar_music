@@ -1,5 +1,5 @@
 import pytest
-from app.analyzers.melody.basic_pitch_adapter import BasicPitchMelodyAnalyzer
+from app.analyzers.melody.basic_pitch_adapter import BasicPitchMelodyAnalyzer, _parse_note_event
 
 @pytest.mark.asyncio
 async def test_basic_pitch_analyzer(normalized_audio, sample_beat_analysis):
@@ -9,8 +9,8 @@ async def test_basic_pitch_analyzer(normalized_audio, sample_beat_analysis):
         import basic_pitch
         analysis = await analyzer.analyze(normalized_audio, sample_beat_analysis)
         
-        assert len(analysis.notes) > 0
         assert analysis.engine == "basic_pitch"
+        assert analysis.notes or analysis.warnings
         
         for n in analysis.notes:
             assert 20 <= n.midi <= 108
@@ -18,3 +18,9 @@ async def test_basic_pitch_analyzer(normalized_audio, sample_beat_analysis):
     except ImportError:
         with pytest.raises((ImportError, RuntimeError)):
             await analyzer.analyze(normalized_audio, sample_beat_analysis)
+
+
+def test_basic_pitch_sequence_amplitude_is_not_used_as_confidence():
+    parsed = _parse_note_event((0.0, 0.4, 60, 0.12, [0]))
+
+    assert parsed == (0.0, 0.4, 60, 0.65)

@@ -21,7 +21,13 @@ class BasicPitchMelodyAnalyzer:
             raise ImportError(f"Missing basic-pitch: {e}")
 
         try:
-            model_output, midi_data, note_events = predict(str(audio.path))
+            model_output, midi_data, note_events = predict(
+                str(audio.path),
+                onset_threshold=0.25,
+                frame_threshold=0.15,
+                minimum_note_length=80,
+            )
+            logger.info("Basic Pitch produced %s candidate notes", len(note_events))
             notes = []
             
             for i, note in enumerate(note_events):
@@ -43,12 +49,14 @@ class BasicPitchMelodyAnalyzer:
                     confidence=float(confidence)
                 ))
                 
+            warnings = [] if notes else ["Basic Pitch returned no notes after its internal detection thresholds."]
             return MelodyAnalysis(
                 notes=notes,
                 mode=MelodyMode.VOCAL,
                 confidence=0.8,
                 engine="basic_pitch",
-                engine_version="1.0"
+                engine_version="1.0",
+                warnings=warnings
             )
         except Exception as e:
             logger.error(f"Basic pitch analysis failed: {e}")
@@ -70,12 +78,10 @@ def _parse_note_event(note) -> tuple[float, float, int, float] | None:
         start = note[0]
         end = note[1]
         pitch = note[2]
-        confidence = 1.0
-
-        if len(note) >= 5 and isinstance(note[4], (int, float)):
-            confidence = note[4]
-        elif len(note) >= 4 and isinstance(note[3], (int, float)):
-            confidence = note[3]
+        # Basic Pitch sequence events use the fourth value for amplitude, not confidence.
+        # Its inference thresholds have already selected these notes, so retain them with
+        # a stable confidence suitable for downstream post-processing.
+        confidence = 0.65
 
         return _coerce_note_values(start, end, pitch, confidence)
 
