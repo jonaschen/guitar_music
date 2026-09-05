@@ -153,6 +153,7 @@ export function App() {
   const [playbackTime, setPlaybackTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
+  const [loopRange, setLoopRange] = useState<[number, number] | null>(null);
   const [error, setError] = useState<string>("");
   const [accidentalPreference, setAccidentalPreference] = useState<AccidentalPreference>("auto");
   const [capo, setCapo] = useState(0);
@@ -318,6 +319,20 @@ export function App() {
         chords: transform(currentScore.chords),
       };
     });
+  }
+
+  function currentMeasureRange(time: number): [number, number] | null {
+    if (!score || score.beats.length === 0) return null;
+    const currentBeat = score.beats.filter((beat) => beat.time <= time).at(-1);
+    if (!currentBeat) return null;
+    const start = score.beats.find((beat) => beat.measure === currentBeat.measure)?.time ?? currentBeat.time;
+    const next = score.beats.find((beat) => beat.measure === currentBeat.measure + 1)?.time ?? score.song.duration_seconds;
+    return [start, next];
+  }
+
+  function handlePlaybackTime(time: number) {
+    setPlaybackTime(time);
+    if (loopRange && time >= loopRange[1] - 0.03) seekTo(loopRange[0]);
   }
 
   function seekTo(time: number) {
@@ -620,7 +635,7 @@ export function App() {
                     <audio
                       ref={audioRef}
                       src={audioUrl}
-                      onTimeUpdate={(event) => setPlaybackTime(event.currentTarget.currentTime)}
+                      onTimeUpdate={(event) => handlePlaybackTime(event.currentTarget.currentTime)}
                       onPlay={() => setIsPlaying(true)}
                       onPause={() => setIsPlaying(false)}
                       onEnded={() => setIsPlaying(false)}
@@ -630,6 +645,7 @@ export function App() {
                       {isPlaying ? "Pause" : "Play"}
                     </button>
                     <button type="button" className="ghost-button" onClick={() => seekMeasure(1)}>Next bar</button>
+                    <button type="button" className="ghost-button" onClick={() => setLoopRange((range) => range ? null : currentMeasureRange(playbackTime))}>{loopRange ? "Looping bar" : "Loop bar"}</button>
                     <button type="button" className="ghost-button" onClick={() => seekTo(0)}>Stop</button>
                     <label className="transport-speed">Speed <select value={playbackRate} onChange={(event) => setSpeed(Number(event.target.value))}>{[0.5, 0.6, 0.75, 0.9, 1, 1.1, 1.25, 1.5].map((rate) => <option key={rate} value={rate}>{Math.round(rate * 100)}%</option>)}</select></label>
                     <span>{playbackTime.toFixed(1)}s / {score.song.duration_seconds.toFixed(1)}s</span>
