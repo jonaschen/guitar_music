@@ -93,7 +93,7 @@ async function cancelAnalysisJob(jobId: string): Promise<AnalysisJob> {
 }
 
 async function importLyrics(score: SongScore, content: string, format: "text" | "lrc" = "text"): Promise<SongScore> {
-  const response = await fetch(`/scores/lyrics/import-text`, {
+  const response = await fetch(`${API_BASE}/scores/lyrics/import-${format}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ score, content, language: "und" }),
