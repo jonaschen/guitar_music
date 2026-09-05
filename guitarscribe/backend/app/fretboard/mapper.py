@@ -5,7 +5,20 @@ class SimpleFretboardMapper:
         # E2, A2, D3, G3, B3, E4
         self.string_tuning = [40, 45, 50, 55, 59, 64]
         
+    def candidates(self, note: MelodyNote):
+        return [(6 - index, note.midi - tuning) for index, tuning in enumerate(self.string_tuning) if 0 <= note.midi - tuning <= 12]
+
     def map_notes(self, melody: MelodyAnalysis) -> MelodyAnalysis:
+        mapped = []
+        previous = None
+        for note in melody.notes:
+            candidates = self.candidates(note)
+            choice = min(candidates, key=lambda candidate: candidate[1] if previous is None else abs(candidate[1] - previous[1]) + (0.75 if candidate[0] != previous[0] else 0)) if candidates else None
+            mapped.append(note.model_copy(update={"string": choice[0], "fret": choice[1]}) if choice else note.model_copy(update={"string": None, "fret": None}))
+            previous = choice
+        melody.notes = mapped
+        return melody
+
         mapped_notes = []
         for note in melody.notes:
             best_string = None
