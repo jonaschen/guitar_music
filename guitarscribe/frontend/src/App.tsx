@@ -926,6 +926,8 @@ export function App() {
                       <button key={voicing.id} type="button" className="voicing-card" onClick={() => applyVoicing(voicing)}>
                         <strong>{voicing.shape_symbol}</strong>
                         <span>Frets: {voicing.frets.map((fret) => (fret === null ? "x" : fret)).join(" ")}</span>
+                        <span>Position {voicing.base_fret} · Difficulty {voicing.difficulty}/5</span>
+                        {selectedChord.voicing_id === voicing.id ? <span className="edit-badge">Selected</span> : null}
                       </button>
                     ))
                   ) : (
