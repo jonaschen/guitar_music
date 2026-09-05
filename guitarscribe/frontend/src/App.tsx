@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 import type { AccidentalPreference, AnalysisJob, SongScore } from "./types";
 
 const API_BASE = "http://localhost:8000";
@@ -148,6 +148,10 @@ export function App() {
   const [chordComplexity, setChordComplexity] = useState("standard");
   const [score, setScore] = useState<SongScore | null>(EMPTY_SCORE);
   const [analysisJob, setAnalysisJob] = useState<AnalysisJob | null>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [playbackTime, setPlaybackTime] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [error, setError] = useState<string>("");
   const [accidentalPreference, setAccidentalPreference] = useState<AccidentalPreference>("auto");
   const [capo, setCapo] = useState(0);
@@ -158,6 +162,16 @@ export function App() {
   const [saveStatus, setSaveStatus] = useState("No saved revision yet.");
   const [isSavingRevision, setIsSavingRevision] = useState(false);
   const [isLoadingRevision, setIsLoadingRevision] = useState(false);
+
+  useEffect(() => {
+    if (!file) {
+      setAudioUrl(null);
+      return;
+    }
+    const nextUrl = URL.createObjectURL(file);
+    setAudioUrl(nextUrl);
+    return () => URL.revokeObjectURL(nextUrl);
+  }, [file]);
 
   useEffect(() => {
     if (!analysisJob || ["completed", "failed", "cancelled"].includes(analysisJob.status)) return;
@@ -219,6 +233,7 @@ export function App() {
   });
 
   const selectedChord = score?.chords.find((chord) => chord.id === selectedChordId) ?? null;
+  const activeChordId = score?.chords.find((chord) => playbackTime >= chord.start && playbackTime < chord.end)?.id ?? null;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -276,8 +291,16 @@ export function App() {
     });
   }
 
+  function seekTo(time: number) {
+    if (audioRef.current) {
+      audioRef.current.currentTime = time;
+      setPlaybackTime(time);
+    }
+  }
+
   function selectChord(chord: ScoreChord) {
     setSelectedChordId(chord.id);
+    seekTo(chord.start);
     setChordDraft(chord.symbol);
   }
 
@@ -550,6 +573,24 @@ export function App() {
                   </p>
                 ) : null}
 
+                {audioUrl ? (
+                  <section className="transport-bar">
+                    <audio
+                      ref={audioRef}
+                      src={audioUrl}
+                      onTimeUpdate={(event) => setPlaybackTime(event.currentTarget.currentTime)}
+                      onPlay={() => setIsPlaying(true)}
+                      onPause={() => setIsPlaying(false)}
+                      onEnded={() => setIsPlaying(false)}
+                    />
+                    <button type="button" className="ghost-button" onClick={() => void (isPlaying ? audioRef.current?.pause() : audioRef.current?.play())}>
+                      {isPlaying ? "Pause" : "Play"}
+                    </button>
+                    <button type="button" className="ghost-button" onClick={() => seekTo(0)}>Stop</button>
+                    <span>{playbackTime.toFixed(1)}s / {score.song.duration_seconds.toFixed(1)}s</span>
+                  </section>
+                ) : null}
+
                 <div className="summary-grid">
                   <article className="metric-card">
                     <span>BPM</span>
@@ -578,7 +619,7 @@ export function App() {
                           <button
                             key={chord.id}
                             type="button"
-                            className={`chord-block${selectedChordId === chord.id ? " chord-block-selected" : ""}`}
+                            className={`chord-block${selectedChordId === chord.id ? " chord-block-selected" : ""}${activeChordId === chord.id ? " chord-block-active" : ""}`}
                             onClick={() => selectChord(chord)}
                           >
                             <span className="chord-symbol">{chord.symbol}</span>
