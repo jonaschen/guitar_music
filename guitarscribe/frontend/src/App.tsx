@@ -196,6 +196,17 @@ export function App() {
   const [isLoadingRevision, setIsLoadingRevision] = useState(false);
 
   useEffect(() => {
+    const savedJobId = window.localStorage.getItem("guitarscribe.activeJobId");
+    if (!savedJobId) return;
+    setStatus("queued");
+    void getAnalysisJob(savedJobId).then((job) => {
+      setAnalysisJob(job);
+      if (job.status === "completed" && job.score) { setScore(job.score); setStatus("ready"); }
+      if (job.status === "failed" || job.status === "cancelled") { setStatus("error"); setError(job.error ?? job.message); }
+    }).catch(() => window.localStorage.removeItem("guitarscribe.activeJobId"));
+  }, []);
+
+  useEffect(() => {
     if (!file) {
       setAudioUrl(null);
       return;
@@ -280,6 +291,7 @@ export function App() {
     try {
       const createdJob = await createAnalysisJob(file, melodyMode, chordComplexity);
       setAnalysisJob(createdJob);
+      window.localStorage.setItem("guitarscribe.activeJobId", createdJob.id);
     } catch (submitError) {
       setStatus("error");
       setError(submitError instanceof Error ? submitError.message : "Analysis failed.");
