@@ -59,3 +59,14 @@ def test_melody_selects_one_continuous_playable_note_per_grid_slot():
     selected = pp.process(notes, [BeatInfo(time=0.0, beat=1, measure=1), BeatInfo(time=0.5, beat=2, measure=1), BeatInfo(time=1.0, beat=3, measure=1)])
 
     assert [note.id for note in selected] == ["middle", "next"]
+
+
+def test_melody_quantization_extends_collapsed_note_to_next_grid_slot():
+    pp = MelodyPostProcessor()
+    note = MelodyNote(id="1", start=0.27, end=0.36, midi=60, note="C4", confidence=0.9)
+    beats = [BeatInfo(time=0.0, beat=1, measure=1), BeatInfo(time=0.5, beat=2, measure=1), BeatInfo(time=1.0, beat=3, measure=1)]
+
+    quantized = pp.process([note], beats)
+
+    assert quantized[0].start == 0.25
+    assert quantized[0].end == 0.5

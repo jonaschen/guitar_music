@@ -34,7 +34,8 @@ class MelodyPostProcessor:
             start = min(grid, key=lambda point: abs(point - note.start))
             end = min(grid, key=lambda point: abs(point - note.end))
             note.start = start
-            note.end = end if end > start else start + 0.05
+            next_grid = next((point for point in grid if point > start), start + 0.05)
+            note.end = end if end > start else next_grid
         return notes
 
     def select_monophonic_line(self, notes: List[MelodyNote]) -> List[MelodyNote]:
