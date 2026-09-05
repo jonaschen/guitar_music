@@ -1,5 +1,5 @@
 from typing import List
-from ..models.analysis import MelodyNote
+from ..models.analysis import BeatInfo, MelodyNote
 
 class MelodyPostProcessor:
     def remove_short_notes(self, notes: List[MelodyNote], min_duration: float = 0.08) -> List[MelodyNote]:
@@ -22,8 +22,21 @@ class MelodyPostProcessor:
                 merged.append(note)
         return merged
 
-    def process(self, notes: List[MelodyNote]) -> List[MelodyNote]:
+    def quantize_to_beats(self, notes: List[MelodyNote], beats: List[BeatInfo]) -> List[MelodyNote]:
+        if len(beats) < 2:
+            return notes
+        grid = [beat.time for beat in beats]
+        grid.extend((left.time + right.time) / 2 for left, right in zip(beats, beats[1:]))
+        grid.sort()
+        for note in notes:
+            start = min(grid, key=lambda point: abs(point - note.start))
+            end = min(grid, key=lambda point: abs(point - note.end))
+            note.start = start
+            note.end = end if end > start else start + 0.05
+        return notes
+
+    def process(self, notes: List[MelodyNote], beats: List[BeatInfo] | None = None) -> List[MelodyNote]:
         notes = self.remove_short_notes(notes)
         notes = self.remove_low_confidence(notes)
         notes = self.merge_repeated(notes)
-        return notes
+        return self.quantize_to_beats(notes, beats) if beats else notes

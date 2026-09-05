@@ -1,7 +1,7 @@
 import pytest
 from app.postprocess.chords import ChordPostProcessor
 from app.postprocess.melody import MelodyPostProcessor
-from app.models.analysis import ChordComplexity, MelodyNote
+from app.models.analysis import BeatInfo, ChordComplexity, MelodyNote
 
 def test_chord_smooth(sample_chord_analysis, sample_beat_analysis):
     pp = ChordPostProcessor()
@@ -33,3 +33,14 @@ def test_melody_merge_repeated():
     merged = pp.merge_repeated(notes)
     assert len(merged) == 1
     assert merged[0].end == 1.0
+
+
+def test_melody_quantizes_to_eighth_note_grid():
+    pp = MelodyPostProcessor()
+    notes = [MelodyNote(id="1", start=0.13, end=0.62, midi=60, note="C4", confidence=0.9)]
+    beats = [BeatInfo(time=0.0, beat=1, measure=1), BeatInfo(time=0.5, beat=2, measure=1), BeatInfo(time=1.0, beat=3, measure=1)]
+
+    quantized = pp.process(notes, beats)
+
+    assert quantized[0].start == 0.25
+    assert quantized[0].end == 0.5

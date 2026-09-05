@@ -61,7 +61,7 @@ class AnalysisPipeline:
         try:
             await report("melody_analysis")
             melody = await self.melody_analyzer.analyze(normalized, beats)
-            melody.notes = self.melody_post.process(melody.notes)
+            melody.notes = self.melody_post.process(melody.notes, beats.beats)
             melody = self.fretboard_mapper.map_notes(melody)
         except Exception as e:
             logger.warning(f"Melody analysis failed, continuing without melody: {e}")
