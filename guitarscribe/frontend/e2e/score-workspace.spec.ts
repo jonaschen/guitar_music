@@ -17,6 +17,7 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem("guitarscribe.activeJobId", "demo-job"));
   await page.route("**/api/v1/jobs/demo-job", (route) => route.fulfill({ json: { id: "demo-job", status: "completed", progress: 100, message: "Analysis complete", melody_mode: "vocal", chord_complexity: "standard", created_at: "2026-01-01T00:00:00Z", updated_at: "2026-01-01T00:00:00Z", error: null, score } }));
   await page.route("**/scores/transpose", (route) => route.fulfill({ json: { ...score, analysis: { ...score.analysis, key: "D" }, key_context: { ...score.key_context, target: { key: "D", mode: "major" }, shape: { key: "D", mode: "major" }, sounding: { key: "D", mode: "major" }, transpose_semitones: 2, audio_matches_notation: false }, chords: [{ ...score.chords[0], symbol: "D", shape_symbol: "D", source_symbol: "C" }] } }));
+  await page.route("**/chord-voicings?*", (route) => route.fulfill({ json: [{ id: "closed-e-major-c", symbol: "C", shape_symbol: "C", frets: [8, 10, 10, 9, 8, 8], fingers: [1, 3, 4, 2, 1, 1], base_fret: 8, capo: 0, difficulty: 3.5, tags: ["closed", "barre", "e-shape"] }] }));
 
   await page.goto("/");
 
@@ -34,6 +35,11 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await timingInputs.nth(1).fill("1.90");
   await page.getByRole("button", { name: "Save timing" }).click();
   await expect(page.getByRole("button", { name: "Undo" })).toBeEnabled();
+  await expect(page.getByText("Position 8 · Difficulty 3.5/5")).toBeVisible();
+  await page.getByText("Position 8 · Difficulty 3.5/5").click();
+  await expect(page.getByText("Selected")).toBeVisible();
+  await page.getByRole("button", { name: "Undo" }).click();
+  await expect(page.getByText("Selected")).toHaveCount(0);
   await page.getByRole("button", { name: "Undo" }).click();
   await expect(timingInputs.nth(0)).toHaveValue("0.00");
   await page.locator(".toolbar-actions button").last().click();
