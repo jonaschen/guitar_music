@@ -154,6 +154,8 @@ export function App() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [loopRange, setLoopRange] = useState<[number, number] | null>(null);
+  const [loopStart, setLoopStart] = useState<number | null>(null);
+  const [loopEnd, setLoopEnd] = useState<number | null>(null);
   const [error, setError] = useState<string>("");
   const [accidentalPreference, setAccidentalPreference] = useState<AccidentalPreference>("auto");
   const [capo, setCapo] = useState(0);
@@ -332,7 +334,8 @@ export function App() {
 
   function handlePlaybackTime(time: number) {
     setPlaybackTime(time);
-    if (loopRange && time >= loopRange[1] - 0.03) seekTo(loopRange[0]);
+    const activeLoop = loopStart !== null && loopEnd !== null && loopEnd > loopStart ? [loopStart, loopEnd] : loopRange;
+    if (activeLoop && time >= activeLoop[1] - 0.03) seekTo(activeLoop[0]);
   }
 
   function seekTo(time: number) {
@@ -646,6 +649,9 @@ export function App() {
                     </button>
                     <button type="button" className="ghost-button" onClick={() => seekMeasure(1)}>Next bar</button>
                     <button type="button" className="ghost-button" onClick={() => setLoopRange((range) => range ? null : currentMeasureRange(playbackTime))}>{loopRange ? "Looping bar" : "Loop bar"}</button>
+                    <button type="button" className="ghost-button" onClick={() => { setLoopStart(playbackTime); setLoopEnd(null); }}>Set A</button>
+                    <button type="button" className="ghost-button" disabled={loopStart === null} onClick={() => { if (loopStart !== null && playbackTime > loopStart) setLoopEnd(playbackTime); }}>Set B</button>
+                    {loopStart !== null ? <button type="button" className="ghost-button" onClick={() => { setLoopStart(null); setLoopEnd(null); }}>Clear A–B</button> : null}
                     <button type="button" className="ghost-button" onClick={() => seekTo(0)}>Stop</button>
                     <label className="transport-speed">Speed <select value={playbackRate} onChange={(event) => setSpeed(Number(event.target.value))}>{[0.5, 0.6, 0.75, 0.9, 1, 1.1, 1.25, 1.5].map((rate) => <option key={rate} value={rate}>{Math.round(rate * 100)}%</option>)}</select></label>
                     <span>{playbackTime.toFixed(1)}s / {score.song.duration_seconds.toFixed(1)}s</span>
