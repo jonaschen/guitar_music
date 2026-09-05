@@ -1,10 +1,11 @@
 from app.exporters.midi import export_midi
 from app.models.analysis import MelodyNote
-from app.models.score import AnalysisSummary, SongScore
+from app.models.score import AnalysisSummary, SongInfo, SongScore
 
 
 def test_midi_export_has_standard_header_and_note_events():
     score = SongScore(
+        song=SongInfo(duration_seconds=2),
         analysis=AnalysisSummary(bpm=120),
         melody=[MelodyNote(id="n1", start=0, end=0.5, midi=60, note="C4")],
     )
@@ -15,3 +16,4 @@ def test_midi_export_has_standard_header_and_note_events():
     assert b"MTrk" in output
     assert bytes([0x90, 60, 96]) in output
     assert bytes([0x80, 60, 0]) in output
+    assert output.endswith(bytes([0x8B, 0x20, 0xFF, 0x2F, 0x00]))

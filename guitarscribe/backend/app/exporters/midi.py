@@ -30,5 +30,7 @@ def export_midi(score: SongScore, ticks_per_beat: int = 480) -> bytes:
         track.extend(_varlen(tick - previous))
         track.extend(payload)
         previous = tick
-    track.extend(b"\x00\xff\x2f\x00")
+    song_end = max(previous, round(score.song.duration_seconds * score.analysis.bpm / 60 * ticks_per_beat))
+    track.extend(_varlen(song_end - previous))
+    track.extend(b"\xff\x2f\x00")
     return b"MThd" + struct.pack(">IHHH", 6, 0, 1, ticks_per_beat) + b"MTrk" + struct.pack(">I", len(track)) + bytes(track)
