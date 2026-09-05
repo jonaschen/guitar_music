@@ -1,4 +1,6 @@
 import asyncio
+import shutil
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable
@@ -47,6 +49,15 @@ class JobStore:
             raise FileNotFoundError(job_id)
         return AnalysisJob.model_validate_json(path.read_text(encoding="utf-8"))
 
+    def cleanup_expired(self, ttl_seconds: int) -> int:
+        cutoff = time.time() - ttl_seconds
+        removed = 0
+        for directory in self.root.iterdir():
+            if directory.is_dir() and directory.stat().st_mtime < cutoff:
+                shutil.rmtree(directory)
+                removed += 1
+        return removed
+
     def mark_interrupted_jobs_failed(self) -> None:
         for path in self.root.glob("*/job.json"):
             job = AnalysisJob.model_validate_json(path.read_text(encoding="utf-8"))
@@ -59,11 +70,12 @@ class JobStore:
 
 
 class AnalysisJobService:
-    def __init__(self, store: JobStore, pipeline_factory: Callable[[], AnalysisPipeline], max_concurrent_jobs: int = 1):
+    def __init__(self, store: JobStore, pipeline_factory: Callable[[], AnalysisPipeline], max_concurrent_jobs: int = 1, job_ttl_seconds: int = 24 * 60 * 60):
         self.store = store
         self.pipeline_factory = pipeline_factory
         self.tasks: dict[str, asyncio.Task[None]] = {}
         self.semaphore = asyncio.Semaphore(max_concurrent_jobs)
+        self.store.cleanup_expired(job_ttl_seconds)
         self.store.mark_interrupted_jobs_failed()
 
     async def submit(

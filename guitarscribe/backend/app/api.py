@@ -77,6 +77,7 @@ def get_job_service() -> AnalysisJobService:
             JobStore(settings.work_dir / "jobs"),
             pipeline_factory=lambda: create_pipeline(settings),
             max_concurrent_jobs=settings.max_concurrent_jobs,
+            job_ttl_seconds=settings.job_ttl_seconds,
         )
     return _job_service
 

@@ -71,3 +71,20 @@ async def test_job_service_cancels_active_job(tmp_path):
 
     assert cancelled.status.value == "cancelled"
     assert service.get(created.id).status.value == "cancelled"
+
+def test_job_store_removes_only_expired_directories(tmp_path):
+    import os
+    import time
+    from app.services.jobs import JobStore
+
+    store = JobStore(tmp_path / "jobs")
+    expired = store.job_dir("expired")
+    fresh = store.job_dir("fresh")
+    expired.mkdir()
+    fresh.mkdir()
+    old = time.time() - 10
+    os.utime(expired, (old, old))
+
+    assert store.cleanup_expired(5) == 1
+    assert not expired.exists()
+    assert fresh.exists()
