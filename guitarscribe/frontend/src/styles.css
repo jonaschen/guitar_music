@@ -585,3 +585,4 @@ h2 {
 .lyrics-lines { display: grid; gap: 0.35rem; }
 .lyric-line { text-align: left; padding: 0.45rem; border-radius: 0.45rem; border: 1px solid transparent; background: transparent; color: var(--text-muted); }
 .lyric-line-active { border-color: #7dd3fc; color: var(--text); background: rgba(125, 211, 252, 0.12); }
+.lyrics-actions { display: flex; gap: 0.5rem; align-items: center; }

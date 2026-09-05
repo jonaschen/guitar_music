@@ -92,7 +92,7 @@ async function cancelAnalysisJob(jobId: string): Promise<AnalysisJob> {
   return response.json();
 }
 
-async function importLyrics(score: SongScore, content: string): Promise<SongScore> {
+async function importLyrics(score: SongScore, content: string, format: "text" | "lrc" = "text"): Promise<SongScore> {
   const response = await fetch(`/scores/lyrics/import-text`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -296,6 +296,22 @@ export function App() {
 
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     setFile(event.target.files?.[0] ?? null);
+  }
+
+  async function importLrcFile(event: ChangeEvent<HTMLInputElement>) {
+    const selected = event.target.files?.[0];
+    if (!score || !selected) return;
+    setIsImportingLyrics(true);
+    try {
+      const content = await selected.text();
+      setLyricsDraft(content);
+      setScore(await importLyrics(score, content, "lrc"));
+    } catch (lyricsError) {
+      setError(lyricsError instanceof Error ? lyricsError.message : "LRC import failed.");
+    } finally {
+      setIsImportingLyrics(false);
+      event.target.value = "";
+    }
   }
 
   async function saveLyrics() {
@@ -686,7 +702,7 @@ export function App() {
                 <section className="lyrics-panel">
                   <h3>Lyrics</h3>
                   <textarea value={lyricsDraft} onChange={(event) => setLyricsDraft(event.target.value)} placeholder="Paste lyrics you are allowed to use. One line per lyric line." rows={5} />
-                  <button type="button" className="ghost-button" disabled={isImportingLyrics || !lyricsDraft.trim()} onClick={() => void saveLyrics}>{isImportingLyrics ? "Importing..." : "Import lyrics"}</button>
+                  <div className="lyrics-actions"><button type="button" className="ghost-button" disabled={isImportingLyrics || !lyricsDraft.trim()} onClick={() => void saveLyrics}>{isImportingLyrics ? "Importing..." : "Import lyrics"}</button><label className="ghost-button">Import LRC<input type="file" accept=".lrc,text/plain" onChange={importLrcFile} hidden /></label></div>
                   {score.lyrics?.lines.length ? <div className="lyrics-lines">{score.lyrics.lines.map((line) => <button key={line.id} type="button" className={playbackTime >= (line.start ?? Infinity) && playbackTime < (line.end ?? Infinity) ? "lyric-line lyric-line-active" : "lyric-line"} onClick={() => line.start !== null && line.start !== undefined && seekTo(line.start)}>{line.text}</button>)}</div> : null}
                 </section>
 
