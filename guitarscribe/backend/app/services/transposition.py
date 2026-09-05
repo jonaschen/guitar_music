@@ -67,6 +67,9 @@ class TranspositionService:
                 chord.source_symbol = chord.symbol
             chord.symbol = self.transpose_chord_symbol(chord.source_symbol, normalized, accidental_preference, source_mode)
             chord.shape_symbol = self.transpose_chord_symbol(chord.symbol, -capo_value, accidental_preference, source_mode)
+            # A voicing belongs to its shape and capo; it must be selected again after either changes.
+            chord.voicing_id = None
+            chord.available_voicings = []
 
         for note in result.melody:
             if note.source_midi is None:

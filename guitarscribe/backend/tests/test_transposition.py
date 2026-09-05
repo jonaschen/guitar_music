@@ -1,4 +1,4 @@
-from app.models.analysis import AccidentalPreference, ChordEvent, MelodyNote
+from app.models.analysis import AccidentalPreference, ChordEvent, ChordVoicing, MelodyNote
 from app.models.score import AnalysisSummary, KeyContext, KeySignature, SongInfo, SongScore
 from app.services.transposition import TranspositionService
 
@@ -56,6 +56,19 @@ def test_transpose_score_updates_shape_key_for_capo():
     assert transposed.key_context.shape.key == "G"
     assert transposed.chords[0].shape_symbol == "G"
     assert transposed.chords[1].shape_symbol == "D/F#"
+
+
+def test_transpose_clears_voicings_for_the_new_shape():
+    score = make_score()
+    score.chords[0].voicing_id = "open-g"
+    score.chords[0].available_voicings = [ChordVoicing(id="open-g", symbol="G", shape_symbol="G", frets=[3, 2, 0, 0, 0, 3], fingers=[2, 1, 0, 0, 0, 3])]
+
+    transposed = TranspositionService().transpose_score(score, semitones=2, capo=2)
+
+    assert transposed.chords[0].shape_symbol == "G"
+    assert transposed.chords[0].voicing_id is None
+    assert transposed.chords[0].available_voicings == []
+    assert score.chords[0].voicing_id == "open-g"
 
 
 def test_transpose_uses_flat_spelling_when_requested():
