@@ -1,5 +1,6 @@
 import asyncio
 import shutil
+import sqlite3
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -26,32 +27,56 @@ def _now() -> str:
 
 
 class JobStore:
-    """Small filesystem-backed store for the single-process MVP worker."""
+    """SQLite-backed metadata store; job input artifacts remain under ``root``."""
 
     def __init__(self, root: Path):
         self.root = root
         self.root.mkdir(parents=True, exist_ok=True)
+        self.database_path = self.root / "jobs.sqlite3"
+        self._initialize()
+
+    def _connect(self) -> sqlite3.Connection:
+        connection = sqlite3.connect(self.database_path)
+        connection.row_factory = sqlite3.Row
+        return connection
+
+    def _initialize(self) -> None:
+        with self._connect() as connection:
+            connection.execute(
+                "CREATE TABLE IF NOT EXISTS jobs (id TEXT PRIMARY KEY, payload TEXT NOT NULL, updated_at TEXT NOT NULL)"
+            )
+            connection.execute("CREATE INDEX IF NOT EXISTS jobs_updated_at_idx ON jobs(updated_at)")
 
     def job_dir(self, job_id: str) -> Path:
         return self.root / job_id
 
     def save(self, job: AnalysisJob) -> None:
-        directory = self.job_dir(job.id)
-        directory.mkdir(parents=True, exist_ok=True)
-        destination = directory / "job.json"
-        temporary = destination.with_suffix(".tmp")
-        temporary.write_text(job.model_dump_json(indent=2), encoding="utf-8")
-        temporary.replace(destination)
+        with self._connect() as connection:
+            connection.execute(
+                "INSERT INTO jobs(id, payload, updated_at) VALUES (?, ?, ?) "
+                "ON CONFLICT(id) DO UPDATE SET payload=excluded.payload, updated_at=excluded.updated_at",
+                (job.id, job.model_dump_json(), job.updated_at),
+            )
 
     def load(self, job_id: str) -> AnalysisJob:
-        path = self.job_dir(job_id) / "job.json"
-        if not path.exists():
+        with self._connect() as connection:
+            row = connection.execute("SELECT payload FROM jobs WHERE id = ?", (job_id,)).fetchone()
+        if row is None:
             raise FileNotFoundError(job_id)
-        return AnalysisJob.model_validate_json(path.read_text(encoding="utf-8"))
+        return AnalysisJob.model_validate_json(row["payload"])
 
     def cleanup_expired(self, ttl_seconds: int) -> int:
         cutoff = time.time() - ttl_seconds
+        cutoff_iso = datetime.fromtimestamp(cutoff, timezone.utc).isoformat()
+        with self._connect() as connection:
+            job_ids = [row["id"] for row in connection.execute("SELECT id FROM jobs WHERE updated_at < ?", (cutoff_iso,))]
+            connection.execute("DELETE FROM jobs WHERE updated_at < ?", (cutoff_iso,))
         removed = 0
+        for job_id in job_ids:
+            directory = self.job_dir(job_id)
+            if directory.exists():
+                shutil.rmtree(directory)
+            removed += 1
         for directory in self.root.iterdir():
             if directory.is_dir() and directory.stat().st_mtime < cutoff:
                 shutil.rmtree(directory)
@@ -59,8 +84,10 @@ class JobStore:
         return removed
 
     def mark_interrupted_jobs_failed(self) -> None:
-        for path in self.root.glob("*/job.json"):
-            job = AnalysisJob.model_validate_json(path.read_text(encoding="utf-8"))
+        with self._connect() as connection:
+            payloads = [row["payload"] for row in connection.execute("SELECT payload FROM jobs")]
+        for payload in payloads:
+            job = AnalysisJob.model_validate_json(payload)
             if job.status in ACTIVE_JOB_STATUSES:
                 job.status = JobStatus.FAILED
                 job.error = "The server restarted before this analysis completed."
@@ -70,7 +97,13 @@ class JobStore:
 
 
 class AnalysisJobService:
-    def __init__(self, store: JobStore, pipeline_factory: Callable[[], AnalysisPipeline], max_concurrent_jobs: int = 1, job_ttl_seconds: int = 24 * 60 * 60):
+    def __init__(
+        self,
+        store: JobStore,
+        pipeline_factory: Callable[[], AnalysisPipeline],
+        max_concurrent_jobs: int = 1,
+        job_ttl_seconds: int = 24 * 60 * 60,
+    ):
         self.store = store
         self.pipeline_factory = pipeline_factory
         self.tasks: dict[str, asyncio.Task[None]] = {}
@@ -78,13 +111,7 @@ class AnalysisJobService:
         self.store.cleanup_expired(job_ttl_seconds)
         self.store.mark_interrupted_jobs_failed()
 
-    async def submit(
-        self,
-        filename: str,
-        content: bytes,
-        melody_mode: str,
-        chord_complexity: str,
-    ) -> AnalysisJob:
+    async def submit(self, filename: str, content: bytes, melody_mode: str, chord_complexity: str) -> AnalysisJob:
         job_id = uuid4().hex
         now = _now()
         job = AnalysisJob(
@@ -108,8 +135,7 @@ class AnalysisJobService:
     def cancel(self, job_id: str) -> AnalysisJob:
         job = self.get(job_id)
         if job.status in ACTIVE_JOB_STATUSES:
-            task = self.tasks.get(job_id)
-            if task:
+            if task := self.tasks.get(job_id):
                 task.cancel()
             job.status = JobStatus.CANCELLED
             job.message = "Analysis cancelled"

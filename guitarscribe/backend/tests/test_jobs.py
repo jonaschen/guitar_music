@@ -57,6 +57,7 @@ async def test_job_service_persists_completed_score_and_progress(tmp_path):
     assert completed.score is not None
     assert completed.score.analysis.key == "G"
     assert service.get(created.id).score is not None
+    assert (tmp_path / "jobs" / "jobs.sqlite3").exists()
 
 
 @pytest.mark.asyncio
