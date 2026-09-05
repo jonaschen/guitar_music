@@ -13,3 +13,8 @@ def test_export_lrc_omits_untimed_lines():
     from app.exporters.lrc import export_lrc
     lyrics = import_lrc("[00:01.50]One\n[00:03.00]Two")
     assert export_lrc(lyrics) == "[00:01.50]One\n[00:03.00]Two\n"
+
+def test_manual_timing_can_be_updated():
+    lyrics = import_text("One")
+    line = lyrics.lines[0].model_copy(update={"start": 1.0, "end": 2.0, "edited": True})
+    assert line.start == 1.0 and line.end == 2.0 and line.edited

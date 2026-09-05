@@ -102,6 +102,16 @@ async function importLyrics(score: SongScore, content: string, format: "text" | 
   return response.json();
 }
 
+async function updateLyricTiming(score: SongScore, lineId: string, start?: number, end?: number): Promise<SongScore> {
+  const response = await fetch(`/scores/lyrics/timing`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ score, line_id: lineId, ...(start !== undefined ? { start } : {}), ...(end !== undefined ? { end } : {}) }),
+  });
+  if (!response.ok) throw new Error(await response.text());
+  return response.json();
+}
+
 async function postTranspose(
   score: SongScore,
   semitones: number,
@@ -169,6 +179,7 @@ export function App() {
   const [error, setError] = useState<string>("");
   const [lyricsDraft, setLyricsDraft] = useState("");
   const [isImportingLyrics, setIsImportingLyrics] = useState(false);
+  const [isTimingLyrics, setIsTimingLyrics] = useState(false);
   const [accidentalPreference, setAccidentalPreference] = useState<AccidentalPreference>("auto");
   const [capo, setCapo] = useState(0);
   const [isRetuningScore, setIsRetuningScore] = useState(false);
@@ -323,6 +334,18 @@ export function App() {
       setError(lyricsError instanceof Error ? lyricsError.message : "Lyrics import failed.");
     } finally {
       setIsImportingLyrics(false);
+    }
+  }
+
+  async function setLyricTiming(lineId: string, boundary: "start" | "end") {
+    if (!score) return;
+    setIsTimingLyrics(true);
+    try {
+      setScore(await updateLyricTiming(score, lineId, boundary === "start" ? playbackTime : undefined, boundary === "end" ? playbackTime : undefined));
+    } catch (timingError) {
+      setError(timingError instanceof Error ? timingError.message : "Could not update lyric timing.");
+    } finally {
+      setIsTimingLyrics(false);
     }
   }
 
@@ -703,7 +726,7 @@ export function App() {
                   <h3>Lyrics</h3>
                   <textarea value={lyricsDraft} onChange={(event) => setLyricsDraft(event.target.value)} placeholder="Paste lyrics you are allowed to use. One line per lyric line." rows={5} />
                   <div className="lyrics-actions"><button type="button" className="ghost-button" disabled={isImportingLyrics || !lyricsDraft.trim()} onClick={() => void saveLyrics}>{isImportingLyrics ? "Importing..." : "Import lyrics"}</button><label className="ghost-button">Import LRC<input type="file" accept=".lrc,text/plain" onChange={importLrcFile} hidden /></label></div>
-                  {score.lyrics?.lines.length ? <div className="lyrics-lines">{score.lyrics.lines.map((line) => <button key={line.id} type="button" className={playbackTime >= (line.start ?? Infinity) && playbackTime < (line.end ?? Infinity) ? "lyric-line lyric-line-active" : "lyric-line"} onClick={() => line.start !== null && line.start !== undefined && seekTo(line.start)}>{line.text}</button>)}</div> : null}
+                  {score.lyrics?.lines.length ? <div className="lyrics-lines">{score.lyrics.lines.map((line) => <div key={line.id} className={playbackTime >= (line.start ?? Infinity) && playbackTime < (line.end ?? Infinity) ? "lyric-line lyric-line-active" : "lyric-line"}><button type="button" onClick={() => line.start !== null && line.start !== undefined && seekTo(line.start)}>{line.text}</button><span>{line.start?.toFixed(1) ?? "—"}–{line.end?.toFixed(1) ?? "—"}</span><button type="button" disabled={isTimingLyrics} onClick={() => void setLyricTiming(line.id, "start")}>Set start</button><button type="button" disabled={isTimingLyrics} onClick={() => void setLyricTiming(line.id, "end")}>Set end</button></div>)}</div> : null}
                 </section>
 
                 <div className="export-actions">

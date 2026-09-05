@@ -219,3 +219,26 @@ async def export_lrc_score(score: SongScore) -> str:
     if score.lyrics is None:
         raise HTTPException(status_code=400, detail="Score has no lyrics")
     return export_lrc(score.lyrics)
+
+class LyricTimingRequest(BaseModel):
+    score: SongScore
+    line_id: str
+    start: float | None = Field(default=None, ge=0)
+    end: float | None = Field(default=None, ge=0)
+
+@app.post("/scores/lyrics/timing", response_model=SongScore)
+async def update_lyric_timing(request: LyricTimingRequest) -> SongScore:
+    if request.score.lyrics is None:
+        raise HTTPException(status_code=400, detail="Score has no lyrics")
+    updated = []
+    found = False
+    for line in request.score.lyrics.lines:
+        if line.id == request.line_id:
+            found = True
+            updated.append(line.model_copy(update={"start": request.start if request.start is not None else line.start, "end": request.end if request.end is not None else line.end, "edited": True}))
+        else:
+            updated.append(line)
+    if not found:
+        raise HTTPException(status_code=404, detail="Lyric line not found")
+    lyrics = request.score.lyrics.model_copy(update={"lines": updated, "revision": request.score.lyrics.revision + 1})
+    return request.score.model_copy(update={"lyrics": lyrics})
