@@ -276,3 +276,11 @@ async def test_lyric_timing_endpoint_updates_a_line():
 
     assert response.status_code == 200
     assert response.json()["lyrics"]["lines"][0]["start"] == 1.25
+
+@pytest.mark.asyncio
+async def test_analysis_rejects_oversized_upload(monkeypatch):
+    monkeypatch.setenv("GUITARSCRIBE_MAX_UPLOAD_BYTES", "3")
+    upload = StubUploadFile(filename="test.wav", content=b"RIFFfake")
+    with pytest.raises(Exception) as exc_info:
+        await analyze_audio(upload, True, "vocal", "standard", StubPipeline())
+    assert getattr(exc_info.value, "status_code", None) == 413

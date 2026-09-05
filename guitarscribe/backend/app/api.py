@@ -106,9 +106,12 @@ async def create_analysis_job(
     """Queue a local upload for analysis and return immediately."""
     if not rights_confirmed:
         raise HTTPException(status_code=400, detail="Rights must be confirmed")
+    content = await audio_file.read()
+    if len(content) > Settings.from_env().max_upload_bytes:
+        raise HTTPException(status_code=413, detail="Audio upload exceeds the configured size limit")
     return await job_service.submit(
         filename=audio_file.filename or "upload.wav",
-        content=await audio_file.read(),
+        content=content,
         melody_mode=melody_mode,
         chord_complexity=chord_complexity,
     )
@@ -152,7 +155,10 @@ async def analyze_audio(
     temp_path: Path | None = None
     try:
         with tempfile.NamedTemporaryFile(delete=False, suffix=suffix, prefix="guitarscribe_upload_") as temp_file:
-            temp_file.write(await audio_file.read())
+            content = await audio_file.read()
+            if len(content) > Settings.from_env().max_upload_bytes:
+                raise HTTPException(status_code=413, detail="Audio upload exceeds the configured size limit")
+            temp_file.write(content)
             temp_path = Path(temp_file.name)
 
         return await pipeline.run(
