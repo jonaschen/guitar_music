@@ -375,11 +375,14 @@ h2 {
 
 .chord-sheet {
   display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  align-items: start;
   gap: 0.65rem;
 }
 
 .measure-card {
-  padding: 0.75rem;
+  min-width: 0;
+  padding: 0.65rem;
 }
 
 .measure-header {
@@ -390,7 +393,7 @@ h2 {
 
 .measure-chords {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(112px, 150px));
+  grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
   gap: 0.5rem;
 }
 
@@ -660,6 +663,9 @@ h2 {
 }
 
 .melody-panel { display: grid; gap: 0.55rem; margin: 0 0 1rem; padding: 0.9rem 1rem; border: 1px solid var(--border); border-radius: 22px; }
+.melody-empty { display: grid; gap: 0.35rem; margin: 0 0 1rem; padding: 0.9rem 1rem; border: 1px solid rgba(241, 143, 59, 0.42); border-radius: 22px; background: rgba(241, 143, 59, 0.08); }
+.melody-empty h3, .melody-empty p { margin: 0; }
+.melody-empty p { color: var(--text-muted); font-size: 0.85rem; }
 .melody-panel h3, .melody-panel p { margin: 0; }
 .melody-panel p { color: var(--text-muted); font-size: 0.85rem; }
 .melody-timeline { position: relative; height: 9rem; overflow: hidden; border-radius: 14px; background: repeating-linear-gradient(to bottom, rgba(255,255,255,0.06) 0 1px, transparent 1px 1.5rem); }

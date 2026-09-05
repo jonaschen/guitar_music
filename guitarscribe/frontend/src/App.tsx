@@ -992,6 +992,7 @@ export function App() {
                   <div className="rhythm-steps">{score.rhythm.display.map((stroke, index) => <span key={index} className={stroke ? "rhythm-step rhythm-step-active" : "rhythm-step"}>{stroke ?? "·"}</span>)}</div>
                 </section>
 
+                {score.melody.length > 0 ? <>
                 <section className="melody-panel">
                   <div><h3>Melody timeline</h3><p>Click a note to seek playback. Higher rows indicate higher pitch.</p></div>
                   <div className="melody-timeline" aria-label="Detected melody notes">{score.melody.map((note) => <button key={note.id} type="button" className="melody-note" title={note.note + " · " + note.start.toFixed(2) + "s"} onClick={() => seekTo(note.start)} style={{ left: String((note.start / Math.max(score.song.duration_seconds, 1)) * 100) + "%", width: String(Math.max(((note.end - note.start) / Math.max(score.song.duration_seconds, 1)) * 100, 0.5)) + "%", bottom: String(Math.max(0, Math.min(85, (note.midi - 40) * 1.8))) + "%" }}>{note.note}</button>)}</div>
@@ -1014,6 +1015,7 @@ export function App() {
                   <div className="tab-staff" aria-label="Six-string tab timeline">{score.melody.filter((note) => note.string !== null && note.string !== undefined && note.fret !== null && note.fret !== undefined).map((note) => <button key={note.id} type="button" className="tab-marker" title={note.note + " · String " + note.string + " · Fret " + note.fret} onClick={() => seekTo(note.start)} style={{ left: String((note.start / Math.max(score.song.duration_seconds, 1)) * 100) + "%", top: String(((note.string ?? 1) - 1) * (100 / 6)) + "%" }}>{note.fret}</button>)}</div>
                   <div className="tab-notes">{score.melody.filter((note) => note.string !== null && note.string !== undefined && note.fret !== null && note.fret !== undefined).map((note) => <button key={note.id} type="button" className="tab-note" onClick={() => seekTo(note.start)}><strong>{note.note}</strong><span>String {note.string} · Fret {note.fret}</span><small>{note.start.toFixed(2)}s</small></button>)}</div>
                 </section>
+                </> : <section className="melody-empty" aria-live="polite"><h3>Melody not detected</h3><p>This analysis returned no confident melody notes, so Tab and melody exports are not ready. Try a clearer lead-vocal or single-guitar recording, or analyse again with the matching Melody focus option.</p></section>}
 
                 <div className="chord-sheet">
                   {Array.from(groupedChords.entries()).map(([measure, group]) => (
