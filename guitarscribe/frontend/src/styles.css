@@ -604,3 +604,15 @@ h2 {
 .chord-diagram-position {
   font-weight: 700;
 }
+
+.capo-advisor {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0.8rem 0;
+}
+
+.capo-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}

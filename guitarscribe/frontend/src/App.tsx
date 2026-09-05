@@ -189,6 +189,7 @@ export function App() {
   const [accidentalPreference, setAccidentalPreference] = useState<AccidentalPreference>("auto");
   const [capo, setCapo] = useState(0);
   const [isRetuningScore, setIsRetuningScore] = useState(false);
+  const [capoRecommendations, setCapoRecommendations] = useState<Array<{ capo: number; shape_key: string; difficulty: number; open_chords: number; barre_chords: number; covered_chords: number }>>([]);
   const [selectedChordId, setSelectedChordId] = useState<string | null>(null);
   const [chordDraft, setChordDraft] = useState("");
   const [candidateVoicings, setCandidateVoicings] = useState<ScoreChord["available_voicings"]>([]);
@@ -319,6 +320,17 @@ export function App() {
       setAnalysisJob(await cancelAnalysisJob(analysisJob.id));
     } catch (cancelError) {
       setError(cancelError instanceof Error ? cancelError.message : "Could not cancel analysis.");
+    }
+  }
+
+  async function findEasierCapo() {
+    if (!score) return;
+    try {
+      const response = await fetch(`${API_BASE}/scores/capo-recommendations`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ score, max_capo: 8 }) });
+      if (!response.ok) throw new Error(await response.text());
+      setCapoRecommendations(await response.json());
+    } catch (capoError) {
+      setError(capoError instanceof Error ? capoError.message : "Could not find capo recommendations.");
     }
   }
 
@@ -732,6 +744,8 @@ export function App() {
                     </strong>
                   </div>
                 </div>
+
+                <div className="capo-advisor"><button type="button" className="ghost-button" onClick={() => void findEasierCapo()}>Find easier capo</button>{capoRecommendations.length > 0 ? <div className="capo-options">{capoRecommendations.slice(0, 3).map((option) => <button key={option.capo} type="button" className="voicing-card" onClick={() => void retuneScore(score.key_context.target.key, option.capo)}><strong>Capo {option.capo} · {option.shape_key} shape</strong><span>Difficulty {option.difficulty}/5 · {option.open_chords} open · {option.barre_chords} barre</span></button>)}</div> : null}</div>
 
                 <div className="toolbar secondary-toolbar">
                   <label className="field compact-field">
