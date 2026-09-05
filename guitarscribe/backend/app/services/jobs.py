@@ -1,6 +1,7 @@
 import asyncio
 import shutil
 import sqlite3
+import logging
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -10,6 +11,8 @@ from uuid import uuid4
 from ..core.pipeline import AnalysisPipeline
 from ..models.audio import SourceRequest, SourceType
 from ..models.jobs import ACTIVE_JOB_STATUSES, AnalysisJob, JobStatus
+
+logger = logging.getLogger(__name__)
 
 
 STAGE_DETAILS: dict[str, tuple[JobStatus, int, str]] = {
@@ -126,6 +129,7 @@ class AnalysisJobService:
         suffix = Path(filename).suffix or ".wav"
         (directory / f"input{suffix}").write_bytes(content)
         self.store.save(job)
+        logger.info("analysis_job_submitted job_id=%s bytes=%s melody_mode=%s chord_complexity=%s", job_id, len(content), melody_mode, chord_complexity)
         self.tasks[job_id] = asyncio.create_task(self._run(job_id))
         return job
 
@@ -144,7 +148,9 @@ class AnalysisJobService:
         return job
 
     async def _run(self, job_id: str) -> None:
+        started = time.monotonic()
         await self.semaphore.acquire()
+        logger.info("analysis_job_started job_id=%s", job_id)
         try:
             job = self.get(job_id)
             input_path = next(self.store.job_dir(job_id).glob("input.*"))
@@ -159,6 +165,7 @@ class AnalysisJobService:
                 current.message = message
                 current.updated_at = _now()
                 self.store.save(current)
+                logger.info("analysis_job_stage job_id=%s stage=%s progress=%s", job_id, stage, progress)
 
             score = await self.pipeline_factory().run(
                 SourceRequest(source_type=SourceType.LOCAL, path=input_path, rights_confirmed=True),
@@ -174,7 +181,9 @@ class AnalysisJobService:
             job.score = score
             job.updated_at = _now()
             self.store.save(job)
+            logger.info("analysis_job_completed job_id=%s duration_seconds=%.3f", job_id, time.monotonic() - started)
         except asyncio.CancelledError:
+            logger.info("analysis_job_cancelled job_id=%s duration_seconds=%.3f", job_id, time.monotonic() - started)
             return
         except Exception as exc:
             job = self.get(job_id)
@@ -184,6 +193,7 @@ class AnalysisJobService:
                 job.message = "Analysis failed"
                 job.updated_at = _now()
                 self.store.save(job)
+                logger.exception("analysis_job_failed job_id=%s duration_seconds=%.3f", job_id, time.monotonic() - started)
         finally:
             self.semaphore.release()
             self.tasks.pop(job_id, None)
