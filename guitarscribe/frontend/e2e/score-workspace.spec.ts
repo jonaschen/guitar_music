@@ -16,6 +16,7 @@ const score = {
 test("renders an analyzed score workspace", async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem("guitarscribe.activeJobId", "demo-job"));
   await page.route("**/api/v1/jobs/demo-job", (route) => route.fulfill({ json: { id: "demo-job", status: "completed", progress: 100, message: "Analysis complete", melody_mode: "vocal", chord_complexity: "standard", created_at: "2026-01-01T00:00:00Z", updated_at: "2026-01-01T00:00:00Z", error: null, score } }));
+  await page.route("**/scores/transpose", (route) => route.fulfill({ json: { ...score, analysis: { ...score.analysis, key: "D" }, key_context: { ...score.key_context, target: { key: "D", mode: "major" }, shape: { key: "D", mode: "major" }, sounding: { key: "D", mode: "major" }, transpose_semitones: 2, audio_matches_notation: false }, chords: [{ ...score.chords[0], symbol: "D", shape_symbol: "D", source_symbol: "C" }] } }));
 
   await page.goto("/");
 
@@ -35,4 +36,8 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Undo" })).toBeEnabled();
   await page.getByRole("button", { name: "Undo" }).click();
   await expect(timingInputs.nth(0)).toHaveValue("0.00");
+  await page.locator(".toolbar-actions button").last().click();
+  await expect(page.locator(".toolbar-block").nth(1)).toContainText("D major");
+  await page.getByRole("button", { name: "Undo" }).click();
+  await expect(page.locator(".toolbar-block").nth(1)).toContainText("C major");
 });
