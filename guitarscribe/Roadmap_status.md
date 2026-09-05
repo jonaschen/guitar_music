@@ -263,7 +263,7 @@
   - 從 `rhythm-patterns/` 動態載入模板
   - `RhythmSuggester` 需依 onset strength 與時間特徵選擇
   - UI 渲染刷奏型（上刷 / 下刷 / 靜音 圖示）
-- [ ] **GuitarSettings model**（追加文件 §8.2）
+- [x] **GuitarSettings model**（追加文件 §8.2）
   - tuning、tuning_name、capo、max_capo、max_fret、handedness、difficulty
 
 ---
