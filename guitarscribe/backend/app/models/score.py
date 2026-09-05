@@ -31,6 +31,15 @@ class KeyContext(BaseModel):
     accidental_preference: AccidentalPreference = AccidentalPreference.AUTO
     audio_matches_notation: bool = True
 
+class GuitarSettings(BaseModel):
+    tuning: list[int] = Field(default_factory=lambda: [40, 45, 50, 55, 59, 64])
+    tuning_name: str = "EADGBE"
+    capo: int = Field(default=0, ge=0, le=12)
+    max_capo: int = Field(default=8, ge=0, le=12)
+    max_fret: int = Field(default=15, ge=1, le=24)
+    handedness: str = "right"
+    difficulty: str = "beginner"
+
 class Provenance(BaseModel):
     beat_engine: str = ""
     chord_engine: str = ""
@@ -45,5 +54,6 @@ class SongScore(BaseModel):
     chords: list[ChordEvent] = Field(default_factory=list)
     melody: list[MelodyNote] = Field(default_factory=list)
     rhythm: RhythmSuggestion = Field(default_factory=RhythmSuggestion)
+    guitar: GuitarSettings = Field(default_factory=GuitarSettings)
     provenance: Provenance = Field(default_factory=Provenance)
     lyrics: LyricsTrack | None = None

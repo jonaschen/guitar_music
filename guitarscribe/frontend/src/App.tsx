@@ -291,7 +291,7 @@ export function App() {
       return;
     }
     const symbol = chord.shape_symbol ?? chord.symbol;
-    void fetch(API_BASE + "/chord-voicings?symbol=" + encodeURIComponent(symbol) + "&capo=" + capo)
+    void fetch(API_BASE + "/chord-voicings?symbol=" + encodeURIComponent(symbol) + "&capo=" + capo + "&max_fret=" + (score?.guitar.max_fret ?? 15))
       .then((response) => response.ok ? response.json() : [])
       .then((voicings) => setCandidateVoicings(voicings))
       .catch(() => setCandidateVoicings([]));
@@ -384,7 +384,7 @@ export function App() {
   async function findEasierCapo() {
     if (!score) return;
     try {
-      const response = await fetch(`${API_BASE}/scores/capo-recommendations`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ score, max_capo: 8 }) });
+      const response = await fetch(`${API_BASE}/scores/capo-recommendations`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ score, max_capo: score.guitar.max_capo }) });
       if (!response.ok) throw new Error(await response.text());
       setCapoRecommendations(await response.json());
     } catch (capoError) {

@@ -67,6 +67,7 @@ export type SongScore = {
     origin: string;
     edited: boolean;
   }>;
+  guitar: { tuning: number[]; tuning_name: string; capo: number; max_capo: number; max_fret: number; handedness: string; difficulty: string; };
   rhythm: {
     subdivision: number;
     pattern_id: string;
