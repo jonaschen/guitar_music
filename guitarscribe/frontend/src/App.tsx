@@ -104,7 +104,7 @@ async function importLyrics(score: SongScore, content: string, format: "text" | 
 }
 
 async function updateLyricTiming(score: SongScore, lineId: string, start?: number, end?: number): Promise<SongScore> {
-  const response = await fetch(`/scores/lyrics/timing`, {
+  const response = await fetch(`${API_BASE}/scores/lyrics/timing`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ score, line_id: lineId, ...(start !== undefined ? { start } : {}), ...(end !== undefined ? { end } : {}) }),
@@ -197,6 +197,36 @@ export function App() {
   const [saveStatus, setSaveStatus] = useState("No saved revision yet.");
   const [isSavingRevision, setIsSavingRevision] = useState(false);
   const [isLoadingRevision, setIsLoadingRevision] = useState(false);
+  const [undoHistory, setUndoHistory] = useState<SongScore[]>([]);
+  const [redoHistory, setRedoHistory] = useState<SongScore[]>([]);
+
+  function replaceScore(nextScore: SongScore) {
+    setScore(nextScore);
+    setUndoHistory([]);
+    setRedoHistory([]);
+  }
+
+  function recordScoreChange(nextScore: SongScore) {
+    if (score) setUndoHistory((history) => [...history, score].slice(-50));
+    setRedoHistory([]);
+    setScore(nextScore);
+  }
+
+  function undoScoreChange() {
+    if (!score || undoHistory.length === 0) return;
+    const previous = undoHistory[undoHistory.length - 1];
+    setUndoHistory((history) => history.slice(0, -1));
+    setRedoHistory((history) => [score, ...history].slice(0, 50));
+    setScore(previous);
+  }
+
+  function redoScoreChange() {
+    if (!score || redoHistory.length === 0) return;
+    const next = redoHistory[0];
+    setRedoHistory((history) => history.slice(1));
+    setUndoHistory((history) => [...history, score].slice(-50));
+    setScore(next);
+  }
 
   useEffect(() => {
     const savedJobId = window.localStorage.getItem("guitarscribe.activeJobId");
@@ -204,7 +234,7 @@ export function App() {
     setStatus("queued");
     void getAnalysisJob(savedJobId).then((job) => {
       setAnalysisJob(job);
-      if (job.status === "completed" && job.score) { setScore(job.score); setStatus("ready"); }
+      if (job.status === "completed" && job.score) { replaceScore(job.score); setStatus("ready"); }
       if (job.status === "failed" || job.status === "cancelled") { setStatus("error"); setError(job.error ?? job.message); }
     }).catch(() => window.localStorage.removeItem("guitarscribe.activeJobId"));
   }, []);
@@ -229,7 +259,7 @@ export function App() {
         if (disposed) return;
         setAnalysisJob(nextJob);
         if (nextJob.status === "completed" && nextJob.score) {
-          setScore(nextJob.score);
+          replaceScore(nextJob.score);
           setRevisionId("");
           setSaveStatus("Analysis loaded. Save to create a revision.");
           setStatus("ready");
@@ -284,6 +314,17 @@ export function App() {
     setChordDraft(selectedChord.symbol);
   }, [score, selectedChordId]);
 
+  useEffect(() => {
+    const handleShortcut = (event: KeyboardEvent) => {
+      if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== "z") return;
+      event.preventDefault();
+      if (event.shiftKey) redoScoreChange();
+      else undoScoreChange();
+    };
+    window.addEventListener("keydown", handleShortcut);
+    return () => window.removeEventListener("keydown", handleShortcut);
+  }, [score, undoHistory, redoHistory]);
+
   const groupedChords = new Map<number, ScoreChord[]>();
   score?.chords.forEach((chord) => {
     const measure = score.beats.filter((beat) => beat.time <= chord.start).at(-1)?.measure ?? 1;
@@ -328,7 +369,7 @@ export function App() {
     try {
       const response = await fetch(`${API_BASE}/scores/optimize-voicings`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(score) });
       if (!response.ok) throw new Error(await response.text());
-      setScore(await response.json());
+      recordScoreChange(await response.json());
     } catch (optimizerError) {
       setError(optimizerError instanceof Error ? optimizerError.message : "Could not optimize voicings.");
     }
@@ -352,7 +393,7 @@ export function App() {
     try {
       const nextSemitones = semitoneDelta(score.key_context.source.key, nextKey);
       const updated = await postTranspose(score, nextSemitones, nextPreference, nextCapo);
-      setScore(updated);
+      recordScoreChange(updated);
     } catch (transposeError) {
       setError(transposeError instanceof Error ? transposeError.message : "Transposition failed.");
     } finally {
@@ -371,7 +412,7 @@ export function App() {
     try {
       const content = await selected.text();
       setLyricsDraft(content);
-      setScore(await importLyrics(score, content, "lrc"));
+      recordScoreChange(await importLyrics(score, content, "lrc"));
     } catch (lyricsError) {
       setError(lyricsError instanceof Error ? lyricsError.message : "LRC import failed.");
     } finally {
@@ -384,7 +425,7 @@ export function App() {
     if (!score || !lyricsDraft.trim()) return;
     setIsImportingLyrics(true);
     try {
-      setScore(await importLyrics(score, lyricsDraft));
+      recordScoreChange(await importLyrics(score, lyricsDraft));
     } catch (lyricsError) {
       setError(lyricsError instanceof Error ? lyricsError.message : "Lyrics import failed.");
     } finally {
@@ -396,7 +437,7 @@ export function App() {
     if (!score) return;
     setIsTimingLyrics(true);
     try {
-      setScore(await updateLyricTiming(score, lineId, boundary === "start" ? playbackTime : undefined, boundary === "end" ? playbackTime : undefined));
+      recordScoreChange(await updateLyricTiming(score, lineId, boundary === "start" ? playbackTime : undefined, boundary === "end" ? playbackTime : undefined));
     } catch (timingError) {
       setError(timingError instanceof Error ? timingError.message : "Could not update lyric timing.");
     } finally {
@@ -444,13 +485,8 @@ export function App() {
   }
 
   function updateChords(transform: (chords: ScoreChord[]) => ScoreChord[]) {
-    setScore((currentScore) => {
-      if (!currentScore) return currentScore;
-      return {
-        ...currentScore,
-        chords: transform(currentScore.chords),
-      };
-    });
+    if (!score) return;
+    recordScoreChange({ ...score, chords: transform(score.chords) });
   }
 
   function currentMeasureRange(time: number): [number, number] | null {
@@ -609,7 +645,7 @@ export function App() {
     setError("");
     try {
       const loadedScore = await getRevision(revisionId.trim());
-      setScore(loadedScore);
+      replaceScore(loadedScore);
       setStatus("ready");
       setSaveStatus(`Loaded revision ${revisionId.trim()}.`);
     } catch (loadError) {
@@ -797,6 +833,8 @@ export function App() {
                   >
                     Back to source key
                   </button>
+                  <button type="button" className="ghost-button" onClick={undoScoreChange} disabled={undoHistory.length === 0}>Undo</button>
+                  <button type="button" className="ghost-button" onClick={redoScoreChange} disabled={redoHistory.length === 0}>Redo</button>
                 </div>
 
                 {!score.key_context.audio_matches_notation ? (
