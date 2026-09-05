@@ -671,3 +671,6 @@ h2 {
 .tab-notes { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .tab-note { display: grid; gap: 0.15rem; min-width: 6.5rem; text-align: left; padding: 0.55rem 0.65rem; border: 1px solid var(--border); border-radius: 12px; color: inherit; background: rgba(255,255,255,0.04); cursor: pointer; }
 .tab-note span, .tab-note small { color: var(--text-muted); font-size: 0.75rem; }
+
+.tab-staff { position: relative; height: 8.4rem; overflow: hidden; border-radius: 14px; background: repeating-linear-gradient(to bottom, transparent 0 1px, transparent 1px 16.666%); }
+.tab-marker { position: absolute; z-index: 1; min-width: 1.5rem; height: 1.25rem; transform: translate(-50%, -50%); border: 0; border-radius: 0.3rem; color: #171411; background: #89c2a7; font-size: 0.72rem; font-weight: 700; cursor: pointer; }

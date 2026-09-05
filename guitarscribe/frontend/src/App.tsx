@@ -998,6 +998,7 @@ export function App() {
 
                 <section className="tab-panel">
                   <div><h3>Playable Tab</h3><p>Mapped from the detected melody; notes without a confident string/fret mapping are omitted.</p></div>
+                  <div className="tab-staff" aria-label="Six-string tab timeline">{score.melody.filter((note) => note.string !== null && note.string !== undefined && note.fret !== null && note.fret !== undefined).map((note) => <button key={note.id} type="button" className="tab-marker" title={note.note + " · String " + note.string + " · Fret " + note.fret} onClick={() => seekTo(note.start)} style={{ left: String((note.start / Math.max(score.song.duration_seconds, 1)) * 100) + "%", top: String(((note.string ?? 1) - 1) * (100 / 6)) + "%" }}>{note.fret}</button>)}</div>
                   <div className="tab-notes">{score.melody.filter((note) => note.string !== null && note.string !== undefined && note.fret !== null && note.fret !== undefined).map((note) => <button key={note.id} type="button" className="tab-note" onClick={() => seekTo(note.start)}><strong>{note.note}</strong><span>String {note.string} · Fret {note.fret}</span><small>{note.start.toFixed(2)}s</small></button>)}</div>
                 </section>
 
