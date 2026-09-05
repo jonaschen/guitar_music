@@ -665,6 +665,16 @@ h2 {
 .melody-timeline { position: relative; height: 9rem; overflow: hidden; border-radius: 14px; background: repeating-linear-gradient(to bottom, rgba(255,255,255,0.06) 0 1px, transparent 1px 1.5rem); }
 .melody-note { position: absolute; min-width: 1.65rem; height: 1.35rem; padding: 0 0.25rem; overflow: hidden; border: 0; border-radius: 0.35rem; color: #172016; background: #ffcb7d; font-size: 0.72rem; font-weight: 700; cursor: pointer; }
 
+.score-preview-panel { display: grid; gap: 0.55rem; margin: 0 0 1rem; padding: 0.9rem 1rem; border: 1px solid var(--border); border-radius: 22px; }
+.score-preview-panel h3, .score-preview-panel p { margin: 0; }
+.score-preview-panel p { color: var(--text-muted); font-size: 0.85rem; }
+.score-measures { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 0.65rem; }
+.score-measure { min-width: 0; }
+.score-measure-label { display: block; margin: 0 0 0.25rem; color: var(--text-muted); font-size: 0.72rem; font-weight: 700; }
+.score-staff { position: relative; height: 7rem; overflow: hidden; border-left: 2px solid rgba(255,255,255,0.34); border-right: 2px solid rgba(255,255,255,0.34); background: repeating-linear-gradient(to bottom, transparent 0 calc(20% - 1px), rgba(255,255,255,0.28) calc(20% - 1px) 20%); }
+.score-note { position: absolute; display: grid; justify-items: center; transform: translate(-50%, 32%); padding: 0; border: 0; color: #ffcb7d; background: transparent; cursor: pointer; font-size: 1.35rem; line-height: 1; }
+.score-note small { margin-top: -0.1rem; color: var(--text); font-size: 0.62rem; font-weight: 700; }
+
 .tab-panel { display: grid; gap: 0.55rem; margin: 0 0 1rem; padding: 0.9rem 1rem; border: 1px solid var(--border); border-radius: 22px; }
 .tab-panel h3, .tab-panel p { margin: 0; }
 .tab-panel p { color: var(--text-muted); font-size: 0.85rem; }
