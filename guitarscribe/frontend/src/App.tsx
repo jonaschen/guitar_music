@@ -463,6 +463,18 @@ export function App() {
     URL.revokeObjectURL(url);
   }
 
+  async function downloadMidi() {
+    if (!score) return;
+    const response = await fetch(API_BASE + "/scores/midi", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(score) });
+    if (!response.ok) throw new Error(await response.text());
+    const url = URL.createObjectURL(new Blob([await response.blob()], { type: "audio/midi" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "guitarscribe-melody.mid";
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
   function downloadScoreJson() {
     if (!score) return;
     const blob = new Blob([JSON.stringify(score, null, 2)], { type: "application/json" });
@@ -930,6 +942,7 @@ export function App() {
 
                 <div className="export-actions">
                   <button type="button" className="ghost-button" onClick={downloadScoreJson}>Download JSON</button>
+                  <button type="button" className="ghost-button" onClick={() => void downloadMidi()}>Download MIDI</button>
                   <button type="button" className="ghost-button" onClick={() => void downloadChordPro()}>Download ChordPro</button>
                   <button type="button" className="ghost-button" disabled={!score.lyrics} onClick={() => void downloadLrc()}>Download LRC</button>
                 </div>
