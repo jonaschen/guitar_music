@@ -15,6 +15,7 @@ from .services.lyrics import import_lrc, import_text
 from .models.score import SongScore
 from .services.jobs import AnalysisJobService, JobStore
 from .exporters.chordpro import ChordProExporter
+from .exporters.lrc import export_lrc
 from .services.revisions import RevisionStore
 from .services.transposition import TranspositionService
 
@@ -212,3 +213,9 @@ async def import_lyrics_text(request: LyricsImportRequest) -> SongScore:
 @app.post("/scores/lyrics/import-lrc", response_model=SongScore)
 async def import_lyrics_lrc(request: LyricsImportRequest) -> SongScore:
     return request.score.model_copy(update={"lyrics": import_lrc(request.content, request.language)})
+
+@app.post("/scores/lrc", response_class=PlainTextResponse)
+async def export_lrc_score(score: SongScore) -> str:
+    if score.lyrics is None:
+        raise HTTPException(status_code=400, detail="Score has no lyrics")
+    return export_lrc(score.lyrics)
