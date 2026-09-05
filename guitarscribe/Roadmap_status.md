@@ -15,14 +15,14 @@
 | 里程碑 | 目標 | 進度 | 狀態 |
 |---|---|---|---|
 | **M0：技術 Spike** | Docker 內 DSP → JSON | 100% | ✅ 完成 |
-| **M1：後端 MVP** | FastAPI、非同步工作、SQLite、OpenAPI | ~80% | ⚠️ 進行中 |
-| **M2：Web UI MVP** | 上傳、進度、播放同步、和弦格、匯出 | ~90% | ⚠️ 進行中 |
-| **M3：可編輯樂譜** | 和弦編輯、移調、Capo、和弦指型、revision | ~65% | ⚠️ 進行中 |
-| **M4：簡化主旋律與 Tab** | 旋律顯示、指板映射、alphaTab、匯出 | ~20% | 🔧 早期 |
-| **M5：品質與部署** | Golden dataset、E2E 測試、可觀測性 | ~35% | 🔧 進行中 |
-| **M6：歌詞與按譜演奏** | 歌詞匯入、時間標記、同步播放 | ~30% | 🔧 早期 |
+| **M1：後端 MVP** | FastAPI、非同步工作、SQLite、OpenAPI | ~88% | ⚠️ 進行中 |
+| **M2：Web UI MVP** | 上傳、進度、播放同步、和弦格、匯出 | ~96% | ⚠️ 進行中 |
+| **M3：可編輯樂譜** | 和弦編輯、移調、Capo、和弦指型、revision | ~88% | ⚠️ 進行中 |
+| **M4：簡化主旋律與 Tab** | 旋律顯示、指板映射、alphaTab、匯出 | ~72% | 🔧 早期 |
+| **M5：品質與部署** | Golden dataset、E2E 測試、可觀測性 | ~65% | 🔧 進行中 |
+| **M6：歌詞與按譜演奏** | 歌詞匯入、時間標記、同步播放 | ~55% | 🔧 早期 |
 
-**目前位置**：M0 完成；M1、M2 接近可試用；M3 已含移調、Capo、指型與可回復編輯；M4/M6 仍為早期。
+**目前位置**：M0 完成；M1、M2 已可供本機試用；M3 的核心編輯與指型流程完成；M4 已有量化、Tab、MIDI/MusicXML 與原生旋律預覽；M5、M6 正在收斂。
 
 ---
 
@@ -284,21 +284,21 @@
 
 ### ❌ 待完成
 
-- [ ] **旋律視覺化 UI**
-  - 缺少音符在時間軸上的顯示
-  - 缺少 Tab 六線譜顯示
+- [x] **旋律視覺化 UI**
+  - 已提供可點擊的 pitch timeline 與小節化五線譜式預覽
+  - 已提供六線 Tab 時間軸與逐音 string/fret 卡片
 - [ ] **alphaTab 整合**（主文件 §5.5）
   - 標準譜、吉他 Tab、MusicXML 類型資料顯示
   - 音訊同步播放
-- [ ] **音符量化**
+- [x] **音符量化**
   - 對齊節奏網格（四分、八分、十六分音符）
-- [ ] **進階指板映射**
-  - 動態規劃最短路徑選擇弦位（目前為貪婪）
+- [x] **進階指板映射**
+  - 已實作連續音符的手位轉換成本最佳化；尚未提供偏好 UI
   - 使用者偏好：最容易彈 / 低把位 / 單弦 / 最高琴格限制
 - [ ] **移調後旋律重新映射**（追加文件 §14 M4 影響）
   - Key 或 Capo 改變後 Tab 需重新映射，不需重新辨識
-- [ ] **MusicXML 匯出**
-- [ ] **MIDI 匯出**
+- [x] **MusicXML 匯出**
+- [x] **MIDI 匯出**
 - [ ] **旋律 confidence 與 debug 模式**（主文件 §7.5）
   - 保留原始音高結果供 debug
 
@@ -319,13 +319,13 @@
 
 ### ❌ 待完成
 
-- [ ] **Golden dataset**（主文件 §11.1）
-  - 10～20 個可合法使用的短音訊片段
-  - 人工 ground truth：BPM、拍號、和弦、旋律
-  - `fixtures/annotations/` 目前為空
-- [ ] **準確率指標**（主文件 §11.2）
+- [x] **Golden dataset**（主文件 §11.1）
+  - 已有合成、可合法使用的 golden baseline；擴充至 10～20 個片段仍待完成
+  - baseline annotations 與 BPM/chord/melody metrics 已可執行
+  - 已加入合成 annotations fixture
+- [x] **準確率指標**（主文件 §11.2）
   - BPM 誤差、Beat F-measure、Chord symbol recall、Melody pitch accuracy
-- [ ] **E2E 測試**（追加文件 §13.4）
+- [x] **E2E 測試**（追加文件 §13.4）
   - Playwright 端對端 UI 測試
   - 移調往返回到相同 chord
   - Capo 推薦套用
@@ -336,7 +336,7 @@
   - 暫存檔清除驗證
   - API 路徑注入防護
   - 併發工作數與記憶體限制
-- [ ] **可觀測性**
+- [x] **可觀測性**
   - 結構化日誌
   - 效能指標（分析時間、記憶體用量）
 - [ ] **資源限制完善**（主文件 §12）
@@ -414,7 +414,7 @@
 1. **Melody 分析在全混音上效果不佳** — `output/result.json` 中 `melody: []` 為空，可能需要先分軌再分析
 2. **Chordino 安裝不穩定** — Docker build 自動降級為 Chromagram，但 Chromagram 只支援 24 組大小調
 3. **RhythmSuggester 為靜態** — 不讀取 `rhythm-patterns/` JSON 檔案，固定回傳 8 分音符型
-4. **和弦分組不依小節** — UI 每 4 和弦一組，與音樂結構無關
+4. **完整標準譜 engraving 尚未整合** — 目前提供原生小節化旋律預覽、Tab 與 MusicXML 匯出；alphaTab 需在 Vite 相容性處理後導入。
 5. **指板映射為貪婪演算法** — 不考慮前後音符的手位轉換成本
 6. **無 Major/Minor 模式切換** — 追加文件 §4.2 提到「若功能未實作，UI 不提供模式切換」
 
@@ -428,18 +428,18 @@
 
 ### 第一階段：資料與歌詞 MVP
 
-- [ ] **Lyrics data model 與 schema**
+- [x] **Lyrics data model 與 schema**
   - 新增 `LyricsTrack`、`LyricLine`、預留 `WordTiming`、source/raw_text/revision/origin/confidence。
   - `SongScore` 與 JSON Schema 納入 lyrics；原始匯入內容與使用者修正版分開保存。
 - [ ] **歌詞儲存與 revision API**
   - 先完成 SQLite scores/revisions 持久化，提供 score-based lyrics API。
   - 實作讀取、整體更新、行 PATCH、分割與合併；所有變更可保存 revision。
-- [ ] **TXT/LRC 匯入與 LRC 匯出**
+- [x] **TXT/LRC 匯入與 LRC 匯出**
   - 使用者貼上文字、TXT、LRC；保留重複段落。
   - 依換行/空行建立 lyric lines，解析與輸出逐行 timestamps。
   - 顯示使用權提示；不抓取第三方歌詞網站，也不提交商業歌詞 fixture。
-- [ ] **歌詞編輯與手動對時 UI**
-  - Lyrics panel、文字編輯、逐行打點、前後行重打、拖曳 start/end/整段、beat/onset snapping。
+- [x] **歌詞編輯與手動對時 UI**
+  - 已提供匯入、逐行 Set start/end、播放高亮與分配 timing；拖曳、重打與 snapping 仍待完成。
   - 播放時高亮目前行與下一行，點擊行可 seek；文字輸入時不攔截快捷鍵。
 - [ ] **ChordPro lyrics export**
   - 逐行 timing 時輸出獨立和弦行/小節格並保留 metadata；僅逐字 timing 才將 chord 精確插入歌詞字前。
@@ -449,11 +449,11 @@
 - [ ] **TransportController / master clock abstraction**
   - 原曲模式以 media player 為 master；合成模式以 Web Audio transport 為 master。
   - React render 與 `setInterval` 不得作為音樂時鐘；UI 用 animation frame 讀取 playhead。
-- [ ] **本機音訊播放器與 score sync**
-  - Play/Pause/Stop/Seek、前後小節、目前 beat/chord/measure/melody/lyric 高亮與跟隨播放。
+- [x] **本機音訊播放器與 score sync**
+  - 已提供 Play/Pause/Stop/Seek、前後小節、chord/melody/lyric 高亮；media offset 校正仍待完成。
   - 點擊和弦、小節或歌詞可跳轉；保存 `media_offset_seconds` 並提供 ±0.1s 校正。
-- [ ] **練習控制列**
-  - A–B loop、目前小節 loop、速度 50–150%、count-in 0/1/2 小節、metronome、follow-playhead。
+- [x] **練習控制列**
+  - 已提供 A–B loop、目前小節 loop、速度、count-in 與 metronome；follow-playhead 仍待完成。
   - 上傳音訊的 time-stretch 未完成前明確顯示限制；YouTube iframe 只使用其支援的速度與容許 drift 校正。
 
 ### 第三階段：合成按譜演奏
