@@ -18,10 +18,24 @@ COMMON_VOICINGS: dict[str, list[dict]] = {
 
 ROOT_PITCH = {"C": 8, "C#": 9, "Db": 9, "D": 10, "D#": 11, "Eb": 11, "E": 0, "F": 1, "F#": 2, "Gb": 2, "G": 3, "G#": 4, "Ab": 4, "A": 5, "A#": 6, "Bb": 6, "B": 7}
 ROOT_RE = re.compile(r"^([A-G](?:#|b)?)")
+TRIAD_RE = re.compile(r"^([A-G](?:#|b)?)(m)?$")
 
 class ChordVoicingProvider:
+    def _closed_shapes(self, symbol: str) -> list[dict]:
+        match = TRIAD_RE.match(symbol)
+        if not match:
+            return []
+        root, minor = match.groups()
+        low_e = ROOT_PITCH[root] or 12
+        a_string = (ROOT_PITCH[root] - 5) % 12 or 12
+        suffix = "minor" if minor else "major"
+        return [
+            {"id": f"closed-e-{suffix}-{root}", "frets": [low_e, low_e + 2, low_e + 2, low_e + (0 if minor else 1), low_e, low_e], "fingers": [1, 3, 4, 2 if not minor else 1, 1, 1], "base_fret": low_e, "difficulty": 3.5, "tags": ["closed", "barre", "movable", "e-shape"]},
+            {"id": f"closed-a-{suffix}-{root}", "frets": [None, a_string, a_string + 2, a_string + 2, a_string + (1 if minor else 2), a_string], "fingers": [None, 1, 3, 4, 2 if minor else 3, 1], "base_fret": a_string, "difficulty": 3.5, "tags": ["closed", "barre", "movable", "a-shape"]},
+        ]
+
     def get(self, symbol: str, capo: int = 0, max_fret: int = 15) -> list[ChordVoicing]:
-        shapes = COMMON_VOICINGS.get(symbol, [])
+        shapes = COMMON_VOICINGS.get(symbol, []) + self._closed_shapes(symbol)
         voicings = [
             ChordVoicing(
                 id=shape["id"], symbol=symbol, shape_symbol=symbol, frets=shape["frets"],
