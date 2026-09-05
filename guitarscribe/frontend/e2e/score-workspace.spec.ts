@@ -24,4 +24,8 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await expect(page.getByText("Rhythm suggestion")).toBeVisible();
   await expect(page.getByText("Playable Tab")).toBeVisible();
   await expect(page.locator(".chord-block").first()).toBeVisible();
+  await page.locator(".chord-block").first().click();
+  await expect(page.getByRole("heading", { name: "Edit C" })).toBeVisible();
+  await expect(page.getByText("Start (seconds)")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Split chord" })).toBeVisible();
 });
