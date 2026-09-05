@@ -1,3 +1,5 @@
+from collections import defaultdict
+from statistics import median_low
 from typing import List
 from ..models.analysis import BeatInfo, MelodyNote
 
@@ -35,8 +37,35 @@ class MelodyPostProcessor:
             note.end = end if end > start else start + 0.05
         return notes
 
+    def select_monophonic_line(self, notes: List[MelodyNote]) -> List[MelodyNote]:
+        """Reduce simultaneous multi-pitch candidates to one playable melody line."""
+        buckets: dict[float, list[MelodyNote]] = defaultdict(list)
+        for note in notes:
+            buckets[round(note.start, 4)].append(note)
+
+        selected: list[MelodyNote] = []
+        previous: MelodyNote | None = None
+        for start in sorted(buckets):
+            candidates = buckets[start]
+            playable = [note for note in candidates if 40 <= note.midi <= 88] or candidates
+            center = float(median_low(note.midi for note in playable))
+            choice = min(
+                playable,
+                key=lambda note: (
+                    abs(note.midi - center) * 0.4
+                    + (abs(note.midi - previous.midi) * 0.8 if previous else 0)
+                    - min(note.end - note.start, 1.0) * 0.2,
+                    -note.confidence,
+                    note.id,
+                ),
+            )
+            selected.append(choice)
+            previous = choice
+        return selected
+
     def process(self, notes: List[MelodyNote], beats: List[BeatInfo] | None = None) -> List[MelodyNote]:
         notes = self.remove_short_notes(notes)
         notes = self.remove_low_confidence(notes)
-        notes = self.merge_repeated(notes)
-        return self.quantize_to_beats(notes, beats) if beats else notes
+        notes = self.quantize_to_beats(notes, beats) if beats else notes
+        notes = self.select_monophonic_line(notes)
+        return self.merge_repeated(notes)

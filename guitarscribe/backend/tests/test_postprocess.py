@@ -44,3 +44,18 @@ def test_melody_quantizes_to_eighth_note_grid():
 
     assert quantized[0].start == 0.25
     assert quantized[0].end == 0.5
+
+
+def test_melody_selects_one_continuous_playable_note_per_grid_slot():
+    pp = MelodyPostProcessor()
+    notes = [
+        MelodyNote(id="low", start=0.0, end=0.5, midi=36, note="C2", confidence=0.9),
+        MelodyNote(id="middle", start=0.0, end=0.5, midi=64, note="E4", confidence=0.9),
+        MelodyNote(id="high", start=0.0, end=0.5, midi=84, note="C6", confidence=0.9),
+        MelodyNote(id="next", start=0.5, end=1.0, midi=65, note="F4", confidence=0.9),
+        MelodyNote(id="jump", start=0.5, end=1.0, midi=83, note="B5", confidence=0.9),
+    ]
+
+    selected = pp.process(notes, [BeatInfo(time=0.0, beat=1, measure=1), BeatInfo(time=0.5, beat=2, measure=1), BeatInfo(time=1.0, beat=3, measure=1)])
+
+    assert [note.id for note in selected] == ["middle", "next"]
