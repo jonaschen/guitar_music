@@ -21,6 +21,7 @@ from .services.jobs import AnalysisJobService, JobStore
 from .exporters.chordpro import ChordProExporter
 from .exporters.lrc import export_lrc
 from .exporters.midi import export_midi
+from .exporters.musicxml import export_musicxml
 from .services.revisions import RevisionStore
 from .services.transposition import TranspositionService
 
@@ -217,6 +218,10 @@ async def export_chordpro(score: SongScore) -> str:
 @app.post("/scores/midi")
 async def export_midi_score(score: SongScore) -> Response:
     return Response(content=export_midi(score), media_type="audio/midi", headers={"Content-Disposition": "attachment; filename=\"guitarscribe-melody.mid\""})
+
+@app.post("/scores/musicxml", response_class=PlainTextResponse)
+async def export_musicxml_score(score: SongScore) -> str:
+    return export_musicxml(score)
 
 class LyricsImportRequest(BaseModel):
     score: SongScore
