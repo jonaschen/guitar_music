@@ -11,6 +11,7 @@ from .core.pipeline import AnalysisPipeline, create_pipeline
 from .models.audio import SourceRequest, SourceType
 from .models.analysis import AccidentalPreference
 from .models.jobs import AnalysisJob
+from .services.lyrics import import_lrc, import_text
 from .models.score import SongScore
 from .services.jobs import AnalysisJobService, JobStore
 from .exporters.chordpro import ChordProExporter
@@ -198,3 +199,16 @@ async def load_revision(
 async def export_chordpro(score: SongScore) -> str:
     """Export an editable score as a chord-only ChordPro document."""
     return ChordProExporter().export(score)
+
+class LyricsImportRequest(BaseModel):
+    score: SongScore
+    content: str = Field(min_length=1)
+    language: str = "und"
+
+@app.post("/scores/lyrics/import-text", response_model=SongScore)
+async def import_lyrics_text(request: LyricsImportRequest) -> SongScore:
+    return request.score.model_copy(update={"lyrics": import_text(request.content, request.language)})
+
+@app.post("/scores/lyrics/import-lrc", response_model=SongScore)
+async def import_lyrics_lrc(request: LyricsImportRequest) -> SongScore:
+    return request.score.model_copy(update={"lyrics": import_lrc(request.content, request.language)})

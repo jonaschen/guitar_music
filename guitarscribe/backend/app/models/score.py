@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional
 from .analysis import AccidentalPreference, BeatInfo, ChordEvent, MelodyNote, RhythmSuggestion
+from .lyrics import LyricsTrack
 
 class SongInfo(BaseModel):
     title: str = "Unknown"
@@ -45,3 +46,4 @@ class SongScore(BaseModel):
     melody: list[MelodyNote] = Field(default_factory=list)
     rhythm: RhythmSuggestion = Field(default_factory=RhythmSuggestion)
     provenance: Provenance = Field(default_factory=Provenance)
+    lyrics: LyricsTrack | None = None
