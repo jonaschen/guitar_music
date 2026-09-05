@@ -1,3 +1,5 @@
+import re
+
 from ..models.analysis import ChordVoicing
 
 
@@ -14,10 +16,13 @@ COMMON_VOICINGS: dict[str, list[dict]] = {
 }
 
 
+ROOT_PITCH = {"C": 8, "C#": 9, "Db": 9, "D": 10, "D#": 11, "Eb": 11, "E": 0, "F": 1, "F#": 2, "Gb": 2, "G": 3, "G#": 4, "Ab": 4, "A": 5, "A#": 6, "Bb": 6, "B": 7}
+ROOT_RE = re.compile(r"^([A-G](?:#|b)?)")
+
 class ChordVoicingProvider:
     def get(self, symbol: str, capo: int = 0, max_fret: int = 15) -> list[ChordVoicing]:
         shapes = COMMON_VOICINGS.get(symbol, [])
-        return [
+        voicings = [
             ChordVoicing(
                 id=shape["id"], symbol=symbol, shape_symbol=symbol, frets=shape["frets"],
                 fingers=shape["fingers"], base_fret=shape.get("base_fret", 1), capo=capo, difficulty=shape["difficulty"], tags=shape["tags"],
@@ -25,3 +30,10 @@ class ChordVoicingProvider:
             for shape in shapes
             if max(fret for fret in shape["frets"] if fret is not None) <= max_fret
         ]
+        if voicings:
+            return voicings
+        root = ROOT_RE.match(symbol)
+        fret = ROOT_PITCH.get(root.group(1)) if root else None
+        if fret is None or fret > max_fret:
+            return []
+        return [ChordVoicing(id=f"root-note-{symbol}", symbol=symbol, shape_symbol=symbol, frets=[fret, None, None, None, None, None], fingers=[1, None, None, None, None, None], base_fret=max(1, fret), capo=capo, difficulty=0.5, tags=["fallback", "root-note", "incomplete"])]

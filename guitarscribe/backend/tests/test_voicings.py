@@ -9,6 +9,11 @@ def test_common_open_voicing_is_available():
     assert voicings[1].base_fret == 3
 
 
-def test_unknown_or_too_high_voicing_returns_empty_list():
-    assert ChordVoicingProvider().get("Cmaj9") == []
+def test_unknown_chord_gets_a_playable_root_note_fallback():
+    voicings = ChordVoicingProvider().get("Cmaj9")
+    assert voicings[0].id == "root-note-Cmaj9"
+    assert "incomplete" in voicings[0].tags
+
+
+def test_too_high_voicing_returns_empty_list():
     assert ChordVoicingProvider().get("G", max_fret=2) == []
