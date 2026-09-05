@@ -28,4 +28,11 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Edit C" })).toBeVisible();
   await expect(page.getByText("Start (seconds)")).toBeVisible();
   await expect(page.getByRole("button", { name: "Split chord" })).toBeVisible();
+  const timingInputs = page.locator(".timing-fields input");
+  await timingInputs.nth(0).fill("0.10");
+  await timingInputs.nth(1).fill("1.90");
+  await page.getByRole("button", { name: "Save timing" }).click();
+  await expect(page.getByRole("button", { name: "Undo" })).toBeEnabled();
+  await page.getByRole("button", { name: "Undo" }).click();
+  await expect(timingInputs.nth(0)).toHaveValue("0.00");
 });
