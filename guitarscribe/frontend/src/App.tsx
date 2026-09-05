@@ -192,6 +192,8 @@ export function App() {
   const [capoRecommendations, setCapoRecommendations] = useState<Array<{ capo: number; shape_key: string; difficulty: number; open_chords: number; barre_chords: number; covered_chords: number }>>([]);
   const [selectedChordId, setSelectedChordId] = useState<string | null>(null);
   const [chordDraft, setChordDraft] = useState("");
+  const [chordStartDraft, setChordStartDraft] = useState("");
+  const [chordEndDraft, setChordEndDraft] = useState("");
   const [candidateVoicings, setCandidateVoicings] = useState<ScoreChord["available_voicings"]>([]);
   const [revisionId, setRevisionId] = useState("");
   const [saveStatus, setSaveStatus] = useState("No saved revision yet.");
@@ -306,12 +308,16 @@ export function App() {
     if (!score || score.chords.length === 0) {
       setSelectedChordId(null);
       setChordDraft("");
+      setChordStartDraft("");
+      setChordEndDraft("");
       return;
     }
 
     const selectedChord = score.chords.find((chord) => chord.id === selectedChordId) ?? score.chords[0];
     setSelectedChordId(selectedChord.id);
     setChordDraft(selectedChord.symbol);
+    setChordStartDraft(selectedChord.start.toFixed(2));
+    setChordEndDraft(selectedChord.end.toFixed(2));
   }, [score, selectedChordId]);
 
   useEffect(() => {
@@ -588,6 +594,36 @@ export function App() {
   function applyVoicing(voicing: NonNullable<ScoreChord["available_voicings"]>[number]) {
     if (!selectedChordId) return;
     updateChords((chords) => chords.map((chord) => chord.id === selectedChordId ? { ...chord, voicing_id: voicing.id, available_voicings: candidateVoicings, origin: "user", edited: true } : chord));
+  }
+
+  function saveSelectedChordTiming() {
+    if (!selectedChordId || !score) return;
+    const start = Number(chordStartDraft);
+    const end = Number(chordEndDraft);
+    if (!Number.isFinite(start) || !Number.isFinite(end) || start < 0 || end > score.song.duration_seconds || end - start < 0.1) {
+      setError("Chord timing must be within the song and at least 0.1 seconds long.");
+      return;
+    }
+    if (score.chords.some((chord) => chord.id !== selectedChordId && start < chord.end && end > chord.start)) {
+      setError("Chord timing cannot overlap another chord.");
+      return;
+    }
+    updateChords((chords) => chords.map((chord) => chord.id === selectedChordId ? { ...chord, start, end, origin: "user", edited: true } : chord));
+  }
+
+  function addChordAtPlayhead() {
+    if (!score) return;
+    const start = Number(playbackTime.toFixed(3));
+    const next = score.chords.filter((chord) => chord.start > start).sort((left, right) => left.start - right.start)[0];
+    const end = next?.start ?? score.song.duration_seconds;
+    if (score.chords.some((chord) => start >= chord.start && start < chord.end) || end - start < 0.1) {
+      setError("Move the playhead to an empty gap of at least 0.1 seconds before adding a chord.");
+      return;
+    }
+    const symbol = chordDraft.trim() || "C";
+    const chord: ScoreChord = { id: "user-" + Date.now(), start, end, symbol, source_symbol: null, shape_symbol: symbol, confidence: 1, origin: "user", edited: true, voicing_id: null, available_voicings: [] };
+    updateChords((chords) => [...chords, chord].sort((left, right) => left.start - right.start));
+    setSelectedChordId(chord.id);
   }
 
   function splitSelectedChord() {
@@ -965,7 +1001,13 @@ export function App() {
                   <span>Chord symbol</span>
                   <input value={chordDraft} onChange={(event) => setChordDraft(event.target.value)} />
                 </label>
+                <div className="timing-fields">
+                  <label className="field compact-field"><span>Start (seconds)</span><input type="number" min="0" step="0.01" value={chordStartDraft} onChange={(event) => setChordStartDraft(event.target.value)} /></label>
+                  <label className="field compact-field"><span>End (seconds)</span><input type="number" min="0" step="0.01" value={chordEndDraft} onChange={(event) => setChordEndDraft(event.target.value)} /></label>
+                </div>
                 <div className="editor-actions">
+                  <button type="button" className="ghost-button" onClick={saveSelectedChordTiming}>Save timing</button>
+                  <button type="button" className="ghost-button" onClick={addChordAtPlayhead}>Add at playhead</button>
                   <button type="button" className="ghost-button" onClick={renameSelectedChord}>
                     Save rename
                   </button>

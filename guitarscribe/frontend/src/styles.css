@@ -441,6 +441,12 @@ h2 {
   font-size: 1rem;
 }
 
+.timing-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
 .editor-actions {
   display: grid;
   gap: 0.65rem;
