@@ -293,6 +293,22 @@ export function App() {
     URL.revokeObjectURL(url);
   }
 
+  async function downloadChordPro() {
+    if (!score) return;
+    const response = await fetch(`/scores/chordpro`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(score),
+    });
+    if (!response.ok) throw new Error(await response.text());
+    const url = URL.createObjectURL(new Blob([await response.text()], { type: "text/plain" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "guitarscribe-score.chopro";
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
   function updateChords(transform: (chords: ScoreChord[]) => ScoreChord[]) {
     setScore((currentScore) => {
       if (!currentScore) return currentScore;
@@ -605,6 +621,7 @@ export function App() {
 
                 <div className="export-actions">
                   <button type="button" className="ghost-button" onClick={downloadScoreJson}>Download JSON</button>
+                  <button type="button" className="ghost-button" onClick={() => void downloadChordPro()}>Download ChordPro</button>
                 </div>
 
                 <div className="summary-grid">
