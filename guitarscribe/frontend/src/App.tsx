@@ -654,6 +654,7 @@ export function App() {
                     {loopStart !== null ? <button type="button" className="ghost-button" onClick={() => { setLoopStart(null); setLoopEnd(null); }}>Clear A–B</button> : null}
                     <button type="button" className="ghost-button" onClick={() => seekTo(0)}>Stop</button>
                     <label className="transport-speed">Speed <select value={playbackRate} onChange={(event) => setSpeed(Number(event.target.value))}>{[0.5, 0.6, 0.75, 0.9, 1, 1.1, 1.25, 1.5].map((rate) => <option key={rate} value={rate}>{Math.round(rate * 100)}%</option>)}</select></label>
+                    <input className="transport-timeline" type="range" min="0" max={score.song.duration_seconds || 0} step="0.01" value={Math.min(playbackTime, score.song.duration_seconds)} onChange={(event) => seekTo(Number(event.target.value))} aria-label="Playback position" />
                     <span>{playbackTime.toFixed(1)}s / {score.song.duration_seconds.toFixed(1)}s</span>
                   </section>
                 ) : null}

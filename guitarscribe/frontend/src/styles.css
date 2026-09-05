@@ -573,3 +573,9 @@ h2 {
   gap: 0.35rem;
   color: var(--text-muted);
 }
+
+.transport-timeline {
+  min-width: 8rem;
+  flex: 1 1 12rem;
+  accent-color: #7dd3fc;
+}
