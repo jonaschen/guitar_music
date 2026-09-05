@@ -349,6 +349,18 @@ export function App() {
     }
   }
 
+  async function downloadLrc() {
+    if (!score?.lyrics) return;
+    const response = await fetch(`/scores/lrc`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(score) });
+    if (!response.ok) throw new Error(await response.text());
+    const url = URL.createObjectURL(new Blob([await response.text()], { type: "text/plain" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "guitarscribe-lyrics.lrc";
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
   function downloadScoreJson() {
     if (!score) return;
     const blob = new Blob([JSON.stringify(score, null, 2)], { type: "application/json" });
@@ -732,6 +744,7 @@ export function App() {
                 <div className="export-actions">
                   <button type="button" className="ghost-button" onClick={downloadScoreJson}>Download JSON</button>
                   <button type="button" className="ghost-button" onClick={() => void downloadChordPro()}>Download ChordPro</button>
+                  <button type="button" className="ghost-button" disabled={!score.lyrics} onClick={() => void downloadLrc()}>Download LRC</button>
                 </div>
 
                 <div className="summary-grid">
