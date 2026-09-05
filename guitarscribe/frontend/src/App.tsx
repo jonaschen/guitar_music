@@ -169,9 +169,12 @@ export function App() {
   const [score, setScore] = useState<SongScore | null>(EMPTY_SCORE);
   const [analysisJob, setAnalysisJob] = useState<AnalysisJob | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const metronomeContextRef = useRef<AudioContext | null>(null);
+  const lastMetronomeBeatRef = useRef<number | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [playbackTime, setPlaybackTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [metronomeEnabled, setMetronomeEnabled] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [loopRange, setLoopRange] = useState<[number, number] | null>(null);
   const [loopStart, setLoopStart] = useState<number | null>(null);
@@ -407,8 +410,28 @@ export function App() {
     return [start, next];
   }
 
+  function playMetronomeClick(accented: boolean) {
+    const context = metronomeContextRef.current ?? new AudioContext();
+    metronomeContextRef.current = context;
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    oscillator.frequency.value = accented ? 1320 : 880;
+    gain.gain.setValueAtTime(0.08, context.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.045);
+    oscillator.connect(gain).connect(context.destination);
+    oscillator.start();
+    oscillator.stop(context.currentTime + 0.05);
+  }
+
   function handlePlaybackTime(time: number) {
     setPlaybackTime(time);
+    if (metronomeEnabled && score) {
+      const beatIndex = score.beats.findIndex((beat, index) => time >= beat.time && time < (score.beats[index + 1]?.time ?? Infinity));
+      if (beatIndex >= 0 && lastMetronomeBeatRef.current !== beatIndex) {
+        lastMetronomeBeatRef.current = beatIndex;
+        playMetronomeClick(score.beats[beatIndex].beat === 1);
+      }
+    }
     const activeLoop = loopStart !== null && loopEnd !== null && loopEnd > loopStart ? [loopStart, loopEnd] : loopRange;
     if (activeLoop && time >= activeLoop[1] - 0.03) seekTo(activeLoop[0]);
   }
@@ -727,6 +750,7 @@ export function App() {
                     <button type="button" className="ghost-button" onClick={() => { setLoopStart(playbackTime); setLoopEnd(null); }}>Set A</button>
                     <button type="button" className="ghost-button" disabled={loopStart === null} onClick={() => { if (loopStart !== null && playbackTime > loopStart) setLoopEnd(playbackTime); }}>Set B</button>
                     {loopStart !== null ? <button type="button" className="ghost-button" onClick={() => { setLoopStart(null); setLoopEnd(null); }}>Clear A–B</button> : null}
+                    <button type="button" className="ghost-button" onClick={() => setMetronomeEnabled((enabled) => !enabled)}>{metronomeEnabled ? "Metronome on" : "Metronome off"}</button>
                     <button type="button" className="ghost-button" onClick={() => seekTo(0)}>Stop</button>
                     <label className="transport-speed">Speed <select value={playbackRate} onChange={(event) => setSpeed(Number(event.target.value))}>{[0.5, 0.6, 0.75, 0.9, 1, 1.1, 1.25, 1.5].map((rate) => <option key={rate} value={rate}>{Math.round(rate * 100)}%</option>)}</select></label>
                     <input className="transport-timeline" type="range" min="0" max={score.song.duration_seconds || 0} step="0.01" value={Math.min(playbackTime, score.song.duration_seconds)} onChange={(event) => seekTo(Number(event.target.value))} aria-label="Playback position" />
