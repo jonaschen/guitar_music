@@ -11,6 +11,8 @@ from .core.pipeline import AnalysisPipeline, create_pipeline
 from .models.audio import SourceRequest, SourceType
 from .models.analysis import AccidentalPreference
 from .models.jobs import AnalysisJob
+from .models.analysis import ChordVoicing
+from .services.voicings import ChordVoicingProvider
 from .services.lyrics import import_lrc, import_text
 from .models.score import SongScore
 from .services.jobs import AnalysisJobService, JobStore
@@ -252,3 +254,7 @@ async def update_lyric_timing(request: LyricTimingRequest) -> SongScore:
         raise HTTPException(status_code=404, detail="Lyric line not found")
     lyrics = request.score.lyrics.model_copy(update={"lines": updated, "revision": request.score.lyrics.revision + 1})
     return request.score.model_copy(update={"lyrics": lyrics})
+
+@app.get("/chord-voicings", response_model=list[ChordVoicing])
+async def get_chord_voicings(symbol: str, capo: int = 0, max_fret: int = 15) -> list[ChordVoicing]:
+    return ChordVoicingProvider().get(symbol, capo=capo, max_fret=max_fret)
