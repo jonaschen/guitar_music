@@ -14,6 +14,7 @@ from .models.jobs import AnalysisJob
 from .models.analysis import ChordVoicing
 from .services.voicings import ChordVoicingProvider
 from .services.capo import CapoAdvisor, CapoRecommendation
+from .services.voicing_optimizer import SongVoicingOptimizer
 from .services.lyrics import import_lrc, import_text
 from .models.score import SongScore
 from .services.jobs import AnalysisJobService, JobStore
@@ -267,3 +268,7 @@ class CapoRecommendationRequest(BaseModel):
 @app.post("/scores/capo-recommendations", response_model=list[CapoRecommendation])
 async def capo_recommendations(request: CapoRecommendationRequest) -> list[CapoRecommendation]:
     return CapoAdvisor().recommend(request.score, request.max_capo)
+
+@app.post("/scores/optimize-voicings", response_model=SongScore)
+async def optimize_voicings(score: SongScore) -> SongScore:
+    return SongVoicingOptimizer().optimize(score)
