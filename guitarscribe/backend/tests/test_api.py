@@ -262,3 +262,17 @@ async def test_chordpro_export_endpoint():
     assert response.status_code == 200
     assert "{title: Saved Song}" in response.text
     assert "{key: G major}" in response.text
+
+@pytest.mark.asyncio
+async def test_lyric_timing_endpoint_updates_a_line():
+    payload = make_score().model_dump(mode="json")
+    payload["lyrics"] = {
+        "id": "lyrics-1", "language": "en", "source": "user-pasted", "timing_level": "line", "raw_text": "Hello", "revision": 1,
+        "lines": [{"id": "line-1", "order": 1, "start": None, "end": None, "text": "Hello", "confidence": 1.0, "origin": "user", "edited": False, "words": []}],
+    }
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://testserver") as client:
+        response = await client.post("/scores/lyrics/timing", json={"score": payload, "line_id": "line-1", "start": 1.25})
+
+    assert response.status_code == 200
+    assert response.json()["lyrics"]["lines"][0]["start"] == 1.25
