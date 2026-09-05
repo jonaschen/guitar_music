@@ -252,14 +252,16 @@ class LyricTimingRequest(BaseModel):
 async def update_lyric_timing(request: LyricTimingRequest) -> SongScore:
     if request.score.lyrics is None:
         raise HTTPException(status_code=400, detail="Score has no lyrics")
-    if request.start is not None and request.end is not None and request.end < request.start:
-        raise HTTPException(status_code=422, detail="Lyric end must not precede start")
     updated = []
     found = False
     for line in request.score.lyrics.lines:
         if line.id == request.line_id:
             found = True
-            updated.append(line.model_copy(update={"start": request.start if request.start is not None else line.start, "end": request.end if request.end is not None else line.end, "edited": True}))
+            start = request.start if request.start is not None else line.start
+            end = request.end if request.end is not None else line.end
+            if start is not None and end is not None and end < start:
+                raise HTTPException(status_code=422, detail="Lyric end must not precede start")
+            updated.append(line.model_copy(update={"start": start, "end": end, "edited": True}))
         else:
             updated.append(line)
     if not found:
