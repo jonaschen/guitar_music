@@ -3,6 +3,7 @@ import asyncio
 import logging
 from pathlib import Path
 import sys
+import uvicorn
 from .core.config import Settings
 from .core.pipeline import create_pipeline
 from .models.audio import SourceRequest, SourceType
@@ -61,6 +62,15 @@ def main():
 def analyze(audio_file, output, melody_mode, chord_complexity, verbose):
     """Analyze an audio file and output SongScore JSON."""
     asyncio.run(_analyze(audio_file, output, melody_mode, chord_complexity, verbose))
+
+
+@main.command()
+@click.option('--host', default='0.0.0.0', show_default=True)
+@click.option('--port', default=8000, type=int, show_default=True)
+@click.option('--reload', is_flag=True, help='Enable auto-reload for development')
+def serve(host, port, reload):
+    """Run the GuitarScribe API server."""
+    uvicorn.run("app.api:app", host=host, port=port, reload=reload)
     
 if __name__ == '__main__':
     main()

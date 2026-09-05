@@ -1,4 +1,5 @@
 import logging
+from collections.abc import Mapping, Sequence
 from ...models.audio import NormalizedAudio
 from ...models.analysis import BeatAnalysis, MelodyAnalysis, MelodyNote, MelodyMode
 
@@ -24,10 +25,15 @@ class BasicPitchMelodyAnalyzer:
             notes = []
             
             for i, note in enumerate(note_events):
-                start, end, pitch, velocity, confidence = note
+                parsed_note = _parse_note_event(note)
+                if parsed_note is None:
+                    logger.debug("Skipping unrecognized basic-pitch note event: %r", note)
+                    continue
+
+                start, end, pitch, confidence = parsed_note
                 if confidence < 0.5:
                     continue
-                    
+
                 notes.append(MelodyNote(
                     id=f"note-{i+1}",
                     start=float(start),
@@ -47,3 +53,40 @@ class BasicPitchMelodyAnalyzer:
         except Exception as e:
             logger.error(f"Basic pitch analysis failed: {e}")
             raise RuntimeError(f"Basic pitch analysis failed: {e}")
+
+
+def _parse_note_event(note) -> tuple[float, float, int, float] | None:
+    if isinstance(note, Mapping):
+        start = note.get("start_time_s", note.get("start"))
+        end = note.get("end_time_s", note.get("end"))
+        pitch = note.get("pitch_midi", note.get("pitch"))
+        confidence = note.get("confidence", note.get("amplitude", note.get("velocity", 1.0)))
+        return _coerce_note_values(start, end, pitch, confidence)
+
+    if isinstance(note, Sequence) and not isinstance(note, (str, bytes)):
+        if len(note) < 3:
+            return None
+
+        start = note[0]
+        end = note[1]
+        pitch = note[2]
+        confidence = 1.0
+
+        if len(note) >= 5 and isinstance(note[4], (int, float)):
+            confidence = note[4]
+        elif len(note) >= 4 and isinstance(note[3], (int, float)):
+            confidence = note[3]
+
+        return _coerce_note_values(start, end, pitch, confidence)
+
+    return None
+
+
+def _coerce_note_values(start, end, pitch, confidence) -> tuple[float, float, int, float] | None:
+    if not all(isinstance(value, (int, float)) for value in (start, end, pitch)):
+        return None
+
+    if not isinstance(confidence, (int, float)):
+        confidence = 1.0
+
+    return float(start), float(end), int(pitch), float(confidence)

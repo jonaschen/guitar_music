@@ -15,6 +15,7 @@ class Settings(BaseModel):
     chord_engine: ChordEngine = ChordEngine.AUTO
     melody_engine: str = "basic_pitch"
     rhythm_patterns_dir: Path = Path("/app/rhythm-patterns")
+    ffmpeg_binary: Optional[str] = None
     log_level: str = "INFO"
     
     @classmethod
@@ -24,5 +25,6 @@ class Settings(BaseModel):
             work_dir=Path(os.environ.get("GUITARSCRIBE_WORK_DIR", "/tmp/guitarscribe")),
             chord_engine=ChordEngine(os.environ.get("GUITARSCRIBE_CHORD_ENGINE", "auto")),
             melody_engine=os.environ.get("GUITARSCRIBE_MELODY_ENGINE", "basic_pitch"),
+            ffmpeg_binary=os.environ.get("GUITARSCRIBE_FFMPEG_BINARY"),
             log_level=os.environ.get("GUITARSCRIBE_LOG_LEVEL", "INFO"),
         )

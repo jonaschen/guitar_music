@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional
-from .analysis import BeatInfo, ChordEvent, MelodyNote, RhythmSuggestion
+from .analysis import AccidentalPreference, BeatInfo, ChordEvent, MelodyNote, RhythmSuggestion
 
 class SongInfo(BaseModel):
     title: str = "Unknown"
@@ -17,6 +17,19 @@ class AnalysisSummary(BaseModel):
     confidence: float = 0.0
     warnings: list[str] = Field(default_factory=list)
 
+class KeySignature(BaseModel):
+    key: str = "C"
+    mode: str = "major"
+
+class KeyContext(BaseModel):
+    source: KeySignature = Field(default_factory=KeySignature)
+    target: KeySignature = Field(default_factory=KeySignature)
+    shape: KeySignature = Field(default_factory=KeySignature)
+    sounding: KeySignature = Field(default_factory=KeySignature)
+    transpose_semitones: int = 0
+    accidental_preference: AccidentalPreference = AccidentalPreference.AUTO
+    audio_matches_notation: bool = True
+
 class Provenance(BaseModel):
     beat_engine: str = ""
     chord_engine: str = ""
@@ -26,6 +39,7 @@ class SongScore(BaseModel):
     schema_version: str = "1.0"
     song: SongInfo = Field(default_factory=SongInfo)
     analysis: AnalysisSummary = Field(default_factory=AnalysisSummary)
+    key_context: KeyContext = Field(default_factory=KeyContext)
     beats: list[BeatInfo] = Field(default_factory=list)
     chords: list[ChordEvent] = Field(default_factory=list)
     melody: list[MelodyNote] = Field(default_factory=list)

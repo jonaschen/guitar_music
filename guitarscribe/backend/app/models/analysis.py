@@ -12,6 +12,11 @@ class ChordComplexity(str, Enum):
     STANDARD = "standard"
     FULL = "full"
 
+class AccidentalPreference(str, Enum):
+    AUTO = "auto"
+    SHARPS = "sharps"
+    FLATS = "flats"
+
 class BeatInfo(BaseModel):
     time: float
     beat: int
@@ -34,9 +39,13 @@ class ChordEvent(BaseModel):
     start: float
     end: float
     symbol: str
+    source_symbol: Optional[str] = None
+    shape_symbol: Optional[str] = None
     confidence: float = 0.0
     origin: str = "model"
     edited: bool = False
+    voicing_id: Optional[str] = None
+    available_voicings: list["ChordVoicing"] = Field(default_factory=list)
 
 class ChordAnalysis(BaseModel):
     chords: list[ChordEvent] = Field(default_factory=list)
@@ -53,11 +62,24 @@ class MelodyNote(BaseModel):
     end: float
     midi: int
     note: str
+    source_midi: Optional[int] = None
+    source_note: Optional[str] = None
     confidence: float = 0.0
     string: Optional[int] = None
     fret: Optional[int] = None
     origin: str = "model"
     edited: bool = False
+
+class ChordVoicing(BaseModel):
+    id: str
+    symbol: str
+    shape_symbol: str
+    frets: list[Optional[int]] = Field(default_factory=list)
+    fingers: list[Optional[int]] = Field(default_factory=list)
+    base_fret: int = 1
+    capo: int = 0
+    difficulty: float = 0.0
+    tags: list[str] = Field(default_factory=list)
 
 class MelodyAnalysis(BaseModel):
     notes: list[MelodyNote] = Field(default_factory=list)

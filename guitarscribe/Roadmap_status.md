@@ -1,0 +1,417 @@
+# GuitarScribe 開發進度與待辦事項
+
+> 最後更新：2026-09-05  
+> 參考規格文件：  
+> 1. `GuitarScribe_Web_UI_AI_Handoff.md`（主交接文件）  
+> 2. `GuitarScribe_UI_Key_and_Chord_Voicings_Addendum.md`（升降 Key 與和弦指型追加規格）  
+>  
+> 若兩份文件在移調、Capo 或和弦指型上衝突，以追加文件為準。
+
+---
+
+## 整體進度概覽
+
+| 里程碑 | 目標 | 進度 | 狀態 |
+|---|---|---|---|
+| **M0：技術 Spike** | Docker 內 DSP → JSON | 100% | ✅ 完成 |
+| **M1：後端 MVP** | FastAPI、非同步工作、SQLite、OpenAPI | ~50% | ⚠️ 進行中 |
+| **M2：Web UI MVP** | 上傳、進度、播放同步、和弦格、匯出 | ~45% | ⚠️ 進行中 |
+| **M3：可編輯樂譜** | 和弦編輯、移調、Capo、和弦指型、revision | ~35% | ⚠️ 部分完成 |
+| **M4：簡化主旋律與 Tab** | 旋律顯示、指板映射、alphaTab、匯出 | ~20% | 🔧 早期 |
+| **M5：品質與部署** | Golden dataset、E2E 測試、可觀測性 | ~15% | 🔧 早期 |
+
+**目前位置**：M0 完成，M1/M2 同步推進中。部分 M3 功能（移調、Capo）已提前實作。
+
+---
+
+## Milestone 0：技術 Spike
+
+> 主文件 §13 Milestone 0
+
+**目標**：在乾淨 Ubuntu 主機只需 Docker，即可對合法測試音訊產生 JSON 結果。
+
+### ✅ 已完成
+
+- [x] 本機音訊輸入（`LocalAudioSource`，`backend/app/sources/local.py`）
+- [x] FFmpeg 標準化（`FFmpegPreprocessor` → 44.1kHz、mono、16-bit PCM WAV）
+- [x] BPM／beat 分析（`LibrosaBeatAnalyzer`，使用 librosa）
+- [x] 和弦辨識（`ChromagramChordAnalyzer` 主要引擎，`ChordinoChordAnalyzer` 備選）
+- [x] 主旋律分析（`BasicPitchMelodyAnalyzer`，使用 Spotify Basic Pitch）
+- [x] JSON 輸出（`JsonScoreExporter`，`SongScore` Pydantic model）
+- [x] 端對端測試（`test_pipeline_e2e.py`，含合成 4 和弦 fixture）
+- [x] Docker build 正常運作（`python:3.10-bookworm` + FFmpeg + Vamp SDK）
+- [x] Makefile 提供 `build`、`serve-stack` 指令
+- [x] `SongScore` JSON Schema 定義（`contracts/song-score.schema.json`）
+- [x] 合成測試音訊 fixture（`fixtures/audio/test_progression.wav`，8 秒）
+- [x] 和弦後處理（平滑、吸附拍點、合併、簡化）
+- [x] 旋律後處理（移除極短音符、合併重複音符）
+- [x] 指板映射（`SimpleFretboardMapper`，貪婪最低琴格）
+- [x] 節奏建議（`RhythmSuggester`，目前靜態 8 分音符刷奏型）
+- [x] Chordino 自動降級（Vamp 不可用時自動切換到 Chromagram）
+- [x] 實際歌曲分析成功（`output/result.json`，340 秒歌曲產生 798 拍點）
+
+---
+
+## Milestone 1：後端 MVP
+
+> 主文件 §13 Milestone 1
+
+**目標**：FastAPI、工作佇列、SQLite、AudioSource 抽象、OpenAPI 文件。
+
+### ✅ 已完成
+
+- [x] FastAPI 應用程式（`backend/app/api.py`，版本 0.1.0）
+- [x] `GET /health` 健康檢查端點
+- [x] `POST /analyses` 音訊上傳分析端點（multipart form）
+- [x] `POST /scores/transpose` 移調端點
+- [x] `POST /revisions` 儲存 revision
+- [x] `GET /revisions/{revision_id}` 讀取 revision
+- [x] AudioSource 抽象（`sources/protocol.py`、`sources/local.py`）
+- [x] CORS 設定（允許 localhost:5173）
+- [x] CLI 工具（`guitarscribe analyze` 與 `guitarscribe serve`）
+- [x] 錯誤處理（400 權利未確認、404 檔案不存在、422 處理失敗）
+- [x] 上傳暫存檔清除（finally block 中 unlink）
+- [x] Pipeline 設定管理（`core/config.py`，`Settings.from_env()`）
+- [x] 測試：API 端點 5 項、移調 3 項、分析器各 1-2 項、後處理 4 項
+
+### ❌ 待完成
+
+- [ ] **非同步工作佇列**（主文件 §9 job lifecycle）
+  - 目前 `POST /analyses` 同步阻塞；長歌曲會 HTTP timeout
+  - 需要：worker process（Redis + RQ/Celery 或 MVP 獨立 worker）
+  - 需要：`POST /api/v1/jobs`、`GET /api/v1/jobs/{job_id}`、`POST /api/v1/jobs/{job_id}/cancel`
+  - 需要：工作狀態機（`queued → resolving → preprocessing → beat_analysis → chord_analysis → melody_analysis → postprocessing → completed`）
+- [ ] **SQLite 資料庫**（主文件 §5.1）
+  - 目前 revision 只用 filesystem JSON 檔案
+  - 需要：scores、jobs、revisions 持久化
+- [ ] **工作進度回報**（主文件 §4.2）
+  - 需要：WebSocket 或 polling 回報分析階段
+- [ ] **可選 YouTube resolver**（主文件 §3.1）
+  - AudioSource 介面已預留，但尚未實作 YouTube adapter
+  - 需要明確的權利確認流程
+- [ ] **OpenAPI 文件**
+  - FastAPI 自動產生基本文件，但需要補充描述與範例
+- [ ] **歌曲長度限制**（主文件 §12）
+  - 需要：檔案大小、duration、取樣率限制
+  - 需要：worker CPU/RAM/磁碟限制
+- [ ] **暫存 TTL**（主文件 §12）
+  - 上傳檔案已清除，但工作目錄中的中間產物需要定期清理
+
+---
+
+## Milestone 2：Web UI MVP
+
+> 主文件 §13 Milestone 2
+
+**目標**：URL／上傳首頁、分析選項、工作進度、結果頁、播放器同步、和弦格、匯出。
+
+### ✅ 已完成
+
+- [x] 首頁上傳表單（支援 .wav/.mp3/.flac/.ogg/.m4a）
+- [x] 分析選項（旋律模式：Vocal/Guitar/Mix；和弦複雜度：Simple/Standard/Full）
+- [x] 權利確認提示（「You should upload only audio you own…」）
+- [x] 分析中狀態（按鈕顯示「Analyzing...」）
+- [x] 結果摘要卡片（BPM、拍號、和弦數、旋律音符數）
+- [x] 和弦格顯示（4 和弦一組，顯示和弦符號、時間範圍、Shape 符號）
+- [x] 錯誤訊息顯示（error banner）
+- [x] React + TypeScript + Vite 技術棧
+- [x] TypeScript 型別定義（`types.ts`，83 行）
+- [x] CSS 樣式（`styles.css`，381 行，含深色主題）
+
+### ❌ 待完成
+
+- [ ] **音訊播放器**（主文件 §4.3）
+  - 缺少 HTML `<audio>` 元素或 Web Audio API
+  - 缺少 YouTube 嵌入播放器
+  - 缺少波形（waveform）顯示元件（考慮 wavesurfer.js）
+- [ ] **播放游標同步**（主文件 §4.3）
+  - 缺少：播放游標與和弦格同步
+  - 缺少：點擊小節或和弦跳到對應時間
+  - 缺少：時間軸視覺化（beat grid overlay）
+- [ ] **分析進度頁**（主文件 §4.2）
+  - 需要分階段進度顯示（準備音訊→尋找拍點→辨識和弦→擷取旋律→整理成譜）
+  - 需要取消、逾時、頁面重新整理後恢復
+  - 依賴 M1 非同步工作佇列
+- [ ] **和弦格對齊小節**
+  - 目前每 4 個和弦一組，不依照 beat 分析的小節邊界
+  - 需要依 `beats[].measure` 分組
+- [ ] **JSON 匯出按鈕**（主文件 §4.4）
+  - 後端 `JsonScoreExporter` 已存在，但 UI 無下載按鈕
+- [ ] **ChordPro 匯出**（主文件 §4.4）
+  - 後端尚無 ChordPro 格式化器
+  - UI 無匯出按鈕
+- [ ] **節奏建議顯示**
+  - 後端回傳 rhythm suggestion，但 UI 未渲染刷奏型
+- [ ] **行動版適配**（主文件 §4.1 提到可收合工具列）
+  - 目前無 responsive layout
+
+---
+
+## Milestone 3：可編輯樂譜
+
+> 主文件 §13 Milestone 3 + 追加文件全文
+
+**目標**：和弦修改、邊界拖曳、拍點修正、revision、移調與 Capo、和弦指法圖、刷奏型。
+
+### ✅ 已完成
+
+#### 移調系統（追加文件 §4, §9）
+
+- [x] `TranspositionService` 完整實作（`services/transposition.py`，149 行）
+  - 十二平均律 pitch class 運算
+  - 和弦根音移調（含 extension 保留）
+  - Slash chord bass note 同步移調
+  - Melody MIDI pitch 與音名同步移調
+  - Capo → Shape Key 計算
+  - 升降記號偏好（Auto / Prefer sharps / Prefer flats）
+  - Auto 模式依調性選擇合理拼法
+- [x] `POST /scores/transpose` API 端點
+- [x] Source Key / Target Key / Shape Key / Sounding Key 四層分離（`KeyContext` model）
+- [x] `audio_matches_notation` 標記
+- [x] Source Key 不被移調覆寫（追加文件 §4.4 原則）
+- [x] `source_symbol` 保存原始和弦（追加文件 §8.3）
+
+#### Key 工具列 UI（追加文件 §4.1, §4.2）
+
+- [x] 常駐 Key 工具列
+- [x] 顯示原曲調性（Source Key）
+- [x] 顯示編曲目標調性（Target Key）
+- [x] 顯示指型調性（Shape Key）
+- [x] `−` / `+` 半音升降按鈕
+- [x] 半音差顯示（delta chip：`+2`、`-3`）
+- [x] 直接選擇十二個 Target Key（下拉選單）
+- [x] 「Back to source key」回到原調
+- [x] Capo 選擇器（0 ~ 8）
+- [x] 升降記號偏好選擇器（Auto / Prefer sharps / Prefer flats）
+- [x] 移調與原曲音高不一致時顯示警告 banner（追加文件 §4.6）
+
+#### 和弦編輯
+
+- [x] 選擇和弦卡片（click to select）
+- [x] 修改和弦名稱（rename，標記 `origin: user`、`edited: true`）
+- [x] 分割和弦（split at midpoint）
+- [x] 刪除和弦
+- [x] 側欄編輯面板（顯示時間、origin、source/shape symbol）
+
+#### Revision 管理
+
+- [x] 儲存 revision（file-based JSON）
+- [x] 讀取 revision
+- [x] 儲存狀態提示
+
+#### 資料模型（追加文件 §8）
+
+- [x] `ChordEvent` 追加 `source_symbol`、`shape_symbol`、`voicing_id`、`available_voicings`
+- [x] `ChordVoicing` Pydantic model（id、symbol、shape_symbol、frets、fingers、base_fret、capo、difficulty、tags）
+- [x] `KeyContext` model（source、target、shape、sounding、transpose_semitones、accidental_preference、audio_matches_notation）
+- [x] `MelodyNote` 追加 `source_midi`、`source_note`
+- [x] JSON Schema 同步更新（`contracts/song-score.schema.json`）
+
+### ❌ 待完成
+
+#### Capo 建議工具（追加文件 §5）
+
+- [ ] **`CapoAdvisor` 服務**（追加文件 §9）
+  - 評估開放和弦數量、大橫按數量、個別難度、手位轉換成本
+  - 排名因素：使用者指定最高 Capo、偏好把位、slash chord 限制
+  - 回傳多組方案（Capo 格數、指型調性、難度、橫按數）
+- [ ] **Capo 建議 API**
+  - `GET /api/v1/scores/{score_id}/capo-recommendations`（追加文件 §10）
+- [ ] **Capo 建議 UI**（追加文件 §5.2）
+  - 顯示方案列表（Capo、Shape Key、難度、橫按數、推薦標記）
+  - 主文件 §4.1 提到「尋找較簡單按法」按鈕
+
+#### 替代和弦按法（追加文件 §6, §7）
+
+- [ ] **`ChordVoicingProvider` 服務**（追加文件 §9）
+  - 混合來源策略：靜態驗證資料庫 + 動態 fretboard search
+  - 必要音與可省略音判斷（根音、三音、五音、七音、延伸音、slash bass）
+  - 可演奏性檢查（最高琴格、手位跨度、手指數、橫按範圍）
+- [ ] **和弦指型資料庫**
+  - 常用和弦人工驗證 fixture
+  - 每筆記錄來源與版本
+- [ ] **`SongVoicingOptimizer` 服務**（追加文件 §9）
+  - 動態規劃或最短路徑，最小化前後手位轉換成本
+  - Voicing 排名公式（intrinsic_difficulty + barre_penalty + transition_cost 等）
+- [ ] **和弦指型 API**（追加文件 §10）
+  - `GET /api/v1/chord-voicings?symbol=G&shape_key=G&tuning=EADGBE&capo=2&max_fret=15`
+  - `PUT /api/v1/scores/{score_id}/chords/{chord_id}/voicing`
+  - `POST /api/v1/scores/{score_id}/optimize-voicings`
+- [ ] **和弦按法抽屜 UI**（追加文件 §6）
+  - 六弦圖 SVG 渲染（mute/open/fret、手指編號、橫按）
+  - 候選排序（容易度、手位距離、Capo 相容、用途、使用者偏好）
+  - 套用範圍選擇（occurrence / section / song）
+  - 套用前顯示影響數量
+  - 合成音短暫試聽（Web Audio）
+  - 依難度、把位、是否橫按篩選
+- [ ] **轉調後重新計算 voicing**（追加文件 §12）
+
+#### 其他 M3 待辦
+
+- [ ] **和弦邊界拖曳**（主文件 §4.3）
+  - 可拖曳和弦區段的起始／結束時間
+- [ ] **新增和弦區段**（主文件 §4.3）
+  - 目前只能 split，無法在空白處新增
+- [ ] **拍點與小節修正**（主文件 §4.3）
+  - 可調整小節起點與拍點位置
+  - half-time / double-time 切換（主文件 §7.2）
+- [ ] **Undo / Redo**（追加文件 §11）
+  - 至少涵蓋 Key、Capo 與 voicing 變更
+- [ ] **刷奏型選擇**（主文件 §2.3）
+  - 從 `rhythm-patterns/` 動態載入模板
+  - `RhythmSuggester` 需依 onset strength 與時間特徵選擇
+  - UI 渲染刷奏型（上刷 / 下刷 / 靜音 圖示）
+- [ ] **GuitarSettings model**（追加文件 §8.2）
+  - tuning、tuning_name、capo、max_capo、max_fret、handedness、difficulty
+
+---
+
+## Milestone 4：簡化主旋律與 Tab
+
+> 主文件 §13 Milestone 4
+
+**目標**：Melody mode、音符清理量化、指板映射、alphaTab、MusicXML/MIDI 匯出。
+
+### ✅ 已完成
+
+- [x] Basic Pitch 旋律推理（`basic_pitch_adapter.py`）
+- [x] 旋律後處理（短音符移除、重複合併）
+- [x] 指板映射（`SimpleFretboardMapper`，MIDI → string/fret）
+- [x] 旋律模式選項（vocal / guitar / mix）
+- [x] `MelodyNote` 資料模型（含 string、fret、source_midi、source_note）
+
+### ❌ 待完成
+
+- [ ] **旋律視覺化 UI**
+  - 缺少音符在時間軸上的顯示
+  - 缺少 Tab 六線譜顯示
+- [ ] **alphaTab 整合**（主文件 §5.5）
+  - 標準譜、吉他 Tab、MusicXML 類型資料顯示
+  - 音訊同步播放
+- [ ] **音符量化**
+  - 對齊節奏網格（四分、八分、十六分音符）
+- [ ] **進階指板映射**
+  - 動態規劃最短路徑選擇弦位（目前為貪婪）
+  - 使用者偏好：最容易彈 / 低把位 / 單弦 / 最高琴格限制
+- [ ] **移調後旋律重新映射**（追加文件 §14 M4 影響）
+  - Key 或 Capo 改變後 Tab 需重新映射，不需重新辨識
+- [ ] **MusicXML 匯出**
+- [ ] **MIDI 匯出**
+- [ ] **旋律 confidence 與 debug 模式**（主文件 §7.5）
+  - 保留原始音高結果供 debug
+
+---
+
+## Milestone 5：品質與部署
+
+> 主文件 §13 Milestone 5
+
+**目標**：Golden dataset、失敗案例分類、E2E 測試、資源限制、可觀測性、部署文件。
+
+### ✅ 已完成
+
+- [x] Docker Compose 可一鍵啟動（`make build && make serve-stack`）
+- [x] 基本測試套件（20 項測試，涵蓋 API、分析器、後處理、移調）
+- [x] 測試 fixture（合成音訊，不含受版權保護內容）
+- [x] README 操作指令
+
+### ❌ 待完成
+
+- [ ] **Golden dataset**（主文件 §11.1）
+  - 10～20 個可合法使用的短音訊片段
+  - 人工 ground truth：BPM、拍號、和弦、旋律
+  - `fixtures/annotations/` 目前為空
+- [ ] **準確率指標**（主文件 §11.2）
+  - BPM 誤差、Beat F-measure、Chord symbol recall、Melody pitch accuracy
+- [ ] **E2E 測試**（追加文件 §13.4）
+  - Playwright 端對端 UI 測試
+  - 移調往返回到相同 chord
+  - Capo 推薦套用
+  - 和弦抽屜操作
+  - Undo/Redo
+- [ ] **非功能測試**（主文件 §11.3）
+  - 不合法 URL、過長影片、無音訊軌、worker 重啟
+  - 暫存檔清除驗證
+  - API 路徑注入防護
+  - 併發工作數與記憶體限制
+- [ ] **可觀測性**
+  - 結構化日誌
+  - 效能指標（分析時間、記憶體用量）
+- [ ] **資源限制完善**（主文件 §12）
+  - Rate limiting
+  - 檔案大小與 duration 硬限制
+  - 匯出檔名特殊字元清理
+- [ ] **部署文件與備份政策**
+
+---
+
+## 追加文件整合檢查表
+
+> 追加文件 §17
+
+下列項目必須在宣告追加需求已整合前逐項確認：
+
+- [x] 主文件與追加文件都已閱讀
+- [x] Source Key 不會被 UI 移調覆寫
+- [x] Target Key 是 arrangement 狀態
+- [ ] Capo 與 base_fret 沒有混用 — *model 已分離，但尚無實際 voicing 使用 base_fret*
+- [x] Shape Key 與 Sounding Key 有獨立欄位
+- [x] Slash chord bass 會一起移調
+- [x] Melody notes 會一起移調
+- [x] ChordEvent 與 ChordVoicing 已分離
+- [x] 和弦事件引用 voicing ID
+- [ ] 常用指型資料經過驗證 — *尚無指型資料庫*
+- [ ] 動態候選經過可演奏性檢查 — *尚未實作*
+- [ ] 可選擇套用範圍 — *尚未實作*
+- [ ] 全曲最佳化考慮前後手位 — *尚未實作*
+- [ ] 轉調後會重新計算 voicing — *尚未實作*
+- [x] YouTube 原曲未變調時有警告
+- [x] JSON Schema 與 API 已有版本
+- [ ] 自動測試涵蓋十二個 pitch class — *目前測試只涵蓋部分 key*
+- [ ] 匯出格式保持一致 — *只有 JSON 匯出，尚無 ChordPro/PDF/MusicXML*
+
+---
+
+## 建議優先開發順序
+
+根據使用者價值與依賴關係排序：
+
+### 第一波：完成 M1/M2 核心基礎
+
+1. **非同步工作佇列**（M1） — 長歌曲不再 timeout
+2. **音訊播放器 + 播放同步**（M2） — 跟著原曲練習的核心體驗
+3. **和弦格依小節分組**（M2） — 正確對齊音樂結構
+4. **JSON / ChordPro 匯出按鈕**（M2） — 快速勝利，高使用者價值
+
+### 第二波：完成追加文件的核心功能
+
+5. **ChordVoicingProvider + 指型資料庫**（追加文件 §6, §7） — 替代把位
+6. **和弦圖 SVG 元件**（追加文件 §6.2） — 視覺化指型
+7. **CapoAdvisor**（追加文件 §5） — Capo 建議
+8. **SongVoicingOptimizer**（追加文件 §7.5） — 全曲最佳化
+
+### 第三波：強化編輯與匯出
+
+9. **和弦邊界拖曳 + 新增**（M3）
+10. **Undo / Redo**（M3）
+11. **節奏型動態選擇與 UI**（M3）
+12. **MusicXML / MIDI 匯出**（M4）
+13. **alphaTab 整合**（M4）
+
+### 第四波：品質保障
+
+14. **Golden dataset + 指標**（M5）
+15. **Playwright E2E 測試**（M5）
+16. **移調 12 pitch class 完整測試**（追加文件 §13.1）
+17. **SQLite 持久化**（M1）
+
+---
+
+## 已知問題與限制
+
+1. **Melody 分析在全混音上效果不佳** — `output/result.json` 中 `melody: []` 為空，可能需要先分軌再分析
+2. **Chordino 安裝不穩定** — Docker build 自動降級為 Chromagram，但 Chromagram 只支援 24 組大小調
+3. **RhythmSuggester 為靜態** — 不讀取 `rhythm-patterns/` JSON 檔案，固定回傳 8 分音符型
+4. **和弦分組不依小節** — UI 每 4 和弦一組，與音樂結構無關
+5. **指板映射為貪婪演算法** — 不考慮前後音符的手位轉換成本
+6. **無 Major/Minor 模式切換** — 追加文件 §4.2 提到「若功能未實作，UI 不提供模式切換」

@@ -3,6 +3,8 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
     volumes:
       - ./fixtures:/app/fixtures:ro
       - ./output:/app/output
@@ -12,3 +14,16 @@ services:
     environment:
       - GUITARSCRIBE_WORK_DIR=/tmp/guitarscribe
       - PYTHONUNBUFFERED=1
+    command: python -m app.cli serve --host 0.0.0.0 --port 8000
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend

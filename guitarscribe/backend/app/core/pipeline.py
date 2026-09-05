@@ -2,7 +2,7 @@ import logging
 import asyncio
 from typing import Dict, Any, Optional
 from ..models.audio import SourceRequest
-from ..models.score import SongScore, SongInfo, AnalysisSummary, Provenance
+from ..models.score import SongScore, SongInfo, AnalysisSummary, Provenance, KeyContext, KeySignature
 from ..models.analysis import AudioFeatures, MelodyAnalysis, ChordComplexity
 from .config import Settings, ChordEngine
 from ..analyzers.preprocessor import FFmpegPreprocessor
@@ -64,6 +64,12 @@ class AnalysisPipeline:
                 bpm=beats.bpm,
                 time_signature=beats.time_signature,
             ),
+            key_context=KeyContext(
+                source=KeySignature(key=chords.key, mode=chords.mode),
+                target=KeySignature(key=chords.key, mode=chords.mode),
+                shape=KeySignature(key=chords.key, mode=chords.mode),
+                sounding=KeySignature(key=chords.key, mode=chords.mode),
+            ),
             beats=beats.beats,
             chords=chords.chords,
             melody=melody.notes,
@@ -76,7 +82,7 @@ class AnalysisPipeline:
         )
 
 def create_pipeline(settings: Settings) -> AnalysisPipeline:
-    preprocessor = FFmpegPreprocessor()
+    preprocessor = FFmpegPreprocessor(ffmpeg_binary=settings.ffmpeg_binary)
     beat_analyzer = LibrosaBeatAnalyzer()
     
     chord_analyzer = None

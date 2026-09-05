@@ -1,0 +1,4 @@
+.local-node/
+.tooling-venv/
+guitarscribe/frontend/node_modules/
+guitarscribe/frontend/dist/

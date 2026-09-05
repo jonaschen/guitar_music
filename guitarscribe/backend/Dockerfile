@@ -30,9 +30,9 @@ ENV VAMP_PATH=/usr/local/lib/vamp
 
 WORKDIR /app
 
-# Install Python dependencies
+# Install Python dependencies, including the melody analyzer extra.
 COPY pyproject.toml ./
-RUN pip install --no-cache-dir -e '.[dev]'
+RUN pip install --no-cache-dir -e '.[dev,melody]'
 
 # Copy application code
 COPY . .

@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["schema_version", "song", "analysis", "beats", "chords", "melody", "rhythm", "provenance"],
+  "required": ["schema_version", "song", "analysis", "key_context", "beats", "chords", "melody", "rhythm", "provenance"],
   "additionalProperties": false,
   "properties": {
     "schema_version": {
@@ -35,6 +35,20 @@
         }
       }
     },
+    "key_context": {
+      "type": "object",
+      "required": ["source", "target", "shape", "sounding", "transpose_semitones", "accidental_preference", "audio_matches_notation"],
+      "additionalProperties": false,
+      "properties": {
+        "source": { "$ref": "#/definitions/key_signature" },
+        "target": { "$ref": "#/definitions/key_signature" },
+        "shape": { "$ref": "#/definitions/key_signature" },
+        "sounding": { "$ref": "#/definitions/key_signature" },
+        "transpose_semitones": { "type": "integer" },
+        "accidental_preference": { "type": "string", "enum": ["auto", "sharps", "flats"] },
+        "audio_matches_notation": { "type": "boolean" }
+      }
+    },
     "beats": {
       "type": "array",
       "items": {
@@ -60,9 +74,16 @@
           "start": { "type": "number" },
           "end": { "type": "number" },
           "symbol": { "type": "string" },
+          "source_symbol": { "type": ["string", "null"] },
+          "shape_symbol": { "type": ["string", "null"] },
           "confidence": { "type": "number" },
           "origin": { "type": "string", "enum": ["model", "user"] },
-          "edited": { "type": "boolean" }
+          "edited": { "type": "boolean" },
+          "voicing_id": { "type": ["string", "null"] },
+          "available_voicings": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/chord_voicing" }
+          }
         }
       }
     },
@@ -78,6 +99,8 @@
           "end": { "type": "number" },
           "midi": { "type": "integer" },
           "note": { "type": "string" },
+          "source_midi": { "type": ["integer", "null"] },
+          "source_note": { "type": ["string", "null"] },
           "confidence": { "type": "number" },
           "string": { "type": ["integer", "null"] },
           "fret": { "type": ["integer", "null"] },
@@ -109,6 +132,42 @@
         "beat_engine": { "type": "string" },
         "chord_engine": { "type": "string" },
         "melody_engine": { "type": "string" }
+      }
+    }
+  },
+  "definitions": {
+    "key_signature": {
+      "type": "object",
+      "required": ["key", "mode"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "type": "string" },
+        "mode": { "type": "string" }
+      }
+    },
+    "chord_voicing": {
+      "type": "object",
+      "required": ["id", "symbol", "shape_symbol", "frets", "fingers", "base_fret", "capo", "difficulty", "tags"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "symbol": { "type": "string" },
+        "shape_symbol": { "type": "string" },
+        "frets": {
+          "type": "array",
+          "items": { "type": ["integer", "null"] }
+        },
+        "fingers": {
+          "type": "array",
+          "items": { "type": ["integer", "null"] }
+        },
+        "base_fret": { "type": "integer" },
+        "capo": { "type": "integer" },
+        "difficulty": { "type": "number" },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
       }
     }
   }
