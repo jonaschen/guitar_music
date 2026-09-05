@@ -242,6 +242,14 @@ async def export_lrc_score(score: SongScore) -> str:
         raise HTTPException(status_code=400, detail="Score has no lyrics")
     return export_lrc(score.lyrics)
 
+@app.post("/scores/lyrics/distribute-timing", response_model=SongScore)
+async def distribute_lyric_timing(score: SongScore) -> SongScore:
+    if score.lyrics is None or not score.lyrics.lines:
+        raise HTTPException(status_code=400, detail="Score has no lyric lines")
+    duration = score.song.duration_seconds / len(score.lyrics.lines)
+    lines = [line.model_copy(update={"start": index * duration, "end": (index + 1) * duration, "edited": True}) for index, line in enumerate(score.lyrics.lines)]
+    return score.model_copy(update={"lyrics": score.lyrics.model_copy(update={"lines": lines, "revision": score.lyrics.revision + 1})})
+
 class LyricTimingRequest(BaseModel):
     score: SongScore
     line_id: str
