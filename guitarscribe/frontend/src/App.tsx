@@ -190,6 +190,7 @@ export function App() {
   const [isRetuningScore, setIsRetuningScore] = useState(false);
   const [selectedChordId, setSelectedChordId] = useState<string | null>(null);
   const [chordDraft, setChordDraft] = useState("");
+  const [candidateVoicings, setCandidateVoicings] = useState<ScoreChord["available_voicings"]>([]);
   const [revisionId, setRevisionId] = useState("");
   const [saveStatus, setSaveStatus] = useState("No saved revision yet.");
   const [isSavingRevision, setIsSavingRevision] = useState(false);
@@ -248,6 +249,19 @@ export function App() {
       window.clearInterval(intervalId);
     };
   }, [analysisJob?.id, analysisJob?.status]);
+
+  useEffect(() => {
+    const chord = score?.chords.find((item) => item.id === selectedChordId);
+    if (!chord) {
+      setCandidateVoicings([]);
+      return;
+    }
+    const symbol = chord.shape_symbol ?? chord.symbol;
+    void fetch(API_BASE + "/chord-voicings?symbol=" + encodeURIComponent(symbol) + "&capo=" + capo)
+      .then((response) => response.ok ? response.json() : [])
+      .then((voicings) => setCandidateVoicings(voicings))
+      .catch(() => setCandidateVoicings([]));
+  }, [score, selectedChordId, capo]);
 
   useEffect(() => {
     if (score) {
@@ -509,6 +523,11 @@ export function App() {
           : chord,
       ),
     );
+  }
+
+  function applyVoicing(voicing: NonNullable<ScoreChord["available_voicings"]>[number]) {
+    if (!selectedChordId) return;
+    updateChords((chords) => chords.map((chord) => chord.id === selectedChordId ? { ...chord, voicing_id: voicing.id, available_voicings: candidateVoicings, origin: "user", edited: true } : chord));
   }
 
   function splitSelectedChord() {
@@ -902,12 +921,12 @@ export function App() {
                 </div>
                 <div className="voicing-panel">
                   <h3>Voicing options</h3>
-                  {selectedChord.available_voicings && selectedChord.available_voicings.length > 0 ? (
-                    selectedChord.available_voicings.map((voicing) => (
-                      <div key={voicing.id} className="voicing-card">
+                  {candidateVoicings && candidateVoicings.length > 0 ? (
+                    candidateVoicings.map((voicing) => (
+                      <button key={voicing.id} type="button" className="voicing-card" onClick={() => applyVoicing(voicing)}>
                         <strong>{voicing.shape_symbol}</strong>
                         <span>Frets: {voicing.frets.map((fret) => (fret === null ? "x" : fret)).join(" ")}</span>
-                      </div>
+                      </button>
                     ))
                   ) : (
                     <p className="voicing-empty">No alternate voicings loaded yet for this chord.</p>
