@@ -323,6 +323,17 @@ export function App() {
     }
   }
 
+  async function optimizeSongVoicings() {
+    if (!score) return;
+    try {
+      const response = await fetch(`${API_BASE}/scores/optimize-voicings`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(score) });
+      if (!response.ok) throw new Error(await response.text());
+      setScore(await response.json());
+    } catch (optimizerError) {
+      setError(optimizerError instanceof Error ? optimizerError.message : "Could not optimize voicings.");
+    }
+  }
+
   async function findEasierCapo() {
     if (!score) return;
     try {
@@ -745,7 +756,8 @@ export function App() {
                   </div>
                 </div>
 
-                <div className="capo-advisor"><button type="button" className="ghost-button" onClick={() => void findEasierCapo()}>Find easier capo</button>{capoRecommendations.length > 0 ? <div className="capo-options">{capoRecommendations.slice(0, 3).map((option) => <button key={option.capo} type="button" className="voicing-card" onClick={() => void retuneScore(score.key_context.target.key, option.capo)}><strong>Capo {option.capo} · {option.shape_key} shape</strong><span>Difficulty {option.difficulty}/5 · {option.open_chords} open · {option.barre_chords} barre</span></button>)}</div> : null}</div>
+                <div className="capo-advisor"><button type="button" className="ghost-button" onClick={() => void findEasierCapo()}>Find easier capo</button>
+                  <button type="button" className="ghost-button" onClick={() => void optimizeSongVoicings()}>Optimize song voicings</button>{capoRecommendations.length > 0 ? <div className="capo-options">{capoRecommendations.slice(0, 3).map((option) => <button key={option.capo} type="button" className="voicing-card" onClick={() => void retuneScore(score.key_context.target.key, option.capo)}><strong>Capo {option.capo} · {option.shape_key} shape</strong><span>Difficulty {option.difficulty}/5 · {option.open_chords} open · {option.barre_chords} barre</span></button>)}</div> : null}</div>
 
                 <div className="toolbar secondary-toolbar">
                   <label className="field compact-field">
