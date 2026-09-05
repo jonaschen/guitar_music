@@ -175,6 +175,8 @@ export function App() {
   const [playbackTime, setPlaybackTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [metronomeEnabled, setMetronomeEnabled] = useState(false);
+  const [countInMeasures, setCountInMeasures] = useState(0);
+  const [isCountingIn, setIsCountingIn] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [loopRange, setLoopRange] = useState<[number, number] | null>(null);
   const [loopStart, setLoopStart] = useState<number | null>(null);
@@ -354,7 +356,7 @@ export function App() {
 
   async function downloadLrc() {
     if (!score?.lyrics) return;
-    const response = await fetch(`/scores/lrc`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(score) });
+    const response = await fetch(`${API_BASE}/scores/lrc`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(score) });
     if (!response.ok) throw new Error(await response.text());
     const url = URL.createObjectURL(new Blob([await response.text()], { type: "text/plain" }));
     const link = document.createElement("a");
@@ -377,7 +379,7 @@ export function App() {
 
   async function downloadChordPro() {
     if (!score) return;
-    const response = await fetch(`/scores/chordpro`, {
+    const response = await fetch(`${API_BASE}/scores/chordpro`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(score),
@@ -421,6 +423,21 @@ export function App() {
     oscillator.connect(gain).connect(context.destination);
     oscillator.start();
     oscillator.stop(context.currentTime + 0.05);
+  }
+
+  async function togglePlayback() {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (isPlaying) { audio.pause(); return; }
+    if (!score || countInMeasures === 0) { await audio.play(); return; }
+    const beatsPerMeasure = Number(score.analysis.time_signature.charAt(0)) || 4;
+    const beatSeconds = 60 / Math.max(score.analysis.bpm, 1) / playbackRate;
+    const clickCount = beatsPerMeasure * countInMeasures;
+    setIsCountingIn(true);
+    for (let beat = 0; beat < clickCount; beat += 1) {
+      window.setTimeout(() => playMetronomeClick(beat % beatsPerMeasure === 0), beat * beatSeconds * 1000);
+    }
+    window.setTimeout(() => { setIsCountingIn(false); void audio.play(); }, clickCount * beatSeconds * 1000);
   }
 
   function handlePlaybackTime(time: number) {
@@ -742,8 +759,8 @@ export function App() {
                       onEnded={() => setIsPlaying(false)}
                     />
                     <button type="button" className="ghost-button" onClick={() => seekMeasure(-1)}>Previous bar</button>
-                    <button type="button" className="ghost-button" onClick={() => void (isPlaying ? audioRef.current?.pause() : audioRef.current?.play())}>
-                      {isPlaying ? "Pause" : "Play"}
+                    <button type="button" className="ghost-button" disabled={isCountingIn} onClick={() => void togglePlayback()}>
+                      {isCountingIn ? "Counting in..." : isPlaying ? "Pause" : "Play"}
                     </button>
                     <button type="button" className="ghost-button" onClick={() => seekMeasure(1)}>Next bar</button>
                     <button type="button" className="ghost-button" onClick={() => setLoopRange((range) => range ? null : currentMeasureRange(playbackTime))}>{loopRange ? "Looping bar" : "Loop bar"}</button>
@@ -751,6 +768,7 @@ export function App() {
                     <button type="button" className="ghost-button" disabled={loopStart === null} onClick={() => { if (loopStart !== null && playbackTime > loopStart) setLoopEnd(playbackTime); }}>Set B</button>
                     {loopStart !== null ? <button type="button" className="ghost-button" onClick={() => { setLoopStart(null); setLoopEnd(null); }}>Clear A–B</button> : null}
                     <button type="button" className="ghost-button" onClick={() => setMetronomeEnabled((enabled) => !enabled)}>{metronomeEnabled ? "Metronome on" : "Metronome off"}</button>
+                    <label className="transport-speed">Count-in <select value={countInMeasures} onChange={(event) => setCountInMeasures(Number(event.target.value))}><option value={0}>Off</option><option value={1}>1 bar</option><option value={2}>2 bars</option></select></label>
                     <button type="button" className="ghost-button" onClick={() => seekTo(0)}>Stop</button>
                     <label className="transport-speed">Speed <select value={playbackRate} onChange={(event) => setSpeed(Number(event.target.value))}>{[0.5, 0.6, 0.75, 0.9, 1, 1.1, 1.25, 1.5].map((rate) => <option key={rate} value={rate}>{Math.round(rate * 100)}%</option>)}</select></label>
                     <input className="transport-timeline" type="range" min="0" max={score.song.duration_seconds || 0} step="0.01" value={Math.min(playbackTime, score.song.duration_seconds)} onChange={(event) => seekTo(Number(event.target.value))} aria-label="Playback position" />
