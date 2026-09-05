@@ -3,6 +3,7 @@ from pathlib import Path
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel, Field
 
 from .core.config import Settings
@@ -12,6 +13,7 @@ from .models.analysis import AccidentalPreference
 from .models.jobs import AnalysisJob
 from .models.score import SongScore
 from .services.jobs import AnalysisJobService, JobStore
+from .exporters.chordpro import ChordProExporter
 from .services.revisions import RevisionStore
 from .services.transposition import TranspositionService
 
@@ -191,3 +193,8 @@ async def load_revision(
         return revision_store.load(revision_id)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+@app.post("/scores/chordpro", response_class=PlainTextResponse)
+async def export_chordpro(score: SongScore) -> str:
+    """Export an editable score as a chord-only ChordPro document."""
+    return ChordProExporter().export(score)

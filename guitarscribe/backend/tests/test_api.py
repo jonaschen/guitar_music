@@ -251,3 +251,14 @@ def test_revision_store_uses_sqlite(tmp_path):
 
     assert (tmp_path / "revisions" / "guitarscribe.sqlite3").exists()
     assert store.load(revision_id).song.title == "Saved Song"
+
+@pytest.mark.asyncio
+async def test_chordpro_export_endpoint():
+    score = make_score()
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://testserver") as client:
+        response = await client.post("/scores/chordpro", json=score.model_dump(mode="json"))
+
+    assert response.status_code == 200
+    assert "{title: Saved Song}" in response.text
+    assert "{key: G major}" in response.text
