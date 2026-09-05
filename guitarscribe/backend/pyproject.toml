@@ -35,3 +35,7 @@ guitarscribe = "app.cli:main"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+markers = [
+    "slow: tests that run audio inference or take significant time",
+    "e2e: end-to-end analysis tests",
+]

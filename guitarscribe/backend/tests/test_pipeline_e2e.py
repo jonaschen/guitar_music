@@ -26,3 +26,16 @@ async def test_pipeline_e2e(sample_wav):
     json_str = score.model_dump_json()
     assert isinstance(json_str, str)
     assert len(json_str) > 0
+
+@pytest.mark.asyncio
+async def test_pipeline_rejects_audio_over_duration_limit(tmp_path):
+    from app.models.audio import AudioAsset, NormalizedAudio, SourceRequest, SourceType
+    from app.core.pipeline import AnalysisPipeline
+
+    class Source:
+        async def fetch(self, request): return AudioAsset(path=tmp_path / "input.wav", source_type=SourceType.LOCAL)
+    class Preprocessor:
+        async def normalize(self, asset): return NormalizedAudio(path=tmp_path / "normalized.wav", duration_seconds=2.0)
+    pipeline = AnalysisPipeline(Preprocessor(), None, None, None, None, None, None, None, Source(), max_duration_seconds=1)
+    with pytest.raises(ValueError, match="duration exceeds"):
+        await pipeline.run(SourceRequest(source_type=SourceType.LOCAL, path=tmp_path / "input.wav"), {})

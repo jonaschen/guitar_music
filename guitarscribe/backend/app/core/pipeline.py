@@ -18,7 +18,7 @@ from ..sources.local import LocalAudioSource
 logger = logging.getLogger(__name__)
 
 class AnalysisPipeline:
-    def __init__(self, preprocessor, beat_analyzer, chord_analyzer, melody_analyzer, chord_post, melody_post, rhythm_suggester, fretboard_mapper, source):
+    def __init__(self, preprocessor, beat_analyzer, chord_analyzer, melody_analyzer, chord_post, melody_post, rhythm_suggester, fretboard_mapper, source, max_duration_seconds: int = 600):
         self.preprocessor = preprocessor
         self.beat_analyzer = beat_analyzer
         self.chord_analyzer = chord_analyzer
@@ -28,6 +28,7 @@ class AnalysisPipeline:
         self.rhythm_suggester = rhythm_suggester
         self.fretboard_mapper = fretboard_mapper
         self.source = source
+        self.max_duration_seconds = max_duration_seconds
 
     async def run(
         self,
@@ -46,6 +47,8 @@ class AnalysisPipeline:
         asset = await self.source.fetch(source_request)
         await report("preprocessing")
         normalized = await self.preprocessor.normalize(asset)
+        if normalized.duration_seconds > self.max_duration_seconds:
+            raise ValueError(f"Audio duration exceeds the configured limit of {self.max_duration_seconds} seconds")
         
         await report("beat_analysis")
         beats = await self.beat_analyzer.analyze(normalized)
@@ -124,5 +127,6 @@ def create_pipeline(settings: Settings) -> AnalysisPipeline:
     
     return AnalysisPipeline(
         preprocessor, beat_analyzer, chord_analyzer, melody_analyzer,
-        chord_post, melody_post, rhythm_suggester, fretboard_mapper, source
+        chord_post, melody_post, rhythm_suggester, fretboard_mapper, source,
+        max_duration_seconds=settings.max_duration_seconds
     )
