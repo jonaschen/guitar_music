@@ -366,6 +366,13 @@ h2 {
   font-size: 1.55rem;
 }
 
+.rhythm-panel { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 0 0 1rem; padding: 0.9rem 1rem; border: 1px solid var(--border); border-radius: 22px; background: rgba(137, 194, 167, 0.08); }
+.rhythm-panel h3, .rhythm-panel p { margin: 0; }
+.rhythm-panel p { margin-top: 0.25rem; color: var(--text-muted); font-size: 0.85rem; }
+.rhythm-steps { display: flex; gap: 0.35rem; }
+.rhythm-step { display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 999px; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); }
+.rhythm-step-active { color: #182019; background: var(--accent-2); font-weight: 700; }
+
 .chord-sheet {
   display: grid;
   gap: 0.9rem;

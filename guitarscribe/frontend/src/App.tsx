@@ -953,6 +953,11 @@ export function App() {
                   </article>
                 </div>
 
+                <section className="rhythm-panel">
+                  <div><h3>Rhythm suggestion</h3><p>{score.rhythm.label || "Suggested strumming pattern"} · {score.rhythm.subdivision}th-note grid</p></div>
+                  <div className="rhythm-steps">{score.rhythm.display.map((stroke, index) => <span key={index} className={stroke ? "rhythm-step rhythm-step-active" : "rhythm-step"}>{stroke ?? "·"}</span>)}</div>
+                </section>
+
                 <div className="chord-sheet">
                   {Array.from(groupedChords.entries()).map(([measure, group]) => (
                     <div key={`measure-`} className="measure-card">
