@@ -658,3 +658,9 @@ h2 {
   .measure-chords { grid-template-columns: 1fr; }
   .timing-fields { grid-template-columns: 1fr; }
 }
+
+.melody-panel { display: grid; gap: 0.55rem; margin: 0 0 1rem; padding: 0.9rem 1rem; border: 1px solid var(--border); border-radius: 22px; }
+.melody-panel h3, .melody-panel p { margin: 0; }
+.melody-panel p { color: var(--text-muted); font-size: 0.85rem; }
+.melody-timeline { position: relative; height: 9rem; overflow: hidden; border-radius: 14px; background: repeating-linear-gradient(to bottom, rgba(255,255,255,0.06) 0 1px, transparent 1px 1.5rem); }
+.melody-note { position: absolute; min-width: 1.65rem; height: 1.35rem; padding: 0 0.25rem; overflow: hidden; border: 0; border-radius: 0.35rem; color: #172016; background: #ffcb7d; font-size: 0.72rem; font-weight: 700; cursor: pointer; }

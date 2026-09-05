@@ -958,6 +958,11 @@ export function App() {
                   <div className="rhythm-steps">{score.rhythm.display.map((stroke, index) => <span key={index} className={stroke ? "rhythm-step rhythm-step-active" : "rhythm-step"}>{stroke ?? "·"}</span>)}</div>
                 </section>
 
+                <section className="melody-panel">
+                  <div><h3>Melody timeline</h3><p>Click a note to seek playback. Higher rows indicate higher pitch.</p></div>
+                  <div className="melody-timeline" aria-label="Detected melody notes">{score.melody.map((note) => <button key={note.id} type="button" className="melody-note" title={note.note + " · " + note.start.toFixed(2) + "s"} onClick={() => seekTo(note.start)} style={{ left: String((note.start / Math.max(score.song.duration_seconds, 1)) * 100) + "%", width: String(Math.max(((note.end - note.start) / Math.max(score.song.duration_seconds, 1)) * 100, 0.5)) + "%", bottom: String(Math.max(0, Math.min(85, (note.midi - 40) * 1.8))) + "%" }}>{note.note}</button>)}</div>
+                </section>
+
                 <div className="chord-sheet">
                   {Array.from(groupedChords.entries()).map(([measure, group]) => (
                     <div key={`measure-`} className="measure-card">
