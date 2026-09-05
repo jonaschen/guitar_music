@@ -15,13 +15,14 @@
 | 里程碑 | 目標 | 進度 | 狀態 |
 |---|---|---|---|
 | **M0：技術 Spike** | Docker 內 DSP → JSON | 100% | ✅ 完成 |
-| **M1：後端 MVP** | FastAPI、非同步工作、SQLite、OpenAPI | ~50% | ⚠️ 進行中 |
-| **M2：Web UI MVP** | 上傳、進度、播放同步、和弦格、匯出 | ~45% | ⚠️ 進行中 |
-| **M3：可編輯樂譜** | 和弦編輯、移調、Capo、和弦指型、revision | ~35% | ⚠️ 部分完成 |
+| **M1：後端 MVP** | FastAPI、非同步工作、SQLite、OpenAPI | ~80% | ⚠️ 進行中 |
+| **M2：Web UI MVP** | 上傳、進度、播放同步、和弦格、匯出 | ~90% | ⚠️ 進行中 |
+| **M3：可編輯樂譜** | 和弦編輯、移調、Capo、和弦指型、revision | ~65% | ⚠️ 進行中 |
 | **M4：簡化主旋律與 Tab** | 旋律顯示、指板映射、alphaTab、匯出 | ~20% | 🔧 早期 |
-| **M5：品質與部署** | Golden dataset、E2E 測試、可觀測性 | ~15% | 🔧 早期 |
+| **M5：品質與部署** | Golden dataset、E2E 測試、可觀測性 | ~35% | 🔧 進行中 |
+| **M6：歌詞與按譜演奏** | 歌詞匯入、時間標記、同步播放 | ~30% | 🔧 早期 |
 
-**目前位置**：M0 完成，M1/M2 同步推進中。部分 M3 功能（移調、Capo）已提前實作。
+**目前位置**：M0 完成；M1、M2 接近可試用；M3 已含移調、Capo、指型與可回復編輯；M4/M6 仍為早期。
 
 ---
 
@@ -82,7 +83,7 @@
   - 需要：worker process（Redis + RQ/Celery 或 MVP 獨立 worker）
   - 需要：`POST /api/v1/jobs`、`GET /api/v1/jobs/{job_id}`、`POST /api/v1/jobs/{job_id}/cancel`
   - 需要：工作狀態機（`queued → resolving → preprocessing → beat_analysis → chord_analysis → melody_analysis → postprocessing → completed`）
-- [ ] **SQLite 資料庫**（主文件 §5.1）
+- [x] **SQLite 資料庫**（主文件 §5.1）
   - 目前 revision 只用 filesystem JSON 檔案
   - 需要：scores、jobs、revisions 持久化
 - [x] **工作進度回報**（主文件 §4.2）
@@ -92,10 +93,10 @@
   - 需要明確的權利確認流程
 - [ ] **OpenAPI 文件**
   - FastAPI 自動產生基本文件，但需要補充描述與範例
-- [ ] **歌曲長度限制**（主文件 §12）
+- [x] **歌曲長度限制**（主文件 §12）
   - 需要：檔案大小、duration、取樣率限制
   - 需要：worker CPU/RAM/磁碟限制
-- [ ] **暫存 TTL**（主文件 §12）
+- [x] **暫存 TTL**（主文件 §12）
   - 上傳檔案已清除，但工作目錄中的中間產物需要定期清理
 
 ---
@@ -121,19 +122,19 @@
 
 ### ❌ 待完成
 
-- [ ] **音訊播放器**（主文件 §4.3）
+- [x] **音訊播放器**（主文件 §4.3）
   - 缺少 HTML `<audio>` 元素或 Web Audio API
   - 缺少 YouTube 嵌入播放器
   - 缺少波形（waveform）顯示元件（考慮 wavesurfer.js）
-- [ ] **播放游標同步**（主文件 §4.3）
+- [x] **播放游標同步**（主文件 §4.3）
   - 缺少：播放游標與和弦格同步
   - 缺少：點擊小節或和弦跳到對應時間
   - 缺少：時間軸視覺化（beat grid overlay）
-- [ ] **分析進度頁**（主文件 §4.2）
+- [x] **分析進度頁**（主文件 §4.2）
   - 需要分階段進度顯示（準備音訊→尋找拍點→辨識和弦→擷取旋律→整理成譜）
   - 需要取消、逾時、頁面重新整理後恢復
   - 依賴 M1 非同步工作佇列
-- [ ] **和弦格對齊小節**
+- [x] **和弦格對齊小節**
   - 目前每 4 個和弦一組，不依照 beat 分析的小節邊界
   - 需要依 `beats[].measure` 分組
 - [x] **JSON 匯出按鈕**（主文件 §4.4）
@@ -216,29 +217,29 @@
   - 評估開放和弦數量、大橫按數量、個別難度、手位轉換成本
   - 排名因素：使用者指定最高 Capo、偏好把位、slash chord 限制
   - 回傳多組方案（Capo 格數、指型調性、難度、橫按數）
-- [ ] **Capo 建議 API**
+- [x] **Capo 建議 API**
   - `GET /api/v1/scores/{score_id}/capo-recommendations`（追加文件 §10）
-- [ ] **Capo 建議 UI**（追加文件 §5.2）
+- [x] **Capo 建議 UI**（追加文件 §5.2）
   - 顯示方案列表（Capo、Shape Key、難度、橫按數、推薦標記）
   - 主文件 §4.1 提到「尋找較簡單按法」按鈕
 
 #### 替代和弦按法（追加文件 §6, §7）
 
-- [ ] **`ChordVoicingProvider` 服務**（追加文件 §9）
+- [x] **`ChordVoicingProvider` 服務**（追加文件 §9）
   - 混合來源策略：靜態驗證資料庫 + 動態 fretboard search
   - 必要音與可省略音判斷（根音、三音、五音、七音、延伸音、slash bass）
   - 可演奏性檢查（最高琴格、手位跨度、手指數、橫按範圍）
-- [ ] **和弦指型資料庫**
+- [x] **和弦指型資料庫**
   - 常用和弦人工驗證 fixture
   - 每筆記錄來源與版本
-- [ ] **`SongVoicingOptimizer` 服務**（追加文件 §9）
+- [x] **`SongVoicingOptimizer` 服務**（追加文件 §9）
   - 動態規劃或最短路徑，最小化前後手位轉換成本
   - Voicing 排名公式（intrinsic_difficulty + barre_penalty + transition_cost 等）
-- [ ] **和弦指型 API**（追加文件 §10）
+- [x] **和弦指型 API**（追加文件 §10）
   - `GET /api/v1/chord-voicings?symbol=G&shape_key=G&tuning=EADGBE&capo=2&max_fret=15`
   - `PUT /api/v1/scores/{score_id}/chords/{chord_id}/voicing`
   - `POST /api/v1/scores/{score_id}/optimize-voicings`
-- [ ] **和弦按法抽屜 UI**（追加文件 §6）
+- [x] **和弦按法抽屜 UI**（追加文件 §6）
   - 六弦圖 SVG 渲染（mute/open/fret、手指編號、橫按）
   - 候選排序（容易度、手位距離、Capo 相容、用途、使用者偏好）
   - 套用範圍選擇（occurrence / section / song）
@@ -256,7 +257,7 @@
 - [ ] **拍點與小節修正**（主文件 §4.3）
   - 可調整小節起點與拍點位置
   - half-time / double-time 切換（主文件 §7.2）
-- [ ] **Undo / Redo**（追加文件 §11）
+- [x] **Undo / Redo**（追加文件 §11）
   - 至少涵蓋 Key、Capo 與 voicing 變更
 - [ ] **刷奏型選擇**（主文件 §2.3）
   - 從 `rhythm-patterns/` 動態載入模板
