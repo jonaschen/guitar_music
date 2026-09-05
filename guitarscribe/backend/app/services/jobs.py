@@ -59,10 +59,11 @@ class JobStore:
 
 
 class AnalysisJobService:
-    def __init__(self, store: JobStore, pipeline_factory: Callable[[], AnalysisPipeline]):
+    def __init__(self, store: JobStore, pipeline_factory: Callable[[], AnalysisPipeline], max_concurrent_jobs: int = 1):
         self.store = store
         self.pipeline_factory = pipeline_factory
         self.tasks: dict[str, asyncio.Task[None]] = {}
+        self.semaphore = asyncio.Semaphore(max_concurrent_jobs)
         self.store.mark_interrupted_jobs_failed()
 
     async def submit(
@@ -105,6 +106,7 @@ class AnalysisJobService:
         return job
 
     async def _run(self, job_id: str) -> None:
+        await self.semaphore.acquire()
         try:
             job = self.get(job_id)
             input_path = next(self.store.job_dir(job_id).glob("input.*"))
@@ -145,4 +147,5 @@ class AnalysisJobService:
                 job.updated_at = _now()
                 self.store.save(job)
         finally:
+            self.semaphore.release()
             self.tasks.pop(job_id, None)

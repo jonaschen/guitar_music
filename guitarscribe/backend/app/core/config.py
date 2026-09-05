@@ -12,6 +12,7 @@ class ChordEngine(str, Enum):
 class Settings(BaseModel):
     max_duration_seconds: int = 600
     max_upload_bytes: int = 100 * 1024 * 1024
+    max_concurrent_jobs: int = 1
     work_dir: Path = Path("/tmp/guitarscribe")
     chord_engine: ChordEngine = ChordEngine.AUTO
     melody_engine: str = "basic_pitch"
@@ -24,6 +25,7 @@ class Settings(BaseModel):
         return cls(
             max_duration_seconds=int(os.environ.get("GUITARSCRIBE_MAX_DURATION_SECONDS", "600")),
             max_upload_bytes=int(os.environ.get("GUITARSCRIBE_MAX_UPLOAD_BYTES", str(100 * 1024 * 1024))),
+            max_concurrent_jobs=int(os.environ.get("GUITARSCRIBE_MAX_CONCURRENT_JOBS", "1")),
             work_dir=Path(os.environ.get("GUITARSCRIBE_WORK_DIR", "/tmp/guitarscribe")),
             chord_engine=ChordEngine(os.environ.get("GUITARSCRIBE_CHORD_ENGINE", "auto")),
             melody_engine=os.environ.get("GUITARSCRIBE_MELODY_ENGINE", "basic_pitch"),
