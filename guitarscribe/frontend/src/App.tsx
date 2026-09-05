@@ -225,11 +225,12 @@ export function App() {
     setChordDraft(selectedChord.symbol);
   }, [score, selectedChordId]);
 
-  const groupedChords: Array<Array<SongScore["chords"][number]>> = [];
-  score?.chords.forEach((chord, index) => {
-    const groupIndex = Math.floor(index / 4);
-    if (!groupedChords[groupIndex]) groupedChords[groupIndex] = [];
-    groupedChords[groupIndex].push(chord);
+  const groupedChords = new Map<number, ScoreChord[]>();
+  score?.chords.forEach((chord) => {
+    const measure = score.beats.filter((beat) => beat.time <= chord.start).at(-1)?.measure ?? 1;
+    const chords = groupedChords.get(measure) ?? [];
+    chords.push(chord);
+    groupedChords.set(measure, chords);
   });
 
   const selectedChord = score?.chords.find((chord) => chord.id === selectedChordId) ?? null;
@@ -611,9 +612,9 @@ export function App() {
                 </div>
 
                 <div className="chord-sheet">
-                  {groupedChords.map((group, index) => (
-                    <div key={`measure-${index}`} className="measure-card">
-                      <div className="measure-header">Bar {index + 1}</div>
+                  {Array.from(groupedChords.entries()).map(([measure, group]) => (
+                    <div key={`measure-`} className="measure-card">
+                      <div className="measure-header">Bar {measure}</div>
                       <div className="measure-chords">
                         {group.map((chord) => (
                           <button
