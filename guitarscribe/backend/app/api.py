@@ -1,7 +1,7 @@
 import tempfile
 from pathlib import Path
 
-from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -9,7 +9,9 @@ from .core.config import Settings
 from .core.pipeline import AnalysisPipeline, create_pipeline
 from .models.audio import SourceRequest, SourceType
 from .models.analysis import AccidentalPreference
+from .models.jobs import AnalysisJob
 from .models.score import SongScore
+from .services.jobs import AnalysisJobService, JobStore
 from .services.revisions import RevisionStore
 from .services.transposition import TranspositionService
 
@@ -34,8 +36,13 @@ class SaveRevisionResponse(BaseModel):
     revision_id: str
 
 
-app = FastAPI(title="GuitarScribe API", version="0.1.0")
+app = FastAPI(
+    title="GuitarScribe API",
+    version="0.2.0",
+    description="Audio analysis, editable scores, and local background analysis jobs.",
+)
 transposition_service = TranspositionService()
+_job_service: AnalysisJobService | None = None
 
 app.add_middleware(
     CORSMiddleware,
@@ -58,6 +65,17 @@ def get_revision_store() -> RevisionStore:
     return RevisionStore(settings.work_dir / "revisions")
 
 
+def get_job_service() -> AnalysisJobService:
+    global _job_service
+    if _job_service is None:
+        settings = Settings.from_env()
+        _job_service = AnalysisJobService(
+            JobStore(settings.work_dir / "jobs"),
+            pipeline_factory=lambda: create_pipeline(settings),
+        )
+    return _job_service
+
+
 @app.get("/health", response_model=HealthResponse)
 async def health() -> HealthResponse:
     return HealthResponse()
@@ -73,7 +91,48 @@ async def transpose_score(request: TransposeScoreRequest) -> SongScore:
     )
 
 
-@app.post("/analyses", response_model=SongScore)
+@app.post("/api/v1/jobs", response_model=AnalysisJob, status_code=status.HTTP_202_ACCEPTED)
+async def create_analysis_job(
+    audio_file: UploadFile = File(...),
+    rights_confirmed: bool = Form(...),
+    melody_mode: str = Form(default="vocal"),
+    chord_complexity: str = Form(default="standard"),
+    job_service: AnalysisJobService = Depends(get_job_service),
+) -> AnalysisJob:
+    """Queue a local upload for analysis and return immediately."""
+    if not rights_confirmed:
+        raise HTTPException(status_code=400, detail="Rights must be confirmed")
+    return await job_service.submit(
+        filename=audio_file.filename or "upload.wav",
+        content=await audio_file.read(),
+        melody_mode=melody_mode,
+        chord_complexity=chord_complexity,
+    )
+
+
+@app.get("/api/v1/jobs/{job_id}", response_model=AnalysisJob)
+async def get_analysis_job(
+    job_id: str,
+    job_service: AnalysisJobService = Depends(get_job_service),
+) -> AnalysisJob:
+    try:
+        return job_service.get(job_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Analysis job not found") from exc
+
+
+@app.post("/api/v1/jobs/{job_id}/cancel", response_model=AnalysisJob)
+async def cancel_analysis_job(
+    job_id: str,
+    job_service: AnalysisJobService = Depends(get_job_service),
+) -> AnalysisJob:
+    try:
+        return job_service.cancel(job_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Analysis job not found") from exc
+
+
+@app.post("/analyses", response_model=SongScore, deprecated=True)
 async def analyze_audio(
     audio_file: UploadFile = File(...),
     rights_confirmed: bool = Form(...),
@@ -81,6 +140,7 @@ async def analyze_audio(
     chord_complexity: str = Form(default="standard"),
     pipeline: AnalysisPipeline = Depends(get_pipeline),
 ) -> SongScore:
+    """Legacy synchronous endpoint retained for API compatibility."""
     if not rights_confirmed:
         raise HTTPException(status_code=400, detail="Rights must be confirmed")
 

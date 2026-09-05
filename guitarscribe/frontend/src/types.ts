@@ -80,3 +80,28 @@ export type SongScore = {
     melody_engine: string;
   };
 };
+
+export type JobStatus =
+  | "queued"
+  | "resolving"
+  | "preprocessing"
+  | "beat_analysis"
+  | "chord_analysis"
+  | "melody_analysis"
+  | "postprocessing"
+  | "completed"
+  | "failed"
+  | "cancelled";
+
+export interface AnalysisJob {
+  id: string;
+  status: JobStatus;
+  progress: number;
+  message: string;
+  melody_mode: string;
+  chord_complexity: string;
+  created_at: string;
+  updated_at: string;
+  error: string | null;
+  score: SongScore | null;
+}

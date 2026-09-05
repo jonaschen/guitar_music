@@ -1,6 +1,5 @@
 import logging
-import asyncio
-from typing import Dict, Any, Optional
+from typing import Awaitable, Callable, Dict, Any
 from ..models.audio import SourceRequest
 from ..models.score import SongScore, SongInfo, AnalysisSummary, Provenance, KeyContext, KeySignature
 from ..models.analysis import AudioFeatures, MelodyAnalysis, ChordComplexity
@@ -30,19 +29,34 @@ class AnalysisPipeline:
         self.fretboard_mapper = fretboard_mapper
         self.source = source
 
-    async def run(self, source_request: SourceRequest, options: Dict[str, Any]) -> SongScore:
+    async def run(
+        self,
+        source_request: SourceRequest,
+        options: Dict[str, Any],
+        progress_callback: Callable[[str], Awaitable[None]] | None = None,
+    ) -> SongScore:
         logger.info("Starting analysis pipeline")
+
+        async def report(stage: str) -> None:
+            if progress_callback:
+                await progress_callback(stage)
+
+        await report("resolving")
         
         asset = await self.source.fetch(source_request)
+        await report("preprocessing")
         normalized = await self.preprocessor.normalize(asset)
         
+        await report("beat_analysis")
         beats = await self.beat_analyzer.analyze(normalized)
         
+        await report("chord_analysis")
         chords = await self.chord_analyzer.analyze(normalized, beats)
         complexity = ChordComplexity(options.get("chord_complexity", "standard"))
         chords.chords = self.chord_post.process(chords.chords, beats, complexity)
         
         try:
+            await report("melody_analysis")
             melody = await self.melody_analyzer.analyze(normalized, beats)
             melody.notes = self.melody_post.process(melody.notes)
             melody = self.fretboard_mapper.map_notes(melody)
@@ -50,6 +64,7 @@ class AnalysisPipeline:
             logger.warning(f"Melody analysis failed, continuing without melody: {e}")
             melody = MelodyAnalysis(warnings=[str(e)])
             
+        await report("postprocessing")
         rhythm = self.rhythm_suggester.suggest(beats, chords)
         
         return SongScore(

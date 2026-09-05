@@ -76,7 +76,7 @@
 
 ### ❌ 待完成
 
-- [ ] **非同步工作佇列**（主文件 §9 job lifecycle）
+- [x] **非同步工作佇列**（主文件 §9 job lifecycle）
   - 目前 `POST /analyses` 同步阻塞；長歌曲會 HTTP timeout
   - 需要：worker process（Redis + RQ/Celery 或 MVP 獨立 worker）
   - 需要：`POST /api/v1/jobs`、`GET /api/v1/jobs/{job_id}`、`POST /api/v1/jobs/{job_id}/cancel`
@@ -84,8 +84,8 @@
 - [ ] **SQLite 資料庫**（主文件 §5.1）
   - 目前 revision 只用 filesystem JSON 檔案
   - 需要：scores、jobs、revisions 持久化
-- [ ] **工作進度回報**（主文件 §4.2）
-  - 需要：WebSocket 或 polling 回報分析階段
+- [x] **工作進度回報**（主文件 §4.2）
+  - 前端以 polling 顯示各階段、百分比與取消按鈕；日後可升級為 WebSocket。
 - [ ] **可選 YouTube resolver**（主文件 §3.1）
   - AudioSource 介面已預留，但尚未實作 YouTube adapter
   - 需要明確的權利確認流程

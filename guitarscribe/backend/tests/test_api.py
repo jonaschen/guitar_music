@@ -1,9 +1,17 @@
 from io import BytesIO
+import asyncio
 
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from app.api import SaveRevisionRequest, analyze_audio, app, load_revision, save_revision
+from app.api import (
+    SaveRevisionRequest,
+    analyze_audio,
+    app,
+    get_job_service,
+    load_revision,
+    save_revision,
+)
 from app.models.score import AnalysisSummary, KeyContext, KeySignature, SongInfo, SongScore
 from app.services.revisions import RevisionStore
 
@@ -201,3 +209,38 @@ async def test_load_revision_endpoint(tmp_path):
     response = await load_revision(revision_id=revision_id, revision_store=store)
 
     assert response.song.title == "Saved Song"
+
+@pytest.mark.asyncio
+async def test_job_endpoints_queue_poll_and_return_completed_score(tmp_path):
+    from app.services.jobs import AnalysisJobService, JobStore
+    from tests.test_jobs import StubPipeline
+
+    service = AnalysisJobService(JobStore(tmp_path / "jobs"), pipeline_factory=StubPipeline)
+    app.dependency_overrides[get_job_service] = lambda: service
+    try:
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://testserver") as client:
+            create_response = await client.post(
+                "/api/v1/jobs",
+                data={
+                    "rights_confirmed": "true",
+                    "melody_mode": "vocal",
+                    "chord_complexity": "standard",
+                },
+                files={"audio_file": ("test.wav", b"RIFFfake", "audio/wav")},
+            )
+            assert create_response.status_code == 202
+            job_id = create_response.json()["id"]
+
+            for _ in range(50):
+                response = await client.get(f"/api/v1/jobs/{job_id}")
+                body = response.json()
+                if body["status"] == "completed":
+                    break
+                await asyncio.sleep(0)
+
+        assert response.status_code == 200
+        assert body["progress"] == 100
+        assert body["score"]["analysis"]["key"] == "G"
+    finally:
+        app.dependency_overrides.clear()

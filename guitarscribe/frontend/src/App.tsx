@@ -1,5 +1,5 @@
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
-import type { AccidentalPreference, SongScore } from "./types";
+import type { AccidentalPreference, AnalysisJob, SongScore } from "./types";
 
 const API_BASE = "http://localhost:8000";
 const KEY_OPTIONS = [
@@ -41,7 +41,7 @@ const NOTE_TO_PITCH: Record<string, number> = {
 };
 const PITCH_TO_FLAT_KEY = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
 
-type AnalyzeState = "idle" | "uploading" | "ready" | "error";
+type AnalyzeState = "idle" | "queued" | "ready" | "error";
 type ScoreChord = SongScore["chords"][number];
 
 const EMPTY_SCORE: SongScore | null = null;
@@ -57,14 +57,14 @@ function semitoneDelta(from: string, to: string): number {
   return raw;
 }
 
-async function postAnalyze(file: File, melodyMode: string, chordComplexity: string): Promise<SongScore> {
+async function createAnalysisJob(file: File, melodyMode: string, chordComplexity: string): Promise<AnalysisJob> {
   const formData = new FormData();
   formData.append("audio_file", file);
   formData.append("rights_confirmed", "true");
   formData.append("melody_mode", melodyMode);
   formData.append("chord_complexity", chordComplexity);
 
-  const response = await fetch(`${API_BASE}/analyses`, {
+  const response = await fetch(`${API_BASE}/api/v1/jobs`, {
     method: "POST",
     body: formData,
   });
@@ -73,6 +73,22 @@ async function postAnalyze(file: File, melodyMode: string, chordComplexity: stri
     throw new Error(await response.text());
   }
 
+  return response.json();
+}
+
+async function getAnalysisJob(jobId: string): Promise<AnalysisJob> {
+  const response = await fetch(`${API_BASE}/api/v1/jobs/${jobId}`);
+  if (!response.ok) {
+    throw new Error(await response.text());
+  }
+  return response.json();
+}
+
+async function cancelAnalysisJob(jobId: string): Promise<AnalysisJob> {
+  const response = await fetch(`${API_BASE}/api/v1/jobs/${jobId}/cancel`, { method: "POST" });
+  if (!response.ok) {
+    throw new Error(await response.text());
+  }
   return response.json();
 }
 
@@ -131,6 +147,7 @@ export function App() {
   const [melodyMode, setMelodyMode] = useState("vocal");
   const [chordComplexity, setChordComplexity] = useState("standard");
   const [score, setScore] = useState<SongScore | null>(EMPTY_SCORE);
+  const [analysisJob, setAnalysisJob] = useState<AnalysisJob | null>(null);
   const [error, setError] = useState<string>("");
   const [accidentalPreference, setAccidentalPreference] = useState<AccidentalPreference>("auto");
   const [capo, setCapo] = useState(0);
@@ -141,6 +158,39 @@ export function App() {
   const [saveStatus, setSaveStatus] = useState("No saved revision yet.");
   const [isSavingRevision, setIsSavingRevision] = useState(false);
   const [isLoadingRevision, setIsLoadingRevision] = useState(false);
+
+  useEffect(() => {
+    if (!analysisJob || ["completed", "failed", "cancelled"].includes(analysisJob.status)) return;
+
+    let disposed = false;
+    const poll = async () => {
+      try {
+        const nextJob = await getAnalysisJob(analysisJob.id);
+        if (disposed) return;
+        setAnalysisJob(nextJob);
+        if (nextJob.status === "completed" && nextJob.score) {
+          setScore(nextJob.score);
+          setRevisionId("");
+          setSaveStatus("Analysis loaded. Save to create a revision.");
+          setStatus("ready");
+        } else if (nextJob.status === "failed" || nextJob.status === "cancelled") {
+          setStatus("error");
+          setError(nextJob.error ?? nextJob.message);
+        }
+      } catch (pollError) {
+        if (!disposed) {
+          setStatus("error");
+          setError(pollError instanceof Error ? pollError.message : "Could not read analysis progress.");
+        }
+      }
+    };
+    void poll();
+    const intervalId = window.setInterval(() => void poll(), 1000);
+    return () => {
+      disposed = true;
+      window.clearInterval(intervalId);
+    };
+  }, [analysisJob?.id, analysisJob?.status]);
 
   useEffect(() => {
     if (score) {
@@ -177,17 +227,23 @@ export function App() {
       return;
     }
 
-    setStatus("uploading");
+    setStatus("queued");
     setError("");
     try {
-      const analyzed = await postAnalyze(file, melodyMode, chordComplexity);
-      setScore(analyzed);
-      setRevisionId("");
-      setSaveStatus("Analysis loaded. Save to create a revision.");
-      setStatus("ready");
+      const createdJob = await createAnalysisJob(file, melodyMode, chordComplexity);
+      setAnalysisJob(createdJob);
     } catch (submitError) {
       setStatus("error");
       setError(submitError instanceof Error ? submitError.message : "Analysis failed.");
+    }
+  }
+
+  async function cancelCurrentJob() {
+    if (!analysisJob) return;
+    try {
+      setAnalysisJob(await cancelAnalysisJob(analysisJob.id));
+    } catch (cancelError) {
+      setError(cancelError instanceof Error ? cancelError.message : "Could not cancel analysis.");
     }
   }
 
@@ -356,13 +412,23 @@ export function App() {
               <p>You should upload only audio you own, control, or have permission to analyze.</p>
             </div>
 
-            <button className="primary-button" type="submit" disabled={status === "uploading"}>
-              {status === "uploading" ? "Analyzing..." : "Start analysis"}
+            <button className="primary-button" type="submit" disabled={status === "queued"}>
+              {status === "queued" ? "Analysis queued..." : "Start analysis"}
             </button>
           </form>
         </section>
 
         {error ? <p className="error-banner">{error}</p> : null}
+        {analysisJob && !["completed", "failed", "cancelled"].includes(analysisJob.status) ? (
+          <section className="job-progress" aria-live="polite">
+            <div>
+              <strong>{analysisJob.message}</strong>
+              <span>{analysisJob.progress}%</span>
+            </div>
+            <progress value={analysisJob.progress} max="100">{analysisJob.progress}%</progress>
+            <button className="ghost-button" type="button" onClick={() => void cancelCurrentJob()}>Cancel analysis</button>
+          </section>
+        ) : null}
 
         <section className="workspace">
           <div className="panel result-panel">
@@ -371,7 +437,7 @@ export function App() {
                 <p className="eyebrow">Result workspace</p>
                 <h2>{score ? score.song.title : "No song loaded yet"}</h2>
               </div>
-              <div className="status-pill">{status === "ready" ? "Editable draft" : "Waiting for analysis"}</div>
+              <div className="status-pill">{status === "ready" ? "Editable draft" : analysisJob ? `${analysisJob.progress}%` : "Waiting for analysis"}</div>
             </div>
 
             {score ? (
