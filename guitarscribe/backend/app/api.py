@@ -13,6 +13,7 @@ from .models.analysis import AccidentalPreference
 from .models.jobs import AnalysisJob
 from .models.analysis import ChordVoicing
 from .services.voicings import ChordVoicingProvider
+from .services.capo import CapoAdvisor, CapoRecommendation
 from .services.lyrics import import_lrc, import_text
 from .models.score import SongScore
 from .services.jobs import AnalysisJobService, JobStore
@@ -258,3 +259,11 @@ async def update_lyric_timing(request: LyricTimingRequest) -> SongScore:
 @app.get("/chord-voicings", response_model=list[ChordVoicing])
 async def get_chord_voicings(symbol: str, capo: int = 0, max_fret: int = 15) -> list[ChordVoicing]:
     return ChordVoicingProvider().get(symbol, capo=capo, max_fret=max_fret)
+
+class CapoRecommendationRequest(BaseModel):
+    score: SongScore
+    max_capo: int = Field(default=8, ge=0, le=12)
+
+@app.post("/scores/capo-recommendations", response_model=list[CapoRecommendation])
+async def capo_recommendations(request: CapoRecommendationRequest) -> list[CapoRecommendation]:
+    return CapoAdvisor().recommend(request.score, request.max_capo)
