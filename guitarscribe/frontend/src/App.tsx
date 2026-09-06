@@ -353,6 +353,7 @@ export function App() {
   const selectedChord = score?.chords.find((chord) => chord.id === selectedChordId) ?? null;
   const activeChordId = score?.chords.find((chord) => playbackTime >= chord.start && playbackTime < chord.end)?.id ?? null;
   const scoreMeasures = Array.from(new Set(score?.beats.map((beat) => beat.measure) ?? [1]));
+  const activeMeasureGroup = measureGroups.find((group) => playbackTime >= group.start && playbackTime < group.end) ?? measureGroups[0];
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -1005,12 +1006,12 @@ export function App() {
 
                 {score.melody.length > 0 ? <>
                 <section className="melody-panel">
-                  <div><h3>Melody timeline</h3><p>Click a note to seek playback. Higher rows indicate higher pitch.</p></div>
+                  <div><h3>Estimated melody timeline</h3><p>Extracted from the full mix; it may follow accompaniment instead of the lead. Click a note to seek.</p></div>
                   <div className="melody-timeline" aria-label="Detected melody notes">{score.melody.map((note) => <button key={note.id} type="button" className="melody-note" title={note.note + " · " + note.start.toFixed(2) + "s"} onClick={() => seekTo(note.start)} style={{ left: String((note.start / Math.max(score.song.duration_seconds, 1)) * 100) + "%", width: String(Math.max(((note.end - note.start) / Math.max(score.song.duration_seconds, 1)) * 100, 0.5)) + "%", bottom: String(Math.max(0, Math.min(85, (note.midi - 40) * 1.8))) + "%" }}>{note.note}</button>)}</div>
                 </section>
 
                 <section className="score-preview-panel">
-                  <div><h3>Melody score preview</h3><p>Five-line pitch view, grouped by detected bars. Click a note to seek; export MusicXML for full notation editing.</p></div>
+                  <div><h3>Estimated score preview</h3><p>A simplified pitch view, not a verified transcription. Click a note to seek.</p></div>
                   <div className="score-measures" aria-label="Melody score preview">
                     {(scoreMeasures.length ? scoreMeasures : [1]).map((measure) => {
                       const measureStart = score.beats.find((beat) => beat.measure === measure)?.time ?? 0;
@@ -1022,9 +1023,11 @@ export function App() {
                 </section>
 
                 <section className="tab-panel">
-                  <div><h3>Playable Tab</h3><p>Mapped from the detected melody; notes without a confident string/fret mapping are omitted.</p></div>
-                  <div className="tab-staff" aria-label="Six-string tab timeline">{score.melody.filter((note) => note.string !== null && note.string !== undefined && note.fret !== null && note.fret !== undefined).map((note) => <button key={note.id} type="button" className="tab-marker" title={note.note + " · String " + note.string + " · Fret " + note.fret} onClick={() => seekTo(note.start)} style={{ left: String((note.start / Math.max(score.song.duration_seconds, 1)) * 100) + "%", top: String(((note.string ?? 1) - 1) * (100 / 6)) + "%" }}>{note.fret}</button>)}</div>
-                  <div className="tab-notes">{score.melody.filter((note) => note.string !== null && note.string !== undefined && note.fret !== null && note.fret !== undefined).map((note) => <button key={note.id} type="button" className="tab-note" onClick={() => seekTo(note.start)}><strong>{note.note}</strong><span>String {note.string} · Fret {note.fret}</span><small>{note.start.toFixed(2)}s</small></button>)}</div>
+                  <div><h3>Playable Tab {activeMeasureGroup ? "· Bar " + activeMeasureGroup.measure : ""}</h3><p>String 1 (e) is the highest string; string 6 (E) is the lowest. The number is the fret. This view follows the current playback bar.</p></div>
+                  {activeMeasureGroup ? <div className="tab-staff" aria-label={"Six-string tab for bar " + activeMeasureGroup.measure}>
+                    {["e", "B", "G", "D", "A", "E"].map((label, index) => <span key={label + index} className="tab-string-label" style={{ top: String((index + 0.5) * (100 / 6)) + "%" }}>{label}</span>)}
+                    {score.melody.filter((note) => note.start >= activeMeasureGroup.start && note.start < activeMeasureGroup.end && note.string !== null && note.string !== undefined && note.fret !== null && note.fret !== undefined).map((note) => <button key={note.id} type="button" className="tab-marker" title={note.note + " · String " + note.string + " · Fret " + note.fret} onClick={() => seekTo(note.start)} style={{ left: String(5 + ((note.start - activeMeasureGroup.start) / Math.max(activeMeasureGroup.end - activeMeasureGroup.start, 0.01)) * 92) + "%", top: String(((note.string ?? 1) - 0.5) * (100 / 6)) + "%" }}>{note.fret}</button>)}
+                  </div> : null}
                 </section>
                 </> : <section className="melody-empty" aria-live="polite"><h3>Melody not detected</h3><p>This analysis returned no confident melody notes, so Tab and melody exports are not ready. Try a clearer lead-vocal or single-guitar recording. A future retry may produce a different result.</p></section>}
 

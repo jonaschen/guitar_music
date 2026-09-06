@@ -70,3 +70,16 @@ def test_melody_quantization_extends_collapsed_note_to_next_grid_slot():
 
     assert quantized[0].start == 0.25
     assert quantized[0].end == 0.5
+
+
+def test_melody_skips_out_of_range_and_implausible_jumps():
+    pp = MelodyPostProcessor()
+    notes = [
+        MelodyNote(id="base", start=0.0, end=0.5, midi=60, note="C4", confidence=0.9),
+        MelodyNote(id="jump", start=0.5, end=1.0, midi=84, note="C6", confidence=0.9),
+        MelodyNote(id="sub", start=1.0, end=1.5, midi=30, note="F#1", confidence=0.9),
+    ]
+
+    selected = pp.select_monophonic_line(notes)
+
+    assert [note.id for note in selected] == ["base"]

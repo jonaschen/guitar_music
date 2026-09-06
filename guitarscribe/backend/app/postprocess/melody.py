@@ -48,7 +48,9 @@ class MelodyPostProcessor:
         previous: MelodyNote | None = None
         for start in sorted(buckets):
             candidates = buckets[start]
-            playable = [note for note in candidates if 40 <= note.midi <= 88] or candidates
+            playable = [note for note in candidates if 40 <= note.midi <= 88]
+            if not playable:
+                continue
             center = float(median_low(note.midi for note in playable))
             choice = min(
                 playable,
@@ -60,6 +62,8 @@ class MelodyPostProcessor:
                     note.id,
                 ),
             )
+            if previous and start - previous.end < 1.5 and abs(choice.midi - previous.midi) > 12:
+                continue
             selected.append(choice)
             previous = choice
         return selected

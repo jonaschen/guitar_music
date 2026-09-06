@@ -27,7 +27,7 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Browser test song" })).toBeVisible();
   await expect(page.getByText("Guitar settings")).toBeVisible();
   await expect(page.getByText("Rhythm suggestion")).toBeVisible();
-  await expect(page.getByText("Melody score preview")).toBeVisible();
+  await expect(page.getByText("Estimated score preview")).toBeVisible();
   await expect(page.getByRole("button", { name: "C4 in bar 1" })).toBeVisible();
   await expect(page.getByText("Playable Tab")).toBeVisible();
   await expect(page.locator(".chord-sheet .measure-header", { hasText: "Bar 2" })).toBeVisible();
