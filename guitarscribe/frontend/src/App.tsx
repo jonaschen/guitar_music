@@ -937,6 +937,13 @@ export function App() {
                   </p>
                 ) : null}
 
+                {score.analysis.warnings.length ? (
+                  <section className="analysis-warnings" aria-live="polite">
+                    <strong>Analysis notes</strong>
+                    <ul>{score.analysis.warnings.map((warning, index) => <li key={warning + index}>{warning}</li>)}</ul>
+                  </section>
+                ) : null}
+
                 {audioUrl ? (
                   <section className="transport-bar">
                     <audio
@@ -1006,7 +1013,7 @@ export function App() {
 
                 {score.melody.length > 0 ? <>
                 <section className="melody-panel">
-                  <div><h3>Estimated melody timeline</h3><p>Extracted from the full mix; it may follow accompaniment instead of the lead. Click a note to seek.</p></div>
+                  <div><h3>Estimated melody timeline</h3><p>Click a note to seek. Check Analysis notes above for transcription limitations.</p></div>
                   <div className="melody-timeline" aria-label="Detected melody notes">{score.melody.map((note) => <button key={note.id} type="button" className="melody-note" title={note.note + " · " + note.start.toFixed(2) + "s"} onClick={() => seekTo(note.start)} style={{ left: String((note.start / Math.max(score.song.duration_seconds, 1)) * 100) + "%", width: String(Math.max(((note.end - note.start) / Math.max(score.song.duration_seconds, 1)) * 100, 0.5)) + "%", bottom: String(Math.max(0, Math.min(85, (note.midi - 40) * 1.8))) + "%" }}>{note.note}</button>)}</div>
                 </section>
 

@@ -64,6 +64,10 @@ class AnalysisPipeline:
             melody = await self.melody_analyzer.analyze(normalized, beats, melody_mode)
             melody.notes = self.melody_post.process(melody.notes, beats.beats, melody_mode)
             melody = self.fretboard_mapper.map_notes(melody)
+            melody.confidence, quality_warnings = self.melody_post.assess_quality(
+                melody.notes, normalized.duration_seconds, melody_mode
+            )
+            melody.warnings.extend(warning for warning in quality_warnings if warning not in melody.warnings)
         except Exception as e:
             logger.warning(f"Melody analysis failed, continuing without melody: {e}")
             melody = MelodyAnalysis(warnings=[str(e)])

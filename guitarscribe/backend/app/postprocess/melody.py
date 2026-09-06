@@ -10,6 +10,36 @@ MODE_MIDI_RANGES = {
 }
 
 class MelodyPostProcessor:
+    def assess_quality(self, notes: List[MelodyNote], duration_seconds: float, mode: MelodyMode) -> tuple[float, list[str]]:
+        """Estimate transcription reliability without claiming source isolation."""
+        warnings = [
+            "Melody is estimated from the original full mix without source separation; it may follow accompaniment rather than the lead."
+        ]
+        if not notes:
+            return 0.0, warnings
+
+        minutes = max(duration_seconds / 60.0, 1 / 60)
+        notes_per_minute = len(notes) / minutes
+        adjacent = list(zip(notes, notes[1:]))
+        large_jump_ratio = (
+            sum(abs(right.midi - left.midi) > 12 for left, right in adjacent) / len(adjacent)
+            if adjacent else 0.0
+        )
+        density_score = 1.0
+        if notes_per_minute < 8:
+            density_score = 0.3
+            warnings.append("The estimated melody is sparse; some lead notes may be missing.")
+        elif notes_per_minute > 180:
+            density_score = 0.4
+            warnings.append("The estimated melody is unusually dense and may include accompaniment notes.")
+
+        continuity_score = max(0.2, 1.0 - large_jump_ratio * 2.0)
+        mode_ceiling = 0.58 if mode == MelodyMode.MIX else 0.68
+        confidence = min(mode_ceiling, 0.10 + 0.25 * density_score + 0.30 * continuity_score)
+        if confidence < 0.5:
+            warnings.append("Melody reliability is low; verify it by ear before using the score or Tab.")
+        return round(confidence, 2), warnings
+
     def remove_short_notes(self, notes: List[MelodyNote], min_duration: float = 0.08) -> List[MelodyNote]:
         return [n for n in notes if n.end - n.start >= min_duration]
 

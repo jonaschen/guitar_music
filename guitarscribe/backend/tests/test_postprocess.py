@@ -1,7 +1,7 @@
 import pytest
 from app.postprocess.chords import ChordPostProcessor
 from app.postprocess.melody import MelodyPostProcessor
-from app.models.analysis import BeatInfo, ChordComplexity, MelodyNote
+from app.models.analysis import BeatInfo, ChordComplexity, MelodyMode, MelodyNote
 
 def test_chord_smooth(sample_chord_analysis, sample_beat_analysis):
     pp = ChordPostProcessor()
@@ -83,3 +83,26 @@ def test_melody_skips_out_of_range_and_implausible_jumps():
     selected = pp.select_monophonic_line(notes)
 
     assert [note.id for note in selected] == ["base"]
+
+
+def test_melody_quality_discloses_full_mix_limit_and_sparse_output():
+    pp = MelodyPostProcessor()
+    notes = [MelodyNote(id="one", start=0.0, end=0.5, midi=60, note="C4", confidence=0.9)]
+
+    confidence, warnings = pp.assess_quality(notes, duration_seconds=60.0, mode=MelodyMode.VOCAL)
+
+    assert confidence < 0.5
+    assert any("without source separation" in warning for warning in warnings)
+    assert any("sparse" in warning for warning in warnings)
+
+
+def test_mix_melody_quality_has_lower_confidence_ceiling():
+    pp = MelodyPostProcessor()
+    notes = [
+        MelodyNote(id=str(index), start=index * 0.5, end=index * 0.5 + 0.4, midi=60 + index % 3, note="C4", confidence=0.9)
+        for index in range(60)
+    ]
+
+    confidence, _ = pp.assess_quality(notes, duration_seconds=60.0, mode=MelodyMode.MIX)
+
+    assert confidence == 0.58

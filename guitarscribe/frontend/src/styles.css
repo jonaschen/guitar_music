@@ -310,6 +310,22 @@ h2 {
   color: #ffd6ad;
 }
 
+.analysis-warnings {
+  margin: 0 0 1rem;
+  padding: 0.8rem 1rem;
+  background: rgba(241, 143, 59, 0.1);
+  border: 1px solid rgba(241, 143, 59, 0.22);
+  border-radius: 16px;
+  color: #ffd6ad;
+}
+
+.analysis-warnings ul {
+  margin: 0.35rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.analysis-warnings li + li { margin-top: 0.25rem; }
+
 .error-banner {
   margin-top: 1rem;
   background: rgba(255, 133, 112, 0.12);
