@@ -284,3 +284,21 @@ async def test_analysis_rejects_oversized_upload(monkeypatch):
     with pytest.raises(Exception) as exc_info:
         await analyze_audio(upload, True, "vocal", "standard", StubPipeline())
     assert getattr(exc_info.value, "status_code", None) == 413
+
+
+@pytest.mark.asyncio
+async def test_playback_manifest_endpoint_returns_revision_and_tracks():
+    score = make_score()
+    from app.models.analysis import BeatInfo, MelodyNote
+    score = score.model_copy(update={
+        "beats": [BeatInfo(time=0.0, beat=1, measure=1)],
+        "melody": [MelodyNote(id="n", start=0.0, end=0.5, midi=60, note="C4")],
+    })
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://testserver") as client:
+        response = await client.post("/scores/playback/manifest", json=score.model_dump(mode="json"))
+
+    assert response.status_code == 200
+    body = response.json()
+    assert len(body["revision"]) == 16
+    assert {event["track"] for event in body["events"]} >= {"melody", "metronome"}

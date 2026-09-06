@@ -458,9 +458,9 @@
 
 ### 第三階段：合成按譜演奏
 
-- [ ] **Playback compiler 與 immutable event sequence**
-  - 定義 canonical playback event、manifest 與 compilation revision invalidation。
-  - 由 score、key/capo、selected voicing、rhythm 與 melody 編譯事件；UI 不直接從 `ChordEvent` 播音。
+- [x] **Playback compiler 與 immutable event sequence**
+  - 已定義 frozen canonical guitar/melody/metronome events、manifest 與 16 字元內容 revision。
+  - 由 score、key/capo、selected voicing 實際音高、rhythm 與 melody 編譯；MIDI 已改讀同一 manifest，Web Audio UI 接線待下一階段。
 - [ ] **Web Audio synth 與分軌控制**
   - Guitar、melody、metronome、original tracks 的 enabled/mute/solo/volume。
   - 強弱拍、count-in、速度與 loop 一致；背景回復後重新同步而非補播。

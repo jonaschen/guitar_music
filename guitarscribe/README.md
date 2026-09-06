@@ -8,6 +8,8 @@ Backend-first prototype for generating guitar-friendly song analysis from upload
 - `POST /analyses`
   - multipart upload
   - fields: `audio_file`, `rights_confirmed`, `melody_mode`, `chord_complexity`
+- `POST /scores/playback/manifest`
+  - compiles immutable guitar, melody, and metronome events with a content revision hash
 - `POST /scores/transpose`
   - JSON body with a full `SongScore`, target semitone delta, accidental preference, and optional capo
 
