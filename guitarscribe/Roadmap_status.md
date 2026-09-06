@@ -20,7 +20,7 @@
 | **M3：可編輯樂譜** | 和弦編輯、移調、Capo、和弦指型、revision | ~88% | ⚠️ 進行中 |
 | **M4：簡化主旋律與 Tab** | 旋律顯示、指板映射、alphaTab、匯出 | ~82% | 🔧 進行中 |
 | **M5：品質與部署** | Golden dataset、E2E 測試、可觀測性 | ~68% | 🔧 進行中 |
-| **M6：歌詞與按譜演奏** | 歌詞匯入、時間標記、同步播放 | ~68% | 🔧 進行中 |
+| **M6：歌詞與按譜演奏** | 歌詞匯入、時間標記、同步播放 | ~70% | 🔧 進行中 |
 
 **目前位置**：M0 完成；M1、M2 已可供本機試用；M3 的核心編輯與指型流程完成；M4 已有量化、Tab、MIDI/MusicXML 與原生旋律預覽；M5、M6 正在收斂。
 
@@ -466,7 +466,7 @@
   - 由 score、key/capo、selected voicing 實際音高、rhythm 與 melody 編譯；MIDI 與 Web Audio UI 已讀同一 manifest。
 - [ ] **Web Audio synth 與分軌控制**
   - 已接 canonical manifest 與 AudioContext clock，提供 score play/pause/stop、Guitar/melody/metronome mute、volume、solo 與合成模式 count-in；原曲與合成播放互斥。
-  - 尚需 lookahead scheduler、合成模式 loop、背景回復重同步與較自然的吉他音色。
+  - 尚需 lookahead scheduler、背景回復重同步與較自然的吉他音色。
 - [ ] **Voicing-aware chord playback**
   - 納入 tuning、capo、frets、muted/open strings、actual sounding pitch。
   - 實作 down/up stroke spread、velocity 與 arpeggio templates；key/capo/voicing 變更後重新編譯受影響 events。

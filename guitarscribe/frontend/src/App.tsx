@@ -601,7 +601,13 @@ export function App() {
       synthContextRef.current = context;
       await context.resume();
       stopSynth(false);
-      const scoreStart = playbackTime >= manifest.duration_seconds ? 0 : playbackTime;
+      const requestedLoop = loopStart !== null && loopEnd !== null && loopEnd > loopStart
+        ? [loopStart, loopEnd] as [number, number]
+        : loopRange;
+      const playhead = playbackTime >= manifest.duration_seconds ? 0 : playbackTime;
+      const scoreStart = requestedLoop && (playhead < requestedLoop[0] || playhead >= requestedLoop[1])
+        ? requestedLoop[0]
+        : playhead;
       const countInBeats = (Number(score.analysis.time_signature.charAt(0)) || 4) * countInMeasures;
       const beatSeconds = 60 / Math.max(score.analysis.bpm, 1) / playbackRate;
       const countInStart = context.currentTime + 0.06;
@@ -615,45 +621,53 @@ export function App() {
           setIsCountingIn(false);
         }, countInBeats * beatSeconds * 1000);
       }
-      const contextStart = countInStart + countInBeats * beatSeconds;
-      synthClockRef.current = { contextStart, scoreStart };
-
-      for (const event of manifest.events) {
-        if (!synthTracks[event.track] || (synthSoloTrack !== null && event.track !== synthSoloTrack) || event.end <= scoreStart) continue;
-        const eventStart = Math.max(event.start, scoreStart);
-        event.pitches.forEach((pitch, pitchIndex) => {
-          const strumDelay = event.track === "guitar" ? pitchIndex * 0.012 / playbackRate : 0;
-          const startAt = contextStart + (eventStart - scoreStart) / playbackRate + strumDelay;
-          const endAt = Math.max(startAt + 0.025, contextStart + (event.end - scoreStart) / playbackRate);
-          const oscillator = context.createOscillator();
-          const gain = context.createGain();
-          oscillator.type = event.track === "guitar" ? "triangle" : event.track === "melody" ? "sine" : "square";
-          oscillator.frequency.setValueAtTime(440 * 2 ** ((pitch - 69) / 12), startAt);
-          const peak = Math.max(0.001, synthVolumes[event.track] * event.velocity / 127 / Math.max(event.pitches.length, 1));
-          gain.gain.setValueAtTime(0.0001, startAt);
-          gain.gain.linearRampToValueAtTime(peak, startAt + 0.008);
-          gain.gain.exponentialRampToValueAtTime(0.0001, endAt);
-          oscillator.connect(gain).connect(context.destination);
-          oscillator.start(startAt);
-          oscillator.stop(endAt + 0.01);
-          synthSourcesRef.current.push(oscillator);
-        });
-      }
-
-      setIsSynthPlaying(true);
-      const updatePlayhead = () => {
-        const clock = synthClockRef.current;
-        if (!clock) return;
-        const nextTime = clock.scoreStart + (context.currentTime - clock.contextStart) * playbackRate;
-        if (nextTime >= manifest.duration_seconds) {
-          setPlaybackTime(manifest.duration_seconds);
-          stopSynth(false);
-          return;
+      const initialContextStart = countInStart + countInBeats * beatSeconds;
+      const scheduleSegment = (segmentStart: number, contextStart: number) => {
+        const segmentEnd = requestedLoop?.[1] ?? manifest.duration_seconds;
+        synthClockRef.current = { contextStart, scoreStart: segmentStart };
+        for (const event of manifest.events) {
+          if (!synthTracks[event.track] || (synthSoloTrack !== null && event.track !== synthSoloTrack) || event.end <= segmentStart || event.start >= segmentEnd) continue;
+          const eventStart = Math.max(event.start, segmentStart);
+          const eventEnd = Math.min(event.end, segmentEnd);
+          event.pitches.forEach((pitch, pitchIndex) => {
+            const strumDelay = event.track === "guitar" ? pitchIndex * 0.012 / playbackRate : 0;
+            const startAt = contextStart + (eventStart - segmentStart) / playbackRate + strumDelay;
+            const endAt = Math.max(startAt + 0.025, contextStart + (eventEnd - segmentStart) / playbackRate);
+            const oscillator = context.createOscillator();
+            const gain = context.createGain();
+            oscillator.type = event.track === "guitar" ? "triangle" : event.track === "melody" ? "sine" : "square";
+            oscillator.frequency.setValueAtTime(440 * 2 ** ((pitch - 69) / 12), startAt);
+            const peak = Math.max(0.001, synthVolumes[event.track] * event.velocity / 127 / Math.max(event.pitches.length, 1));
+            gain.gain.setValueAtTime(0.0001, startAt);
+            gain.gain.linearRampToValueAtTime(peak, startAt + 0.008);
+            gain.gain.exponentialRampToValueAtTime(0.0001, endAt);
+            oscillator.connect(gain).connect(context.destination);
+            oscillator.start(startAt);
+            oscillator.stop(endAt + 0.01);
+            synthSourcesRef.current.push(oscillator);
+          });
         }
-        setPlaybackTime(Math.max(clock.scoreStart, nextTime));
+        const updatePlayhead = () => {
+          const clock = synthClockRef.current;
+          if (!clock) return;
+          const nextTime = clock.scoreStart + (context.currentTime - clock.contextStart) * playbackRate;
+          if (nextTime >= segmentEnd) {
+            if (requestedLoop) {
+              synthSourcesRef.current = [];
+              scheduleSegment(requestedLoop[0], context.currentTime + 0.015);
+              return;
+            }
+            setPlaybackTime(manifest.duration_seconds);
+            stopSynth(false);
+            return;
+          }
+          setPlaybackTime(Math.max(clock.scoreStart, nextTime));
+          synthAnimationRef.current = window.requestAnimationFrame(updatePlayhead);
+        };
         synthAnimationRef.current = window.requestAnimationFrame(updatePlayhead);
       };
-      synthAnimationRef.current = window.requestAnimationFrame(updatePlayhead);
+      setIsSynthPlaying(true);
+      scheduleSegment(scoreStart, initialContextStart);
     } catch (synthError) {
       stopSynth(false);
       setError(synthError instanceof Error ? synthError.message : "Could not play compiled score.");
