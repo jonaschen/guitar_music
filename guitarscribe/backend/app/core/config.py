@@ -22,6 +22,8 @@ class Settings(BaseModel):
     youtube_enabled: bool = False
     youtube_dl_binary: str = "yt-dlp"
     youtube_download_timeout_seconds: int = 600
+    submission_rate_limit: int = 5
+    submission_rate_window_seconds: int = 3600
     rhythm_patterns_dir: Path = Path("/app/rhythm-patterns")
     ffmpeg_binary: Optional[str] = None
     log_level: str = "INFO"
@@ -41,6 +43,8 @@ class Settings(BaseModel):
             youtube_enabled=os.environ.get("GUITARSCRIBE_YOUTUBE_ENABLED", "false").lower() == "true",
             youtube_dl_binary=os.environ.get("GUITARSCRIBE_YTDLP_BINARY", "yt-dlp"),
             youtube_download_timeout_seconds=int(os.environ.get("GUITARSCRIBE_YOUTUBE_DOWNLOAD_TIMEOUT_SECONDS", "600")),
+            submission_rate_limit=int(os.environ.get("GUITARSCRIBE_SUBMISSION_RATE_LIMIT", "5")),
+            submission_rate_window_seconds=int(os.environ.get("GUITARSCRIBE_SUBMISSION_RATE_WINDOW_SECONDS", "3600")),
             ffmpeg_binary=os.environ.get("GUITARSCRIBE_FFMPEG_BINARY"),
             log_level=os.environ.get("GUITARSCRIBE_LOG_LEVEL", "INFO"),
         )

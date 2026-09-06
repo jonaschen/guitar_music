@@ -41,6 +41,10 @@ docker compose up -d --build backend frontend
 
 The result's source WAV is available only through its completed job and is removed with that job's TTL cleanup. The resolver accepts only HTTPS YouTube hosts and invokes `yt-dlp` without a shell or user-supplied command options.
 
+## Analysis submission limit
+
+To protect the single-worker analysis service, job creation is limited per direct client address. The default is five submissions per hour; set `GUITARSCRIBE_SUBMISSION_RATE_LIMIT=0` only for a trusted development environment that needs to disable this in-memory guard. A production multi-worker deployment should replace it with a shared reverse-proxy or Redis-backed limiter.
+
 ## Optional vocal isolation
 
 Full-mix melody extraction can follow accompaniment instead of the singer. Vocal focus can optionally run Demucs before Basic Pitch without adding PyTorch to the normal backend image. In a dedicated Python 3.10-3.12 environment, install CPU PyTorch first, then the optional dependency:

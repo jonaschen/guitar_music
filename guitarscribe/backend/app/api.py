@@ -1,7 +1,7 @@
 import tempfile
 from pathlib import Path
 
-from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile, status
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, PlainTextResponse, Response
 from pydantic import BaseModel, Field
@@ -25,6 +25,7 @@ from .exporters.musicxml import export_musicxml
 from .services.revisions import RevisionStore
 from .services.transposition import TranspositionService
 from .sources.youtube import YouTubeAudioDownloader, validate_youtube_url
+from .services.rate_limit import SubmissionRateLimiter
 
 
 class TransposeScoreRequest(BaseModel):
@@ -62,6 +63,7 @@ app = FastAPI(
 )
 transposition_service = TranspositionService()
 _job_service: AnalysisJobService | None = None
+_submission_limiter: SubmissionRateLimiter | None = None
 
 app.add_middleware(
     CORSMiddleware,
@@ -77,6 +79,25 @@ app.add_middleware(
 
 def get_pipeline() -> AnalysisPipeline:
     return create_pipeline(Settings.from_env())
+
+
+def get_submission_limiter() -> SubmissionRateLimiter:
+    global _submission_limiter
+    if _submission_limiter is None:
+        settings = Settings.from_env()
+        _submission_limiter = SubmissionRateLimiter(settings.submission_rate_limit, settings.submission_rate_window_seconds)
+    return _submission_limiter
+
+
+async def enforce_submission_rate_limit(request: Request, limiter: SubmissionRateLimiter = Depends(get_submission_limiter)) -> None:
+    client_key = request.client.host if request.client else "unknown"
+    allowed, retry_after = limiter.allow(client_key)
+    if not allowed:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many analysis submissions; try again later.",
+            headers={"Retry-After": str(retry_after)},
+        )
 
 
 def get_revision_store() -> RevisionStore:
@@ -120,6 +141,7 @@ async def create_analysis_job(
     melody_mode: str = Form(default="vocal"),
     chord_complexity: str = Form(default="standard"),
     separate_vocals: bool = Form(default=False),
+    _rate_limit: None = Depends(enforce_submission_rate_limit),
     job_service: AnalysisJobService = Depends(get_job_service),
 ) -> AnalysisJob:
     """Queue a local upload for analysis and return immediately."""
@@ -138,7 +160,11 @@ async def create_analysis_job(
 
 
 @app.post("/api/v1/youtube-jobs", response_model=AnalysisJob, status_code=status.HTTP_202_ACCEPTED)
-async def create_youtube_analysis_job(request: YouTubeJobRequest, job_service: AnalysisJobService = Depends(get_job_service)) -> AnalysisJob:
+async def create_youtube_analysis_job(
+    request: YouTubeJobRequest,
+    _rate_limit: None = Depends(enforce_submission_rate_limit),
+    job_service: AnalysisJobService = Depends(get_job_service),
+) -> AnalysisJob:
     if not request.rights_confirmed:
         raise HTTPException(status_code=400, detail="Rights must be confirmed")
     try:
