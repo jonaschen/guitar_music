@@ -5,14 +5,24 @@ class SimpleFretboardMapper:
         # E2, A2, D3, G3, B3, E4
         self.string_tuning = [40, 45, 50, 55, 59, 64]
         
-    def candidates(self, note: MelodyNote):
-        return [(6 - index, note.midi - tuning) for index, tuning in enumerate(self.string_tuning) if 0 <= note.midi - tuning <= 12]
+    def candidates(self, note: MelodyNote, capo: int = 0):
+        """Return physical fret positions for a sounding MIDI note.
 
-    def map_notes(self, melody: MelodyAnalysis) -> MelodyAnalysis:
+        A capo raises every open-string pitch, so it must be considered when
+        producing the displayed fret number.  The number remains relative to
+        the capo, as guitar tab convention expects.
+        """
+        return [
+            (6 - index, note.midi - tuning - capo)
+            for index, tuning in enumerate(self.string_tuning)
+            if 0 <= note.midi - tuning - capo <= 12
+        ]
+
+    def map_notes(self, melody: MelodyAnalysis, capo: int = 0) -> MelodyAnalysis:
         mapped = []
         previous = None
         for note in melody.notes:
-            candidates = self.candidates(note)
+            candidates = self.candidates(note, capo)
             choice = min(candidates, key=lambda candidate: candidate[1] if previous is None else abs(candidate[1] - previous[1]) + (0.75 if candidate[0] != previous[0] else 0)) if candidates else None
             mapped.append(note.model_copy(update={"string": choice[0], "fret": choice[1]}) if choice else note.model_copy(update={"string": None, "fret": None}))
             previous = choice

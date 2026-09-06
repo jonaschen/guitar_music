@@ -58,6 +58,25 @@ def test_transpose_score_updates_shape_key_for_capo():
     assert transposed.chords[1].shape_symbol == "D/F#"
 
 
+def test_transpose_remaps_tab_for_the_new_pitch_and_capo():
+    score = make_score()
+    # G4 is available at fret 3 on string 1 without a capo.
+    score.melody[0].string = 1
+    score.melody[0].fret = 3
+
+    transposed_without_capo = TranspositionService().transpose_score(score, semitones=2)
+    transposed_with_capo = TranspositionService().transpose_score(score, semitones=2, capo=2)
+
+    # A4 is fret 5 without a capo, or fret 3 relative to capo 2, on string 1.
+    assert transposed_without_capo.melody[0].midi == 69
+    assert transposed_without_capo.melody[0].string == 1
+    assert transposed_without_capo.melody[0].fret == 5
+    assert transposed_with_capo.melody[0].string == 1
+    assert transposed_with_capo.melody[0].fret == 3
+    # The original analysis result remains untouched.
+    assert score.melody[0].fret == 3
+
+
 def test_transpose_clears_voicings_for_the_new_shape():
     score = make_score()
     score.chords[0].voicing_id = "open-g"

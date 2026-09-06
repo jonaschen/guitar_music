@@ -2,6 +2,8 @@ import re
 from typing import Optional
 
 from ..models.analysis import AccidentalPreference
+from ..models.analysis import MelodyAnalysis
+from ..fretboard.mapper import SimpleFretboardMapper
 from ..models.score import KeyContext, KeySignature, SongScore
 
 NOTE_TO_PITCH = {
@@ -34,6 +36,9 @@ CHORD_RE = re.compile(r"^([A-G](?:#|b)?)([^/]*)?(?:/([A-G](?:#|b)?))?$")
 
 
 class TranspositionService:
+    def __init__(self, fretboard_mapper: SimpleFretboardMapper | None = None):
+        self.fretboard_mapper = fretboard_mapper or SimpleFretboardMapper()
+
     def transpose_score(
         self,
         score: SongScore,
@@ -78,6 +83,14 @@ class TranspositionService:
                 note.source_note = note.note
             note.midi = note.source_midi + normalized
             note.note = self.note_name_from_midi(note.midi, target_key, accidental_preference, source_mode)
+
+        # Transposition and capo changes alter which physical fret produces a
+        # sounding melody pitch. Re-map only the notation data; no DSP rerun.
+        remapped_melody = self.fretboard_mapper.map_notes(
+            MelodyAnalysis(notes=result.melody),
+            capo=capo_value,
+        )
+        result.melody = remapped_melody.notes
 
         return result
 
