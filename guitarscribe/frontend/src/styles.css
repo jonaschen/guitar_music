@@ -713,6 +713,11 @@ h2 {
 .tab-panel { display: grid; gap: 0.55rem; margin: 0 0 1rem; padding: 0.9rem 1rem; border: 1px solid var(--border); border-radius: 22px; }
 .tab-panel h3, .tab-panel p { margin: 0; }
 .tab-panel p { color: var(--text-muted); font-size: 0.85rem; }
+.alphatab-panel { display: grid; gap: 0.55rem; margin: 0 0 1rem; padding: 0.9rem 1rem; border: 1px solid var(--border); border-radius: 22px; background: rgba(255, 255, 255, 0.03); }
+.alphatab-panel h3, .alphatab-panel p { margin: 0; }
+.alphatab-panel p { color: var(--text-muted); font-size: 0.85rem; }
+.alphatab-host { min-height: 9rem; overflow-x: auto; border-radius: 12px; background: #fff; color: #171717; }
+.alphatab-error { color: var(--danger) !important; }
 .synth-solo { border: 1px solid var(--border); border-radius: 999px; padding: 0.18rem 0.42rem; background: transparent; color: var(--text-muted); font-size: 0.7rem; }
 .synth-solo-active { border-color: rgba(241, 143, 59, 0.72); background: rgba(241, 143, 59, 0.14); color: #ffd6ad; }
 .tab-staff { position: relative; height: 7.2rem; margin-top: 0.25rem; padding-left: 2.2rem; overflow: hidden; border-radius: 14px; background: repeating-linear-gradient(to bottom, transparent 0 calc(16.666% - 1px), rgba(255,255,255,0.34) calc(16.666% - 1px) 16.666%); }

@@ -10,6 +10,8 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@coderline/alphatab": "^1.8.4",
+    "@coderline/alphatab-vite": "^1.8.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
@@ -18,8 +20,8 @@
     "@types/node": "^22.7.4",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
-    "@vitejs/plugin-react": "^4.3.3",
+    "@vitejs/plugin-react": "^5.1.4",
     "typescript": "^5.6.2",
-    "vite": "^5.4.8"
+    "vite": "^7.3.6"
   }
 }

@@ -1,6 +1,8 @@
-import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, FormEvent, lazy, Suspense, useEffect, useRef, useState } from "react";
 import type { AccidentalPreference, AnalysisJob, PlaybackManifest, PlaybackTrack, SongScore } from "./types";
 import { ChordDiagram } from "./ChordDiagram";
+
+const AlphaTabScore = lazy(() => import("./AlphaTabScore"));
 
 const API_BASE = "http://localhost:8000";
 const KEY_OPTIONS = [
@@ -1173,6 +1175,8 @@ export function App() {
                     })}
                   </div>
                 </section>
+
+                <Suspense fallback={<section className="alphatab-panel"><p>Loading notation preview…</p></section>}><AlphaTabScore score={score} /></Suspense>
 
                 <section className="tab-panel">
                   <div><h3>Playable Tab {activeMeasureGroup ? "· Bar " + activeMeasureGroup.measure : ""}</h3><p>Read left to right. Each horizontal line is a string; a number tells you which fret to press. The amber number is playing now.</p></div>
