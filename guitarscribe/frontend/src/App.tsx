@@ -331,13 +331,24 @@ export function App() {
     return () => window.removeEventListener("keydown", handleShortcut);
   }, [score, undoHistory, redoHistory]);
 
-  const groupedChords = new Map<number, ScoreChord[]>();
-  score?.chords.forEach((chord) => {
-    const measure = score.beats.filter((beat) => beat.time <= chord.start).at(-1)?.measure ?? 1;
-    const chords = groupedChords.get(measure) ?? [];
-    chords.push(chord);
-    groupedChords.set(measure, chords);
-  });
+  const measureGroups = score ? (() => {
+    const starts = new Map<number, number>();
+    score.beats.forEach((beat) => {
+      const previous = starts.get(beat.measure);
+      if (previous === undefined || beat.time < previous) starts.set(beat.measure, beat.time);
+    });
+    const measures = Array.from(starts.entries()).sort(([left], [right]) => left - right);
+    const ranges = measures.length ? measures.map(([measure, start], index) => ({ measure, start, end: measures[index + 1]?.[1] ?? score.song.duration_seconds })) : [{ measure: 1, start: 0, end: score.song.duration_seconds }];
+    return ranges.map((range) => ({
+      ...range,
+      chords: score.chords.filter((chord) => chord.start < range.end && chord.end > range.start).map((chord) => ({
+        chord,
+        start: Math.max(chord.start, range.start),
+        end: Math.min(chord.end, range.end),
+        continues: chord.start < range.start || chord.end > range.end,
+      })),
+    }));
+  })() : [];
 
   const selectedChord = score?.chords.find((chord) => chord.id === selectedChordId) ?? null;
   const activeChordId = score?.chords.find((chord) => playbackTime >= chord.start && playbackTime < chord.end)?.id ?? null;
@@ -1018,25 +1029,24 @@ export function App() {
                 </> : <section className="melody-empty" aria-live="polite"><h3>Melody not detected</h3><p>This analysis returned no confident melody notes, so Tab and melody exports are not ready. Try a clearer lead-vocal or single-guitar recording. A future retry may produce a different result.</p></section>}
 
                 <div className="chord-sheet">
-                  {Array.from(groupedChords.entries()).map(([measure, group]) => (
-                    <div key={`measure-`} className="measure-card">
-                      <div className="measure-header">Bar {measure}</div>
+                  {measureGroups.map((group) => (
+                    <div key={"measure-" + group.measure} className="measure-card">
+                      <div className="measure-header">Bar {group.measure}</div>
                       <div className="measure-chords">
-                        {group.map((chord) => (
+                        {group.chords.length ? group.chords.map(({ chord, start, end, continues }) => (
                           <button
-                            key={chord.id}
+                            key={chord.id + "-" + group.measure}
                             type="button"
-                            className={`chord-block${selectedChordId === chord.id ? " chord-block-selected" : ""}${activeChordId === chord.id ? " chord-block-active" : ""}`}
+                            className={"chord-block" + (selectedChordId === chord.id ? " chord-block-selected" : "") + (activeChordId === chord.id ? " chord-block-active" : "")}
                             onClick={() => selectChord(chord)}
                           >
                             <span className="chord-symbol">{chord.symbol}</span>
-                            <span className="chord-meta">
-                              {chord.start.toFixed(1)}s - {chord.end.toFixed(1)}s
-                            </span>
+                            <span className="chord-meta">{start.toFixed(1)}s - {end.toFixed(1)}s</span>
                             <span className="shape-meta">Shape: {chord.shape_symbol ?? chord.symbol}</span>
+                            {continues ? <span className="continuation-badge">Continues</span> : null}
                             {chord.edited ? <span className="edit-badge">Edited</span> : null}
                           </button>
-                        ))}
+                        )) : <span className="measure-empty">No chord change</span>}
                       </div>
                     </div>
                   ))}

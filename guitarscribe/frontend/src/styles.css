@@ -419,6 +419,9 @@ h2 {
   font-weight: 700;
 }
 
+.continuation-badge { align-self: flex-start; padding: 0.2rem 0.45rem; border-radius: 999px; color: var(--accent-2); background: rgba(137, 194, 167, 0.13); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.measure-empty { align-self: center; color: var(--text-muted); font-size: 0.8rem; }
+
 .edit-badge {
   align-self: flex-start;
   margin-top: 0.25rem;
