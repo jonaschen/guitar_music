@@ -1,6 +1,6 @@
 # GuitarScribe 開發進度與待辦事項
 
-> 最後更新：2026-09-05  
+> 最後更新：2026-09-06  
 > 參考規格文件：  
 > 1. `GuitarScribe_Web_UI_AI_Handoff.md`（主交接文件）  
 > 2. `GuitarScribe_UI_Key_and_Chord_Voicings_Addendum.md`（升降 Key 與和弦指型追加規格）  
@@ -18,9 +18,9 @@
 | **M1：後端 MVP** | FastAPI、非同步工作、SQLite、OpenAPI | ~88% | ⚠️ 進行中 |
 | **M2：Web UI MVP** | 上傳、進度、播放同步、和弦格、匯出 | ~96% | ⚠️ 進行中 |
 | **M3：可編輯樂譜** | 和弦編輯、移調、Capo、和弦指型、revision | ~88% | ⚠️ 進行中 |
-| **M4：簡化主旋律與 Tab** | 旋律顯示、指板映射、alphaTab、匯出 | ~72% | 🔧 早期 |
-| **M5：品質與部署** | Golden dataset、E2E 測試、可觀測性 | ~65% | 🔧 進行中 |
-| **M6：歌詞與按譜演奏** | 歌詞匯入、時間標記、同步播放 | ~55% | 🔧 早期 |
+| **M4：簡化主旋律與 Tab** | 旋律顯示、指板映射、alphaTab、匯出 | ~82% | 🔧 進行中 |
+| **M5：品質與部署** | Golden dataset、E2E 測試、可觀測性 | ~68% | 🔧 進行中 |
+| **M6：歌詞與按譜演奏** | 歌詞匯入、時間標記、同步播放 | ~65% | 🔧 進行中 |
 
 **目前位置**：M0 完成；M1、M2 已可供本機試用；M3 的核心編輯與指型流程完成；M4 已有量化、Tab、MIDI/MusicXML 與原生旋律預覽；M5、M6 正在收斂。
 
@@ -280,6 +280,9 @@
 - [x] 旋律後處理（短音符移除、重複合併）
 - [x] 指板映射（`SimpleFretboardMapper`，MIDI → string/fret）
 - [x] 旋律模式選項（vocal / guitar / mix）
+- [x] **可選人聲隔離品質模式**
+  - Vocal focus 可逐次分析啟用 Demucs；未安裝時安全退回全混音並明確警告。
+  - 實際 Live 音檔驗證：隔離後低於 G3 的可疑低音由 170 降至 11，旋律中位音高由 F#3 提升至 F4。
 - [x] `MelodyNote` 資料模型（含 string、fret、source_midi、source_note）
 
 ### ❌ 待完成
@@ -299,8 +302,8 @@
   - Key 或 Capo 改變後 Tab 需重新映射，不需重新辨識
 - [x] **MusicXML 匯出**
 - [x] **MIDI 匯出**
-- [ ] **旋律 confidence 與 debug 模式**（主文件 §7.5）
-  - 保留原始音高結果供 debug
+- [x] **旋律 confidence 與品質提示**（主文件 §7.5）
+  - 依音符密度、平均信心與來源是否已分離提供可靠性與可讀警告；原始候選音高 debug 輸出仍待補。
 
 ---
 
@@ -411,7 +414,7 @@
 
 ## 已知問題與限制
 
-1. **Melody 分析在全混音上效果不佳** — 已加入模式化候選線與品質警告；Vocal focus 可於單次 job 勾選 Demucs 人聲分離（伺服器需另行啟用），失敗會安全退回全混音並顯示原因。
+1. **Melody 分析在全混音上效果不佳** — 已加入模式化候選線與品質警告；Vocal focus 可於單次 job 勾選 Demucs 人聲分離（伺服器需另行啟用），失敗會安全退回全混音並顯示原因。CPU 隔離一首 5 分半 Live 曲約需數分鐘，適合作為較慢但品質較高的選項。
 2. **Chordino 安裝不穩定** — Docker build 自動降級為 Chromagram，但 Chromagram 只支援 24 組大小調
 3. **RhythmSuggester 為靜態** — 不讀取 `rhythm-patterns/` JSON 檔案，固定回傳 8 分音符型
 4. **完整標準譜 engraving 尚未整合** — 目前提供原生小節化旋律預覽、Tab 與 MusicXML 匯出；alphaTab 需在 Vite 相容性處理後導入。
@@ -460,7 +463,7 @@
 
 - [x] **Playback compiler 與 immutable event sequence**
   - 已定義 frozen canonical guitar/melody/metronome events、manifest 與 16 字元內容 revision。
-  - 由 score、key/capo、selected voicing 實際音高、rhythm 與 melody 編譯；MIDI 已改讀同一 manifest，Web Audio UI 接線待下一階段。
+  - 由 score、key/capo、selected voicing 實際音高、rhythm 與 melody 編譯；MIDI 與 Web Audio UI 已讀同一 manifest。
 - [ ] **Web Audio synth 與分軌控制**
   - 已接 canonical manifest 與 AudioContext clock，提供 score play/pause/stop、Guitar/melody/metronome mute 與 volume，原曲與合成播放互斥。
   - 尚需 lookahead scheduler、solo、合成模式 count-in/loop、背景回復重同步與較自然的吉他音色。
