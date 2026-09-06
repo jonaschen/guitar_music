@@ -5,7 +5,7 @@ from typing import List
 from ..models.analysis import BeatInfo, MelodyMode, MelodyNote
 
 MODE_MIDI_RANGES = {
-    MelodyMode.VOCAL: (40, 84),
+    MelodyMode.VOCAL: (48, 84),
     MelodyMode.GUITAR: (40, 88),
     MelodyMode.MIX: (36, 88),
 }

@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 NOTE_NAMES = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B']
 
 MODE_PROFILES = {
-    MelodyMode.VOCAL: {"onset_threshold": 0.35, "frame_threshold": 0.20, "minimum_note_length": 100, "minimum_frequency": 82.0, "maximum_frequency": 1047.0},
+    MelodyMode.VOCAL: {"onset_threshold": 0.35, "frame_threshold": 0.20, "minimum_note_length": 100, "minimum_frequency": 98.0, "maximum_frequency": 1047.0},
     MelodyMode.GUITAR: {"onset_threshold": 0.35, "frame_threshold": 0.20, "minimum_note_length": 80, "minimum_frequency": 82.0, "maximum_frequency": 1319.0},
     MelodyMode.MIX: {"onset_threshold": 0.40, "frame_threshold": 0.25, "minimum_note_length": 100, "minimum_frequency": 65.0, "maximum_frequency": 1319.0},
 }

@@ -144,3 +144,15 @@ def test_source_separated_melody_omits_full_mix_warning():
     )
 
     assert not any("without source separation" in warning for warning in warnings)
+
+
+def test_vocal_mode_rejects_bass_register_candidates():
+    pp = MelodyPostProcessor()
+    notes = [
+        MelodyNote(id="bass", start=0.0, end=0.5, midi=47, note="B2", confidence=0.9),
+        MelodyNote(id="lead", start=0.0, end=0.5, midi=60, note="C4", confidence=0.9),
+    ]
+
+    selected = pp.select_monophonic_line(notes, MelodyMode.VOCAL)
+
+    assert [note.id for note in selected] == ["lead"]
