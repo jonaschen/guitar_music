@@ -441,8 +441,8 @@
 - [x] **歌詞編輯與手動對時 UI**
   - 已提供匯入、逐行 Set start/end、播放高亮與分配 timing；拖曳、重打與 snapping 仍待完成。
   - 播放時高亮目前行與下一行，點擊行可 seek；文字輸入時不攔截快捷鍵。
-- [ ] **ChordPro lyrics export**
-  - 逐行 timing 時輸出獨立和弦行/小節格並保留 metadata；僅逐字 timing 才將 chord 精確插入歌詞字前。
+- [x] **ChordPro lyrics export**
+  - 逐行 timing 輸出獨立和弦列並保留 language/source/timing metadata；逐字 timing 將 chord 插入對應 word 前，並跳脫使用者歌詞中的 ChordPro 控制字元。
 
 ### 第二階段：播放時鐘與原曲同步
 
