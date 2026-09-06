@@ -4,7 +4,7 @@ from ..models.audio import SourceRequest
 from ..models.score import SongScore, SongInfo, AnalysisSummary, Provenance, KeyContext, KeySignature
 from ..models.analysis import AudioFeatures, MelodyAnalysis, MelodyMode, ChordComplexity
 from .config import Settings, ChordEngine
-from ..analyzers.preprocessor import FFmpegPreprocessor
+from ..analyzers.preprocessor import DemucsMelodySeparator, FFmpegPreprocessor
 from ..analyzers.beats.librosa_beats import LibrosaBeatAnalyzer
 from ..analyzers.chords.chromagram import ChromagramChordAnalyzer
 from ..analyzers.chords.chordino import ChordinoChordAnalyzer
@@ -18,7 +18,7 @@ from ..sources.local import LocalAudioSource
 logger = logging.getLogger(__name__)
 
 class AnalysisPipeline:
-    def __init__(self, preprocessor, beat_analyzer, chord_analyzer, melody_analyzer, chord_post, melody_post, rhythm_suggester, fretboard_mapper, source, max_duration_seconds: int = 600):
+    def __init__(self, preprocessor, beat_analyzer, chord_analyzer, melody_analyzer, chord_post, melody_post, rhythm_suggester, fretboard_mapper, source, melody_separator=None, max_duration_seconds: int = 600):
         self.preprocessor = preprocessor
         self.beat_analyzer = beat_analyzer
         self.chord_analyzer = chord_analyzer
@@ -28,6 +28,7 @@ class AnalysisPipeline:
         self.rhythm_suggester = rhythm_suggester
         self.fretboard_mapper = fretboard_mapper
         self.source = source
+        self.melody_separator = melody_separator
         self.max_duration_seconds = max_duration_seconds
 
     async def run(
@@ -61,13 +62,22 @@ class AnalysisPipeline:
         try:
             await report("melody_analysis")
             melody_mode = MelodyMode(options.get("melody_mode", "vocal"))
-            melody = await self.melody_analyzer.analyze(normalized, beats, melody_mode)
+            melody_audio = normalized
+            source_separated = False
+            separation_warnings: list[str] = []
+            if self.melody_separator and melody_mode == MelodyMode.VOCAL:
+                try:
+                    melody_audio, source_separated = await self.melody_separator.separate(normalized, melody_mode)
+                except Exception as separation_error:
+                    logger.warning("Vocal separation failed; using full mix: %s", separation_error)
+                    separation_warnings.append(f"Vocal separation failed; using full mix: {separation_error}")
+            melody = await self.melody_analyzer.analyze(melody_audio, beats, melody_mode)
             melody.notes = self.melody_post.process(melody.notes, beats.beats, melody_mode)
             melody = self.fretboard_mapper.map_notes(melody)
             melody.confidence, quality_warnings = self.melody_post.assess_quality(
-                melody.notes, normalized.duration_seconds, melody_mode
+                melody.notes, normalized.duration_seconds, melody_mode, source_separated=source_separated
             )
-            melody.warnings.extend(warning for warning in quality_warnings if warning not in melody.warnings)
+            melody.warnings.extend(warning for warning in [*separation_warnings, *quality_warnings] if warning not in melody.warnings)
         except Exception as e:
             logger.warning(f"Melody analysis failed, continuing without melody: {e}")
             melody = MelodyAnalysis(warnings=[str(e)])
@@ -130,9 +140,10 @@ def create_pipeline(settings: Settings) -> AnalysisPipeline:
     rhythm_suggester = RhythmSuggester(settings.rhythm_patterns_dir)
     fretboard_mapper = SimpleFretboardMapper()
     source = LocalAudioSource()
+    melody_separator = DemucsMelodySeparator(settings.demucs_binary) if settings.melody_separator == "demucs" else None
     
     return AnalysisPipeline(
         preprocessor, beat_analyzer, chord_analyzer, melody_analyzer,
-        chord_post, melody_post, rhythm_suggester, fretboard_mapper, source,
+        chord_post, melody_post, rhythm_suggester, fretboard_mapper, source, melody_separator,
         max_duration_seconds=settings.max_duration_seconds
     )

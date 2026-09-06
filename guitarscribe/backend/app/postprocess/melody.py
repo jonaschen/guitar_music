@@ -11,9 +11,9 @@ MODE_MIDI_RANGES = {
 }
 
 class MelodyPostProcessor:
-    def assess_quality(self, notes: List[MelodyNote], duration_seconds: float, mode: MelodyMode) -> tuple[float, list[str]]:
+    def assess_quality(self, notes: List[MelodyNote], duration_seconds: float, mode: MelodyMode, source_separated: bool = False) -> tuple[float, list[str]]:
         """Estimate transcription reliability without claiming source isolation."""
-        warnings = [
+        warnings = [] if source_separated else [
             "Melody is estimated from the original full mix without source separation; it may follow accompaniment rather than the lead."
         ]
         if not notes:

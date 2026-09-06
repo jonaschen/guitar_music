@@ -21,6 +21,9 @@ dependencies = [
 melody = [
     "basic-pitch[onnx]>=0.3",
 ]
+separation = [
+    "demucs>=4,<5",
+]
 chordino = [
     "vamp>=1.1",
 ]

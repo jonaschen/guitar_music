@@ -130,3 +130,17 @@ def test_mix_mode_keeps_median_candidate_region():
     selected = pp.select_monophonic_line(notes, MelodyMode.MIX)
 
     assert [note.midi for note in selected] == [60]
+
+
+def test_source_separated_melody_omits_full_mix_warning():
+    pp = MelodyPostProcessor()
+    notes = [
+        MelodyNote(id=str(index), start=index * 0.5, end=index * 0.5 + 0.4, midi=60, note="C4", confidence=0.9)
+        for index in range(60)
+    ]
+
+    _, warnings = pp.assess_quality(
+        notes, duration_seconds=60.0, mode=MelodyMode.VOCAL, source_separated=True
+    )
+
+    assert not any("without source separation" in warning for warning in warnings)

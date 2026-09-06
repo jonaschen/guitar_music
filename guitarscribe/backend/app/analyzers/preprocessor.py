@@ -5,6 +5,7 @@ import soundfile as sf
 from pathlib import Path
 import logging
 from ..models.audio import AudioAsset, NormalizedAudio
+from ..models.analysis import MelodyMode
 
 logger = logging.getLogger(__name__)
 
@@ -63,3 +64,42 @@ class FFmpegPreprocessor:
             raise RuntimeError(
                 "ffmpeg is not available. Set GUITARSCRIBE_FFMPEG_BINARY or install imageio-ffmpeg."
             ) from exc
+
+
+class DemucsMelodySeparator:
+    """Optional vocal isolation adapter; Demucs is deliberately not in the base image."""
+
+    def __init__(self, binary: str | None = None, model: str = "htdemucs", timeout: int = 900):
+        self.binary = binary
+        self.model = model
+        self.timeout = timeout
+
+    async def separate(self, audio: NormalizedAudio, mode: MelodyMode) -> tuple[NormalizedAudio, bool]:
+        if mode != MelodyMode.VOCAL:
+            return audio, False
+
+        executable = self.binary or shutil.which("demucs")
+        if not executable:
+            raise RuntimeError("Demucs is enabled but its executable is not installed")
+
+        output_dir = Path(tempfile.mkdtemp(prefix="guitarscribe_stems_"))
+        cmd = [
+            executable, "--two-stems", "vocals", "-n", self.model,
+            "--out", str(output_dir), str(audio.path),
+        ]
+        try:
+            result = subprocess.run(cmd, capture_output=True, timeout=self.timeout)
+        except subprocess.TimeoutExpired as exc:
+            raise RuntimeError(f"Demucs timed out after {self.timeout}s") from exc
+        if result.returncode != 0:
+            stderr = result.stderr.decode(errors="replace").strip()
+            raise RuntimeError(f"Demucs failed: {stderr[-500:]}")
+
+        stems = list(output_dir.rglob("vocals.wav"))
+        if len(stems) != 1:
+            raise RuntimeError("Demucs did not produce exactly one vocals.wav stem")
+        info = sf.info(str(stems[0]))
+        return NormalizedAudio(
+            path=stems[0], sample_rate=info.samplerate, channels=info.channels,
+            duration_seconds=info.duration, bit_depth=audio.bit_depth,
+        ), True

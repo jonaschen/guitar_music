@@ -3,6 +3,8 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      args:
+        INSTALL_SEPARATION: ${GUITARSCRIBE_INSTALL_SEPARATION:-false}
     ports:
       - "8000:8000"
     volumes:
@@ -13,6 +15,7 @@ services:
       - .env
     environment:
       - GUITARSCRIBE_WORK_DIR=/app/output/work
+      - GUITARSCRIBE_MELODY_SEPARATOR=${GUITARSCRIBE_MELODY_SEPARATOR:-off}
       - PYTHONUNBUFFERED=1
     command: python -m app.cli serve --host 0.0.0.0 --port 8000
 
