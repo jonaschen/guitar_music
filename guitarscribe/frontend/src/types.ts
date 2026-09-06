@@ -117,3 +117,23 @@ export type LyricsTrack = {
   revision: number;
   lines: Array<{ id: string; order: number; start?: number | null; end?: number | null; text: string; confidence: number; origin: string; edited: boolean }>;
 };
+
+
+export type PlaybackTrack = "guitar" | "melody" | "metronome";
+
+export type PlaybackManifest = {
+  revision: string;
+  duration_seconds: number;
+  bpm: number;
+  time_signature: string;
+  events: Array<{
+    id: string;
+    track: PlaybackTrack;
+    start: number;
+    end: number;
+    pitches: number[];
+    velocity: number;
+    stroke: string | null;
+    source_id: string | null;
+  }>;
+};

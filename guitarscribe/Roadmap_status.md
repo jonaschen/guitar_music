@@ -462,8 +462,8 @@
   - 已定義 frozen canonical guitar/melody/metronome events、manifest 與 16 字元內容 revision。
   - 由 score、key/capo、selected voicing 實際音高、rhythm 與 melody 編譯；MIDI 已改讀同一 manifest，Web Audio UI 接線待下一階段。
 - [ ] **Web Audio synth 與分軌控制**
-  - Guitar、melody、metronome、original tracks 的 enabled/mute/solo/volume。
-  - 強弱拍、count-in、速度與 loop 一致；背景回復後重新同步而非補播。
+  - 已接 canonical manifest 與 AudioContext clock，提供 score play/pause/stop、Guitar/melody/metronome mute 與 volume，原曲與合成播放互斥。
+  - 尚需 lookahead scheduler、solo、合成模式 count-in/loop、背景回復重同步與較自然的吉他音色。
 - [ ] **Voicing-aware chord playback**
   - 納入 tuning、capo、frets、muted/open strings、actual sounding pitch。
   - 實作 down/up stroke spread、velocity 與 arpeggio templates；key/capo/voicing 變更後重新編譯受影響 events。

@@ -632,6 +632,13 @@ h2 {
   accent-color: #7dd3fc;
 }
 
+.synth-panel { display: grid; gap: 0.65rem; margin: 1rem 0; padding: 0.9rem 1rem; border: 1px solid var(--border); border-radius: 18px; }
+.synth-panel h3, .synth-panel p { margin: 0; }
+.synth-panel p { color: var(--text-muted); font-size: 0.85rem; }
+.synth-controls { display: flex; flex-wrap: wrap; gap: 0.55rem; align-items: center; }
+.synth-track { display: grid; grid-template-columns: auto 5rem minmax(5rem, 8rem); gap: 0.4rem; align-items: center; padding: 0.4rem 0.55rem; border-radius: 10px; background: rgba(255,255,255,0.04); text-transform: capitalize; }
+.synth-track input[type="range"] { min-width: 0; accent-color: #ffcb7d; }
+
 .lyrics-panel { display: grid; gap: 0.65rem; margin: 1rem 0; }
 .lyrics-panel textarea { width: 100%; min-height: 7rem; resize: vertical; }
 .lyrics-lines { display: grid; gap: 0.35rem; }
