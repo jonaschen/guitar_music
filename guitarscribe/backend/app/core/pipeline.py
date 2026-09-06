@@ -2,7 +2,7 @@ import logging
 from typing import Awaitable, Callable, Dict, Any
 from ..models.audio import SourceRequest
 from ..models.score import SongScore, SongInfo, AnalysisSummary, Provenance, KeyContext, KeySignature
-from ..models.analysis import AudioFeatures, MelodyAnalysis, ChordComplexity
+from ..models.analysis import AudioFeatures, MelodyAnalysis, MelodyMode, ChordComplexity
 from .config import Settings, ChordEngine
 from ..analyzers.preprocessor import FFmpegPreprocessor
 from ..analyzers.beats.librosa_beats import LibrosaBeatAnalyzer
@@ -60,8 +60,9 @@ class AnalysisPipeline:
         
         try:
             await report("melody_analysis")
-            melody = await self.melody_analyzer.analyze(normalized, beats)
-            melody.notes = self.melody_post.process(melody.notes, beats.beats)
+            melody_mode = MelodyMode(options.get("melody_mode", "vocal"))
+            melody = await self.melody_analyzer.analyze(normalized, beats, melody_mode)
+            melody.notes = self.melody_post.process(melody.notes, beats.beats, melody_mode)
             melody = self.fretboard_mapper.map_notes(melody)
         except Exception as e:
             logger.warning(f"Melody analysis failed, continuing without melody: {e}")

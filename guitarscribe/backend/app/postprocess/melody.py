@@ -1,7 +1,13 @@
 from collections import defaultdict
 from statistics import median_low
 from typing import List
-from ..models.analysis import BeatInfo, MelodyNote
+from ..models.analysis import BeatInfo, MelodyMode, MelodyNote
+
+MODE_MIDI_RANGES = {
+    MelodyMode.VOCAL: (40, 84),
+    MelodyMode.GUITAR: (40, 88),
+    MelodyMode.MIX: (36, 88),
+}
 
 class MelodyPostProcessor:
     def remove_short_notes(self, notes: List[MelodyNote], min_duration: float = 0.08) -> List[MelodyNote]:
@@ -38,7 +44,7 @@ class MelodyPostProcessor:
             note.end = end if end > start else next_grid
         return notes
 
-    def select_monophonic_line(self, notes: List[MelodyNote]) -> List[MelodyNote]:
+    def select_monophonic_line(self, notes: List[MelodyNote], mode: MelodyMode = MelodyMode.GUITAR) -> List[MelodyNote]:
         """Reduce simultaneous multi-pitch candidates to one playable melody line."""
         buckets: dict[float, list[MelodyNote]] = defaultdict(list)
         for note in notes:
@@ -48,7 +54,8 @@ class MelodyPostProcessor:
         previous: MelodyNote | None = None
         for start in sorted(buckets):
             candidates = buckets[start]
-            playable = [note for note in candidates if 40 <= note.midi <= 88]
+            minimum_midi, maximum_midi = MODE_MIDI_RANGES[mode]
+            playable = [note for note in candidates if minimum_midi <= note.midi <= maximum_midi]
             if not playable:
                 continue
             center = float(median_low(note.midi for note in playable))
@@ -68,9 +75,9 @@ class MelodyPostProcessor:
             previous = choice
         return selected
 
-    def process(self, notes: List[MelodyNote], beats: List[BeatInfo] | None = None) -> List[MelodyNote]:
+    def process(self, notes: List[MelodyNote], beats: List[BeatInfo] | None = None, mode: MelodyMode = MelodyMode.GUITAR) -> List[MelodyNote]:
         notes = self.remove_short_notes(notes)
         notes = self.remove_low_confidence(notes)
         notes = self.quantize_to_beats(notes, beats) if beats else notes
-        notes = self.select_monophonic_line(notes)
+        notes = self.select_monophonic_line(notes, mode)
         return self.merge_repeated(notes)

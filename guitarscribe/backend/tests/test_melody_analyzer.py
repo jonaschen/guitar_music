@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
-from app.analyzers.melody.basic_pitch_adapter import BasicPitchMelodyAnalyzer, _parse_note_event
+from app.models.analysis import MelodyMode
+from app.analyzers.melody.basic_pitch_adapter import BasicPitchMelodyAnalyzer, MODE_PROFILES, _parse_note_event
 
 @pytest.mark.asyncio
 async def test_basic_pitch_analyzer(normalized_audio, sample_beat_analysis):
@@ -37,3 +38,8 @@ def test_basic_pitch_accepts_numpy_note_values():
     assert parsed[0] == 0.0
     assert parsed[1] == pytest.approx(0.4)
     assert parsed[2:] == (60, 0.65)
+
+
+def test_melody_modes_use_distinct_pitch_profiles():
+    assert MODE_PROFILES[MelodyMode.VOCAL]["maximum_frequency"] < MODE_PROFILES[MelodyMode.GUITAR]["maximum_frequency"]
+    assert MODE_PROFILES[MelodyMode.MIX]["minimum_frequency"] < MODE_PROFILES[MelodyMode.VOCAL]["minimum_frequency"]

@@ -1,6 +1,6 @@
 from typing import Protocol, runtime_checkable
 from ..models.audio import SourceRequest, AudioAsset, NormalizedAudio
-from ..models.analysis import BeatAnalysis, ChordAnalysis, MelodyAnalysis, RhythmSuggestion, AudioFeatures, ChordComplexity
+from ..models.analysis import BeatAnalysis, ChordAnalysis, MelodyAnalysis, MelodyMode, RhythmSuggestion, AudioFeatures, ChordComplexity
 from ..models.score import SongScore
 
 @runtime_checkable
@@ -21,7 +21,7 @@ class ChordAnalyzer(Protocol):
 
 @runtime_checkable
 class MelodyAnalyzer(Protocol):
-    async def analyze(self, audio: NormalizedAudio, beats: BeatAnalysis) -> MelodyAnalysis: ...
+    async def analyze(self, audio: NormalizedAudio, beats: BeatAnalysis, mode: MelodyMode = MelodyMode.VOCAL) -> MelodyAnalysis: ...
 
 @runtime_checkable
 class RhythmSuggester(Protocol):

@@ -8,26 +8,27 @@ logger = logging.getLogger(__name__)
 
 NOTE_NAMES = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B']
 
+MODE_PROFILES = {
+    MelodyMode.VOCAL: {"onset_threshold": 0.35, "frame_threshold": 0.20, "minimum_note_length": 100, "minimum_frequency": 82.0, "maximum_frequency": 1047.0},
+    MelodyMode.GUITAR: {"onset_threshold": 0.35, "frame_threshold": 0.20, "minimum_note_length": 80, "minimum_frequency": 82.0, "maximum_frequency": 1319.0},
+    MelodyMode.MIX: {"onset_threshold": 0.40, "frame_threshold": 0.25, "minimum_note_length": 100, "minimum_frequency": 65.0, "maximum_frequency": 1319.0},
+}
+
 def midi_to_note_name(midi: int) -> str:
     octave = (midi // 12) - 1
     note = NOTE_NAMES[midi % 12]
     return f"{note}{octave}"
 
 class BasicPitchMelodyAnalyzer:
-    async def analyze(self, audio: NormalizedAudio, beats: BeatAnalysis) -> MelodyAnalysis:
-        logger.info(f"Analyzing melody with basic-pitch for {audio.path}")
+    async def analyze(self, audio: NormalizedAudio, beats: BeatAnalysis, mode: MelodyMode = MelodyMode.VOCAL) -> MelodyAnalysis:
+        logger.info("Analyzing melody with basic-pitch mode=%s path=%s", mode.value, audio.path)
         try:
             from basic_pitch.inference import predict
         except ImportError as e:
             raise ImportError(f"Missing basic-pitch: {e}")
 
         try:
-            model_output, midi_data, note_events = predict(
-                str(audio.path),
-                onset_threshold=0.25,
-                frame_threshold=0.15,
-                minimum_note_length=80,
-            )
+            model_output, midi_data, note_events = predict(str(audio.path), **MODE_PROFILES[mode])
             logger.info("Basic Pitch produced %s candidate notes", len(note_events))
             notes = []
             
@@ -53,7 +54,7 @@ class BasicPitchMelodyAnalyzer:
             warnings = [] if notes else ["Basic Pitch returned no notes after its internal detection thresholds."]
             return MelodyAnalysis(
                 notes=notes,
-                mode=MelodyMode.VOCAL,
+                mode=mode,
                 confidence=0.8,
                 engine="basic_pitch",
                 engine_version="1.0",
