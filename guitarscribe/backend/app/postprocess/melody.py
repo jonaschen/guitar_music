@@ -1,4 +1,5 @@
 from collections import defaultdict
+from math import ceil
 from statistics import median_low
 from typing import List
 from ..models.analysis import BeatInfo, MelodyMode, MelodyNote
@@ -88,7 +89,17 @@ class MelodyPostProcessor:
             playable = [note for note in candidates if minimum_midi <= note.midi <= maximum_midi]
             if not playable:
                 continue
-            center = float(median_low(note.midi for note in playable))
+            ordered_pitches = sorted(note.midi for note in playable)
+            if mode == MelodyMode.VOCAL:
+                # Lead vocals commonly sit above the accompaniment, while the
+                # very highest candidate is often an overtone or cymbal leak.
+                center_index = min(ceil((len(ordered_pitches) - 1) * 0.7), max(0, len(ordered_pitches) - 2))
+                center = float(ordered_pitches[center_index])
+            elif mode == MelodyMode.GUITAR:
+                center_index = min(round((len(ordered_pitches) - 1) * 0.6), max(0, len(ordered_pitches) - 2))
+                center = float(ordered_pitches[center_index])
+            else:
+                center = float(median_low(ordered_pitches))
             choice = min(
                 playable,
                 key=lambda note: (

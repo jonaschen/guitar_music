@@ -106,3 +106,27 @@ def test_mix_melody_quality_has_lower_confidence_ceiling():
     confidence, _ = pp.assess_quality(notes, duration_seconds=60.0, mode=MelodyMode.MIX)
 
     assert confidence == 0.58
+
+
+def test_vocal_mode_prefers_upper_lead_region_without_selecting_highest_candidate():
+    pp = MelodyPostProcessor()
+    notes = [
+        MelodyNote(id=str(midi), start=0.0, end=0.5, midi=midi, note="note", confidence=0.9)
+        for midi in [55, 60, 64, 67, 72]
+    ]
+
+    selected = pp.select_monophonic_line(notes, MelodyMode.VOCAL)
+
+    assert [note.midi for note in selected] == [67]
+
+
+def test_mix_mode_keeps_median_candidate_region():
+    pp = MelodyPostProcessor()
+    notes = [
+        MelodyNote(id=str(midi), start=0.0, end=0.5, midi=midi, note="note", confidence=0.9)
+        for midi in [48, 55, 60, 64, 72]
+    ]
+
+    selected = pp.select_monophonic_line(notes, MelodyMode.MIX)
+
+    assert [note.midi for note in selected] == [60]
