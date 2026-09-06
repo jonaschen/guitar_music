@@ -354,6 +354,8 @@ export function App() {
   const activeChordId = score?.chords.find((chord) => playbackTime >= chord.start && playbackTime < chord.end)?.id ?? null;
   const scoreMeasures = Array.from(new Set(score?.beats.map((beat) => beat.measure) ?? [1]));
   const activeMeasureGroup = measureGroups.find((group) => playbackTime >= group.start && playbackTime < group.end) ?? measureGroups[0];
+  const activeMeasureNotes = score && activeMeasureGroup ? score.melody.filter((note) => note.start >= activeMeasureGroup.start && note.start < activeMeasureGroup.end && note.string !== null && note.string !== undefined && note.fret !== null && note.fret !== undefined) : [];
+  const activeMelodyNoteId = score?.melody.find((note) => playbackTime >= note.start && playbackTime < note.end)?.id ?? null;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -1030,11 +1032,13 @@ export function App() {
                 </section>
 
                 <section className="tab-panel">
-                  <div><h3>Playable Tab {activeMeasureGroup ? "· Bar " + activeMeasureGroup.measure : ""}</h3><p>String 1 (e) is the highest string; string 6 (E) is the lowest. The number is the fret. This view follows the current playback bar.</p></div>
+                  <div><h3>Playable Tab {activeMeasureGroup ? "· Bar " + activeMeasureGroup.measure : ""}</h3><p>Read left to right. Each horizontal line is a string; a number tells you which fret to press. The amber number is playing now.</p></div>
                   {activeMeasureGroup ? <div className="tab-staff" aria-label={"Six-string tab for bar " + activeMeasureGroup.measure}>
-                    {["e", "B", "G", "D", "A", "E"].map((label, index) => <span key={label + index} className="tab-string-label" style={{ top: String((index + 0.5) * (100 / 6)) + "%" }}>{label}</span>)}
-                    {score.melody.filter((note) => note.start >= activeMeasureGroup.start && note.start < activeMeasureGroup.end && note.string !== null && note.string !== undefined && note.fret !== null && note.fret !== undefined).map((note) => <button key={note.id} type="button" className="tab-marker" title={note.note + " · String " + note.string + " · Fret " + note.fret} onClick={() => seekTo(note.start)} style={{ left: String(5 + ((note.start - activeMeasureGroup.start) / Math.max(activeMeasureGroup.end - activeMeasureGroup.start, 0.01)) * 92) + "%", top: String(((note.string ?? 1) - 0.5) * (100 / 6)) + "%" }}>{note.fret}</button>)}
+                    {["e", "B", "G", "D", "A", "E"].map((label, index) => <span key={label + index} className="tab-string-label" style={{ top: String((index + 0.5) * (100 / 6)) + "%" }}>{label}<small>{index + 1}</small></span>)}
+                    {score.beats.filter((beat) => beat.measure === activeMeasureGroup.measure).map((beat) => <span key={"tab-beat-" + beat.time} className="tab-beat-guide" style={{ left: String(5 + ((beat.time - activeMeasureGroup.start) / Math.max(activeMeasureGroup.end - activeMeasureGroup.start, 0.01)) * 92) + "%" }}><small>{beat.beat}</small></span>)}
+                    {activeMeasureNotes.map((note) => <button key={note.id} type="button" className={"tab-marker" + (activeMelodyNoteId === note.id ? " tab-marker-active" : "")} title={note.note + " · String " + note.string + " · Fret " + note.fret} onClick={() => seekTo(note.start)} style={{ left: String(5 + ((note.start - activeMeasureGroup.start) / Math.max(activeMeasureGroup.end - activeMeasureGroup.start, 0.01)) * 92) + "%", top: String(((note.string ?? 1) - 0.5) * (100 / 6)) + "%" }}>{note.fret}</button>)}
                   </div> : null}
+                  {activeMeasureGroup && !activeMeasureNotes.length ? <p className="tab-empty">No playable melody note is mapped in this bar.</p> : null}
                 </section>
                 </> : <section className="melody-empty" aria-live="polite"><h3>Melody not detected</h3><p>This analysis returned no confident melody notes, so Tab and melody exports are not ready. Try a clearer lead-vocal or single-guitar recording. A future retry may produce a different result.</p></section>}
 
