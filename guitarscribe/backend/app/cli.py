@@ -12,7 +12,7 @@ from .exporters.json_exporter import JsonScoreExporter
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-async def _analyze(audio_file, output, melody_mode, chord_complexity, verbose):
+async def _analyze(audio_file, output, melody_mode, chord_complexity, separate_vocals, verbose):
     if verbose:
         logging.getLogger().setLevel(logging.DEBUG)
         
@@ -28,7 +28,8 @@ async def _analyze(audio_file, output, melody_mode, chord_complexity, verbose):
         
         score = await pipeline.run(request, {
             "melody_mode": melody_mode,
-            "chord_complexity": chord_complexity
+            "chord_complexity": chord_complexity,
+            "separate_vocals": separate_vocals,
         })
         
         exporter = JsonScoreExporter()
@@ -58,10 +59,11 @@ def main():
 @click.option('--output', '-o', type=click.Path(), default=None, help='Output JSON path')
 @click.option('--melody-mode', type=click.Choice(['vocal', 'guitar', 'mix']), default='vocal')
 @click.option('--chord-complexity', type=click.Choice(['simple', 'standard', 'full']), default='standard')
+@click.option('--separate-vocals', is_flag=True, help='Isolate vocals before vocal melody analysis (requires Demucs).')
 @click.option('--verbose', '-v', is_flag=True)
-def analyze(audio_file, output, melody_mode, chord_complexity, verbose):
+def analyze(audio_file, output, melody_mode, chord_complexity, separate_vocals, verbose):
     """Analyze an audio file and output SongScore JSON."""
-    asyncio.run(_analyze(audio_file, output, melody_mode, chord_complexity, verbose))
+    asyncio.run(_analyze(audio_file, output, melody_mode, chord_complexity, separate_vocals, verbose))
 
 
 @main.command()

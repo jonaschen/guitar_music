@@ -69,6 +69,8 @@ class AnalysisPipeline:
             if separate_vocals and self.melody_separator and melody_mode == MelodyMode.VOCAL:
                 try:
                     melody_audio, source_separated = await self.melody_separator.separate(normalized, melody_mode)
+                    if source_separated:
+                        separation_warnings.append("Vocal isolation was applied before melody extraction.")
                 except Exception as separation_error:
                     logger.warning("Vocal separation failed; using full mix: %s", separation_error)
                     separation_warnings.append(f"Vocal separation failed; using full mix: {separation_error}")

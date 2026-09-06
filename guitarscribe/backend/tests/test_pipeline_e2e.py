@@ -102,3 +102,47 @@ async def test_pipeline_falls_back_to_full_mix_when_vocal_separation_fails(tmp_p
     assert score.melody
     assert any("Vocal separation failed" in warning for warning in score.analysis.warnings)
     assert any("without source separation" in warning for warning in score.analysis.warnings)
+
+
+@pytest.mark.asyncio
+async def test_pipeline_reports_successful_vocal_separation(tmp_path):
+    from app.core.pipeline import AnalysisPipeline
+    from app.models.analysis import BeatAnalysis, ChordAnalysis, MelodyAnalysis, MelodyMode, MelodyNote, RhythmSuggestion
+    from app.models.audio import AudioAsset, NormalizedAudio
+    from app.postprocess.melody import MelodyPostProcessor
+
+    normalized = NormalizedAudio(path=tmp_path / "mix.wav", duration_seconds=8.0)
+    vocals = NormalizedAudio(path=tmp_path / "vocals.wav", duration_seconds=8.0)
+
+    class Source:
+        async def fetch(self, request): return AudioAsset(path=normalized.path, source_type=SourceType.LOCAL)
+    class Preprocessor:
+        async def normalize(self, asset): return normalized
+    class BeatAnalyzer:
+        async def analyze(self, audio): return BeatAnalysis(bpm=120.0)
+    class ChordAnalyzer:
+        async def analyze(self, audio, beats): return ChordAnalysis()
+    class ChordPost:
+        def process(self, chords, beats, complexity): return chords
+    class Separator:
+        async def separate(self, audio, mode): return vocals, True
+    class MelodyAnalyzer:
+        async def analyze(self, audio, beats, mode):
+            assert audio is vocals
+            return MelodyAnalysis(mode=MelodyMode.VOCAL, notes=[MelodyNote(id="n", start=0.0, end=0.5, midi=60, note="C4", confidence=0.9)])
+    class Mapper:
+        def map_notes(self, melody): return melody
+    class Rhythm:
+        def suggest(self, beats, chords): return RhythmSuggestion()
+
+    pipeline = AnalysisPipeline(
+        Preprocessor(), BeatAnalyzer(), ChordAnalyzer(), MelodyAnalyzer(), ChordPost(),
+        MelodyPostProcessor(), Rhythm(), Mapper(), Source(), Separator(),
+    )
+    score = await pipeline.run(
+        SourceRequest(source_type=SourceType.LOCAL, path=normalized.path),
+        {"melody_mode": "vocal", "separate_vocals": True},
+    )
+
+    assert "Vocal isolation was applied before melody extraction." in score.analysis.warnings
+    assert not any("without source separation" in warning for warning in score.analysis.warnings)
