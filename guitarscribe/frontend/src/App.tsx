@@ -184,6 +184,7 @@ export function App() {
   const synthContextRef = useRef<AudioContext | null>(null);
   const synthSourcesRef = useRef<OscillatorNode[]>([]);
   const synthAnimationRef = useRef<number | null>(null);
+  const synthCountInTimerRef = useRef<number | null>(null);
   const synthClockRef = useRef<{ contextStart: number; scoreStart: number } | null>(null);
   const lastMetronomeBeatRef = useRef<number | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
@@ -192,6 +193,7 @@ export function App() {
   const [isSynthPlaying, setIsSynthPlaying] = useState(false);
   const [synthTracks, setSynthTracks] = useState<Record<PlaybackTrack, boolean>>({ guitar: true, melody: true, metronome: false });
   const [synthVolumes, setSynthVolumes] = useState<Record<PlaybackTrack, number>>({ guitar: 0.35, melody: 0.3, metronome: 0.18 });
+  const [synthSoloTrack, setSynthSoloTrack] = useState<PlaybackTrack | null>(null);
   const [metronomeEnabled, setMetronomeEnabled] = useState(false);
   const [countInMeasures, setCountInMeasures] = useState(0);
   const [isCountingIn, setIsCountingIn] = useState(false);
@@ -578,6 +580,9 @@ export function App() {
     if (synthAnimationRef.current !== null) window.cancelAnimationFrame(synthAnimationRef.current);
     synthAnimationRef.current = null;
     synthClockRef.current = null;
+    if (synthCountInTimerRef.current !== null) window.clearTimeout(synthCountInTimerRef.current);
+    synthCountInTimerRef.current = null;
+    setIsCountingIn(false);
     setIsSynthPlaying(false);
     if (reset) {
       audioRef.current?.pause();
@@ -597,11 +602,24 @@ export function App() {
       await context.resume();
       stopSynth(false);
       const scoreStart = playbackTime >= manifest.duration_seconds ? 0 : playbackTime;
-      const contextStart = context.currentTime + 0.06;
+      const countInBeats = (Number(score.analysis.time_signature.charAt(0)) || 4) * countInMeasures;
+      const beatSeconds = 60 / Math.max(score.analysis.bpm, 1) / playbackRate;
+      const countInStart = context.currentTime + 0.06;
+      if (countInBeats > 0) {
+        setIsCountingIn(true);
+        for (let beat = 0; beat < countInBeats; beat += 1) {
+          scheduleMetronomeClick(context, countInStart + beat * beatSeconds, beat % (Number(score.analysis.time_signature.charAt(0)) || 4) === 0);
+        }
+        synthCountInTimerRef.current = window.setTimeout(() => {
+          synthCountInTimerRef.current = null;
+          setIsCountingIn(false);
+        }, countInBeats * beatSeconds * 1000);
+      }
+      const contextStart = countInStart + countInBeats * beatSeconds;
       synthClockRef.current = { contextStart, scoreStart };
 
       for (const event of manifest.events) {
-        if (!synthTracks[event.track] || event.end <= scoreStart) continue;
+        if (!synthTracks[event.track] || (synthSoloTrack !== null && event.track !== synthSoloTrack) || event.end <= scoreStart) continue;
         const eventStart = Math.max(event.start, scoreStart);
         event.pitches.forEach((pitch, pitchIndex) => {
           const strumDelay = event.track === "guitar" ? pitchIndex * 0.012 / playbackRate : 0;
@@ -642,17 +660,21 @@ export function App() {
     }
   }
 
+  function scheduleMetronomeClick(context: AudioContext, startAt: number, accented: boolean) {
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    oscillator.frequency.setValueAtTime(accented ? 1320 : 880, startAt);
+    gain.gain.setValueAtTime(0.08, startAt);
+    gain.gain.exponentialRampToValueAtTime(0.001, startAt + 0.045);
+    oscillator.connect(gain).connect(context.destination);
+    oscillator.start(startAt);
+    oscillator.stop(startAt + 0.05);
+  }
+
   function playMetronomeClick(accented: boolean) {
     const context = metronomeContextRef.current ?? new AudioContext();
     metronomeContextRef.current = context;
-    const oscillator = context.createOscillator();
-    const gain = context.createGain();
-    oscillator.frequency.value = accented ? 1320 : 880;
-    gain.gain.setValueAtTime(0.08, context.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.045);
-    oscillator.connect(gain).connect(context.destination);
-    oscillator.start();
-    oscillator.stop(context.currentTime + 0.05);
+    scheduleMetronomeClick(context, context.currentTime, accented);
   }
 
   async function togglePlayback() {
@@ -1077,7 +1099,7 @@ export function App() {
                   <div className="synth-controls">
                     <button type="button" className="ghost-button" onClick={() => void toggleSynthPlayback()}>{isSynthPlaying ? "Pause score" : "Play score"}</button>
                     <button type="button" className="ghost-button" onClick={() => stopSynth(true)}>Stop score</button>
-                    {(["guitar", "melody", "metronome"] as PlaybackTrack[]).map((track) => <label className="synth-track" key={track}><input type="checkbox" checked={synthTracks[track]} onChange={() => { if (isSynthPlaying) stopSynth(false); setSynthTracks((tracks) => ({ ...tracks, [track]: !tracks[track] })); }} /><span>{track}</span><input type="range" min="0" max="1" step="0.05" value={synthVolumes[track]} onChange={(event) => { if (isSynthPlaying) stopSynth(false); setSynthVolumes((volumes) => ({ ...volumes, [track]: Number(event.target.value) })); }} aria-label={track + " volume"} /></label>)}
+                    {(["guitar", "melody", "metronome"] as PlaybackTrack[]).map((track) => <label className="synth-track" key={track}><input type="checkbox" checked={synthTracks[track]} onChange={() => { if (isSynthPlaying) stopSynth(false); setSynthTracks((tracks) => ({ ...tracks, [track]: !tracks[track] })); }} /><span>{track}</span><input type="range" min="0" max="1" step="0.05" value={synthVolumes[track]} onChange={(event) => { if (isSynthPlaying) stopSynth(false); setSynthVolumes((volumes) => ({ ...volumes, [track]: Number(event.target.value) })); }} aria-label={track + " volume"} /><button type="button" className={synthSoloTrack === track ? "synth-solo synth-solo-active" : "synth-solo"} onClick={() => { if (isSynthPlaying) stopSynth(false); setSynthSoloTrack((current) => current === track ? null : track); }}>{synthSoloTrack === track ? "Soloed" : "Solo"}</button></label>)}
                   </div>
                 </section>
 
