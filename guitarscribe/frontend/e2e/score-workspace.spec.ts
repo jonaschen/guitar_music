@@ -44,9 +44,9 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Undo" })).toBeEnabled();
   await expect(page.getByText("Position 8 · Difficulty 3.5/5")).toBeVisible();
   await page.getByText("Position 8 · Difficulty 3.5/5").click();
-  await expect(page.getByText("Selected")).toBeVisible();
+  await expect(page.getByText("Selected", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Undo" }).click();
-  await expect(page.getByText("Selected")).toHaveCount(0);
+  await expect(page.getByText("Selected", { exact: true })).toHaveCount(0);
   await page.getByRole("button", { name: "Undo" }).click();
   await expect(timingInputs.nth(0)).toHaveValue("0.00");
   await page.locator(".toolbar-actions button").last().click();
