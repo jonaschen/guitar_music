@@ -109,6 +109,7 @@ async def create_analysis_job(
     rights_confirmed: bool = Form(...),
     melody_mode: str = Form(default="vocal"),
     chord_complexity: str = Form(default="standard"),
+    separate_vocals: bool = Form(default=False),
     job_service: AnalysisJobService = Depends(get_job_service),
 ) -> AnalysisJob:
     """Queue a local upload for analysis and return immediately."""
@@ -121,6 +122,7 @@ async def create_analysis_job(
         filename=audio_file.filename or "upload.wav",
         content=content,
         melody_mode=melody_mode,
+        separate_vocals=separate_vocals,
         chord_complexity=chord_complexity,
     )
 
@@ -153,6 +155,7 @@ async def analyze_audio(
     rights_confirmed: bool = Form(...),
     melody_mode: str = Form(default="vocal"),
     chord_complexity: str = Form(default="standard"),
+    separate_vocals: bool = Form(default=False),
     pipeline: AnalysisPipeline = Depends(get_pipeline),
 ) -> SongScore:
     """Legacy synchronous endpoint retained for API compatibility."""
@@ -177,6 +180,7 @@ async def analyze_audio(
             ),
             {
                 "melody_mode": melody_mode,
+                "separate_vocals": separate_vocals,
                 "chord_complexity": chord_complexity,
             },
         )

@@ -225,11 +225,13 @@ async def test_job_endpoints_queue_poll_and_return_completed_score(tmp_path):
                 data={
                     "rights_confirmed": "true",
                     "melody_mode": "vocal",
+                    "separate_vocals": "true",
                     "chord_complexity": "standard",
                 },
                 files={"audio_file": ("test.wav", b"RIFFfake", "audio/wav")},
             )
             assert create_response.status_code == 202
+            assert create_response.json()["separate_vocals"] is True
             job_id = create_response.json()["id"]
 
             for _ in range(50):

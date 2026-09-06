@@ -62,15 +62,18 @@ class AnalysisPipeline:
         try:
             await report("melody_analysis")
             melody_mode = MelodyMode(options.get("melody_mode", "vocal"))
+            separate_vocals = bool(options.get("separate_vocals", False))
             melody_audio = normalized
             source_separated = False
             separation_warnings: list[str] = []
-            if self.melody_separator and melody_mode == MelodyMode.VOCAL:
+            if separate_vocals and self.melody_separator and melody_mode == MelodyMode.VOCAL:
                 try:
                     melody_audio, source_separated = await self.melody_separator.separate(normalized, melody_mode)
                 except Exception as separation_error:
                     logger.warning("Vocal separation failed; using full mix: %s", separation_error)
                     separation_warnings.append(f"Vocal separation failed; using full mix: {separation_error}")
+            elif separate_vocals and melody_mode == MelodyMode.VOCAL:
+                separation_warnings.append("Vocal isolation was requested but is not enabled on this server; using the full mix.")
             melody = await self.melody_analyzer.analyze(melody_audio, beats, melody_mode)
             melody.notes = self.melody_post.process(melody.notes, beats.beats, melody_mode)
             melody = self.fretboard_mapper.map_notes(melody)

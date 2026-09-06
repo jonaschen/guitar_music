@@ -411,7 +411,7 @@
 
 ## 已知問題與限制
 
-1. **Melody 分析在全混音上效果不佳** — 已加入模式化候選線與品質警告；Vocal focus 可選用 Demucs 先分離人聲（預設關閉、需獨立安裝），失敗會安全退回全混音
+1. **Melody 分析在全混音上效果不佳** — 已加入模式化候選線與品質警告；Vocal focus 可於單次 job 勾選 Demucs 人聲分離（伺服器需另行啟用），失敗會安全退回全混音並顯示原因。
 2. **Chordino 安裝不穩定** — Docker build 自動降級為 Chromagram，但 Chromagram 只支援 24 組大小調
 3. **RhythmSuggester 為靜態** — 不讀取 `rhythm-patterns/` JSON 檔案，固定回傳 8 分音符型
 4. **完整標準譜 engraving 尚未整合** — 目前提供原生小節化旋律預覽、Tab 與 MusicXML 匯出；alphaTab 需在 Vite 相容性處理後導入。

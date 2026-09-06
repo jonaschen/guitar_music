@@ -49,13 +49,14 @@ async def wait_for_terminal(service: AnalysisJobService, job_id: str):
 async def test_job_service_persists_completed_score_and_progress(tmp_path):
     service = AnalysisJobService(JobStore(tmp_path / "jobs"), pipeline_factory=StubPipeline)
 
-    created = await service.submit("test.wav", b"RIFFfake", "vocal", "standard")
+    created = await service.submit("test.wav", b"RIFFfake", "vocal", "standard", separate_vocals=True)
     completed = await wait_for_terminal(service, created.id)
 
     assert completed.status.value == "completed"
     assert completed.progress == 100
     assert completed.score is not None
     assert completed.score.analysis.key == "G"
+    assert completed.separate_vocals is True
     assert service.get(created.id).score is not None
     assert (tmp_path / "jobs" / "jobs.sqlite3").exists()
 

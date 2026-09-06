@@ -35,6 +35,7 @@ class AnalysisJob(BaseModel):
     progress: int = Field(default=0, ge=0, le=100)
     message: str = "Queued for analysis"
     melody_mode: str = "vocal"
+    separate_vocals: bool = False
     chord_complexity: str = "standard"
     created_at: str
     updated_at: str

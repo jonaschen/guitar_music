@@ -58,11 +58,12 @@ function semitoneDelta(from: string, to: string): number {
   return raw;
 }
 
-async function createAnalysisJob(file: File, melodyMode: string, chordComplexity: string): Promise<AnalysisJob> {
+async function createAnalysisJob(file: File, melodyMode: string, separateVocals: boolean, chordComplexity: string): Promise<AnalysisJob> {
   const formData = new FormData();
   formData.append("audio_file", file);
   formData.append("rights_confirmed", "true");
   formData.append("melody_mode", melodyMode);
+  formData.append("separate_vocals", String(separateVocals));
   formData.append("chord_complexity", chordComplexity);
 
   const response = await fetch(`${API_BASE}/api/v1/jobs`, {
@@ -174,6 +175,7 @@ export function App() {
   const [status, setStatus] = useState<AnalyzeState>("idle");
   const [file, setFile] = useState<File | null>(null);
   const [melodyMode, setMelodyMode] = useState("vocal");
+  const [separateVocals, setSeparateVocals] = useState(false);
   const [chordComplexity, setChordComplexity] = useState("standard");
   const [score, setScore] = useState<SongScore | null>(EMPTY_SCORE);
   const [analysisJob, setAnalysisJob] = useState<AnalysisJob | null>(null);
@@ -382,7 +384,7 @@ export function App() {
     setStatus("queued");
     setError("");
     try {
-      const createdJob = await createAnalysisJob(file, melodyMode, chordComplexity);
+      const createdJob = await createAnalysisJob(file, melodyMode, separateVocals, chordComplexity);
       setAnalysisJob(createdJob);
       window.localStorage.setItem("guitarscribe.activeJobId", createdJob.id);
     } catch (submitError) {
@@ -859,6 +861,14 @@ export function App() {
                   <option value="guitar">Guitar</option>
                   <option value="mix">Most prominent</option>
                 </select>
+              </label>
+
+              <label className="field vocal-isolation-option">
+                <span>Vocal isolation</span>
+                <label className="checkbox-label">
+                  <input type="checkbox" checked={separateVocals} disabled={melodyMode !== "vocal"} onChange={(event) => setSeparateVocals(event.target.checked)} />
+                  Isolate vocals first (requires enabled server; slower, clearer lead line)
+                </label>
               </label>
 
               <label className="field">

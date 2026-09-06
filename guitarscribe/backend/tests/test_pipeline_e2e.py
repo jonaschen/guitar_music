@@ -96,7 +96,7 @@ async def test_pipeline_falls_back_to_full_mix_when_vocal_separation_fails(tmp_p
     )
     score = await pipeline.run(
         SourceRequest(source_type=SourceType.LOCAL, path=normalized.path),
-        {"melody_mode": "vocal"},
+        {"melody_mode": "vocal", "separate_vocals": True},
     )
 
     assert score.melody

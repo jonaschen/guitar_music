@@ -7,7 +7,7 @@ Backend-first prototype for generating guitar-friendly song analysis from upload
 - `GET /health`
 - `POST /analyses`
   - multipart upload
-  - fields: `audio_file`, `rights_confirmed`, `melody_mode`, `chord_complexity`
+  - fields: `audio_file`, `rights_confirmed`, `melody_mode`, `separate_vocals`, `chord_complexity`
 - `POST /scores/playback/manifest`
   - compiles immutable guitar, melody, and metronome events with a content revision hash
 - `POST /scores/transpose`
@@ -37,4 +37,4 @@ python -m pip install torch torchaudio --index-url https://download.pytorch.org/
 python -m pip install -e './backend[separation]'
 ```
 
-For Docker Compose, set `GUITARSCRIBE_INSTALL_SEPARATION=true` and `GUITARSCRIBE_MELODY_SEPARATOR=demucs` in `.env`, then run `docker compose build backend` and `docker compose up -d backend`. For a host installation, set `GUITARSCRIBE_MELODY_SEPARATOR=demucs` and, if `demucs` is not on `PATH`, set `GUITARSCRIBE_DEMUCS_BINARY` to its executable. The first analysis may download model weights. If isolation fails, analysis safely falls back to the original mix and reports the reason in Analysis notes. Guitar and Mix focus currently keep the original audio.
+For Docker Compose, set `GUITARSCRIBE_INSTALL_SEPARATION=true` and `GUITARSCRIBE_MELODY_SEPARATOR=demucs` in `.env`, then run `docker compose build backend` and `docker compose up -d backend`. In the web app, choose **Vocal** focus and enable **Vocal isolation** for the individual analysis. For a host installation, set `GUITARSCRIBE_MELODY_SEPARATOR=demucs` and, if `demucs` is not on `PATH`, set `GUITARSCRIBE_DEMUCS_BINARY` to its executable. The first analysis may download model weights. If isolation fails, analysis safely falls back to the original mix and reports the reason in Analysis notes. Guitar and Mix focus currently keep the original audio.

@@ -101,6 +101,7 @@ export interface AnalysisJob {
   progress: number;
   message: string;
   melody_mode: string;
+  separate_vocals: boolean;
   chord_complexity: string;
   created_at: string;
   updated_at: string;

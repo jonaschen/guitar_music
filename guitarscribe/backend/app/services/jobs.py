@@ -114,12 +114,16 @@ class AnalysisJobService:
         self.store.cleanup_expired(job_ttl_seconds)
         self.store.mark_interrupted_jobs_failed()
 
-    async def submit(self, filename: str, content: bytes, melody_mode: str, chord_complexity: str) -> AnalysisJob:
+    async def submit(
+        self, filename: str, content: bytes, melody_mode: str,
+        chord_complexity: str, separate_vocals: bool = False,
+    ) -> AnalysisJob:
         job_id = uuid4().hex
         now = _now()
         job = AnalysisJob(
             id=job_id,
             melody_mode=melody_mode,
+            separate_vocals=separate_vocals,
             chord_complexity=chord_complexity,
             created_at=now,
             updated_at=now,
@@ -129,7 +133,10 @@ class AnalysisJobService:
         suffix = Path(filename).suffix or ".wav"
         (directory / f"input{suffix}").write_bytes(content)
         self.store.save(job)
-        logger.info("analysis_job_submitted job_id=%s bytes=%s melody_mode=%s chord_complexity=%s", job_id, len(content), melody_mode, chord_complexity)
+        logger.info(
+            "analysis_job_submitted job_id=%s bytes=%s melody_mode=%s separate_vocals=%s chord_complexity=%s",
+            job_id, len(content), melody_mode, separate_vocals, chord_complexity,
+        )
         self.tasks[job_id] = asyncio.create_task(self._run(job_id))
         return job
 
@@ -169,7 +176,11 @@ class AnalysisJobService:
 
             score = await self.pipeline_factory().run(
                 SourceRequest(source_type=SourceType.LOCAL, path=input_path, rights_confirmed=True),
-                {"melody_mode": job.melody_mode, "chord_complexity": job.chord_complexity},
+                {
+                    "melody_mode": job.melody_mode,
+                    "separate_vocals": job.separate_vocals,
+                    "chord_complexity": job.chord_complexity,
+                },
                 progress_callback=report,
             )
             job = self.get(job_id)
