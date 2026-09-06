@@ -103,6 +103,8 @@ export interface AnalysisJob {
   melody_mode: string;
   separate_vocals: boolean;
   chord_complexity: string;
+  source_type: "local" | "youtube";
+  source_url?: string | null;
   created_at: string;
   updated_at: string;
   error: string | null;

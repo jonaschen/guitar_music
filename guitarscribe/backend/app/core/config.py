@@ -19,6 +19,9 @@ class Settings(BaseModel):
     melody_engine: str = "basic_pitch"
     melody_separator: str = "off"
     demucs_binary: Optional[str] = None
+    youtube_enabled: bool = False
+    youtube_dl_binary: str = "yt-dlp"
+    youtube_download_timeout_seconds: int = 600
     rhythm_patterns_dir: Path = Path("/app/rhythm-patterns")
     ffmpeg_binary: Optional[str] = None
     log_level: str = "INFO"
@@ -35,6 +38,9 @@ class Settings(BaseModel):
             melody_engine=os.environ.get("GUITARSCRIBE_MELODY_ENGINE", "basic_pitch"),
             melody_separator=os.environ.get("GUITARSCRIBE_MELODY_SEPARATOR", "off"),
             demucs_binary=os.environ.get("GUITARSCRIBE_DEMUCS_BINARY"),
+            youtube_enabled=os.environ.get("GUITARSCRIBE_YOUTUBE_ENABLED", "false").lower() == "true",
+            youtube_dl_binary=os.environ.get("GUITARSCRIBE_YTDLP_BINARY", "yt-dlp"),
+            youtube_download_timeout_seconds=int(os.environ.get("GUITARSCRIBE_YOUTUBE_DOWNLOAD_TIMEOUT_SECONDS", "600")),
             ffmpeg_binary=os.environ.get("GUITARSCRIBE_FFMPEG_BINARY"),
             log_level=os.environ.get("GUITARSCRIBE_LOG_LEVEL", "INFO"),
         )

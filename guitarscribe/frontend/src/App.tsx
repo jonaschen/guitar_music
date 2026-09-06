@@ -80,6 +80,16 @@ async function createAnalysisJob(file: File, melodyMode: string, separateVocals:
   return response.json();
 }
 
+async function createYouTubeAnalysisJob(url: string, melodyMode: string, separateVocals: boolean, chordComplexity: string): Promise<AnalysisJob> {
+  const response = await fetch(`${API_BASE}/api/v1/youtube-jobs`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url, rights_confirmed: true, melody_mode: melodyMode, separate_vocals: separateVocals, chord_complexity: chordComplexity }),
+  });
+  if (!response.ok) throw new Error(await response.text());
+  return response.json();
+}
+
 async function getAnalysisJob(jobId: string): Promise<AnalysisJob> {
   const response = await fetch(`${API_BASE}/api/v1/jobs/${jobId}`);
   if (!response.ok) {
@@ -176,6 +186,7 @@ async function getRevision(revisionId: string): Promise<SongScore> {
 export function App() {
   const [status, setStatus] = useState<AnalyzeState>("idle");
   const [file, setFile] = useState<File | null>(null);
+  const [youtubeUrl, setYoutubeUrl] = useState("");
   const [melodyMode, setMelodyMode] = useState("vocal");
   const [separateVocals, setSeparateVocals] = useState(false);
   const [chordComplexity, setChordComplexity] = useState("standard");
@@ -257,7 +268,7 @@ export function App() {
     setStatus("queued");
     void getAnalysisJob(savedJobId).then((job) => {
       setAnalysisJob(job);
-      if (job.status === "completed" && job.score) { replaceScore(job.score); setStatus("ready"); }
+      if (job.status === "completed" && job.score) { replaceScore(job.score); if (job.source_type === "youtube") setAudioUrl(`${API_BASE}/api/v1/jobs/${job.id}/audio`); setStatus("ready"); }
       if (job.status === "failed" || job.status === "cancelled") { setStatus("error"); setError(job.error ?? job.message); }
     }).catch(() => window.localStorage.removeItem("guitarscribe.activeJobId"));
   }, []);
@@ -283,6 +294,7 @@ export function App() {
         setAnalysisJob(nextJob);
         if (nextJob.status === "completed" && nextJob.score) {
           replaceScore(nextJob.score);
+          if (nextJob.source_type === "youtube") setAudioUrl(`${API_BASE}/api/v1/jobs/${nextJob.id}/audio`);
           setRevisionId("");
           setSaveStatus("Analysis loaded. Save to create a revision.");
           setStatus("ready");
@@ -380,15 +392,18 @@ export function App() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!file) {
-      setError("Choose an audio file first.");
+    const useYouTube = Boolean(youtubeUrl.trim());
+    if (!useYouTube && !file) {
+      setError("Choose an audio file or enter a YouTube video URL.");
       return;
     }
 
     setStatus("queued");
     setError("");
     try {
-      const createdJob = await createAnalysisJob(file, melodyMode, separateVocals, chordComplexity);
+      const createdJob = useYouTube
+        ? await createYouTubeAnalysisJob(youtubeUrl.trim(), melodyMode, separateVocals, chordComplexity)
+        : await createAnalysisJob(file!, melodyMode, separateVocals, chordComplexity);
       setAnalysisJob(createdJob);
       window.localStorage.setItem("guitarscribe.activeJobId", createdJob.id);
     } catch (submitError) {
@@ -887,8 +902,14 @@ export function App() {
 
           <form className="intake-card" onSubmit={handleSubmit}>
             <label className="field">
-              <span>Audio upload</span>
+              <span>Audio upload (or use YouTube below)</span>
               <input type="file" accept=".wav,.mp3,.flac,.ogg,.m4a,audio/*" onChange={handleFileChange} />
+            </label>
+
+            <label className="field">
+              <span>YouTube video URL</span>
+              <input type="url" value={youtubeUrl} onChange={(event) => setYoutubeUrl(event.target.value)} placeholder="https://www.youtube.com/watch?v=…" />
+              <small>Use one HTTPS YouTube video you own, control, or are permitted to analyze. A URL takes priority over a local file.</small>
             </label>
 
             <div className="field-row">
@@ -921,7 +942,7 @@ export function App() {
 
             <div className="rights-box">
               <strong>Rights check</strong>
-              <p>You should upload only audio you own, control, or have permission to analyze.</p>
+              <p>You should provide only audio or YouTube videos you own, control, or have permission to analyze.</p>
             </div>
 
             <button className="primary-button" type="submit" disabled={status === "queued"}>

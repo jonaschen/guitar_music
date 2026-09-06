@@ -3,14 +3,14 @@ from pathlib import Path
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import PlainTextResponse, Response
+from fastapi.responses import FileResponse, PlainTextResponse, Response
 from pydantic import BaseModel, Field
 
 from .core.config import Settings
 from .core.pipeline import AnalysisPipeline, create_pipeline
 from .models.audio import SourceRequest, SourceType
 from .models.analysis import AccidentalPreference
-from .models.jobs import AnalysisJob
+from .models.jobs import AnalysisJob, JobStatus
 from .models.analysis import ChordVoicing
 from .services.voicings import ChordVoicingProvider
 from .services.capo import CapoAdvisor, CapoRecommendation
@@ -24,6 +24,7 @@ from .exporters.midi import PlaybackManifest, compile_playback_manifest, export_
 from .exporters.musicxml import export_musicxml
 from .services.revisions import RevisionStore
 from .services.transposition import TranspositionService
+from .sources.youtube import YouTubeAudioDownloader, validate_youtube_url
 
 
 class TransposeScoreRequest(BaseModel):
@@ -44,6 +45,14 @@ class SaveRevisionRequest(BaseModel):
 
 class SaveRevisionResponse(BaseModel):
     revision_id: str
+
+
+class YouTubeJobRequest(BaseModel):
+    url: str
+    rights_confirmed: bool
+    melody_mode: str = "vocal"
+    chord_complexity: str = "standard"
+    separate_vocals: bool = False
 
 
 app = FastAPI(
@@ -83,7 +92,8 @@ def get_job_service() -> AnalysisJobService:
             JobStore(settings.work_dir / "jobs"),
             pipeline_factory=lambda: create_pipeline(settings),
             max_concurrent_jobs=settings.max_concurrent_jobs,
-            job_ttl_seconds=settings.job_ttl_seconds,
+        job_ttl_seconds=settings.job_ttl_seconds,
+        youtube_downloader=YouTubeAudioDownloader(settings.youtube_dl_binary, settings.youtube_download_timeout_seconds, settings.max_upload_bytes) if settings.youtube_enabled else None,
         )
     return _job_service
 
@@ -127,6 +137,18 @@ async def create_analysis_job(
     )
 
 
+@app.post("/api/v1/youtube-jobs", response_model=AnalysisJob, status_code=status.HTTP_202_ACCEPTED)
+async def create_youtube_analysis_job(request: YouTubeJobRequest, job_service: AnalysisJobService = Depends(get_job_service)) -> AnalysisJob:
+    if not request.rights_confirmed:
+        raise HTTPException(status_code=400, detail="Rights must be confirmed")
+    try:
+        return await job_service.submit_youtube(validate_youtube_url(request.url), request.melody_mode, request.chord_complexity, request.separate_vocals)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+
 @app.get("/api/v1/jobs/{job_id}", response_model=AnalysisJob)
 async def get_analysis_job(
     job_id: str,
@@ -147,6 +169,20 @@ async def cancel_analysis_job(
         return job_service.cancel(job_id)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail="Analysis job not found") from exc
+
+
+@app.get("/api/v1/jobs/{job_id}/audio")
+async def get_job_audio(job_id: str, job_service: AnalysisJobService = Depends(get_job_service)) -> FileResponse:
+    try:
+        job = job_service.get(job_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Analysis job not found") from exc
+    if job.status != JobStatus.COMPLETED:
+        raise HTTPException(status_code=409, detail="Audio is available after analysis completes")
+    candidates = list(job_service.store.job_dir(job_id).glob("input.wav"))
+    if not candidates:
+        raise HTTPException(status_code=404, detail="Job audio is unavailable")
+    return FileResponse(candidates[0], media_type="audio/wav", filename="guitarscribe-source.wav")
 
 
 @app.post("/analyses", response_model=SongScore, deprecated=True)

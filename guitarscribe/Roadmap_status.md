@@ -15,7 +15,7 @@
 | 里程碑 | 目標 | 進度 | 狀態 |
 |---|---|---|---|
 | **M0：技術 Spike** | Docker 內 DSP → JSON | 100% | ✅ 完成 |
-| **M1：後端 MVP** | FastAPI、非同步工作、SQLite、OpenAPI | ~88% | ⚠️ 進行中 |
+| **M1：後端 MVP** | FastAPI、非同步工作、SQLite、OpenAPI | ~91% | ⚠️ 進行中 |
 | **M2：Web UI MVP** | 上傳、進度、播放同步、和弦格、匯出 | ~96% | ⚠️ 進行中 |
 | **M3：可編輯樂譜** | 和弦編輯、移調、Capo、和弦指型、revision | ~88% | ⚠️ 進行中 |
 | **M4：簡化主旋律與 Tab** | 旋律顯示、指板映射、alphaTab、匯出 | ~88% | 🔧 進行中 |
@@ -88,9 +88,9 @@
   - 需要：scores、jobs、revisions 持久化
 - [x] **工作進度回報**（主文件 §4.2）
   - 前端以 polling 顯示各階段、百分比與取消按鈕；日後可升級為 WebSocket。
-- [ ] **可選 YouTube resolver**（主文件 §3.1）
-  - AudioSource 介面已預留，但尚未實作 YouTube adapter
-  - 需要明確的權利確認流程
+- [x] **可選 YouTube resolver**（主文件 §3.1）
+  - HTTPS `youtube.com`／`youtu.be` 單影片可由 yt-dlp 轉為 job-local WAV，需逐次權利確認。
+  - 預設停用；不接受 cookies、帳密、播放清單或任意下載器參數，完成音檔隨 job TTL 清理。
 - [ ] **OpenAPI 文件**
   - FastAPI 自動產生基本文件，但需要補充描述與範例
 - [x] **歌曲長度限制**（主文件 §12）

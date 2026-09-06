@@ -24,6 +24,9 @@ melody = [
 separation = [
     "demucs>=4,<5",
 ]
+youtube = [
+    "yt-dlp>=2025.1.0",
+]
 chordino = [
     "vamp>=1.1",
 ]

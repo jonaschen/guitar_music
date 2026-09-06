@@ -5,6 +5,7 @@ services:
       dockerfile: Dockerfile
       args:
         INSTALL_SEPARATION: ${GUITARSCRIBE_INSTALL_SEPARATION:-false}
+        INSTALL_YOUTUBE: ${GUITARSCRIBE_INSTALL_YOUTUBE:-false}
     ports:
       - "8000:8000"
     volumes:
@@ -16,6 +17,7 @@ services:
     environment:
       - GUITARSCRIBE_WORK_DIR=/app/output/work
       - GUITARSCRIBE_MELODY_SEPARATOR=${GUITARSCRIBE_MELODY_SEPARATOR:-off}
+      - GUITARSCRIBE_YOUTUBE_ENABLED=${GUITARSCRIBE_YOUTUBE_ENABLED:-false}
       - PYTHONUNBUFFERED=1
     command: python -m app.cli serve --host 0.0.0.0 --port 8000
 

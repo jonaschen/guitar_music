@@ -26,7 +26,20 @@ The API will listen on `http://localhost:8000`.
 ## Notes
 
 - Browser access from `http://localhost:5173` to `http://localhost:8000` is enabled via CORS in the backend API.
-- The current UI intentionally supports local audio upload only. It does not implement YouTube download.
+- The UI supports local audio upload and, when explicitly enabled, a single HTTPS `youtube.com` or `youtu.be` video URL. You must confirm that you own, control, or are permitted to analyze the source. Playlist URLs are handled as one video only; no account credentials, browser cookies, or bypass options are accepted.
+
+## Optional YouTube-to-WAV import
+
+The resolver uses `yt-dlp` with FFmpeg to extract one WAV into the temporary job directory, then sends it through the same duration, size, analysis, cancellation, and TTL cleanup path as an upload. It is disabled by default. To enable it in Docker Compose:
+
+```bash
+# .env
+GUITARSCRIBE_INSTALL_YOUTUBE=true
+GUITARSCRIBE_YOUTUBE_ENABLED=true
+docker compose up -d --build backend frontend
+```
+
+The result's source WAV is available only through its completed job and is removed with that job's TTL cleanup. The resolver accepts only HTTPS YouTube hosts and invokes `yt-dlp` without a shell or user-supplied command options.
 
 ## Optional vocal isolation
 

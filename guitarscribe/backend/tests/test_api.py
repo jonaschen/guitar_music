@@ -14,6 +14,7 @@ from app.api import (
 )
 from app.models.score import AnalysisSummary, KeyContext, KeySignature, SongInfo, SongScore
 from app.services.revisions import RevisionStore
+from app.sources.youtube import validate_youtube_url
 
 
 class StubPipeline:
@@ -246,6 +247,31 @@ async def test_job_endpoints_queue_poll_and_return_completed_score(tmp_path):
         assert body["score"]["analysis"]["key"] == "G"
     finally:
         app.dependency_overrides.clear()
+
+
+@pytest.mark.asyncio
+async def test_youtube_job_requires_rights_and_enabled_resolver(tmp_path):
+    from app.services.jobs import AnalysisJobService, JobStore
+
+    service = AnalysisJobService(JobStore(tmp_path / "jobs"), pipeline_factory=StubPipeline)
+    app.dependency_overrides[get_job_service] = lambda: service
+    try:
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://testserver") as client:
+            denied = await client.post("/api/v1/youtube-jobs", json={"url": "https://www.youtube.com/watch?v=video", "rights_confirmed": False})
+            disabled = await client.post("/api/v1/youtube-jobs", json={"url": "https://www.youtube.com/watch?v=video", "rights_confirmed": True})
+        assert denied.status_code == 400
+        assert disabled.status_code == 503
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_youtube_url_validation_rejects_non_youtube_hosts():
+    assert validate_youtube_url("https://youtu.be/example") == "https://youtu.be/example"
+    with pytest.raises(ValueError, match="Only HTTPS"):
+        validate_youtube_url("https://example.com/watch?v=video")
+    with pytest.raises(ValueError, match="Only HTTPS"):
+        validate_youtube_url("http://www.youtube.com/watch?v=video")
 
 def test_revision_store_uses_sqlite(tmp_path):
     store = RevisionStore(tmp_path / "revisions")

@@ -3,6 +3,7 @@ from enum import Enum
 from pydantic import BaseModel, Field
 
 from .score import SongScore
+from .audio import SourceType
 
 
 class JobStatus(str, Enum):
@@ -37,6 +38,8 @@ class AnalysisJob(BaseModel):
     melody_mode: str = "vocal"
     separate_vocals: bool = False
     chord_complexity: str = "standard"
+    source_type: SourceType = SourceType.LOCAL
+    source_url: str | None = None
     created_at: str
     updated_at: str
     error: str | None = None

@@ -11,6 +11,7 @@ from uuid import uuid4
 from ..core.pipeline import AnalysisPipeline
 from ..models.audio import SourceRequest, SourceType
 from ..models.jobs import ACTIVE_JOB_STATUSES, AnalysisJob, JobStatus
+from ..sources.youtube import YouTubeAudioDownloader
 
 logger = logging.getLogger(__name__)
 
@@ -106,11 +107,13 @@ class AnalysisJobService:
         pipeline_factory: Callable[[], AnalysisPipeline],
         max_concurrent_jobs: int = 1,
         job_ttl_seconds: int = 24 * 60 * 60,
+        youtube_downloader: YouTubeAudioDownloader | None = None,
     ):
         self.store = store
         self.pipeline_factory = pipeline_factory
         self.tasks: dict[str, asyncio.Task[None]] = {}
         self.semaphore = asyncio.Semaphore(max_concurrent_jobs)
+        self.youtube_downloader = youtube_downloader
         self.store.cleanup_expired(job_ttl_seconds)
         self.store.mark_interrupted_jobs_failed()
 
@@ -140,6 +143,20 @@ class AnalysisJobService:
         self.tasks[job_id] = asyncio.create_task(self._run(job_id))
         return job
 
+    async def submit_youtube(self, url: str, melody_mode: str, chord_complexity: str, separate_vocals: bool = False) -> AnalysisJob:
+        if self.youtube_downloader is None:
+            raise RuntimeError("YouTube import is not enabled on this server")
+        job_id = uuid4().hex
+        now = _now()
+        job = AnalysisJob(
+            id=job_id, source_type=SourceType.YOUTUBE, source_url=url, melody_mode=melody_mode,
+            separate_vocals=separate_vocals, chord_complexity=chord_complexity, created_at=now, updated_at=now,
+        )
+        self.store.job_dir(job_id).mkdir(parents=True, exist_ok=True)
+        self.store.save(job)
+        self.tasks[job_id] = asyncio.create_task(self._run(job_id))
+        return job
+
     def get(self, job_id: str) -> AnalysisJob:
         return self.store.load(job_id)
 
@@ -160,7 +177,15 @@ class AnalysisJobService:
         logger.info("analysis_job_started job_id=%s", job_id)
         try:
             job = self.get(job_id)
-            input_path = next(self.store.job_dir(job_id).glob("input.*"))
+            directory = self.store.job_dir(job_id)
+            if job.source_type == SourceType.YOUTUBE:
+                if self.youtube_downloader is None or not job.source_url:
+                    raise RuntimeError("YouTube import is not enabled on this server")
+                job.status, job.progress, job.message, job.updated_at = JobStatus.RESOLVING, 5, "Downloading authorized YouTube audio", _now()
+                self.store.save(job)
+                input_path = await self.youtube_downloader.download(job.source_url, directory)
+            else:
+                input_path = next(directory.glob("input.*"))
 
             async def report(stage: str) -> None:
                 status, progress, message = STAGE_DETAILS[stage]
@@ -175,7 +200,7 @@ class AnalysisJobService:
                 logger.info("analysis_job_stage job_id=%s stage=%s progress=%s", job_id, stage, progress)
 
             score = await self.pipeline_factory().run(
-                SourceRequest(source_type=SourceType.LOCAL, path=input_path, rights_confirmed=True),
+                SourceRequest(source_type=job.source_type, path=input_path, url=job.source_url, rights_confirmed=True),
                 {
                     "melody_mode": job.melody_mode,
                     "separate_vocals": job.separate_vocals,

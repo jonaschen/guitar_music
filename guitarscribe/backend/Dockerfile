@@ -36,10 +36,12 @@ RUN pip install --no-cache-dir -e '.[dev,melody]'
 
 # Optional CPU-only vocal isolation. Disabled by default to keep the base image small.
 ARG INSTALL_SEPARATION=false
+ARG INSTALL_YOUTUBE=false
 RUN if [ "$INSTALL_SEPARATION" = "true" ]; then \
       pip install --no-cache-dir torch torchaudio --index-url https://download.pytorch.org/whl/cpu && \
       pip install --no-cache-dir -e '.[separation]'; \
     fi
+RUN if [ "$INSTALL_YOUTUBE" = "true" ]; then pip install --no-cache-dir -e '.[youtube]'; fi
 
 # Copy application code
 COPY . .
