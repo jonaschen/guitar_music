@@ -200,6 +200,7 @@ export function App() {
   const synthSourcesRef = useRef<OscillatorNode[]>([]);
   const synthAnimationRef = useRef<number | null>(null);
   const synthSchedulerRef = useRef<number | null>(null);
+  const mediaAnimationRef = useRef<number | null>(null);
   const synthCountInTimerRef = useRef<number | null>(null);
   const synthClockRef = useRef<{ contextStart: number; scoreStart: number } | null>(null);
   const lastMetronomeBeatRef = useRef<number | null>(null);
@@ -378,6 +379,20 @@ export function App() {
     document.addEventListener("visibilitychange", resumeSynthAfterVisibilityChange);
     return () => document.removeEventListener("visibilitychange", resumeSynthAfterVisibilityChange);
   }, [isSynthPlaying]);
+
+  useEffect(() => {
+    if (!isPlaying) return;
+    const syncMediaPlayhead = () => {
+      const audio = audioRef.current;
+      if (audio && !audio.paused) setPlaybackTime(audio.currentTime);
+      mediaAnimationRef.current = window.requestAnimationFrame(syncMediaPlayhead);
+    };
+    mediaAnimationRef.current = window.requestAnimationFrame(syncMediaPlayhead);
+    return () => {
+      if (mediaAnimationRef.current !== null) window.cancelAnimationFrame(mediaAnimationRef.current);
+      mediaAnimationRef.current = null;
+    };
+  }, [isPlaying]);
 
   const measureGroups = score ? (() => {
     const starts = new Map<number, number>();
