@@ -12,6 +12,7 @@ class JobStatus(str, Enum):
     PREPROCESSING = "preprocessing"
     BEAT_ANALYSIS = "beat_analysis"
     CHORD_ANALYSIS = "chord_analysis"
+    VOCAL_SEPARATION = "vocal_separation"
     MELODY_ANALYSIS = "melody_analysis"
     POSTPROCESSING = "postprocessing"
     COMPLETED = "completed"

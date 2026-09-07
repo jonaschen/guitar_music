@@ -62,7 +62,6 @@ class AnalysisPipeline:
         chords.chords = self.chord_post.process(chords.chords, beats, complexity)
         
         try:
-            await report("melody_analysis")
             melody_mode = MelodyMode(options.get("melody_mode", "vocal"))
             separate_vocals = bool(options.get("separate_vocals", False))
             melody_audio = normalized
@@ -70,6 +69,7 @@ class AnalysisPipeline:
             separation_warnings: list[str] = []
             if separate_vocals and self.melody_separator and melody_mode == MelodyMode.VOCAL:
                 try:
+                    await report("vocal_separation")
                     melody_audio, source_separated = await self.melody_separator.separate(normalized, melody_mode)
                     if source_separated:
                         separation_warnings.append("Vocal isolation was applied before melody extraction.")
@@ -78,6 +78,7 @@ class AnalysisPipeline:
                     separation_warnings.append(f"Vocal separation failed; using full mix: {separation_error}")
             elif separate_vocals and melody_mode == MelodyMode.VOCAL:
                 separation_warnings.append("Vocal isolation was requested but is not enabled on this server; using the full mix.")
+            await report("melody_analysis")
             analyzer = self.vocal_melody_analyzer if source_separated and self.vocal_melody_analyzer else self.melody_analyzer
             try:
                 melody = await analyzer.analyze(melody_audio, beats, melody_mode)
