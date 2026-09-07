@@ -13,7 +13,11 @@ const score = {
   provenance: { beat_engine: "test", chord_engine: "test", melody_engine: "test" },
 };
 
+const musicXml = `<?xml version="1.0" encoding="UTF-8"?>
+<score-partwise version="3.1"><part-list><score-part id="P1"><part-name>Guitar</part-name></score-part></part-list><part id="P1"><measure number="1"><attributes><divisions>480</divisions><time><beats>4</beats><beat-type>4</beat-type></time><clef><sign>TAB</sign><line>5</line></clef></attributes><note><pitch><step>C</step><octave>4</octave></pitch><duration>480</duration><type>quarter</type><notations><technical><string>2</string><fret>1</fret></technical></notations></note><note><rest/><duration>1440</duration><type>half</type></note></measure></part></score-partwise>`;
+
 test("renders an analyzed score workspace", async ({ page }) => {
+  let musicXmlRequests = 0;
   await page.addInitScript(() => localStorage.setItem("guitarscribe.activeJobId", "demo-job"));
   await page.route("**/api/v1/jobs/demo-job", (route) => route.fulfill({ json: { id: "demo-job", status: "completed", progress: 100, message: "Analysis complete", melody_mode: "vocal", chord_complexity: "standard", created_at: "2026-01-01T00:00:00Z", updated_at: "2026-01-01T00:00:00Z", error: null, score } }));
   await page.route("**/scores/transpose", (route) => route.fulfill({ json: { ...score, analysis: { ...score.analysis, key: "D" }, key_context: { ...score.key_context, target: { key: "D", mode: "major" }, shape: { key: "D", mode: "major" }, sounding: { key: "D", mode: "major" }, transpose_semitones: 2, audio_matches_notation: false }, chords: [{ ...score.chords[0], symbol: "D", shape_symbol: "D", source_symbol: "C" }] } }));
@@ -21,6 +25,10 @@ test("renders an analyzed score workspace", async ({ page }) => {
   const lyricScore = { ...score, lyrics: { id: "lyrics-1", language: "und", source: "manual", timing_level: "none", raw_text: "One", revision: 1, lines: [{ id: "line-1", order: 0, start: null, end: null, text: "One", confidence: 1, origin: "user", edited: true }] } };
   await page.route("**/scores/lyrics/import-text", (route) => route.fulfill({ json: lyricScore }));
   await page.route("**/scores/lyrics/distribute-timing", (route) => route.fulfill({ json: { ...lyricScore, lyrics: { ...lyricScore.lyrics, revision: 2, lines: [{ ...lyricScore.lyrics.lines[0], start: 0, end: 8 }] } } }));
+  await page.route("**/scores/musicxml", (route) => {
+    musicXmlRequests += 1;
+    return route.fulfill({ contentType: "application/vnd.recordare.musicxml+xml", body: musicXml });
+  });
 
   await page.goto("/");
 
@@ -30,6 +38,8 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await expect(page.getByText("Estimated score preview")).toBeVisible();
   await expect(page.getByRole("button", { name: "C4 in bar 1" })).toBeVisible();
   await expect(page.getByText("Playable Tab")).toBeVisible();
+  await expect.poll(() => musicXmlRequests).toBeGreaterThan(0);
+  await expect(page.getByText("Notation preview unavailable:")).toHaveCount(0);
   await expect(page.locator(".chord-sheet .measure-header", { hasText: "Bar 2" })).toBeVisible();
   await expect(page.getByText("Continues")).toHaveCount(2);
   await expect(page.locator(".chord-block").first()).toBeVisible();
