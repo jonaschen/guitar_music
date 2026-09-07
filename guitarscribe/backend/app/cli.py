@@ -3,11 +3,14 @@ import asyncio
 import logging
 from pathlib import Path
 import sys
+import json
 import uvicorn
 from .core.config import Settings
 from .core.pipeline import create_pipeline
 from .models.audio import SourceRequest, SourceType
 from .exporters.json_exporter import JsonScoreExporter
+from .models.score import SongScore
+from .evaluation.metrics import evaluate_score
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -64,6 +67,16 @@ def main():
 def analyze(audio_file, output, melody_mode, chord_complexity, separate_vocals, verbose):
     """Analyze an audio file and output SongScore JSON."""
     asyncio.run(_analyze(audio_file, output, melody_mode, chord_complexity, separate_vocals, verbose))
+
+
+@main.command("evaluate")
+@click.argument("score_file", type=click.Path(exists=True, path_type=Path))
+@click.argument("annotation_file", type=click.Path(exists=True, path_type=Path))
+def evaluate(score_file: Path, annotation_file: Path):
+    """Print golden-fixture quality metrics for an exported SongScore JSON."""
+    score = SongScore.model_validate_json(score_file.read_text())
+    annotation = json.loads(annotation_file.read_text())
+    click.echo(json.dumps(evaluate_score(score, annotation), indent=2, sort_keys=True))
 
 
 @main.command()

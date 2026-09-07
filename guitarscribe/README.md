@@ -55,3 +55,15 @@ python -m pip install -e './backend[separation]'
 ```
 
 For Docker Compose, set `GUITARSCRIBE_INSTALL_SEPARATION=true` and `GUITARSCRIBE_MELODY_SEPARATOR=demucs` in `.env`, then run `docker compose build backend` and `docker compose up -d backend`. In the web app, choose **Vocal** focus and enable **Vocal isolation** for the individual analysis. For a host installation, set `GUITARSCRIBE_MELODY_SEPARATOR=demucs` and, if `demucs` is not on `PATH`, set `GUITARSCRIBE_DEMUCS_BINARY` to its executable. The first analysis may download model weights. If isolation fails, analysis safely falls back to the original mix and reports the reason in Analysis notes. Guitar and Mix focus currently keep the original audio.
+
+## Golden-fixture evaluation
+
+The legal synthetic fixture in `fixtures/` can be used to make quality changes measurable. Given an exported SongScore JSON, run:
+
+```bash
+docker compose run --rm -v "$PWD/backend:/app" -v "$PWD:/workspace:ro" backend \
+  python -m app.cli evaluate /workspace/output/result.json \
+  /workspace/fixtures/annotations/test_progression.json
+```
+
+The command reports relative BPM error, beat F-measure, chord-symbol recall, and onset/pitch melody accuracy. It is intended for regression comparison, not as a claim of full-song transcription accuracy.
