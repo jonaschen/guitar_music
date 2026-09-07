@@ -1172,6 +1172,14 @@ export function App() {
                     <span>Melody notes</span>
                     <strong>{score.melody.length}</strong>
                   </article>
+                  <article className="metric-card">
+                    <span>Melody engine</span>
+                    <strong className="metric-engine">{score.provenance.melody_engine.replace(/_/g, " ") || "—"}</strong>
+                  </article>
+                  <article className="metric-card">
+                    <span>Melody reliability</span>
+                    <strong>{Math.round(score.analysis.confidence * 100)}%</strong>
+                  </article>
                 </div>
 
                 <section className="rhythm-panel">

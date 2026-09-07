@@ -100,6 +100,7 @@ async def test_pipeline_falls_back_to_full_mix_when_vocal_separation_fails(tmp_p
     )
 
     assert score.melody
+    assert score.analysis.confidence > 0
     assert any("Vocal separation failed" in warning for warning in score.analysis.warnings)
     assert any("without source separation" in warning for warning in score.analysis.warnings)
 
@@ -145,4 +146,5 @@ async def test_pipeline_reports_successful_vocal_separation(tmp_path):
     )
 
     assert "Vocal isolation was applied before melody extraction." in score.analysis.warnings
+    assert score.analysis.confidence > 0
     assert not any("without source separation" in warning for warning in score.analysis.warnings)

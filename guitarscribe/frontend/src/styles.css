@@ -355,7 +355,7 @@ h2 {
 
 .summary-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
   gap: 0.8rem;
   margin-bottom: 1rem;
 }
@@ -383,6 +383,11 @@ h2 {
   display: block;
   margin-top: 0.55rem;
   font-size: 1.55rem;
+}
+
+.metric-card .metric-engine {
+  font-size: 1rem;
+  text-transform: capitalize;
 }
 
 .rhythm-panel { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 0 0 1rem; padding: 0.9rem 1rem; border: 1px solid var(--border); border-radius: 22px; background: rgba(137, 194, 167, 0.08); }

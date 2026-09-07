@@ -89,6 +89,7 @@ export type JobStatus =
   | "preprocessing"
   | "beat_analysis"
   | "chord_analysis"
+  | "vocal_separation"
   | "melody_analysis"
   | "postprocessing"
   | "completed"

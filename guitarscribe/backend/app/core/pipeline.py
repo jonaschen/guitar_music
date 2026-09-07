@@ -122,6 +122,7 @@ class AnalysisPipeline:
                 mode=chords.mode,
                 bpm=beats.bpm,
                 time_signature=beats.time_signature,
+                confidence=melody.confidence,
                 warnings=[*beats.warnings, *chords.warnings, *melody.warnings],
             ),
             key_context=KeyContext(
