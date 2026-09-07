@@ -41,7 +41,8 @@ def frames_to_notes(
             finish(index)
             continue
         pitch = int(round(float(raw_midi)))
-        probability = float(voiced_probabilities[index] or 0.0) if index < len(voiced_probabilities) else 0.0
+        raw_probability = voiced_probabilities[index] if index < len(voiced_probabilities) else 0.0
+        probability = float(raw_probability) if raw_probability is not None and np.isfinite(raw_probability) else 0.0
         if start is None:
             start, pitches, probabilities = index, [pitch], [probability]
         elif abs(pitch - round(median(pitches))) <= 1:
@@ -76,7 +77,7 @@ class PyinVocalMelodyAnalyzer:
         profile = MODE_PROFILES[MelodyMode.VOCAL]
         samples, sample_rate = librosa.load(str(audio.path), sr=None, mono=True)
         hop_length = 256
-        frequencies, voiced, probabilities = librosa.pyin(
+        frequencies, _voiced, probabilities = librosa.pyin(
             samples,
             fmin=profile["minimum_frequency"],
             fmax=profile["maximum_frequency"],
