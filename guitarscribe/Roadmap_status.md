@@ -19,7 +19,7 @@
 | **M2：Web UI MVP** | 上傳、進度、播放同步、和弦格、匯出 | ~96% | ⚠️ 進行中 |
 | **M3：可編輯樂譜** | 和弦編輯、移調、Capo、和弦指型、revision | ~88% | ⚠️ 進行中 |
 | **M4：簡化主旋律與 Tab** | 旋律顯示、指板映射、alphaTab、匯出 | ~92% | 🔧 進行中 |
-| **M5：品質與部署** | Golden dataset、E2E 測試、可觀測性 | ~71% | 🔧 進行中 |
+| **M5：品質與部署** | Golden dataset、E2E 測試、可觀測性 | ~72% | 🔧 進行中 |
 | **M6：歌詞與按譜演奏** | 歌詞匯入、時間標記、同步播放 | ~70% | 🔧 進行中 |
 
 **目前位置**：M0 完成；M1、M2 已可供本機試用；M3 的核心編輯與指型流程完成；M4 已有量化、Tab、MIDI/MusicXML 與原生旋律預覽；M5、M6 正在收斂。
@@ -319,7 +319,7 @@
 ### ✅ 已完成
 
 - [x] Docker Compose 可一鍵啟動（`make build && make serve-stack`）
-- [x] 基本測試套件（20 項測試，涵蓋 API、分析器、後處理、移調）
+- [x] 後端完整測試套件（78 項測試，涵蓋 API、分析器、後處理、工作佇列、移調與匯出）
 - [x] 測試 fixture（合成音訊，不含受版權保護內容）
 - [x] README 操作指令
 
@@ -332,7 +332,7 @@
 - [x] **準確率指標**（主文件 §11.2）
   - BPM 誤差、Beat F-measure、Chord symbol recall、Melody pitch accuracy
 - [x] **E2E 測試**（追加文件 §13.4）
-  - Playwright 端對端 UI 測試
+  - Playwright 端對端 UI 測試（upload workflow、可編輯 score workspace）
   - 移調往返回到相同 chord
   - Capo 推薦套用
   - 和弦抽屜操作
