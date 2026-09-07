@@ -76,6 +76,21 @@ class MelodyPostProcessor:
         upper = pitches[int((len(pitches) - 1) * 0.90)] + margin_semitones
         return [note for note in notes if lower <= note.midi <= upper]
 
+    def keep_cross_checked_notes(
+        self, primary: List[MelodyNote], reference: List[MelodyNote], pitch_tolerance: int = 2
+    ) -> List[MelodyNote]:
+        """Keep primary notes that overlap a pitch-compatible second extractor."""
+        supported: list[MelodyNote] = []
+        for note in primary:
+            if any(
+                other.start < note.end
+                and note.start < other.end
+                and abs(other.midi - note.midi) <= pitch_tolerance
+                for other in reference
+            ):
+                supported.append(note)
+        return supported
+
     def quantize_to_beats(self, notes: List[MelodyNote], beats: List[BeatInfo]) -> List[MelodyNote]:
         if len(beats) < 2:
             return notes

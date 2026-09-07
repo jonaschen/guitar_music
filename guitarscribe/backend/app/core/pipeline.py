@@ -89,6 +89,16 @@ class AnalysisPipeline:
                 separation_warnings.append("Vocal pitch tracing failed; used Basic Pitch on the isolated vocal stem.")
                 melody = await self.melody_analyzer.analyze(melody_audio, beats, melody_mode)
             melody.notes = self.melody_post.process(melody.notes, beats.beats, melody_mode)
+            if source_separated and analyzer is not self.melody_analyzer:
+                try:
+                    reference = await self.melody_analyzer.analyze(melody_audio, beats, melody_mode)
+                    reference.notes = self.melody_post.process(reference.notes, beats.beats, melody_mode)
+                    cross_checked = self.melody_post.keep_cross_checked_notes(melody.notes, reference.notes)
+                    if len(cross_checked) >= 8 and len(cross_checked) / max(1, len(melody.notes)) >= 0.55:
+                        melody.notes = cross_checked
+                        melody.warnings.append("Isolated vocal notes were cross-checked against a second pitch extractor.")
+                except Exception as reference_error:
+                    logger.info("Basic Pitch cross-check unavailable; keeping pYIN result: %s", reference_error)
             melody = self.fretboard_mapper.map_notes(melody)
             melody.confidence, quality_warnings = self.melody_post.assess_quality(
                 melody.notes, normalized.duration_seconds, melody_mode, source_separated=source_separated

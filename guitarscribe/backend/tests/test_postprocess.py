@@ -169,3 +169,18 @@ def test_melody_rejects_isolated_register_outliers_without_fixed_voice_range():
 
     assert "artifact" not in [note.id for note in selected]
     assert len(selected) == 20
+
+
+def test_melody_keeps_only_time_and_pitch_cross_checked_notes():
+    pp = MelodyPostProcessor()
+    primary = [
+        MelodyNote(id="supported", start=0, end=0.5, midi=60, note="C4"),
+        MelodyNote(id="wrong-pitch", start=0.5, end=1.0, midi=72, note="C5"),
+        MelodyNote(id="no-overlap", start=1.0, end=1.5, midi=64, note="E4"),
+    ]
+    reference = [
+        MelodyNote(id="check", start=0.1, end=0.4, midi=61, note="C#4"),
+        MelodyNote(id="later", start=1.5, end=2.0, midi=64, note="E4"),
+    ]
+
+    assert [note.id for note in pp.keep_cross_checked_notes(primary, reference)] == ["supported"]
