@@ -11,6 +11,10 @@ from ...models.analysis import BeatAnalysis, MelodyAnalysis, MelodyMode, MelodyN
 from ...models.audio import NormalizedAudio
 from .basic_pitch_adapter import MODE_PROFILES, midi_to_note_name
 
+PYIN_HOP_LENGTH = 512
+PYIN_RESOLUTION = 0.5
+PYIN_THRESHOLDS = 32
+
 
 def frames_to_notes(
     midi_values: Sequence[float | None],
@@ -76,7 +80,11 @@ class PyinVocalMelodyAnalyzer:
 
         profile = MODE_PROFILES[MelodyMode.VOCAL]
         samples, sample_rate = librosa.load(str(audio.path), sr=None, mono=True)
-        hop_length = 256
+        # The downstream score is quantized to musical grid points and MIDI
+        # semitones, so pYIN's 0.1-cent-like default resolution is wasted work
+        # on multi-minute songs. These values keep vocal contours while making
+        # optional source-separated analysis practical on CPU.
+        hop_length = PYIN_HOP_LENGTH
         frequencies, _voiced, probabilities = librosa.pyin(
             samples,
             fmin=profile["minimum_frequency"],
@@ -84,6 +92,8 @@ class PyinVocalMelodyAnalyzer:
             sr=sample_rate,
             hop_length=hop_length,
             frame_length=2048,
+            resolution=PYIN_RESOLUTION,
+            n_thresholds=PYIN_THRESHOLDS,
         )
         midi = librosa.hz_to_midi(frequencies)
         notes = frames_to_notes(midi, probabilities, hop_seconds=hop_length / sample_rate)
