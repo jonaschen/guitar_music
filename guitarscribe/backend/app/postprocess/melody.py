@@ -61,6 +61,21 @@ class MelodyPostProcessor:
                 merged.append(note)
         return merged
 
+    def remove_register_outliers(self, notes: List[MelodyNote], margin_semitones: int = 7) -> List[MelodyNote]:
+        """Drop isolated octave/register artifacts using robust pitch percentiles.
+
+        Source-separated stems can retain a brief cymbal or guitar harmonic.
+        Unlike a fixed singer range, percentile bounds preserve a high or low
+        singer while rejecting only the remote tail of an otherwise coherent
+        line.
+        """
+        if len(notes) < 12:
+            return notes
+        pitches = sorted(note.midi for note in notes)
+        lower = pitches[int((len(pitches) - 1) * 0.10)] - margin_semitones
+        upper = pitches[int((len(pitches) - 1) * 0.90)] + margin_semitones
+        return [note for note in notes if lower <= note.midi <= upper]
+
     def quantize_to_beats(self, notes: List[MelodyNote], beats: List[BeatInfo]) -> List[MelodyNote]:
         if len(beats) < 2:
             return notes
@@ -121,4 +136,5 @@ class MelodyPostProcessor:
         notes = self.remove_low_confidence(notes)
         notes = self.quantize_to_beats(notes, beats) if beats else notes
         notes = self.select_monophonic_line(notes, mode)
+        notes = self.remove_register_outliers(notes)
         return self.merge_repeated(notes)

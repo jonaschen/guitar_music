@@ -156,3 +156,16 @@ def test_vocal_mode_rejects_bass_register_candidates():
     selected = pp.select_monophonic_line(notes, MelodyMode.VOCAL)
 
     assert [note.id for note in selected] == ["lead"]
+
+
+def test_melody_rejects_isolated_register_outliers_without_fixed_voice_range():
+    pp = MelodyPostProcessor()
+    notes = [
+        MelodyNote(id=str(index), start=index * 0.5, end=index * 0.9, midi=64 + index % 4, note="note", confidence=0.9)
+        for index in range(20)
+    ] + [MelodyNote(id="artifact", start=11, end=11.4, midi=84, note="C6", confidence=0.9)]
+
+    selected = pp.remove_register_outliers(notes)
+
+    assert "artifact" not in [note.id for note in selected]
+    assert len(selected) == 20
