@@ -43,6 +43,28 @@ def test_playback_manifest_compiles_voicing_capo_melody_and_metronome():
     assert guitar[1].pitches == tuple(reversed(guitar[0].pitches))
 
 
+def test_midi_export_includes_selected_guitar_voicing_when_melody_is_empty():
+    score = SongScore(
+        song=SongInfo(duration_seconds=2),
+        analysis=AnalysisSummary(bpm=120),
+        chords=[ChordEvent(
+            id="c1", start=0.0, end=1.0, symbol="C", voicing_id="open-c",
+            available_voicings=[ChordVoicing(
+                id="open-c", symbol="C", shape_symbol="C",
+                frets=[None, 3, 2, 0, 1, 0],
+            )],
+        )],
+        rhythm=RhythmSuggestion(subdivision=8, display=["D"]),
+    )
+
+    output = export_midi(score)
+
+    assert bytes([0xC0, 81]) in output
+    assert bytes([0xC1, 24]) in output
+    assert bytes([0x91, 48, 94]) in output
+    assert bytes([0x81, 48, 0]) in output
+
+
 def test_playback_manifest_revision_changes_with_capo():
     score = SongScore(analysis=AnalysisSummary(capo=0))
 

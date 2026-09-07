@@ -124,14 +124,25 @@ def _varlen(value: int) -> bytes:
 def export_midi(score: SongScore, ticks_per_beat: int = 480) -> bytes:
     manifest = compile_playback_manifest(score)
     tempo = max(1, round(60_000_000 / manifest.bpm))
-    events: list[tuple[int, int, bytes]] = [(0, 0, b"\xff\x51\x03" + tempo.to_bytes(3, "big"))]
+    # Format 0 still supports multiple MIDI channels. Keep the detected melody
+    # on channel 0 and put the playable, selected guitar voicing on channel 1
+    # so a sparse or unavailable melody does not produce an empty MIDI file.
+    events: list[tuple[int, int, bytes]] = [
+        (0, 0, b"\xff\x51\x03" + tempo.to_bytes(3, "big")),
+        (0, 2, bytes([0xC0, 81])),  # lead synth for melody
+        (0, 2, bytes([0xC1, 24])),  # nylon guitar for chord accompaniment
+    ]
     for event in manifest.events:
-        if event.track != "melody":
+        if event.track not in {"melody", "guitar"}:
             continue
         start = max(0, round(event.start * manifest.bpm / 60 * ticks_per_beat))
         end = max(start + 1, round(event.end * manifest.bpm / 60 * ticks_per_beat))
+        channel = 0 if event.track == "melody" else 1
         for pitch in event.pitches:
-            events.extend([(start, 1, bytes([0x90, pitch, event.velocity])), (end, 0, bytes([0x80, pitch, 0]))])
+            events.extend([
+                (start, 1, bytes([0x90 | channel, pitch, event.velocity])),
+                (end, 0, bytes([0x80 | channel, pitch, 0])),
+            ])
     events.sort(key=lambda event: (event[0], event[1]))
     track = bytearray()
     previous = 0

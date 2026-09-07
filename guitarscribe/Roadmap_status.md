@@ -306,6 +306,7 @@
 - [x] **MusicXML 匯出**
   - 已依偵測小節切分，保留休止、調號、拍號、標準調弦與音符 string/fret 技術記號，供 alphaTab 顯示可彈 Tab。
 - [x] **MIDI 匯出**
+  - 旋律與選定 chord voicing 的 accompaniment 分別輸出至 lead（channel 0）與 nylon guitar（channel 1）；即使沒有可信主旋律仍會保留可彈的和弦節奏。
 - [x] **旋律 confidence 與品質提示**（主文件 §7.5）
   - 依音符密度、平均信心與來源是否已分離提供可靠性與可讀警告；原始候選音高 debug 輸出仍待補。
 
@@ -320,7 +321,7 @@
 ### ✅ 已完成
 
 - [x] Docker Compose 可一鍵啟動（`make build && make serve-stack`）
-- [x] 後端完整測試套件（94 項測試，涵蓋 API、分析器、後處理、工作佇列、移調、匯出與評估指標）
+- [x] 後端完整測試套件（95 項測試，涵蓋 API、分析器、後處理、工作佇列、移調、匯出與評估指標）
 - [x] 測試 fixture（合成音訊，不含受版權保護內容）
 - [x] README 操作指令
 
@@ -378,7 +379,7 @@
 - [x] YouTube 原曲未變調時有警告
 - [x] JSON Schema 與 API 已有版本
 - [x] 自動測試涵蓋十二個 pitch class — 移調測試涵蓋 key、chord root、slash bass 與 melody MIDI pitch class。
-- [ ] 匯出格式保持一致 — *只有 JSON 匯出，尚無 ChordPro/PDF/MusicXML*
+- [ ] 匯出格式保持一致 — JSON、ChordPro、LRC、MIDI、MusicXML 已可輸出；PDF 匯出與跨格式視覺校對仍待完成。
 
 ---
 
