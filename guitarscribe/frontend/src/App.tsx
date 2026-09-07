@@ -367,6 +367,18 @@ export function App() {
     return () => window.removeEventListener("keydown", handleShortcut);
   }, [score, undoHistory, redoHistory]);
 
+  useEffect(() => {
+    const resumeSynthAfterVisibilityChange = () => {
+      if (document.visibilityState !== "visible" || !isSynthPlaying) return;
+      // A browser may suspend an AudioContext while the tab is hidden. The
+      // look-ahead scheduler will skip expired events and resume from its
+      // AudioContext-derived playhead once this promise resolves.
+      void synthContextRef.current?.resume().catch(() => undefined);
+    };
+    document.addEventListener("visibilitychange", resumeSynthAfterVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", resumeSynthAfterVisibilityChange);
+  }, [isSynthPlaying]);
+
   const measureGroups = score ? (() => {
     const starts = new Map<number, number>();
     score.beats.forEach((beat) => {
@@ -651,12 +663,13 @@ export function App() {
           .filter((event) => synthTracks[event.track] && (synthSoloTrack === null || event.track === synthSoloTrack) && event.end > segmentStart && event.start < segmentEnd)
           .sort((left, right) => left.start - right.start);
         let nextEventIndex = 0;
-        const scheduleEvent = (event: PlaybackManifest["events"][number]) => {
-          const eventStart = Math.max(event.start, segmentStart);
+        const scheduleEvent = (event: PlaybackManifest["events"][number], resumeScoreTime: number) => {
+          const eventStart = Math.max(event.start, segmentStart, resumeScoreTime);
           const eventEnd = Math.min(event.end, segmentEnd);
+          if (eventEnd <= eventStart) return;
           event.pitches.forEach((pitch, pitchIndex) => {
             const strumDelay = event.track === "guitar" ? pitchIndex * 0.012 / playbackRate : 0;
-            const startAt = contextStart + (eventStart - segmentStart) / playbackRate + strumDelay;
+            const startAt = Math.max(context.currentTime + 0.005, contextStart + (eventStart - segmentStart) / playbackRate + strumDelay);
             const endAt = Math.max(startAt + 0.025, contextStart + (eventEnd - segmentStart) / playbackRate);
             const oscillator = context.createOscillator();
             const gain = context.createGain();
@@ -679,7 +692,7 @@ export function App() {
           const elapsedScoreTime = Math.max(0, (context.currentTime - contextStart) * playbackRate);
           const horizon = segmentStart + elapsedScoreTime + SYNTH_SCHEDULE_AHEAD_SECONDS * playbackRate;
           while (nextEventIndex < segmentEvents.length && segmentEvents[nextEventIndex].start < horizon) {
-            scheduleEvent(segmentEvents[nextEventIndex]);
+            scheduleEvent(segmentEvents[nextEventIndex], segmentStart + elapsedScoreTime);
             nextEventIndex += 1;
           }
           if (synthClockRef.current?.contextStart === contextStart && context.currentTime < contextStart + (segmentEnd - segmentStart) / playbackRate) {

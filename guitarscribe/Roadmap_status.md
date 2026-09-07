@@ -472,7 +472,8 @@
 - [ ] **Web Audio synth 與分軌控制**
   - 已接 canonical manifest 與 AudioContext clock，提供 score play/pause/stop、Guitar/melody/metronome mute、volume、solo 與合成模式 count-in；原曲與合成播放互斥。
   - 已完成 0.35 秒 look-ahead scheduler：不再在開始播放時建立整首歌的 oscillator；已結束的 source 會釋放。畫面 playhead 仍由 AudioContext clock 經 requestAnimationFrame 推導。
-  - 尚需背景回復重同步與較自然的吉他音色。
+  - 已在頁面回到前景時恢復既有 AudioContext；被背景節流後已逾時的 events 會跳過、持續中的音符會由目前 playhead 重接。
+  - 尚需較自然的吉他音色。
 - [ ] **Voicing-aware chord playback**
   - 納入 tuning、capo、frets、muted/open strings、actual sounding pitch。
   - 實作 down/up stroke spread、velocity 與 arpeggio templates；key/capo/voicing 變更後重新編譯受影響 events。
