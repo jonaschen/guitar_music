@@ -320,7 +320,7 @@
 ### ✅ 已完成
 
 - [x] Docker Compose 可一鍵啟動（`make build && make serve-stack`）
-- [x] 後端完整測試套件（78 項測試，涵蓋 API、分析器、後處理、工作佇列、移調與匯出）
+- [x] 後端完整測試套件（94 項測試，涵蓋 API、分析器、後處理、工作佇列、移調、匯出與評估指標）
 - [x] 測試 fixture（合成音訊，不含受版權保護內容）
 - [x] README 操作指令
 
@@ -471,7 +471,8 @@
   - 由 score、key/capo、selected voicing 實際音高、rhythm 與 melody 編譯；MIDI 與 Web Audio UI 已讀同一 manifest。
 - [ ] **Web Audio synth 與分軌控制**
   - 已接 canonical manifest 與 AudioContext clock，提供 score play/pause/stop、Guitar/melody/metronome mute、volume、solo 與合成模式 count-in；原曲與合成播放互斥。
-  - 尚需 lookahead scheduler、背景回復重同步與較自然的吉他音色。
+  - 已完成 0.35 秒 look-ahead scheduler：不再在開始播放時建立整首歌的 oscillator；已結束的 source 會釋放。畫面 playhead 仍由 AudioContext clock 經 requestAnimationFrame 推導。
+  - 尚需背景回復重同步與較自然的吉他音色。
 - [ ] **Voicing-aware chord playback**
   - 納入 tuning、capo、frets、muted/open strings、actual sounding pitch。
   - 實作 down/up stroke spread、velocity 與 arpeggio templates；key/capo/voicing 變更後重新編譯受影響 events。

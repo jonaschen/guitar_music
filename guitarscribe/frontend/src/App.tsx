@@ -43,6 +43,8 @@ const NOTE_TO_PITCH: Record<string, number> = {
   Cb: 11,
 };
 const PITCH_TO_FLAT_KEY = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
+const SYNTH_SCHEDULE_AHEAD_SECONDS = 0.35;
+const SYNTH_SCHEDULER_INTERVAL_MS = 50;
 
 type AnalyzeState = "idle" | "queued" | "ready" | "error";
 type ScoreChord = SongScore["chords"][number];
@@ -197,6 +199,7 @@ export function App() {
   const synthContextRef = useRef<AudioContext | null>(null);
   const synthSourcesRef = useRef<OscillatorNode[]>([]);
   const synthAnimationRef = useRef<number | null>(null);
+  const synthSchedulerRef = useRef<number | null>(null);
   const synthCountInTimerRef = useRef<number | null>(null);
   const synthClockRef = useRef<{ contextStart: number; scoreStart: number } | null>(null);
   const lastMetronomeBeatRef = useRef<number | null>(null);
@@ -596,6 +599,8 @@ export function App() {
     synthSourcesRef.current = [];
     if (synthAnimationRef.current !== null) window.cancelAnimationFrame(synthAnimationRef.current);
     synthAnimationRef.current = null;
+    if (synthSchedulerRef.current !== null) window.clearTimeout(synthSchedulerRef.current);
+    synthSchedulerRef.current = null;
     synthClockRef.current = null;
     if (synthCountInTimerRef.current !== null) window.clearTimeout(synthCountInTimerRef.current);
     synthCountInTimerRef.current = null;
@@ -642,8 +647,11 @@ export function App() {
       const scheduleSegment = (segmentStart: number, contextStart: number) => {
         const segmentEnd = requestedLoop?.[1] ?? manifest.duration_seconds;
         synthClockRef.current = { contextStart, scoreStart: segmentStart };
-        for (const event of manifest.events) {
-          if (!synthTracks[event.track] || (synthSoloTrack !== null && event.track !== synthSoloTrack) || event.end <= segmentStart || event.start >= segmentEnd) continue;
+        const segmentEvents = manifest.events
+          .filter((event) => synthTracks[event.track] && (synthSoloTrack === null || event.track === synthSoloTrack) && event.end > segmentStart && event.start < segmentEnd)
+          .sort((left, right) => left.start - right.start);
+        let nextEventIndex = 0;
+        const scheduleEvent = (event: PlaybackManifest["events"][number]) => {
           const eventStart = Math.max(event.start, segmentStart);
           const eventEnd = Math.min(event.end, segmentEnd);
           event.pitches.forEach((pitch, pitchIndex) => {
@@ -661,16 +669,30 @@ export function App() {
             oscillator.connect(gain).connect(context.destination);
             oscillator.start(startAt);
             oscillator.stop(endAt + 0.01);
+            oscillator.onended = () => {
+              synthSourcesRef.current = synthSourcesRef.current.filter((source) => source !== oscillator);
+            };
             synthSourcesRef.current.push(oscillator);
           });
-        }
+        };
+        const schedulePendingEvents = () => {
+          const elapsedScoreTime = Math.max(0, (context.currentTime - contextStart) * playbackRate);
+          const horizon = segmentStart + elapsedScoreTime + SYNTH_SCHEDULE_AHEAD_SECONDS * playbackRate;
+          while (nextEventIndex < segmentEvents.length && segmentEvents[nextEventIndex].start < horizon) {
+            scheduleEvent(segmentEvents[nextEventIndex]);
+            nextEventIndex += 1;
+          }
+          if (synthClockRef.current?.contextStart === contextStart && context.currentTime < contextStart + (segmentEnd - segmentStart) / playbackRate) {
+            synthSchedulerRef.current = window.setTimeout(schedulePendingEvents, SYNTH_SCHEDULER_INTERVAL_MS);
+          }
+        };
+        schedulePendingEvents();
         const updatePlayhead = () => {
           const clock = synthClockRef.current;
           if (!clock) return;
           const nextTime = clock.scoreStart + (context.currentTime - clock.contextStart) * playbackRate;
           if (nextTime >= segmentEnd) {
             if (requestedLoop) {
-              synthSourcesRef.current = [];
               scheduleSegment(requestedLoop[0], context.currentTime + 0.015);
               return;
             }
