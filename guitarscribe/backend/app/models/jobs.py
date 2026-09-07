@@ -26,6 +26,7 @@ ACTIVE_JOB_STATUSES = {
     JobStatus.PREPROCESSING,
     JobStatus.BEAT_ANALYSIS,
     JobStatus.CHORD_ANALYSIS,
+    JobStatus.VOCAL_SEPARATION,
     JobStatus.MELODY_ANALYSIS,
     JobStatus.POSTPROCESSING,
 }

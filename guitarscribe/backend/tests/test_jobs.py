@@ -3,6 +3,7 @@ import asyncio
 import pytest
 
 from app.models.score import AnalysisSummary, KeyContext, KeySignature, SongInfo, SongScore
+from app.models.jobs import AnalysisJob, JobStatus
 from app.services.jobs import AnalysisJobService, JobStore
 
 
@@ -90,3 +91,20 @@ def test_job_store_removes_only_expired_directories(tmp_path):
     assert store.cleanup_expired(5) == 1
     assert not expired.exists()
     assert fresh.exists()
+
+
+def test_job_store_marks_in_progress_work_failed_after_server_restart(tmp_path):
+    store = JobStore(tmp_path / "jobs")
+    job = AnalysisJob(
+        id="interrupted", status=JobStatus.VOCAL_SEPARATION, progress=66,
+        message="Isolating vocals for melody focus", created_at="2026-01-01T00:00:00+00:00",
+        updated_at="2026-01-01T00:00:00+00:00",
+    )
+    store.save(job)
+
+    store.mark_interrupted_jobs_failed()
+
+    restored = store.load(job.id)
+    assert restored.status == JobStatus.FAILED
+    assert restored.error == "The server restarted before this analysis completed."
+    assert restored.message == "Analysis interrupted by server restart"
