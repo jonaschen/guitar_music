@@ -137,7 +137,7 @@ async def test_pipeline_reports_successful_vocal_separation(tmp_path):
 
     pipeline = AnalysisPipeline(
         Preprocessor(), BeatAnalyzer(), ChordAnalyzer(), MelodyAnalyzer(), ChordPost(),
-        MelodyPostProcessor(), Rhythm(), Mapper(), Source(), Separator(),
+        MelodyPostProcessor(), Rhythm(), Mapper(), Source(), Separator(), MelodyAnalyzer(),
     )
     score = await pipeline.run(
         SourceRequest(source_type=SourceType.LOCAL, path=normalized.path),

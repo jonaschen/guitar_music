@@ -9,6 +9,7 @@ from ..analyzers.beats.librosa_beats import LibrosaBeatAnalyzer
 from ..analyzers.chords.chromagram import ChromagramChordAnalyzer
 from ..analyzers.chords.chordino import ChordinoChordAnalyzer
 from ..analyzers.melody.basic_pitch_adapter import BasicPitchMelodyAnalyzer
+from ..analyzers.melody.pyin_adapter import PyinVocalMelodyAnalyzer
 from ..postprocess.chords import ChordPostProcessor
 from ..postprocess.melody import MelodyPostProcessor
 from ..postprocess.rhythm import RhythmSuggester
@@ -18,7 +19,7 @@ from ..sources.local import LocalAudioSource
 logger = logging.getLogger(__name__)
 
 class AnalysisPipeline:
-    def __init__(self, preprocessor, beat_analyzer, chord_analyzer, melody_analyzer, chord_post, melody_post, rhythm_suggester, fretboard_mapper, source, melody_separator=None, max_duration_seconds: int = 600):
+    def __init__(self, preprocessor, beat_analyzer, chord_analyzer, melody_analyzer, chord_post, melody_post, rhythm_suggester, fretboard_mapper, source, melody_separator=None, vocal_melody_analyzer=None, max_duration_seconds: int = 600):
         self.preprocessor = preprocessor
         self.beat_analyzer = beat_analyzer
         self.chord_analyzer = chord_analyzer
@@ -29,6 +30,7 @@ class AnalysisPipeline:
         self.fretboard_mapper = fretboard_mapper
         self.source = source
         self.melody_separator = melody_separator
+        self.vocal_melody_analyzer = vocal_melody_analyzer
         self.max_duration_seconds = max_duration_seconds
 
     async def run(
@@ -76,7 +78,15 @@ class AnalysisPipeline:
                     separation_warnings.append(f"Vocal separation failed; using full mix: {separation_error}")
             elif separate_vocals and melody_mode == MelodyMode.VOCAL:
                 separation_warnings.append("Vocal isolation was requested but is not enabled on this server; using the full mix.")
-            melody = await self.melody_analyzer.analyze(melody_audio, beats, melody_mode)
+            analyzer = self.vocal_melody_analyzer if source_separated and self.vocal_melody_analyzer else self.melody_analyzer
+            try:
+                melody = await analyzer.analyze(melody_audio, beats, melody_mode)
+            except Exception as melody_error:
+                if analyzer is self.melody_analyzer:
+                    raise
+                logger.warning("pYIN vocal tracing failed; falling back to Basic Pitch: %s", melody_error)
+                separation_warnings.append("Vocal pitch tracing failed; used Basic Pitch on the isolated vocal stem.")
+                melody = await self.melody_analyzer.analyze(melody_audio, beats, melody_mode)
             melody.notes = self.melody_post.process(melody.notes, beats.beats, melody_mode)
             melody = self.fretboard_mapper.map_notes(melody)
             melody.confidence, quality_warnings = self.melody_post.assess_quality(
@@ -139,6 +149,7 @@ def create_pipeline(settings: Settings) -> AnalysisPipeline:
         chord_analyzer = ChromagramChordAnalyzer()
         
     melody_analyzer = BasicPitchMelodyAnalyzer()
+    vocal_melody_analyzer = PyinVocalMelodyAnalyzer()
     
     chord_post = ChordPostProcessor()
     melody_post = MelodyPostProcessor()
@@ -149,6 +160,6 @@ def create_pipeline(settings: Settings) -> AnalysisPipeline:
     
     return AnalysisPipeline(
         preprocessor, beat_analyzer, chord_analyzer, melody_analyzer,
-        chord_post, melody_post, rhythm_suggester, fretboard_mapper, source, melody_separator,
+        chord_post, melody_post, rhythm_suggester, fretboard_mapper, source, melody_separator, vocal_melody_analyzer,
         max_duration_seconds=settings.max_duration_seconds
     )
