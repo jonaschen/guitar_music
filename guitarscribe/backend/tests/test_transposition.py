@@ -1,6 +1,8 @@
+import pytest
+
 from app.models.analysis import AccidentalPreference, ChordEvent, ChordVoicing, MelodyNote
 from app.models.score import AnalysisSummary, KeyContext, KeySignature, SongInfo, SongScore
-from app.services.transposition import TranspositionService
+from app.services.transposition import SHARP_NOTES, TranspositionService
 
 
 def make_score() -> SongScore:
@@ -95,3 +97,18 @@ def test_transpose_uses_flat_spelling_when_requested():
 
     assert service.transpose_chord_symbol("F", 5, AccidentalPreference.FLATS) == "Bb"
     assert service.transpose_chord_symbol("C/E", 3, AccidentalPreference.FLATS) == "Eb/G"
+
+
+@pytest.mark.parametrize("semitones", range(12))
+def test_transpose_covers_every_pitch_class_for_key_chord_slash_bass_and_melody(semitones):
+    service = TranspositionService()
+    transposed = service.transpose_score(make_score(), semitones, AccidentalPreference.SHARPS)
+    expected_root = SHARP_NOTES[(7 + semitones) % 12]  # G
+    expected_slash_root = SHARP_NOTES[(2 + semitones) % 12]  # D
+    expected_slash_bass = SHARP_NOTES[(6 + semitones) % 12]  # F#
+
+    assert transposed.key_context.target.key == expected_root
+    assert transposed.chords[0].symbol == expected_root
+    assert transposed.chords[1].symbol == f"{expected_slash_root}/{expected_slash_bass}"
+    assert transposed.melody[0].midi % 12 == (67 + semitones) % 12
+    assert transposed.melody[1].midi % 12 == (70 + semitones) % 12

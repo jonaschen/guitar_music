@@ -377,7 +377,7 @@
 - [ ] 轉調後會重新計算 voicing — *尚未實作*
 - [x] YouTube 原曲未變調時有警告
 - [x] JSON Schema 與 API 已有版本
-- [ ] 自動測試涵蓋十二個 pitch class — *目前測試只涵蓋部分 key*
+- [x] 自動測試涵蓋十二個 pitch class — 移調測試涵蓋 key、chord root、slash bass 與 melody MIDI pitch class。
 - [ ] 匯出格式保持一致 — *只有 JSON 匯出，尚無 ChordPro/PDF/MusicXML*
 
 ---
