@@ -47,7 +47,7 @@ To protect the single-worker analysis service, job creation is limited per direc
 
 ## Optional vocal isolation
 
-Full-mix melody extraction can follow accompaniment instead of the singer. Vocal focus can optionally run Demucs before Basic Pitch without adding PyTorch to the normal backend image. In a dedicated Python 3.10-3.12 environment, install CPU PyTorch first, then the optional dependency:
+Full-mix melody extraction can follow accompaniment instead of the singer. Vocal focus can optionally run Demucs, then trace the isolated vocal's single fundamental-frequency line with pYIN; Basic Pitch remains a fallback if that trace cannot be produced. This does not add PyTorch to the normal backend image. In a dedicated Python 3.10-3.12 environment, install CPU PyTorch first, then the optional dependency:
 
 ```bash
 python -m pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu

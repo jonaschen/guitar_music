@@ -281,7 +281,7 @@
 - [x] 指板映射（`SimpleFretboardMapper`，MIDI → string/fret）
 - [x] 旋律模式選項（vocal / guitar / mix）
 - [x] **可選人聲隔離品質模式**
-  - Vocal focus 可逐次分析啟用 Demucs；未安裝時安全退回全混音並明確警告。
+  - Vocal focus 可逐次分析啟用 Demucs；隔離成功時以單音高 pYIN 追蹤人聲基頻，避免直接從多音 Basic Pitch 候選中猜選旋律。若追蹤失敗則安全改用隔離人聲上的 Basic Pitch；未安裝時安全退回全混音並明確警告。
   - 實際 Live 音檔驗證：隔離後低於 G3 的可疑低音由 170 降至 11，旋律中位音高由 F#3 提升至 F4。
 - [x] `MelodyNote` 資料模型（含 string、fret、source_midi、source_note）
 
