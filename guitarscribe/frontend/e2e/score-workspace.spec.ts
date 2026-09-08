@@ -43,6 +43,8 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await expect(page.getByText("Notation preview unavailable:")).toHaveCount(0);
   await expect(page.locator(".chord-sheet .measure-header", { hasText: "Bar 2" })).toBeVisible();
   await expect(page.getByText("Continues")).toHaveCount(2);
+  await page.getByRole("button", { name: "Follow score on" }).click();
+  await expect(page.getByRole("button", { name: "Follow score off" })).toBeVisible();
   await expect(page.locator(".chord-block").first()).toBeVisible();
   await page.locator(".chord-block").first().click();
   await expect(page.getByRole("heading", { name: "Edit C" })).toBeVisible();

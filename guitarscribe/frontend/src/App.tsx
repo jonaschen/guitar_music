@@ -218,6 +218,7 @@ export function App() {
   const [loopRange, setLoopRange] = useState<[number, number] | null>(null);
   const [loopStart, setLoopStart] = useState<number | null>(null);
   const [loopEnd, setLoopEnd] = useState<number | null>(null);
+  const [followPlayhead, setFollowPlayhead] = useState(true);
   const [error, setError] = useState<string>("");
   const [lyricsDraft, setLyricsDraft] = useState("");
   const [isImportingLyrics, setIsImportingLyrics] = useState(false);
@@ -419,6 +420,15 @@ export function App() {
   const activeMeasureGroup = measureGroups.find((group) => playbackTime >= group.start && playbackTime < group.end) ?? measureGroups[0];
   const activeMeasureNotes = score && activeMeasureGroup ? score.melody.filter((note) => note.start >= activeMeasureGroup.start && note.start < activeMeasureGroup.end && note.string !== null && note.string !== undefined && note.fret !== null && note.fret !== undefined) : [];
   const activeMelodyNoteId = score?.melody.find((note) => playbackTime >= note.start && playbackTime < note.end)?.id ?? null;
+
+  useEffect(() => {
+    if (!followPlayhead || !activeChordId) return;
+    document.querySelector<HTMLElement>(".chord-block-active")?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "nearest",
+    });
+  }, [activeChordId, followPlayhead]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -1228,6 +1238,7 @@ export function App() {
                     <button type="button" className="ghost-button" disabled={loopStart === null} onClick={() => { if (loopStart !== null && playbackTime > loopStart) setLoopEnd(playbackTime); }}>Set B</button>
                     {loopStart !== null ? <button type="button" className="ghost-button" onClick={() => { setLoopStart(null); setLoopEnd(null); }}>Clear A–B</button> : null}
                     <button type="button" className="ghost-button" onClick={() => setMetronomeEnabled((enabled) => !enabled)}>{metronomeEnabled ? "Metronome on" : "Metronome off"}</button>
+                    <button type="button" className="ghost-button" onClick={() => setFollowPlayhead((enabled) => !enabled)}>{followPlayhead ? "Follow score on" : "Follow score off"}</button>
                     <label className="transport-speed">Count-in <select value={countInMeasures} onChange={(event) => setCountInMeasures(Number(event.target.value))}><option value={0}>Off</option><option value={1}>1 bar</option><option value={2}>2 bars</option></select></label>
                     <button type="button" className="ghost-button" onClick={() => stopSynth(true)}>Stop</button>
                     <label className="transport-speed">Speed <select value={playbackRate} onChange={(event) => setSpeed(Number(event.target.value))}>{[0.5, 0.6, 0.75, 0.9, 1, 1.1, 1.25, 1.5].map((rate) => <option key={rate} value={rate}>{Math.round(rate * 100)}%</option>)}</select></label>

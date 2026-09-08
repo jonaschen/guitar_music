@@ -463,7 +463,7 @@
   - 已提供 Play/Pause/Stop/Seek、前後小節、chord/melody/lyric 高亮；media offset 校正仍待完成。
   - 點擊和弦、小節或歌詞可跳轉；保存 `media_offset_seconds` 並提供 ±0.1s 校正。
 - [x] **練習控制列**
-  - 已提供 A–B loop、目前小節 loop、速度、count-in 與 metronome；follow-playhead 仍待完成。
+  - 已提供 A–B loop、目前小節 loop、速度、count-in、metronome 與可開關的 follow-playhead；播放時目前和弦會捲入可視區。
   - 上傳音訊的 time-stretch 未完成前明確顯示限制；YouTube iframe 只使用其支援的速度與容許 drift 校正。
 
 ### 第三階段：合成按譜演奏
