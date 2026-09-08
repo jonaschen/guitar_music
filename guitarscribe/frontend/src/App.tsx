@@ -223,6 +223,7 @@ export function App() {
   const [lyricsDraft, setLyricsDraft] = useState("");
   const [editingLyricLineId, setEditingLyricLineId] = useState<string | null>(null);
   const [editingLyricText, setEditingLyricText] = useState("");
+  const [snapLyricTiming, setSnapLyricTiming] = useState(false);
   const [isImportingLyrics, setIsImportingLyrics] = useState(false);
   const [isTimingLyrics, setIsTimingLyrics] = useState(false);
   const [accidentalPreference, setAccidentalPreference] = useState<AccidentalPreference>("auto");
@@ -536,7 +537,10 @@ export function App() {
     if (!score) return;
     setIsTimingLyrics(true);
     try {
-      recordScoreChange(await updateLyricTiming(score, lineId, boundary === "start" ? playbackTime : undefined, boundary === "end" ? playbackTime : undefined));
+      const timing = snapLyricTiming && score.beats.length
+        ? score.beats.reduce((closest, beat) => Math.abs(beat.time - playbackTime) < Math.abs(closest - playbackTime) ? beat.time : closest, score.beats[0].time)
+        : playbackTime;
+      recordScoreChange(await updateLyricTiming(score, lineId, boundary === "start" ? timing : undefined, boundary === "end" ? timing : undefined));
     } catch (timingError) {
       setError(timingError instanceof Error ? timingError.message : "Could not update lyric timing.");
     } finally {
@@ -1277,7 +1281,7 @@ export function App() {
                 <section className="lyrics-panel">
                   <h3>Lyrics</h3>
                   <textarea value={lyricsDraft} onChange={(event) => setLyricsDraft(event.target.value)} placeholder="Paste lyrics you are allowed to use. One line per lyric line." rows={5} />
-                  <div className="lyrics-actions"><button type="button" className="ghost-button" disabled={isImportingLyrics || !lyricsDraft.trim()} onClick={() => void saveLyrics()}>{isImportingLyrics ? "Importing..." : "Import lyrics"}</button><label className="ghost-button">Import LRC<input type="file" accept=".lrc,text/plain" onChange={importLrcFile} hidden /></label><button type="button" className="ghost-button" disabled={!score.lyrics?.lines.length} onClick={() => void distributeLyricTiming()}>Distribute timing</button></div>
+                  <div className="lyrics-actions"><button type="button" className="ghost-button" disabled={isImportingLyrics || !lyricsDraft.trim()} onClick={() => void saveLyrics()}>{isImportingLyrics ? "Importing..." : "Import lyrics"}</button><label className="ghost-button">Import LRC<input type="file" accept=".lrc,text/plain" onChange={importLrcFile} hidden /></label><button type="button" className="ghost-button" disabled={!score.lyrics?.lines.length} onClick={() => void distributeLyricTiming()}>Distribute timing</button><button type="button" className="ghost-button" onClick={() => setSnapLyricTiming((enabled) => !enabled)}>{snapLyricTiming ? "Snap to beat on" : "Snap to beat off"}</button></div>
                   {score.lyrics?.lines.length ? <div className="lyrics-lines">{score.lyrics.lines.map((line) => <div key={line.id} className={playbackTime >= (line.start ?? Infinity) && playbackTime < (line.end ?? Infinity) ? "lyric-line lyric-line-active" : "lyric-line"}>{editingLyricLineId === line.id ? <input aria-label={`Edit lyric line ${line.order}`} value={editingLyricText} autoFocus onChange={(event) => setEditingLyricText(event.target.value)} onBlur={() => saveLyricText(line.id)} onKeyDown={(event) => { if (event.key === "Enter") event.currentTarget.blur(); if (event.key === "Escape") setEditingLyricLineId(null); }} /> : <button type="button" onClick={() => line.start !== null && line.start !== undefined && seekTo(line.start)}>{line.text}</button>}<span>{line.start?.toFixed(1) ?? "—"}–{line.end?.toFixed(1) ?? "—"}</span><button type="button" onClick={() => { setEditingLyricLineId(line.id); setEditingLyricText(line.text); }}>Edit text</button><button type="button" disabled={isTimingLyrics} onClick={() => void setLyricTiming(line.id, "start")}>Set start</button><button type="button" disabled={isTimingLyrics} onClick={() => void setLyricTiming(line.id, "end")}>Set end</button></div>)}</div> : null}
                 </section>
 

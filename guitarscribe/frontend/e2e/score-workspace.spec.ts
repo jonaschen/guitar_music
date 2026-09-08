@@ -75,6 +75,8 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await page.getByRole("button", { name: "Undo" }).click();
   await expect(page.locator(".toolbar-block").nth(1)).toContainText("C major");
   await page.locator(".lyrics-panel textarea").fill("One");
+  await page.getByRole("button", { name: "Snap to beat off" }).click();
+  await expect(page.getByRole("button", { name: "Snap to beat on" })).toBeVisible();
   await page.getByRole("button", { name: "Import lyrics" }).click();
   await expect(page.getByRole("button", { name: "One", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Edit text" }).click();

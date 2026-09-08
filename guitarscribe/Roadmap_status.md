@@ -449,7 +449,7 @@
   - 依換行/空行建立 lyric lines，解析與輸出逐行 timestamps。
   - 顯示使用權提示；不抓取第三方歌詞網站，也不提交商業歌詞 fixture。
 - [x] **歌詞編輯與手動對時 UI**
-  - 已提供匯入、逐行文字編輯、Set start/end、播放高亮與分配 timing；逐行文字修改會標示為 user edit 並納入 Undo/Redo。拖曳與 snapping 仍待完成。
+  - 已提供匯入、逐行文字編輯、Set start/end、播放高亮、分配 timing 與可開關的最近拍點 snapping；逐行文字修改會標示為 user edit 並納入 Undo/Redo。拖曳仍待完成。
   - 播放時高亮目前行與下一行，點擊行可 seek；文字輸入時不攔截快捷鍵。
 - [x] **ChordPro lyrics export**
   - 逐行 timing 輸出獨立和弦列並保留 language/source/timing metadata；逐字 timing 將 chord 插入對應 word 前，並跳脫使用者歌詞中的 ChordPro 控制字元。
