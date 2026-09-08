@@ -321,7 +321,7 @@
 ### ✅ 已完成
 
 - [x] Docker Compose 可一鍵啟動（`make build && make serve-stack`）
-- [x] 後端完整測試套件（95 項測試，涵蓋 API、分析器、後處理、工作佇列、移調、匯出與評估指標）
+- [x] 後端完整測試套件（97 項測試，涵蓋 API、分析器、後處理、工作佇列、移調、匯出與評估指標）
 - [x] 測試 fixture（合成音訊，不含受版權保護內容）
 - [x] README 操作指令
 
@@ -344,6 +344,7 @@
   - 暫存檔清除驗證
   - API 路徑注入防護
   - 併發工作數與記憶體限制
+  - [x] YouTube downloader 的無 WAV 輸出與超出下載大小限制已有 isolated tests；過大 WAV 會在失敗前移除。
   - [x] 伺服器重啟時會將進行中的 vocal separation 工作標示為 failed，而非留下卡住的 job。
 - [x] **可觀測性**
   - 結構化日誌
