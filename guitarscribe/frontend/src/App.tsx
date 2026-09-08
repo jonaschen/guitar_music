@@ -887,6 +887,15 @@ export function App() {
     if (target) seekTo(target[1]);
   }
 
+  function nudgeBeatGrid(seconds: number) {
+    if (!score || score.beats.length === 0) return;
+    if (score.beats[0].time + seconds < 0) return;
+    recordScoreChange({
+      ...score,
+      beats: score.beats.map((beat) => ({ ...beat, time: Number((beat.time + seconds).toFixed(3)) })),
+    });
+  }
+
   function setSpeed(nextRate: number) {
     if (isSynthPlaying) stopSynth(false);
     setPlaybackRate(nextRate);
@@ -1272,6 +1281,7 @@ export function App() {
                     {loopStart !== null ? <button type="button" className="ghost-button" onClick={() => { setLoopStart(null); setLoopEnd(null); }}>Clear A–B</button> : null}
                     <button type="button" className="ghost-button" onClick={() => setMetronomeEnabled((enabled) => !enabled)}>{metronomeEnabled ? "Metronome on" : "Metronome off"}</button>
                     <button type="button" className="ghost-button" onClick={() => setFollowPlayhead((enabled) => !enabled)}>{followPlayhead ? "Follow score on" : "Follow score off"}</button>
+                    <span className="transport-beat-grid">Beat grid {score.beats[0]?.time.toFixed(1) ?? "—"}s</span><button type="button" className="ghost-button" disabled={!score.beats.length || score.beats[0].time < 0.1} onClick={() => nudgeBeatGrid(-0.1)}>Beat −100ms</button><button type="button" className="ghost-button" disabled={!score.beats.length} onClick={() => nudgeBeatGrid(0.1)}>Beat +100ms</button>
                     <label className="transport-speed">Count-in <select value={countInMeasures} onChange={(event) => setCountInMeasures(Number(event.target.value))}><option value={0}>Off</option><option value={1}>1 bar</option><option value={2}>2 bars</option></select></label>
                     <button type="button" className="ghost-button" onClick={() => stopSynth(true)}>Stop</button>
                     <label className="transport-speed">Speed <select value={playbackRate} onChange={(event) => setSpeed(Number(event.target.value))}>{[0.5, 0.6, 0.75, 0.9, 1, 1.1, 1.25, 1.5].map((rate) => <option key={rate} value={rate}>{Math.round(rate * 100)}%</option>)}</select></label>

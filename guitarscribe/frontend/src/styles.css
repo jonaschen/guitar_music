@@ -611,6 +611,7 @@ h2 {
 .transport-bar {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.75rem;
   margin: 1rem 0;
   padding: 0.8rem;
@@ -732,6 +733,7 @@ h2 {
 .alphatab-error { color: var(--danger) !important; }
 .synth-solo { border: 1px solid var(--border); border-radius: 999px; padding: 0.18rem 0.42rem; background: transparent; color: var(--text-muted); font-size: 0.7rem; }
 .synth-solo-active { border-color: rgba(241, 143, 59, 0.72); background: rgba(241, 143, 59, 0.14); color: #ffd6ad; }
+.transport-beat-grid { color: var(--text-muted); font-family: "IBM Plex Mono", monospace; font-size: 0.72rem; white-space: nowrap; }
 .tab-staff { position: relative; height: 7.2rem; margin-top: 0.25rem; padding-left: 2.2rem; overflow: hidden; border-radius: 14px; background: repeating-linear-gradient(to bottom, transparent 0 calc(16.666% - 1px), rgba(255,255,255,0.34) calc(16.666% - 1px) 16.666%); }
 .tab-string-label { position: absolute; z-index: 2; left: 0.45rem; display: flex; gap: 0.25rem; align-items: baseline; transform: translateY(-50%); color: var(--text); font-family: "IBM Plex Mono", monospace; font-size: 0.75rem; font-weight: 700; }
 .tab-string-label small { color: var(--text-muted); font-size: 0.58rem; }

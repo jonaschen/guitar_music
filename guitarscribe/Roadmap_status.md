@@ -255,8 +255,8 @@
 - [x] **新增和弦區段**（主文件 §4.3）
   - playhead 位於既有和弦內時會安全切開該段並以輸入和弦接續；位於空白區則填入至下一個 chord，所有操作皆納入 Undo/Redo。
 - [ ] **拍點與小節修正**（主文件 §4.3）
-  - 可調整小節起點與拍點位置
-  - half-time / double-time 切換（主文件 §7.2）
+  - 已提供整體 beat-grid ±100ms nudge，保持拍距、可 Undo，適合校正全曲一致的 offset。
+  - 逐拍／逐小節拖曳與 half-time / double-time 切換（主文件 §7.2）仍待完成。
 - [x] **Undo / Redo**（追加文件 §11）
   - 至少涵蓋 Key、Capo 與 voicing 變更
 - [ ] **刷奏型選擇**（主文件 §2.3）

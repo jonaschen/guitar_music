@@ -45,6 +45,9 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await expect(page.getByText("Continues")).toHaveCount(2);
   await page.getByRole("button", { name: "Follow score on" }).click();
   await expect(page.getByRole("button", { name: "Follow score off" })).toBeVisible();
+  await expect(page.getByText("Beat grid 0.0s")).toBeVisible();
+  await page.getByRole("button", { name: "Beat +100ms" }).click();
+  await expect(page.getByText("Beat grid 0.1s")).toBeVisible();
   await expect(page.locator(".chord-block").first()).toBeVisible();
   await page.locator(".chord-block").first().click();
   await expect(page.getByRole("heading", { name: "Edit C" })).toBeVisible();
@@ -69,7 +72,7 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await page.getByLabel("Chord symbol").fill("G");
   await page.getByRole("button", { name: "Add/change at playhead" }).click();
   await expect(page.getByRole("heading", { name: "Edit G" })).toBeVisible();
-  await expect(page.locator(".chord-sheet .chord-symbol", { hasText: "G" })).toBeVisible();
+  await expect(page.locator(".chord-sheet .chord-symbol", { hasText: "G" }).first()).toBeVisible();
   await page.locator(".toolbar-actions button").last().click();
   await expect(page.locator(".toolbar-block").nth(1)).toContainText("D major");
   await page.getByRole("button", { name: "Undo" }).click();
