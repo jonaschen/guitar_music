@@ -896,6 +896,39 @@ export function App() {
     });
   }
 
+  function rebuildBeatGrid(points: SongScore["beats"], bpm: number) {
+    if (!score) return;
+    const beatsPerMeasure = Number(score.analysis.time_signature.charAt(0)) || 4;
+    recordScoreChange({
+      ...score,
+      analysis: { ...score.analysis, bpm: Math.max(1, Math.round(bpm * 100) / 100) },
+      beats: points.map((beat, index) => ({
+        ...beat,
+        beat: index % beatsPerMeasure + 1,
+        measure: Math.floor(index / beatsPerMeasure) + 1,
+      })),
+    });
+  }
+
+  function correctHalfTime() {
+    if (!score || score.beats.length < 3) return;
+    const retained = score.beats.filter((_, index) => index % 2 === 0);
+    if (retained.length >= 2) rebuildBeatGrid(retained, score.analysis.bpm / 2);
+  }
+
+  function correctDoubleTime() {
+    if (!score || score.beats.length < 2) return;
+    const expanded = score.beats.flatMap((beat, index) => {
+      const next = score.beats[index + 1];
+      if (!next) return [beat];
+      return [
+        beat,
+        { ...beat, time: Number(((beat.time + next.time) / 2).toFixed(3)), confidence: Math.min(beat.confidence, next.confidence) },
+      ];
+    });
+    rebuildBeatGrid(expanded, score.analysis.bpm * 2);
+  }
+
   function setSpeed(nextRate: number) {
     if (isSynthPlaying) stopSynth(false);
     setPlaybackRate(nextRate);
@@ -1282,6 +1315,7 @@ export function App() {
                     <button type="button" className="ghost-button" onClick={() => setMetronomeEnabled((enabled) => !enabled)}>{metronomeEnabled ? "Metronome on" : "Metronome off"}</button>
                     <button type="button" className="ghost-button" onClick={() => setFollowPlayhead((enabled) => !enabled)}>{followPlayhead ? "Follow score on" : "Follow score off"}</button>
                     <span className="transport-beat-grid">Beat grid {score.beats[0]?.time.toFixed(1) ?? "—"}s</span><button type="button" className="ghost-button" disabled={!score.beats.length || score.beats[0].time < 0.1} onClick={() => nudgeBeatGrid(-0.1)}>Beat −100ms</button><button type="button" className="ghost-button" disabled={!score.beats.length} onClick={() => nudgeBeatGrid(0.1)}>Beat +100ms</button>
+                    <button type="button" className="ghost-button" disabled={score.beats.length < 3} onClick={correctHalfTime}>Half-time</button><button type="button" className="ghost-button" disabled={score.beats.length < 2} onClick={correctDoubleTime}>Double-time</button>
                     <label className="transport-speed">Count-in <select value={countInMeasures} onChange={(event) => setCountInMeasures(Number(event.target.value))}><option value={0}>Off</option><option value={1}>1 bar</option><option value={2}>2 bars</option></select></label>
                     <button type="button" className="ghost-button" onClick={() => stopSynth(true)}>Stop</button>
                     <label className="transport-speed">Speed <select value={playbackRate} onChange={(event) => setSpeed(Number(event.target.value))}>{[0.5, 0.6, 0.75, 0.9, 1, 1.1, 1.25, 1.5].map((rate) => <option key={rate} value={rate}>{Math.round(rate * 100)}%</option>)}</select></label>

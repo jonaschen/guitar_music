@@ -48,6 +48,10 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await expect(page.getByText("Beat grid 0.0s")).toBeVisible();
   await page.getByRole("button", { name: "Beat +100ms" }).click();
   await expect(page.getByText("Beat grid 0.1s")).toBeVisible();
+  await page.getByRole("button", { name: "Half-time" }).click();
+  await expect(page.locator(".metric-card").filter({ hasText: "BPM" }).getByText("60", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Double-time" }).click();
+  await expect(page.locator(".metric-card").filter({ hasText: "BPM" }).getByText("120", { exact: true })).toBeVisible();
   await expect(page.locator(".chord-block").first()).toBeVisible();
   await page.locator(".chord-block").first().click();
   await expect(page.getByRole("heading", { name: "Edit C" })).toBeVisible();
