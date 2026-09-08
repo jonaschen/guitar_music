@@ -830,9 +830,9 @@ export function App() {
 
   function seekTo(time: number) {
     if (isSynthPlaying) stopSynth(false);
+    setPlaybackTime(time);
     if (audioRef.current) {
       audioRef.current.currentTime = time;
-      setPlaybackTime(time);
     }
   }
 
@@ -899,13 +899,27 @@ export function App() {
   function addChordAtPlayhead() {
     if (!score) return;
     const start = Number(playbackTime.toFixed(3));
+    const current = score.chords.find((chord) => start >= chord.start && start < chord.end);
+    const symbol = chordDraft.trim() || "C";
+    if (current) {
+      if (start - current.start < 0.1 || current.end - start < 0.1) {
+        setError("Move the playhead at least 0.1 seconds inside the chord before adding a change.");
+        return;
+      }
+      const chord: ScoreChord = { id: "user-" + Date.now(), start, end: current.end, symbol, source_symbol: null, shape_symbol: symbol, confidence: 1, origin: "user", edited: true, voicing_id: null, available_voicings: [] };
+      updateChords((chords) => [
+        ...chords.map((existing) => existing.id === current.id ? { ...existing, end: start, origin: "user", edited: true } : existing),
+        chord,
+      ].sort((left, right) => left.start - right.start));
+      setSelectedChordId(chord.id);
+      return;
+    }
     const next = score.chords.filter((chord) => chord.start > start).sort((left, right) => left.start - right.start)[0];
     const end = next?.start ?? score.song.duration_seconds;
-    if (score.chords.some((chord) => start >= chord.start && start < chord.end) || end - start < 0.1) {
+    if (end - start < 0.1) {
       setError("Move the playhead to an empty gap of at least 0.1 seconds before adding a chord.");
       return;
     }
-    const symbol = chordDraft.trim() || "C";
     const chord: ScoreChord = { id: "user-" + Date.now(), start, end, symbol, source_symbol: null, shape_symbol: symbol, confidence: 1, origin: "user", edited: true, voicing_id: null, available_voicings: [] };
     updateChords((chords) => [...chords, chord].sort((left, right) => left.start - right.start));
     setSelectedChordId(chord.id);
@@ -1375,7 +1389,7 @@ export function App() {
                 </div>
                 <div className="editor-actions">
                   <button type="button" className="ghost-button" onClick={saveSelectedChordTiming}>Save timing</button>
-                  <button type="button" className="ghost-button" onClick={addChordAtPlayhead}>Add at playhead</button>
+                  <button type="button" className="ghost-button" onClick={addChordAtPlayhead}>Add/change at playhead</button>
                   <button type="button" className="ghost-button" onClick={renameSelectedChord}>
                     Save rename
                   </button>
