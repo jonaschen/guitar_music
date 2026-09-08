@@ -423,6 +423,17 @@ export function App() {
   const activeMeasureGroup = measureGroups.find((group) => playbackTime >= group.start && playbackTime < group.end) ?? measureGroups[0];
   const activeMeasureNotes = score && activeMeasureGroup ? score.melody.filter((note) => note.start >= activeMeasureGroup.start && note.start < activeMeasureGroup.end && note.string !== null && note.string !== undefined && note.fret !== null && note.fret !== undefined) : [];
   const activeMelodyNoteId = score?.melody.find((note) => playbackTime >= note.start && playbackTime < note.end)?.id ?? null;
+  const melodyTimelineLabelIds = new Set<string>();
+  if (score) {
+    const minimumLabelGap = Math.max(score.song.duration_seconds / 12, 0.75);
+    let lastLabelStart = -Infinity;
+    for (const note of score.melody) {
+      if (note.id === activeMelodyNoteId || note.start - lastLabelStart >= minimumLabelGap) {
+        melodyTimelineLabelIds.add(note.id);
+        lastLabelStart = note.start;
+      }
+    }
+  }
 
   useEffect(() => {
     if (!followPlayhead || !activeChordId) return;
@@ -1328,7 +1339,7 @@ export function App() {
                 {score.melody.length > 0 ? <>
                 <section className="melody-panel">
                   <div><h3>Estimated melody timeline</h3><p>Click a note to seek. Check Analysis notes above for transcription limitations.</p></div>
-                  <div className="melody-timeline" aria-label="Detected melody notes">{score.melody.map((note) => <button key={note.id} type="button" className="melody-note" title={note.note + " · " + note.start.toFixed(2) + "s"} onClick={() => seekTo(note.start)} style={{ left: String((note.start / Math.max(score.song.duration_seconds, 1)) * 100) + "%", width: String(Math.max(((note.end - note.start) / Math.max(score.song.duration_seconds, 1)) * 100, 0.5)) + "%", bottom: String(Math.max(0, Math.min(85, (note.midi - 40) * 1.8))) + "%" }}>{note.note}</button>)}</div>
+                  <div className="melody-timeline" aria-label="Detected melody notes">{score.melody.map((note) => { const showLabel = melodyTimelineLabelIds.has(note.id); return <button key={note.id} type="button" aria-label={`${note.note} at ${note.start.toFixed(2)} seconds`} className={`melody-note ${showLabel ? "melody-note-label" : "melody-note-dot"}${activeMelodyNoteId === note.id ? " melody-note-active" : ""}`} title={note.note + " · " + note.start.toFixed(2) + "s"} onClick={() => seekTo(note.start)} style={{ left: String((note.start / Math.max(score.song.duration_seconds, 1)) * 100) + "%", bottom: String(Math.max(0, Math.min(85, (note.midi - 40) * 1.8))) + "%" }}>{showLabel ? note.note : "•"}</button>; })}</div>
                 </section>
 
                 <section className="score-preview-panel">
@@ -1338,7 +1349,9 @@ export function App() {
                       const measureStart = score.beats.find((beat) => beat.measure === measure)?.time ?? 0;
                       const measureEnd = score.beats.find((beat) => beat.measure === measure + 1)?.time ?? score.song.duration_seconds;
                       const measureDuration = Math.max(measureEnd - measureStart, 0.01);
-                      return <div className="score-measure" key={measure}><span className="score-measure-label">Bar {measure}</span><div className="score-staff">{score.melody.filter((note) => note.start >= measureStart && note.start < measureEnd).map((note) => <button key={note.id} type="button" className="score-note" aria-label={note.note + " in bar " + measure} title={note.note + " · " + (note.end - note.start).toFixed(2) + "s"} onClick={() => seekTo(note.start)} style={{ left: String(Math.min(96, Math.max(2, ((note.start - measureStart) / measureDuration) * 100))) + "%", bottom: String(Math.min(94, Math.max(2, ((note.midi - 52) / 24) * 100))) + "%" }}><span>●</span><small>{note.note}</small></button>)}</div></div>;
+                      const measureNotes = score.melody.filter((note) => note.start >= measureStart && note.start < measureEnd);
+                      const labelStride = Math.max(1, Math.ceil(measureNotes.length / 8));
+                      return <div className="score-measure" key={measure}><span className="score-measure-label">Bar {measure}</span><div className="score-staff">{measureNotes.map((note, index) => <button key={note.id} type="button" className="score-note" aria-label={note.note + " in bar " + measure} title={note.note + " · " + (note.end - note.start).toFixed(2) + "s"} onClick={() => seekTo(note.start)} style={{ left: String(Math.min(96, Math.max(2, ((note.start - measureStart) / measureDuration) * 100))) + "%", bottom: String(Math.min(94, Math.max(2, ((note.midi - 52) / 24) * 100))) + "%" }}><span>●</span>{index % labelStride === 0 || note.id === activeMelodyNoteId ? <small>{note.note}</small> : null}</button>)}</div></div>;
                     })}
                   </div>
                 </section>

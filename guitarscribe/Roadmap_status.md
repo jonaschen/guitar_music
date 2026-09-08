@@ -291,7 +291,7 @@
 ### ❌ 待完成
 
 - [x] **旋律視覺化 UI**
-  - 已提供可點擊的 pitch timeline 與小節化五線譜式預覽
+  - 已提供可點擊的 pitch timeline 與小節化五線譜式預覽；長歌 timeline 會限制文字 label 密度，所有音符仍可點擊與由 tooltip 查看。
   - 已提供六線 Tab 時間軸與逐音 string/fret 卡片
 - [x] **alphaTab 整合**（主文件 §5.5）
   - 以既有 MusicXML 匯出渲染標準譜與吉他 Tab，採懶載入避免拖慢上傳頁。
