@@ -322,7 +322,7 @@
 ### ✅ 已完成
 
 - [x] Docker Compose 可一鍵啟動（`make build && make serve-stack`）
-- [x] 後端完整測試套件（97 項測試，涵蓋 API、分析器、後處理、工作佇列、移調、匯出與評估指標）
+- [x] 後端完整測試套件（98 項測試，涵蓋 API、分析器、後處理、工作佇列、移調、匯出與評估指標）
 - [x] 測試 fixture（合成音訊，不含受版權保護內容）
 - [x] README 操作指令
 
@@ -331,6 +331,7 @@
 - [x] **Golden dataset**（主文件 §11.1）
   - 已有合成、可合法使用的 golden baseline；擴充至 10～20 個片段仍待完成
   - `guitarscribe evaluate` 可對 baseline annotations 與 SongScore JSON 執行 BPM error、Beat F-measure、Chord recall、Melody pitch accuracy metrics
+  - `evaluate` 可選擇性套用 per-metric quality threshold，門檻失敗會以 non-zero exit code 結束，可作為 CI quality gate。
   - 已加入合成 annotations fixture
 - [x] **準確率指標**（主文件 §11.2）
   - BPM 誤差、Beat F-measure、Chord symbol recall、Melody pitch accuracy

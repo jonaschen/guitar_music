@@ -49,3 +49,19 @@ def test_evaluate_cli_prints_json_metrics(tmp_path):
 
     assert result.exit_code == 0
     assert json.loads(result.output)["bpm_relative_error"] == 0.0
+
+
+def test_evaluate_cli_enforces_optional_quality_thresholds(tmp_path):
+    score_path = tmp_path / "score.json"
+    annotation_path = tmp_path / "annotation.json"
+    mismatched_annotation_path = tmp_path / "mismatched-annotation.json"
+    score_path.write_text(make_score().model_dump_json())
+    annotation_path.write_text(json.dumps({"bpm": 120, "beats": [0, 0.5], "chords": [{"start": 0, "end": 1, "symbol": "C"}], "melody": [{"start": 0.5, "midi": 72}]}))
+    mismatched_annotation_path.write_text(json.dumps({"bpm": 120, "beats": [0, 0.5], "chords": [{"start": 0, "end": 1, "symbol": "C"}], "melody": [{"start": 0.5, "midi": 71}]}))
+
+    accepted = CliRunner().invoke(main, ["evaluate", str(score_path), str(annotation_path), "--max-bpm-relative-error", "0", "--min-beat-f-measure", "1", "--min-chord-symbol-recall", "1", "--min-melody-pitch-accuracy", "1"])
+    rejected = CliRunner().invoke(main, ["evaluate", str(score_path), str(mismatched_annotation_path), "--min-melody-pitch-accuracy", "1"])
+
+    assert accepted.exit_code == 0
+    assert rejected.exit_code != 0
+    assert "Golden quality gate failed" in rejected.output

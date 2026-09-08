@@ -72,11 +72,34 @@ def analyze(audio_file, output, melody_mode, chord_complexity, separate_vocals, 
 @main.command("evaluate")
 @click.argument("score_file", type=click.Path(exists=True, path_type=Path))
 @click.argument("annotation_file", type=click.Path(exists=True, path_type=Path))
-def evaluate(score_file: Path, annotation_file: Path):
-    """Print golden-fixture quality metrics for an exported SongScore JSON."""
+@click.option("--max-bpm-relative-error", type=click.FloatRange(min=0), default=None, help="Fail if BPM relative error exceeds this value.")
+@click.option("--min-beat-f-measure", type=click.FloatRange(min=0, max=1), default=None, help="Fail if beat F-measure is below this value.")
+@click.option("--min-chord-symbol-recall", type=click.FloatRange(min=0, max=1), default=None, help="Fail if chord recall is below this value.")
+@click.option("--min-melody-pitch-accuracy", type=click.FloatRange(min=0, max=1), default=None, help="Fail if melody pitch accuracy is below this value.")
+def evaluate(
+    score_file: Path,
+    annotation_file: Path,
+    max_bpm_relative_error: float | None,
+    min_beat_f_measure: float | None,
+    min_chord_symbol_recall: float | None,
+    min_melody_pitch_accuracy: float | None,
+):
+    """Print golden-fixture metrics and optionally enforce quality thresholds."""
     score = SongScore.model_validate_json(score_file.read_text())
     annotation = json.loads(annotation_file.read_text())
-    click.echo(json.dumps(evaluate_score(score, annotation), indent=2, sort_keys=True))
+    metrics = evaluate_score(score, annotation)
+    click.echo(json.dumps(metrics, indent=2, sort_keys=True))
+    failures = []
+    if max_bpm_relative_error is not None and metrics["bpm_relative_error"] > max_bpm_relative_error:
+        failures.append(f"bpm_relative_error {metrics['bpm_relative_error']} exceeds {max_bpm_relative_error}")
+    if min_beat_f_measure is not None and metrics["beat_f_measure"] < min_beat_f_measure:
+        failures.append(f"beat_f_measure {metrics['beat_f_measure']} is below {min_beat_f_measure}")
+    if min_chord_symbol_recall is not None and metrics["chord_symbol_recall"] < min_chord_symbol_recall:
+        failures.append(f"chord_symbol_recall {metrics['chord_symbol_recall']} is below {min_chord_symbol_recall}")
+    if min_melody_pitch_accuracy is not None and metrics["melody_pitch_accuracy"] < min_melody_pitch_accuracy:
+        failures.append(f"melody_pitch_accuracy {metrics['melody_pitch_accuracy']} is below {min_melody_pitch_accuracy}")
+    if failures:
+        raise click.ClickException("Golden quality gate failed: " + "; ".join(failures))
 
 
 @main.command()

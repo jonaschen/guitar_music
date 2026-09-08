@@ -63,7 +63,17 @@ The legal synthetic fixture in `fixtures/` can be used to make quality changes m
 ```bash
 docker compose run --rm -v "$PWD/backend:/app" -v "$PWD:/workspace:ro" backend \
   python -m app.cli evaluate /workspace/output/result.json \
-  /workspace/fixtures/annotations/test_progression.json
+    /workspace/fixtures/annotations/test_progression.json
+```
+
+For CI, add only the thresholds that are meaningful for a fixture. A failing
+threshold prints the metrics and exits non-zero:
+
+```bash
+docker compose run --rm -v "$PWD/backend:/app" -v "$PWD:/workspace:ro" backend \
+  python -m app.cli evaluate /workspace/output/result.json \
+    /workspace/fixtures/annotations/test_progression.json \
+    --max-bpm-relative-error 0.05 --min-beat-f-measure 0.8 --min-chord-symbol-recall 0.7
 ```
 
 The command reports relative BPM error, beat F-measure, chord-symbol recall, and onset/pitch melody accuracy. It is intended for regression comparison, not as a claim of full-song transcription accuracy.
