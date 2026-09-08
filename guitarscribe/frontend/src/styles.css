@@ -652,7 +652,9 @@ h2 {
 .lyrics-panel { display: grid; gap: 0.65rem; margin: 1rem 0; }
 .lyrics-panel textarea { width: 100%; min-height: 7rem; resize: vertical; }
 .lyrics-lines { display: grid; gap: 0.35rem; }
-.lyric-line { text-align: left; padding: 0.45rem; border-radius: 0.45rem; border: 1px solid transparent; background: transparent; color: var(--text-muted); }
+.lyric-line { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; text-align: left; padding: 0.45rem; border-radius: 0.45rem; border: 1px solid transparent; background: transparent; color: var(--text-muted); }
+.lyric-line > :first-child { flex: 1 1 12rem; min-width: 0; text-align: left; }
+.lyric-line input { border: 1px solid var(--accent-2); border-radius: 0.35rem; padding: 0.3rem 0.4rem; background: rgba(0, 0, 0, 0.18); color: var(--text); }
 .lyric-line-active { border-color: #7dd3fc; color: var(--text); background: rgba(125, 211, 252, 0.12); }
 .lyrics-actions { display: flex; gap: 0.5rem; align-items: center; }
 

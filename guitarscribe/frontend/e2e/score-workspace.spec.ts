@@ -77,6 +77,12 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await page.locator(".lyrics-panel textarea").fill("One");
   await page.getByRole("button", { name: "Import lyrics" }).click();
   await expect(page.getByRole("button", { name: "One", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Edit text" }).click();
+  await page.getByLabel("Edit lyric line 0").fill("Edited lyric");
+  await page.getByLabel("Edit lyric line 0").press("Enter");
+  await expect(page.getByRole("button", { name: "Edited lyric", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Undo" }).click();
+  await expect(page.getByRole("button", { name: "One", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Distribute timing" }).click();
   await expect(page.getByText("0.0–8.0")).toBeVisible();
 });
