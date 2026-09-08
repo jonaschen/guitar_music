@@ -197,7 +197,7 @@ export function App() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const metronomeContextRef = useRef<AudioContext | null>(null);
   const synthContextRef = useRef<AudioContext | null>(null);
-  const synthSourcesRef = useRef<OscillatorNode[]>([]);
+  const synthSourcesRef = useRef<AudioScheduledSourceNode[]>([]);
   const synthAnimationRef = useRef<number | null>(null);
   const synthSchedulerRef = useRef<number | null>(null);
   const mediaAnimationRef = useRef<number | null>(null);
@@ -640,6 +640,34 @@ export function App() {
     }
   }
 
+  function trackSynthSource(source: AudioScheduledSourceNode) {
+    source.onended = () => {
+      synthSourcesRef.current = synthSourcesRef.current.filter((scheduled) => scheduled !== source);
+    };
+    synthSourcesRef.current.push(source);
+  }
+
+  function scheduleGuitarPick(context: AudioContext, startAt: number, peak: number) {
+    const length = Math.max(1, Math.floor(context.sampleRate * 0.018));
+    const buffer = context.createBuffer(1, length, context.sampleRate);
+    const samples = buffer.getChannelData(0);
+    for (let index = 0; index < samples.length; index += 1) {
+      samples[index] = (Math.random() * 2 - 1) * (1 - index / samples.length);
+    }
+    const pick = context.createBufferSource();
+    const highPass = context.createBiquadFilter();
+    const gain = context.createGain();
+    highPass.type = "highpass";
+    highPass.frequency.setValueAtTime(1500, startAt);
+    gain.gain.setValueAtTime(Math.min(0.04, peak * 0.26), startAt);
+    gain.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.018);
+    pick.buffer = buffer;
+    pick.connect(highPass).connect(gain).connect(context.destination);
+    pick.start(startAt);
+    pick.stop(startAt + 0.02);
+    trackSynthSource(pick);
+  }
+
   async function toggleSynthPlayback() {
     if (!score) return;
     if (isSynthPlaying) { stopSynth(false); return; }
@@ -688,19 +716,32 @@ export function App() {
             const endAt = Math.max(startAt + 0.025, contextStart + (eventEnd - segmentStart) / playbackRate);
             const oscillator = context.createOscillator();
             const gain = context.createGain();
-            oscillator.type = event.track === "guitar" ? "triangle" : event.track === "melody" ? "sine" : "square";
+            const isGuitar = event.track === "guitar";
+            oscillator.type = isGuitar ? "triangle" : event.track === "melody" ? "sine" : "square";
             oscillator.frequency.setValueAtTime(440 * 2 ** ((pitch - 69) / 12), startAt);
             const peak = Math.max(0.001, synthVolumes[event.track] * event.velocity / 127 / Math.max(event.pitches.length, 1));
             gain.gain.setValueAtTime(0.0001, startAt);
-            gain.gain.linearRampToValueAtTime(peak, startAt + 0.008);
+            gain.gain.linearRampToValueAtTime(peak, startAt + (isGuitar ? 0.003 : 0.008));
+            if (isGuitar) {
+              const decayAt = Math.min(endAt - 0.004, startAt + 0.18);
+              if (decayAt > startAt + 0.003) {
+                gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, peak * 0.28), decayAt);
+              }
+            }
             gain.gain.exponentialRampToValueAtTime(0.0001, endAt);
-            oscillator.connect(gain).connect(context.destination);
+            if (isGuitar) {
+              const filter = context.createBiquadFilter();
+              filter.type = "lowpass";
+              filter.frequency.setValueAtTime(4200, startAt);
+              filter.frequency.exponentialRampToValueAtTime(900, Math.min(endAt, startAt + 0.3));
+              oscillator.connect(gain).connect(filter).connect(context.destination);
+              if (pitchIndex === 0) scheduleGuitarPick(context, startAt, peak);
+            } else {
+              oscillator.connect(gain).connect(context.destination);
+            }
             oscillator.start(startAt);
             oscillator.stop(endAt + 0.01);
-            oscillator.onended = () => {
-              synthSourcesRef.current = synthSourcesRef.current.filter((source) => source !== oscillator);
-            };
-            synthSourcesRef.current.push(oscillator);
+            trackSynthSource(oscillator);
           });
         };
         const schedulePendingEvents = () => {
