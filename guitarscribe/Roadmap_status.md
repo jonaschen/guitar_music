@@ -356,6 +356,7 @@
   - 檔案大小與 duration 硬限制
   - 匯出檔名特殊字元清理
 - [ ] **部署文件與備份政策**
+  - [x] GitHub Actions CI：main push 與 pull request 會分別執行 Docker backend pytest、frontend build 與 Playwright E2E。
 
 ---
 

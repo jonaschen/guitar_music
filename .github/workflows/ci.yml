@@ -1,0 +1,45 @@
+name: GuitarScribe CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend tests
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: guitarscribe
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build backend test image
+        run: docker build --tag guitarscribe-backend-ci ./backend
+      - name: Run backend test suite
+        run: docker run --rm guitarscribe-backend-ci pytest -q
+
+  frontend:
+    name: Frontend build and E2E
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: guitarscribe/frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: guitarscribe/frontend/package-lock.json
+      - name: Install frontend dependencies
+        run: npm ci
+      - name: Build frontend
+        run: npm run build
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+      - name: Run frontend E2E suite
+        run: npx playwright test --workers=1 --reporter=line
