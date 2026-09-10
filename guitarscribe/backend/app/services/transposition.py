@@ -5,6 +5,7 @@ from ..models.analysis import AccidentalPreference
 from ..models.analysis import MelodyAnalysis
 from ..fretboard.mapper import SimpleFretboardMapper
 from ..models.score import KeyContext, KeySignature, SongScore
+from .voicings import ChordVoicingProvider
 
 NOTE_TO_PITCH = {
     "C": 0,
@@ -36,8 +37,13 @@ CHORD_RE = re.compile(r"^([A-G](?:#|b)?)([^/]*)?(?:/([A-G](?:#|b)?))?$")
 
 
 class TranspositionService:
-    def __init__(self, fretboard_mapper: SimpleFretboardMapper | None = None):
+    def __init__(
+        self,
+        fretboard_mapper: SimpleFretboardMapper | None = None,
+        voicing_provider: ChordVoicingProvider | None = None,
+    ):
         self.fretboard_mapper = fretboard_mapper or SimpleFretboardMapper()
+        self.voicing_provider = voicing_provider or ChordVoicingProvider()
 
     def transpose_score(
         self,
@@ -72,9 +78,17 @@ class TranspositionService:
                 chord.source_symbol = chord.symbol
             chord.symbol = self.transpose_chord_symbol(chord.source_symbol, normalized, accidental_preference, source_mode)
             chord.shape_symbol = self.transpose_chord_symbol(chord.symbol, -capo_value, accidental_preference, source_mode)
-            # A voicing belongs to its shape and capo; it must be selected again after either changes.
-            chord.voicing_id = None
-            chord.available_voicings = []
+            # A selected physical shape cannot simply be carried across a key or
+            # capo change. Rebuild candidates for the new shape and choose the
+            # provider's best playable option, so exports and score playback are
+            # immediately usable after a transposition.
+            candidates = self.voicing_provider.get(
+                chord.shape_symbol,
+                capo=capo_value,
+                max_fret=result.guitar.max_fret,
+            )
+            chord.available_voicings = candidates
+            chord.voicing_id = candidates[0].id if candidates else None
 
         for note in result.melody:
             if note.source_midi is None:

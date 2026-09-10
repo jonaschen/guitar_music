@@ -79,7 +79,7 @@ def test_transpose_remaps_tab_for_the_new_pitch_and_capo():
     assert score.melody[0].fret == 3
 
 
-def test_transpose_clears_voicings_for_the_new_shape():
+def test_transpose_rebuilds_a_playable_voicing_for_the_new_shape():
     score = make_score()
     score.chords[0].voicing_id = "open-g"
     score.chords[0].available_voicings = [ChordVoicing(id="open-g", symbol="G", shape_symbol="G", frets=[3, 2, 0, 0, 0, 3], fingers=[2, 1, 0, 0, 0, 3])]
@@ -87,8 +87,9 @@ def test_transpose_clears_voicings_for_the_new_shape():
     transposed = TranspositionService().transpose_score(score, semitones=2, capo=2)
 
     assert transposed.chords[0].shape_symbol == "G"
-    assert transposed.chords[0].voicing_id is None
-    assert transposed.chords[0].available_voicings == []
+    assert transposed.chords[0].voicing_id == "open-g"
+    assert transposed.chords[0].available_voicings[0].shape_symbol == "G"
+    assert transposed.chords[0].available_voicings[0].capo == 2
     assert score.chords[0].voicing_id == "open-g"
 
 
