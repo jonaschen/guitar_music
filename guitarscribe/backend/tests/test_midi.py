@@ -40,7 +40,11 @@ def test_playback_manifest_compiles_voicing_capo_melody_and_metronome():
 
     assert {event.track for event in manifest.events} == {"guitar", "melody", "metronome"}
     assert guitar[0].pitches == (50, 54, 57, 62, 66)
+    assert guitar[0].pitch_offsets == (0.0, 0.012, 0.024, 0.036, 0.048)
+    assert guitar[0].pitch_velocities == (98, 96, 94, 92, 90)
     assert guitar[1].pitches == tuple(reversed(guitar[0].pitches))
+    assert guitar[1].pitch_offsets == guitar[0].pitch_offsets
+    assert guitar[1].pitch_velocities == (86, 84, 82, 80, 78)
 
 
 def test_midi_export_includes_selected_guitar_voicing_when_melody_is_empty():
@@ -61,7 +65,7 @@ def test_midi_export_includes_selected_guitar_voicing_when_melody_is_empty():
 
     assert bytes([0xC0, 81]) in output
     assert bytes([0xC1, 24]) in output
-    assert bytes([0x91, 48, 94]) in output
+    assert bytes([0x91, 48, 98]) in output
     assert bytes([0x81, 48, 0]) in output
 
 

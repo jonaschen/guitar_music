@@ -20,6 +20,10 @@ class PlaybackEvent(BaseModel):
     start: float = Field(ge=0)
     end: float = Field(ge=0)
     pitches: tuple[int, ...] = ()
+    # Per-pitch offsets and velocities make a guitar event an explicit strum,
+    # rather than leaving each consumer to invent its own ordering.
+    pitch_offsets: tuple[float, ...] = ()
+    pitch_velocities: tuple[int, ...] = ()
     velocity: int = Field(default=96, ge=1, le=127)
     stroke: str | None = None
     source_id: str | None = None
@@ -63,11 +67,13 @@ def compile_playback_manifest(score: SongScore) -> PlaybackManifest:
             while event_time < chord.end - 0.001:
                 stroke = pattern[slot % len(pattern)]
                 if stroke and pitches:
+                    ordered_pitches = pitches if stroke != "U" else tuple(reversed(pitches))
+                    offsets, velocities = _strum_profile(stroke, len(ordered_pitches))
                     events.append(PlaybackEvent(
                         id=f"guitar:{chord.id}:{slot}", track="guitar",
                         start=event_time, end=min(chord.end, event_time + step_seconds * 0.8),
-                        pitches=pitches if stroke != "U" else tuple(reversed(pitches)),
-                        velocity=94 if stroke == "D" else 82, stroke=stroke, source_id=chord.id,
+                        pitches=ordered_pitches, pitch_offsets=offsets, pitch_velocities=velocities,
+                        velocity=velocities[0], stroke=stroke, source_id=chord.id,
                     ))
                 slot += 1
                 event_time = chord.start + slot * step_seconds
@@ -112,6 +118,19 @@ def _selected_voicing_pitches(score: SongScore, chord) -> tuple[int, ...]:
     )
 
 
+def _strum_profile(stroke: str, string_count: int) -> tuple[tuple[float, ...], tuple[int, ...]]:
+    """Return a short, deterministic low-to-high or high-to-low strum profile.
+
+    Pitch order is already arranged by the caller for the requested stroke. A
+    12 ms string spread is audible but still comfortably within a sixteenth at
+    typical tempos; lower strings receive a slightly stronger attack.
+    """
+    base_velocity = 98 if stroke == "D" else 86
+    offsets = tuple(round(index * 0.012, 3) for index in range(string_count))
+    velocities = tuple(max(1, base_velocity - index * 2) for index in range(string_count))
+    return offsets, velocities
+
+
 def _varlen(value: int) -> bytes:
     parts = [value & 0x7F]
     value >>= 7
@@ -138,9 +157,12 @@ def export_midi(score: SongScore, ticks_per_beat: int = 480) -> bytes:
         start = max(0, round(event.start * manifest.bpm / 60 * ticks_per_beat))
         end = max(start + 1, round(event.end * manifest.bpm / 60 * ticks_per_beat))
         channel = 0 if event.track == "melody" else 1
-        for pitch in event.pitches:
+        for pitch_index, pitch in enumerate(event.pitches):
+            pitch_offset = event.pitch_offsets[pitch_index] if pitch_index < len(event.pitch_offsets) else 0.0
+            velocity = event.pitch_velocities[pitch_index] if pitch_index < len(event.pitch_velocities) else event.velocity
+            pitch_start = start + max(0, round(pitch_offset * manifest.bpm / 60 * ticks_per_beat))
             events.extend([
-                (start, 1, bytes([0x90 | channel, pitch, event.velocity])),
+                (pitch_start, 1, bytes([0x90 | channel, pitch, velocity])),
                 (end, 0, bytes([0x80 | channel, pitch, 0])),
             ])
     events.sort(key=lambda event: (event[0], event[1]))

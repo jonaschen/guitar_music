@@ -755,7 +755,8 @@ export function App() {
           const eventEnd = Math.min(event.end, segmentEnd);
           if (eventEnd <= eventStart) return;
           event.pitches.forEach((pitch, pitchIndex) => {
-            const strumDelay = event.track === "guitar" ? pitchIndex * 0.012 / playbackRate : 0;
+            const compiledOffset = event.pitch_offsets[pitchIndex];
+            const strumDelay = event.track === "guitar" ? (compiledOffset ?? pitchIndex * 0.012) / playbackRate : 0;
             const startAt = Math.max(context.currentTime + 0.005, contextStart + (eventStart - segmentStart) / playbackRate + strumDelay);
             const endAt = Math.max(startAt + 0.025, contextStart + (eventEnd - segmentStart) / playbackRate);
             const oscillator = context.createOscillator();
@@ -763,7 +764,8 @@ export function App() {
             const isGuitar = event.track === "guitar";
             oscillator.type = isGuitar ? "triangle" : event.track === "melody" ? "sine" : "square";
             oscillator.frequency.setValueAtTime(440 * 2 ** ((pitch - 69) / 12), startAt);
-            const peak = Math.max(0.001, synthVolumes[event.track] * event.velocity / 127 / Math.max(event.pitches.length, 1));
+            const pitchVelocity = event.pitch_velocities[pitchIndex] ?? event.velocity;
+            const peak = Math.max(0.001, synthVolumes[event.track] * pitchVelocity / 127 / Math.max(event.pitches.length, 1));
             gain.gain.setValueAtTime(0.0001, startAt);
             gain.gain.linearRampToValueAtTime(peak, startAt + (isGuitar ? 0.003 : 0.008));
             if (isGuitar) {

@@ -136,6 +136,8 @@ export type PlaybackManifest = {
     start: number;
     end: number;
     pitches: number[];
+    pitch_offsets: number[];
+    pitch_velocities: number[];
     velocity: number;
     stroke: string | null;
     source_id: string | null;
