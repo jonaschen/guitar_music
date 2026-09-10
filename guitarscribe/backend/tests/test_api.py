@@ -68,6 +68,21 @@ async def test_health_endpoint():
 
 
 @pytest.mark.asyncio
+async def test_openapi_documents_async_job_lifecycle():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.get("/openapi.json")
+
+    document = response.json()
+    create_job = document["paths"]["/api/v1/jobs"]["post"]
+    assert document["info"]["title"] == "GuitarScribe API"
+    assert {tag["name"] for tag in document["tags"]} >= {"Analysis jobs", "Scores", "Lyrics"}
+    assert create_job["summary"] == "Queue an uploaded audio file for analysis"
+    assert "202" in create_job["responses"]
+    assert document["paths"]["/api/v1/jobs/{job_id}"]["get"]["summary"] == "Read job status and result"
+
+
+@pytest.mark.asyncio
 async def test_transpose_endpoint():
     payload = {
         "score": {

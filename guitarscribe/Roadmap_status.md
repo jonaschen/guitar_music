@@ -1,6 +1,6 @@
 # GuitarScribe 開發進度與待辦事項
 
-> 最後更新：2026-09-06  
+> 最後更新：2026-09-11
 > 參考規格文件：  
 > 1. `GuitarScribe_Web_UI_AI_Handoff.md`（主交接文件）  
 > 2. `GuitarScribe_UI_Key_and_Chord_Voicings_Addendum.md`（升降 Key 與和弦指型追加規格）  
@@ -15,12 +15,12 @@
 | 里程碑 | 目標 | 進度 | 狀態 |
 |---|---|---|---|
 | **M0：技術 Spike** | Docker 內 DSP → JSON | 100% | ✅ 完成 |
-| **M1：後端 MVP** | FastAPI、非同步工作、SQLite、OpenAPI | ~91% | ⚠️ 進行中 |
+| **M1：後端 MVP** | FastAPI、非同步工作、SQLite、OpenAPI | ~94% | ⚠️ 進行中 |
 | **M2：Web UI MVP** | 上傳、進度、播放同步、和弦格、匯出 | ~96% | ⚠️ 進行中 |
-| **M3：可編輯樂譜** | 和弦編輯、移調、Capo、和弦指型、revision | ~88% | ⚠️ 進行中 |
+| **M3：可編輯樂譜** | 和弦編輯、移調、Capo、和弦指型、revision | ~93% | ⚠️ 進行中 |
 | **M4：簡化主旋律與 Tab** | 旋律顯示、指板映射、alphaTab、匯出 | ~93% | 🔧 進行中 |
-| **M5：品質與部署** | Golden dataset、E2E 測試、可觀測性 | ~74% | 🔧 進行中 |
-| **M6：歌詞與按譜演奏** | 歌詞匯入、時間標記、同步播放 | ~70% | 🔧 進行中 |
+| **M5：品質與部署** | Golden dataset、E2E 測試、可觀測性 | ~78% | 🔧 進行中 |
+| **M6：歌詞與按譜演奏** | 歌詞匯入、時間標記、同步播放 | ~82% | 🔧 進行中 |
 
 **目前位置**：M0 完成；M1、M2 已可供本機試用；M3 的核心編輯與指型流程完成；M4 已有量化、Tab、MIDI/MusicXML 與原生旋律預覽；M5、M6 正在收斂。
 
@@ -91,8 +91,8 @@
 - [x] **可選 YouTube resolver**（主文件 §3.1）
   - HTTPS `youtube.com`／`youtu.be` 單影片可由 yt-dlp 轉為 job-local WAV，需逐次權利確認。
   - 預設停用；不接受 cookies、帳密、播放清單或任意下載器參數，完成音檔隨 job TTL 清理。
-- [ ] **OpenAPI 文件**
-  - FastAPI 自動產生基本文件，但需要補充描述與範例
+- [x] **OpenAPI 文件**
+  - `/docs` 以功能 tags 整理端點；job lifecycle、權利確認與 YouTube resolver 的限制已列入說明。
 - [x] **歌曲長度限制**（主文件 §12）
   - 需要：檔案大小、duration、取樣率限制
   - 需要：worker CPU/RAM/磁碟限制

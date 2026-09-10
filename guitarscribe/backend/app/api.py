@@ -49,17 +49,32 @@ class SaveRevisionResponse(BaseModel):
 
 
 class YouTubeJobRequest(BaseModel):
-    url: str
-    rights_confirmed: bool
-    melody_mode: str = "vocal"
-    chord_complexity: str = "standard"
-    separate_vocals: bool = False
+    url: str = Field(description="A single youtube.com or youtu.be video URL. Playlists are not accepted.")
+    rights_confirmed: bool = Field(description="Must be true: the caller confirms they have rights to analyze this audio.")
+    melody_mode: str = Field(default="vocal", description="Melody extraction mode: vocal, guitar, or mix.")
+    chord_complexity: str = Field(default="standard", description="Chord vocabulary: simple, standard, or full.")
+    separate_vocals: bool = Field(default=False, description="Request optional vocal separation when the server enables it.")
+
+
+OPENAPI_TAGS = [
+    {"name": "System", "description": "Service health and compatibility endpoints."},
+    {"name": "Analysis jobs", "description": "Asynchronous local-upload and optional YouTube analysis jobs. Poll a job until it completes or fails."},
+    {"name": "Scores", "description": "Score transformations, playback compilation, and export formats."},
+    {"name": "Lyrics", "description": "User-provided lyrics import, manual timing, and exports. The service never fetches third-party lyrics."},
+    {"name": "Revisions", "description": "Saved editable score revisions."},
+    {"name": "Guitar", "description": "Chord voicing lookup, capo advice, and voicing optimization."},
+]
 
 
 app = FastAPI(
     title="GuitarScribe API",
     version="0.2.0",
-    description="Audio analysis, editable scores, and local background analysis jobs.",
+    description=(
+        "Audio analysis, editable scores, and local background analysis jobs. "
+        "Submit only audio and lyrics you are permitted to use. For long-running analysis, "
+        "create a job and poll its lifecycle endpoint rather than using the legacy synchronous route."
+    ),
+    openapi_tags=OPENAPI_TAGS,
 )
 transposition_service = TranspositionService()
 _job_service: AnalysisJobService | None = None
@@ -119,12 +134,12 @@ def get_job_service() -> AnalysisJobService:
     return _job_service
 
 
-@app.get("/health", response_model=HealthResponse)
+@app.get("/health", response_model=HealthResponse, tags=["System"], summary="Check service health")
 async def health() -> HealthResponse:
     return HealthResponse()
 
 
-@app.post("/scores/transpose", response_model=SongScore)
+@app.post("/scores/transpose", response_model=SongScore, tags=["Scores"], summary="Transpose an editable score")
 async def transpose_score(request: TransposeScoreRequest) -> SongScore:
     return transposition_service.transpose_score(
         score=request.score,
@@ -134,7 +149,14 @@ async def transpose_score(request: TransposeScoreRequest) -> SongScore:
     )
 
 
-@app.post("/api/v1/jobs", response_model=AnalysisJob, status_code=status.HTTP_202_ACCEPTED)
+@app.post(
+    "/api/v1/jobs",
+    response_model=AnalysisJob,
+    status_code=status.HTTP_202_ACCEPTED,
+    tags=["Analysis jobs"],
+    summary="Queue an uploaded audio file for analysis",
+    description="Returns immediately. Poll `GET /api/v1/jobs/{job_id}` until the job is completed, failed, or cancelled.",
+)
 async def create_analysis_job(
     audio_file: UploadFile = File(...),
     rights_confirmed: bool = Form(...),
@@ -159,7 +181,14 @@ async def create_analysis_job(
     )
 
 
-@app.post("/api/v1/youtube-jobs", response_model=AnalysisJob, status_code=status.HTTP_202_ACCEPTED)
+@app.post(
+    "/api/v1/youtube-jobs",
+    response_model=AnalysisJob,
+    status_code=status.HTTP_202_ACCEPTED,
+    tags=["Analysis jobs"],
+    summary="Queue a permitted single-video YouTube analysis",
+    description="Available only when the server enables the resolver. Cookies, credentials, playlists, and arbitrary downloader arguments are never accepted.",
+)
 async def create_youtube_analysis_job(
     request: YouTubeJobRequest,
     _rate_limit: None = Depends(enforce_submission_rate_limit),
@@ -175,7 +204,7 @@ async def create_youtube_analysis_job(
         raise HTTPException(status_code=503, detail=str(exc)) from exc
 
 
-@app.get("/api/v1/jobs/{job_id}", response_model=AnalysisJob)
+@app.get("/api/v1/jobs/{job_id}", response_model=AnalysisJob, tags=["Analysis jobs"], summary="Read job status and result")
 async def get_analysis_job(
     job_id: str,
     job_service: AnalysisJobService = Depends(get_job_service),
@@ -186,7 +215,7 @@ async def get_analysis_job(
         raise HTTPException(status_code=404, detail="Analysis job not found") from exc
 
 
-@app.post("/api/v1/jobs/{job_id}/cancel", response_model=AnalysisJob)
+@app.post("/api/v1/jobs/{job_id}/cancel", response_model=AnalysisJob, tags=["Analysis jobs"], summary="Cancel a queued or running analysis job")
 async def cancel_analysis_job(
     job_id: str,
     job_service: AnalysisJobService = Depends(get_job_service),
@@ -197,7 +226,7 @@ async def cancel_analysis_job(
         raise HTTPException(status_code=404, detail="Analysis job not found") from exc
 
 
-@app.get("/api/v1/jobs/{job_id}/audio")
+@app.get("/api/v1/jobs/{job_id}/audio", tags=["Analysis jobs"], summary="Download normalized source audio for a completed job")
 async def get_job_audio(job_id: str, job_service: AnalysisJobService = Depends(get_job_service)) -> FileResponse:
     try:
         job = job_service.get(job_id)
@@ -211,7 +240,7 @@ async def get_job_audio(job_id: str, job_service: AnalysisJobService = Depends(g
     return FileResponse(candidates[0], media_type="audio/wav", filename="guitarscribe-source.wav")
 
 
-@app.post("/analyses", response_model=SongScore, deprecated=True)
+@app.post("/analyses", response_model=SongScore, deprecated=True, tags=["Analysis jobs"], summary="Analyze an upload synchronously (legacy)")
 async def analyze_audio(
     audio_file: UploadFile = File(...),
     rights_confirmed: bool = Form(...),
@@ -257,7 +286,7 @@ async def analyze_audio(
             temp_path.unlink()
 
 
-@app.post("/revisions", response_model=SaveRevisionResponse)
+@app.post("/revisions", response_model=SaveRevisionResponse, tags=["Revisions"], summary="Save an editable score revision")
 async def save_revision(
     request: SaveRevisionRequest,
     revision_store: RevisionStore = Depends(get_revision_store),
@@ -266,7 +295,7 @@ async def save_revision(
     return SaveRevisionResponse(revision_id=revision_id)
 
 
-@app.get("/revisions/{revision_id}", response_model=SongScore)
+@app.get("/revisions/{revision_id}", response_model=SongScore, tags=["Revisions"], summary="Load an editable score revision")
 async def load_revision(
     revision_id: str,
     revision_store: RevisionStore = Depends(get_revision_store),
