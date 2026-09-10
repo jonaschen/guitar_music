@@ -142,8 +142,8 @@
 - [x] **ChordPro 匯出**（主文件 §4.4）
   - 後端尚無 ChordPro 格式化器
   - UI 無匯出按鈕
-- [ ] **節奏建議顯示**
-  - 後端回傳 rhythm suggestion，但 UI 未渲染刷奏型
+- [x] **節奏建議顯示**
+  - 後端回傳的刷奏型已在 UI 顯示上／下刷與空拍。
 - [ ] **行動版適配**（主文件 §4.1 提到可收合工具列）
   - 目前無 responsive layout
 
@@ -262,9 +262,8 @@
 - [x] **Undo / Redo**（追加文件 §11）
   - 至少涵蓋 Key、Capo 與 voicing 變更
 - [ ] **刷奏型選擇**（主文件 §2.3）
-  - 從 `rhythm-patterns/` 動態載入模板
-  - `RhythmSuggester` 需依 onset strength 與時間特徵選擇
-  - UI 渲染刷奏型（上刷 / 下刷 / 靜音 圖示）
+  - 已從 `rhythm-patterns/` 動態載入資料模板，並依每小節和弦變化密度在穩定四分與流動八分刷奏間選擇；無模板時會安全回退。
+  - UI 已渲染刷奏型（上刷 / 下刷 / 空拍）；仍待納入 onset strength 等音訊特徵與使用者手動覆寫。
 - [x] **GuitarSettings model**（追加文件 §8.2）
   - tuning、tuning_name、capo、max_capo、max_fret、handedness、difficulty
 
