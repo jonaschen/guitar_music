@@ -257,7 +257,7 @@
 - [ ] **拍點與小節修正**（主文件 §4.3）
   - 已提供整體 beat-grid ±100ms nudge，保持拍距、可 Undo，適合校正全曲一致的 offset。
   - 已提供 half-time / double-time 切換：重新建立 beat／measure 編號並相應調整 BPM，不重跑 DSP，可 Undo。
-  - 逐拍／逐小節拖曳仍待完成。
+  - 已可將播放頭所在 beat 設為目前時間，並保護相鄰 beat 的排序；逐拍／逐小節拖曳仍待完成。
 - [x] **Undo / Redo**（追加文件 §11）
   - 至少涵蓋 Key、Capo 與 voicing 變更
 - [ ] **刷奏型選擇**（主文件 §2.3）

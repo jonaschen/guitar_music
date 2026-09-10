@@ -73,6 +73,9 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await playhead.focus();
   for (let step = 0; step < 100; step += 1) await page.keyboard.press("ArrowRight");
   await expect(playhead).toHaveValue("1");
+  await expect(page.getByText("Current beat 2 · Bar 1 at 0.6s")).toBeVisible();
+  await page.getByRole("button", { name: "Set beat at playhead" }).click();
+  await expect(page.getByText("Current beat 2 · Bar 1 at 1.0s")).toBeVisible();
   await page.getByLabel("Chord symbol").fill("G");
   await page.getByRole("button", { name: "Add/change at playhead" }).click();
   await expect(page.getByRole("heading", { name: "Edit G" })).toBeVisible();
