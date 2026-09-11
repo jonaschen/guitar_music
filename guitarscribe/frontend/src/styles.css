@@ -657,6 +657,10 @@ h2 {
 .lyric-line > :first-child { flex: 1 1 12rem; min-width: 0; text-align: left; }
 .lyric-line input { border: 1px solid var(--accent-2); border-radius: 0.35rem; padding: 0.3rem 0.4rem; background: rgba(0, 0, 0, 0.18); color: var(--text); }
 .lyric-line-active { border-color: #7dd3fc; color: var(--text); background: rgba(125, 211, 252, 0.12); }
+.lyric-timing-editor { display: grid; grid-template-columns: repeat(2, minmax(8rem, 1fr)); gap: 0.45rem; width: 100%; padding: 0.35rem 0.1rem 0; }
+.lyric-timing-editor label { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.35rem; align-items: center; font-size: 0.78rem; }
+.lyric-timing-editor input[type="range"] { width: 100%; padding: 0; accent-color: var(--accent); cursor: ew-resize; }
+.lyric-timing-hint { width: 100%; font-size: 0.75rem; color: var(--text-muted); }
 .lyrics-actions { display: flex; gap: 0.5rem; align-items: center; }
 
 .chord-diagram {
@@ -697,6 +701,7 @@ h2 {
   .rhythm-steps { width: 100%; justify-content: space-between; }
   .rhythm-step { width: 2.15rem; height: 2.15rem; }
   .export-actions, .lyrics-actions { flex-wrap: wrap; justify-content: flex-start; }
+  .lyric-timing-editor { grid-template-columns: 1fr; }
   .measure-chords { grid-template-columns: repeat(auto-fit, minmax(5rem, 1fr)); }
   .timing-fields { grid-template-columns: 1fr; }
 }

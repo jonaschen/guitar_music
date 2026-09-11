@@ -118,16 +118,6 @@ async function importLyrics(score: SongScore, content: string, format: "text" | 
   return response.json();
 }
 
-async function updateLyricTiming(score: SongScore, lineId: string, start?: number, end?: number): Promise<SongScore> {
-  const response = await fetch(`${API_BASE}/scores/lyrics/timing`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ score, line_id: lineId, ...(start !== undefined ? { start } : {}), ...(end !== undefined ? { end } : {}) }),
-  });
-  if (!response.ok) throw new Error(await response.text());
-  return response.json();
-}
-
 async function postTranspose(
   score: SongScore,
   semitones: number,
@@ -223,9 +213,9 @@ export function App() {
   const [lyricsDraft, setLyricsDraft] = useState("");
   const [editingLyricLineId, setEditingLyricLineId] = useState<string | null>(null);
   const [editingLyricText, setEditingLyricText] = useState("");
+  const [lyricTimingDrafts, setLyricTimingDrafts] = useState<Record<string, { start: number; end: number }>>({});
   const [snapLyricTiming, setSnapLyricTiming] = useState(false);
   const [isImportingLyrics, setIsImportingLyrics] = useState(false);
-  const [isTimingLyrics, setIsTimingLyrics] = useState(false);
   const [accidentalPreference, setAccidentalPreference] = useState<AccidentalPreference>("auto");
   const [capo, setCapo] = useState(0);
   const [isRetuningScore, setIsRetuningScore] = useState(false);
@@ -545,19 +535,44 @@ export function App() {
     }
   }
 
-  async function setLyricTiming(lineId: string, boundary: "start" | "end") {
-    if (!score) return;
-    setIsTimingLyrics(true);
-    try {
-      const timing = snapLyricTiming && score.beats.length
-        ? score.beats.reduce((closest, beat) => Math.abs(beat.time - playbackTime) < Math.abs(closest - playbackTime) ? beat.time : closest, score.beats[0].time)
-        : playbackTime;
-      recordScoreChange(await updateLyricTiming(score, lineId, boundary === "start" ? timing : undefined, boundary === "end" ? timing : undefined));
-    } catch (timingError) {
-      setError(timingError instanceof Error ? timingError.message : "Could not update lyric timing.");
-    } finally {
-      setIsTimingLyrics(false);
+  function nearestBeatTime(time: number) {
+    if (!score || !snapLyricTiming || !score.beats.length) return time;
+    return score.beats.reduce((closest, beat) => Math.abs(beat.time - time) < Math.abs(closest - time) ? beat.time : closest, score.beats[0].time);
+  }
+
+  function commitLyricTiming(lineId: string, start?: number, end?: number) {
+    if (!score?.lyrics) return;
+    const current = score.lyrics.lines.find((line) => line.id === lineId);
+    if (!current) return;
+    const nextStart = start === undefined ? current.start : Number(nearestBeatTime(start).toFixed(3));
+    const nextEnd = end === undefined ? current.end : Number(nearestBeatTime(end).toFixed(3));
+    if (nextStart !== null && nextStart !== undefined && nextEnd !== null && nextEnd !== undefined && nextEnd < nextStart) {
+      setError("Lyric end must not precede start.");
+      return;
     }
+    recordScoreChange({
+      ...score,
+      lyrics: {
+        ...score.lyrics,
+        revision: score.lyrics.revision + 1,
+        lines: score.lyrics.lines.map((line) => line.id === lineId ? { ...line, start: nextStart, end: nextEnd, origin: "user", edited: true } : line),
+      },
+    });
+    setLyricTimingDrafts((drafts) => {
+      const { [lineId]: _, ...remaining } = drafts;
+      return remaining;
+    });
+  }
+
+  function setLyricTiming(lineId: string, boundary: "start" | "end") {
+    commitLyricTiming(lineId, boundary === "start" ? playbackTime : undefined, boundary === "end" ? playbackTime : undefined);
+  }
+
+  function updateLyricTimingDraft(lineId: string, boundary: "start" | "end", value: number, fallbackStart: number, fallbackEnd: number) {
+    setLyricTimingDrafts((drafts) => ({
+      ...drafts,
+      [lineId]: { start: drafts[lineId]?.start ?? fallbackStart, end: drafts[lineId]?.end ?? fallbackEnd, [boundary]: value },
+    }));
   }
 
   function saveLyricText(lineId: string) {
@@ -1355,7 +1370,24 @@ export function App() {
                   <h3>Lyrics</h3>
                   <textarea value={lyricsDraft} onChange={(event) => setLyricsDraft(event.target.value)} placeholder="Paste lyrics you are allowed to use. One line per lyric line." rows={5} />
                   <div className="lyrics-actions"><button type="button" className="ghost-button" disabled={isImportingLyrics || !lyricsDraft.trim()} onClick={() => void saveLyrics()}>{isImportingLyrics ? "Importing..." : "Import lyrics"}</button><label className="ghost-button">Import LRC<input type="file" accept=".lrc,text/plain" onChange={importLrcFile} hidden /></label><button type="button" className="ghost-button" disabled={!score.lyrics?.lines.length} onClick={() => void distributeLyricTiming()}>Distribute timing</button><button type="button" className="ghost-button" onClick={() => setSnapLyricTiming((enabled) => !enabled)}>{snapLyricTiming ? "Snap to beat on" : "Snap to beat off"}</button></div>
-                  {score.lyrics?.lines.length ? <div className="lyrics-lines">{score.lyrics.lines.map((line) => <div key={line.id} className={playbackTime >= (line.start ?? Infinity) && playbackTime < (line.end ?? Infinity) ? "lyric-line lyric-line-active" : "lyric-line"}>{editingLyricLineId === line.id ? <input aria-label={`Edit lyric line ${line.order}`} value={editingLyricText} autoFocus onChange={(event) => setEditingLyricText(event.target.value)} onBlur={() => saveLyricText(line.id)} onKeyDown={(event) => { if (event.key === "Enter") event.currentTarget.blur(); if (event.key === "Escape") setEditingLyricLineId(null); }} /> : <button type="button" onClick={() => line.start !== null && line.start !== undefined && seekTo(line.start)}>{line.text}</button>}<span>{line.start?.toFixed(1) ?? "—"}–{line.end?.toFixed(1) ?? "—"}</span><button type="button" onClick={() => { setEditingLyricLineId(line.id); setEditingLyricText(line.text); }}>Edit text</button><button type="button" disabled={isTimingLyrics} onClick={() => void setLyricTiming(line.id, "start")}>Set start</button><button type="button" disabled={isTimingLyrics} onClick={() => void setLyricTiming(line.id, "end")}>Set end</button></div>)}</div> : null}
+                  {score.lyrics?.lines.length ? <div className="lyrics-lines">{score.lyrics.lines.map((line) => {
+                    const hasTiming = line.start !== null && line.start !== undefined && line.end !== null && line.end !== undefined;
+                    const draft = lyricTimingDrafts[line.id];
+                    const start = draft?.start ?? line.start ?? 0;
+                    const end = draft?.end ?? line.end ?? Math.min(score.song.duration_seconds, start + 0.1);
+                    const active = playbackTime >= (line.start ?? Infinity) && playbackTime < (line.end ?? Infinity);
+                    return <div key={line.id} className={active ? "lyric-line lyric-line-active" : "lyric-line"}>
+                      {editingLyricLineId === line.id ? <input aria-label={`Edit lyric line ${line.order}`} value={editingLyricText} autoFocus onChange={(event) => setEditingLyricText(event.target.value)} onBlur={() => saveLyricText(line.id)} onKeyDown={(event) => { if (event.key === "Enter") event.currentTarget.blur(); if (event.key === "Escape") setEditingLyricLineId(null); }} /> : <button type="button" onClick={() => line.start !== null && line.start !== undefined && seekTo(line.start)}>{line.text}</button>}
+                      <span>{start.toFixed(1)}–{end.toFixed(1)}</span>
+                      <button type="button" onClick={() => { setEditingLyricLineId(line.id); setEditingLyricText(line.text); }}>Edit text</button>
+                      <button type="button" onClick={() => setLyricTiming(line.id, "start")}>Set start</button>
+                      <button type="button" onClick={() => setLyricTiming(line.id, "end")}>Set end</button>
+                      {hasTiming ? <div className="lyric-timing-editor">
+                        <label>Start<input aria-label={`Start timing for lyric line ${line.order}`} type="range" min="0" max={Math.max(0, end - 0.01)} step="0.01" value={start} onChange={(event) => updateLyricTimingDraft(line.id, "start", Number(event.target.value), start, end)} onPointerUp={() => commitLyricTiming(line.id, start, end)} onBlur={() => draft && commitLyricTiming(line.id, start, end)} /></label>
+                        <label>End<input aria-label={`End timing for lyric line ${line.order}`} type="range" min={Math.min(score.song.duration_seconds, start + 0.01)} max={score.song.duration_seconds} step="0.01" value={end} onChange={(event) => updateLyricTimingDraft(line.id, "end", Number(event.target.value), start, end)} onPointerUp={() => commitLyricTiming(line.id, start, end)} onBlur={() => draft && commitLyricTiming(line.id, start, end)} /></label>
+                      </div> : <span className="lyric-timing-hint">Set both boundaries, or distribute timing, to drag this line.</span>}
+                    </div>;
+                  })}</div> : null}
                 </section>
 
                 <div className="export-actions">

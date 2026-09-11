@@ -99,4 +99,6 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await expect(page.getByRole("button", { name: "One", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Distribute timing" }).click();
   await expect(page.getByText("0.0–8.0")).toBeVisible();
+  await expect(page.getByLabel("Start timing for lyric line 0")).toBeVisible();
+  await expect(page.getByLabel("End timing for lyric line 0")).toBeVisible();
 });
