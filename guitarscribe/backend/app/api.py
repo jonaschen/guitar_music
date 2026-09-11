@@ -17,6 +17,7 @@ from .services.capo import CapoAdvisor, CapoRecommendation
 from .services.voicing_optimizer import SongVoicingOptimizer
 from .services.lyrics import import_lrc, import_text
 from .models.score import SongScore
+from .models.lyrics import LyricLine, LyricsTrack
 from .services.jobs import AnalysisJobService, JobStore
 from .exporters.chordpro import ChordProExporter
 from .exporters.lrc import export_lrc
@@ -47,6 +48,21 @@ class SaveRevisionRequest(BaseModel):
 
 class SaveRevisionResponse(BaseModel):
     revision_id: str
+
+
+class LyricsReplaceRequest(BaseModel):
+    lyrics: LyricsTrack
+
+
+class LyricLinePatchRequest(BaseModel):
+    text: str | None = Field(default=None, min_length=1)
+    start: float | None = Field(default=None, ge=0)
+    end: float | None = Field(default=None, ge=0)
+
+
+class LyricsRevisionResponse(BaseModel):
+    revision_id: str
+    score: SongScore
 
 
 class YouTubeJobRequest(BaseModel):
@@ -311,6 +327,76 @@ async def load_revision(
         return revision_store.load(revision_id)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/revisions/{revision_id}/lyrics", response_model=LyricsTrack, tags=["Lyrics"], summary="Read lyrics from a saved score revision")
+async def load_revision_lyrics(revision_id: str, revision_store: RevisionStore = Depends(get_revision_store)) -> LyricsTrack:
+    try:
+        lyrics = revision_store.load(revision_id).lyrics
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    if lyrics is None:
+        raise HTTPException(status_code=404, detail="Revision has no lyrics")
+    return lyrics
+
+
+def _fork_lyrics_revision(revision_id: str, lyrics: LyricsTrack, revision_store: RevisionStore) -> LyricsRevisionResponse:
+    try:
+        score = revision_store.load(revision_id)
+        next_score = score.model_copy(update={"lyrics": lyrics})
+        next_revision_id = revision_store.fork(revision_id, next_score)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return LyricsRevisionResponse(revision_id=next_revision_id, score=next_score)
+
+
+@app.put("/revisions/{revision_id}/lyrics", response_model=LyricsRevisionResponse, tags=["Lyrics"], summary="Replace lyrics and fork a score revision")
+async def replace_revision_lyrics(
+    revision_id: str,
+    request: LyricsReplaceRequest,
+    revision_store: RevisionStore = Depends(get_revision_store),
+) -> LyricsRevisionResponse:
+    return _fork_lyrics_revision(
+        revision_id,
+        request.lyrics.model_copy(update={"revision": request.lyrics.revision + 1}),
+        revision_store,
+    )
+
+
+@app.patch("/revisions/{revision_id}/lyrics/lines/{line_id}", response_model=LyricsRevisionResponse, tags=["Lyrics"], summary="Patch one lyric line and fork a score revision")
+async def patch_revision_lyric_line(
+    revision_id: str,
+    line_id: str,
+    request: LyricLinePatchRequest,
+    revision_store: RevisionStore = Depends(get_revision_store),
+) -> LyricsRevisionResponse:
+    try:
+        lyrics = revision_store.load(revision_id).lyrics
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    if lyrics is None:
+        raise HTTPException(status_code=404, detail="Revision has no lyrics")
+    patch = request.model_dump(exclude_unset=True, exclude_none=True)
+    if not patch:
+        raise HTTPException(status_code=422, detail="Provide at least one lyric line field to update")
+    updated_lines: list[LyricLine] = []
+    found = False
+    for line in lyrics.lines:
+        if line.id != line_id:
+            updated_lines.append(line)
+            continue
+        found = True
+        next_line = line.model_copy(update={**patch, "edited": True, "origin": "user"})
+        if next_line.start is not None and next_line.end is not None and next_line.end < next_line.start:
+            raise HTTPException(status_code=422, detail="Lyric end must not precede start")
+        updated_lines.append(next_line)
+    if not found:
+        raise HTTPException(status_code=404, detail="Lyric line not found")
+    return _fork_lyrics_revision(
+        revision_id,
+        lyrics.model_copy(update={"lines": updated_lines, "revision": lyrics.revision + 1}),
+        revision_store,
+    )
 
 @app.post("/scores/chordpro", response_class=PlainTextResponse)
 async def export_chordpro(score: SongScore) -> str:

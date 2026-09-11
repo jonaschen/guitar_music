@@ -9,6 +9,7 @@ from app.api import (
     analyze_audio,
     app,
     get_job_service,
+    get_revision_store,
     load_revision,
     save_revision,
 )
@@ -307,6 +308,30 @@ def test_revision_store_uses_sqlite(tmp_path):
 
     assert (tmp_path / "revisions" / "guitarscribe.sqlite3").exists()
     assert store.load(revision_id).song.title == "Saved Song"
+
+
+@pytest.mark.asyncio
+async def test_revision_lyrics_api_forks_without_overwriting_parent(tmp_path):
+    from app.models.lyrics import LyricLine, LyricsTrack
+
+    store = RevisionStore(tmp_path / "revisions")
+    parent_score = make_score().model_copy(update={"lyrics": LyricsTrack(lines=[LyricLine(id="line-1", order=0, text="Original")])})
+    parent_id = store.save(parent_score)
+    app.dependency_overrides[get_revision_store] = lambda: store
+    try:
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://testserver") as client:
+            response = await client.patch(f"/revisions/{parent_id}/lyrics/lines/line-1", json={"text": "Edited", "start": 1.0, "end": 2.0})
+            assert response.status_code == 200
+            child_id = response.json()["revision_id"]
+            lyrics_response = await client.get(f"/revisions/{child_id}/lyrics")
+    finally:
+        app.dependency_overrides.clear()
+
+    assert child_id != parent_id
+    assert store.load(parent_id).lyrics.lines[0].text == "Original"
+    assert lyrics_response.json()["lines"][0]["text"] == "Edited"
+    assert lyrics_response.json()["lines"][0]["start"] == 1.0
 
 @pytest.mark.asyncio
 async def test_chordpro_export_endpoint():

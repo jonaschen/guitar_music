@@ -64,3 +64,25 @@ class RevisionStore:
         if row is None:
             raise FileNotFoundError(f"Revision not found: {revision_id}")
         return SongScore.model_validate_json(row["payload"])
+
+    def fork(self, revision_id: str, score: SongScore) -> str:
+        """Persist an immutable successor while retaining the parent revision."""
+        next_revision_id = str(uuid.uuid4())
+        now = datetime.now(timezone.utc).isoformat()
+        payload = score.model_dump_json()
+        with self._connect() as connection:
+            parent = connection.execute(
+                "SELECT score_id FROM revisions WHERE id = ?", (revision_id,)
+            ).fetchone()
+            if parent is None:
+                raise FileNotFoundError(f"Revision not found: {revision_id}")
+            score_id = parent["score_id"]
+            connection.execute(
+                "UPDATE scores SET payload = ?, updated_at = ? WHERE id = ?",
+                (payload, now, score_id),
+            )
+            connection.execute(
+                "INSERT INTO revisions(id, score_id, payload, created_at) VALUES (?, ?, ?, ?)",
+                (next_revision_id, score_id, payload, now),
+            )
+        return next_revision_id

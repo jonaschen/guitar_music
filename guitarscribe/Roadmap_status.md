@@ -445,8 +445,8 @@
   - 新增 `LyricsTrack`、`LyricLine`、預留 `WordTiming`、source/raw_text/revision/origin/confidence。
   - `SongScore` 與 JSON Schema 納入 lyrics；原始匯入內容與使用者修正版分開保存。
 - [ ] **歌詞儲存與 revision API**
-  - 先完成 SQLite scores/revisions 持久化，提供 score-based lyrics API。
-  - 實作讀取、整體更新、行 PATCH、分割與合併；所有變更可保存 revision。
+  - SQLite scores/revisions 持久化已完成；提供 revision-based lyrics read、整體更新與單行 PATCH。每次歌詞 API 修改都 fork 新 revision，保留父版本。
+  - 分割與合併 API 仍待完成；所有現有歌詞修改可保存 revision。
 - [x] **TXT/LRC 匯入與 LRC 匯出**
   - 使用者貼上文字、TXT、LRC；保留重複段落。
   - 依換行/空行建立 lyric lines，解析與輸出逐行 timestamps。
