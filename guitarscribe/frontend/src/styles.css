@@ -648,6 +648,9 @@ h2 {
   accent-color: #7dd3fc;
 }
 
+.beat-timing-control { display: inline-grid; grid-template-columns: auto minmax(6rem, 10rem); gap: 0.4rem; align-items: center; color: var(--text-muted); font-size: 0.8rem; }
+.beat-timing-control input[type="range"] { width: 100%; accent-color: var(--accent-2); cursor: ew-resize; }
+
 .synth-panel { display: grid; gap: 0.65rem; margin: 1rem 0; padding: 0.9rem 1rem; border: 1px solid var(--border); border-radius: 18px; }
 .synth-panel h3, .synth-panel p { margin: 0; }
 .synth-panel p { color: var(--text-muted); font-size: 0.85rem; }

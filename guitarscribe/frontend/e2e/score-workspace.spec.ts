@@ -81,6 +81,11 @@ test("renders an analyzed score workspace", async ({ page }) => {
   for (let step = 0; step < 100; step += 1) await page.keyboard.press("ArrowRight");
   await expect(playhead).toHaveValue("1");
   await expect(page.getByText("Current beat 2 · Bar 1 at 0.6s")).toBeVisible();
+  const dragCurrentBeat = page.getByLabel("Drag current beat time");
+  await dragCurrentBeat.focus();
+  await page.keyboard.press("ArrowRight");
+  await dragCurrentBeat.dispatchEvent("pointerup");
+  await expect(dragCurrentBeat).toHaveValue("0.61");
   const setBeatAtPlayhead = page.getByRole("button", { name: "Set beat at playhead" });
   await setBeatAtPlayhead.scrollIntoViewIfNeeded();
   await setBeatAtPlayhead.click({ force: true });

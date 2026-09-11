@@ -209,6 +209,7 @@ export function App() {
   const [loopStart, setLoopStart] = useState<number | null>(null);
   const [loopEnd, setLoopEnd] = useState<number | null>(null);
   const [followPlayhead, setFollowPlayhead] = useState(true);
+  const [beatTimingDraft, setBeatTimingDraft] = useState<{ index: number; time: number } | null>(null);
   const [error, setError] = useState<string>("");
   const [lyricsDraft, setLyricsDraft] = useState("");
   const [editingLyricLineId, setEditingLyricLineId] = useState<string | null>(null);
@@ -234,6 +235,7 @@ export function App() {
 
   function replaceScore(nextScore: SongScore) {
     setScore(nextScore);
+    setBeatTimingDraft(null);
     setUndoHistory([]);
     setRedoHistory([]);
   }
@@ -426,6 +428,15 @@ export function App() {
   })();
   const activeChordId = score?.chords.find((chord) => playbackTime >= chord.start && playbackTime < chord.end)?.id ?? null;
   const activeBeatIndex = score?.beats.findIndex((beat, index) => playbackTime >= beat.time && playbackTime < (score.beats[index + 1]?.time ?? Infinity)) ?? -1;
+  const activeBeatTimingBounds = (() => {
+    if (!score || activeBeatIndex < 0) return null;
+    const current = score.beats[activeBeatIndex];
+    return {
+      min: (score.beats[activeBeatIndex - 1]?.time ?? 0) + 0.02,
+      max: (score.beats[activeBeatIndex + 1]?.time ?? score.song.duration_seconds) - 0.02,
+      value: beatTimingDraft?.index === activeBeatIndex ? beatTimingDraft.time : current.time,
+    };
+  })();
   const scoreMeasures = Array.from(new Set(score?.beats.map((beat) => beat.measure) ?? [1]));
   const activeMeasureGroup = measureGroups.find((group) => playbackTime >= group.start && playbackTime < group.end) ?? measureGroups[0];
   const activeMeasureNotes = score && activeMeasureGroup ? score.melody.filter((note) => note.start >= activeMeasureGroup.start && note.start < activeMeasureGroup.end && note.string !== null && note.string !== undefined && note.fret !== null && note.fret !== undefined) : [];
@@ -963,18 +974,23 @@ export function App() {
     rebuildBeatGrid(expanded, score.analysis.bpm * 2);
   }
 
-  function setActiveBeatAtPlayhead() {
-    if (!score || activeBeatIndex < 0) return;
-    const previousTime = score.beats[activeBeatIndex - 1]?.time ?? -0.02;
-    const nextTime = score.beats[activeBeatIndex + 1]?.time ?? score.song.duration_seconds + 0.02;
-    if (playbackTime <= previousTime + 0.02 || playbackTime >= nextTime - 0.02) {
+  function commitBeatTiming(index: number, time: number) {
+    if (!score || index < 0 || index >= score.beats.length) return;
+    const previousTime = score.beats[index - 1]?.time ?? -0.02;
+    const nextTime = score.beats[index + 1]?.time ?? score.song.duration_seconds + 0.02;
+    if (time <= previousTime + 0.02 || time >= nextTime - 0.02) {
       setError("A beat must remain at least 0.02 seconds away from its neighboring beats.");
       return;
     }
     recordScoreChange({
       ...score,
-      beats: score.beats.map((beat, index) => index === activeBeatIndex ? { ...beat, time: Number(playbackTime.toFixed(3)) } : beat),
+      beats: score.beats.map((beat, beatIndex) => beatIndex === index ? { ...beat, time: Number(time.toFixed(3)) } : beat),
     });
+    setBeatTimingDraft(null);
+  }
+
+  function setActiveBeatAtPlayhead() {
+    if (activeBeatIndex >= 0) commitBeatTiming(activeBeatIndex, playbackTime);
   }
 
   function setSpeed(nextRate: number) {
@@ -1365,6 +1381,7 @@ export function App() {
                     <span className="transport-beat-grid">Beat grid {score.beats[0]?.time.toFixed(1) ?? "—"}s</span><button type="button" className="ghost-button" disabled={!score.beats.length || score.beats[0].time < 0.1} onClick={() => nudgeBeatGrid(-0.1)}>Beat −100ms</button><button type="button" className="ghost-button" disabled={!score.beats.length} onClick={() => nudgeBeatGrid(0.1)}>Beat +100ms</button>
                     <button type="button" className="ghost-button" disabled={score.beats.length < 3} onClick={correctHalfTime}>Half-time</button><button type="button" className="ghost-button" disabled={score.beats.length < 2} onClick={correctDoubleTime}>Double-time</button>
                     <span className="transport-beat-grid">{activeBeatIndex >= 0 ? `Current beat ${score.beats[activeBeatIndex].beat} · Bar ${score.beats[activeBeatIndex].measure} at ${score.beats[activeBeatIndex].time.toFixed(1)}s` : "No current beat"}</span><button type="button" className="ghost-button" disabled={activeBeatIndex < 0} onClick={setActiveBeatAtPlayhead}>Set beat at playhead</button>
+                    {activeBeatTimingBounds && activeBeatIndex >= 0 ? <label className="beat-timing-control">Drag beat<input aria-label="Drag current beat time" type="range" min={activeBeatTimingBounds.min} max={Math.max(activeBeatTimingBounds.min, activeBeatTimingBounds.max)} step="0.01" value={activeBeatTimingBounds.value} onChange={(event) => setBeatTimingDraft({ index: activeBeatIndex, time: Number(event.target.value) })} onPointerUp={() => commitBeatTiming(activeBeatIndex, activeBeatTimingBounds.value)} /></label> : null}
                     <label className="transport-speed">Count-in <select value={countInMeasures} onChange={(event) => setCountInMeasures(Number(event.target.value))}><option value={0}>Off</option><option value={1}>1 bar</option><option value={2}>2 bars</option></select></label>
                     <button type="button" className="ghost-button" onClick={() => stopSynth(true)}>Stop</button>
                     <label className="transport-speed">Speed <select value={playbackRate} onChange={(event) => setSpeed(Number(event.target.value))}>{[0.5, 0.6, 0.75, 0.9, 1, 1.1, 1.25, 1.5].map((rate) => <option key={rate} value={rate}>{Math.round(rate * 100)}%</option>)}</select></label>
