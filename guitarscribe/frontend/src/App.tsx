@@ -408,6 +408,22 @@ export function App() {
   })() : [];
 
   const selectedChord = score?.chords.find((chord) => chord.id === selectedChordId) ?? null;
+  const selectedChordTimingBounds = (() => {
+    if (!score || !selectedChord) return null;
+    const ordered = [...score.chords].sort((left, right) => left.start - right.start);
+    const index = ordered.findIndex((chord) => chord.id === selectedChord.id);
+    if (index < 0) return null;
+    const draftStart = Number(chordStartDraft);
+    const draftEnd = Number(chordEndDraft);
+    return {
+      start: Number.isFinite(draftStart) ? draftStart : selectedChord.start,
+      end: Number.isFinite(draftEnd) ? draftEnd : selectedChord.end,
+      startMin: ordered[index - 1]?.end ?? 0,
+      startMax: selectedChord.end - 0.1,
+      endMin: selectedChord.start + 0.1,
+      endMax: ordered[index + 1]?.start ?? score.song.duration_seconds,
+    };
+  })();
   const activeChordId = score?.chords.find((chord) => playbackTime >= chord.start && playbackTime < chord.end)?.id ?? null;
   const activeBeatIndex = score?.beats.findIndex((beat, index) => playbackTime >= beat.time && playbackTime < (score.beats[index + 1]?.time ?? Infinity)) ?? -1;
   const scoreMeasures = Array.from(new Set(score?.beats.map((beat) => beat.measure) ?? [1]));
@@ -1527,6 +1543,11 @@ export function App() {
                   <label className="field compact-field"><span>Start (seconds)</span><input type="number" min="0" step="0.01" value={chordStartDraft} onChange={(event) => setChordStartDraft(event.target.value)} /></label>
                   <label className="field compact-field"><span>End (seconds)</span><input type="number" min="0" step="0.01" value={chordEndDraft} onChange={(event) => setChordEndDraft(event.target.value)} /></label>
                 </div>
+                {selectedChordTimingBounds ? <div className="chord-boundary-editor">
+                  <p>Drag a boundary to retime this chord without overlapping its neighbors.</p>
+                  <label>Start handle<input aria-label="Drag chord start boundary" type="range" min={selectedChordTimingBounds.startMin} max={Math.max(selectedChordTimingBounds.startMin, selectedChordTimingBounds.end - 0.1)} step="0.01" value={selectedChordTimingBounds.start} onChange={(event) => setChordStartDraft(event.target.value)} onPointerUp={saveSelectedChordTiming} /></label>
+                  <label>End handle<input aria-label="Drag chord end boundary" type="range" min={Math.min(selectedChordTimingBounds.endMax, selectedChordTimingBounds.start + 0.1)} max={selectedChordTimingBounds.endMax} step="0.01" value={selectedChordTimingBounds.end} onChange={(event) => setChordEndDraft(event.target.value)} onPointerUp={saveSelectedChordTiming} /></label>
+                </div> : null}
                 <div className="editor-actions">
                   <button type="button" className="ghost-button" onClick={saveSelectedChordTiming}>Save timing</button>
                   <button type="button" className="ghost-button" onClick={addChordAtPlayhead}>Add/change at playhead</button>

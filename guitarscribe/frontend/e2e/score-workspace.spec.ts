@@ -56,6 +56,13 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await page.locator(".chord-block").first().click();
   await expect(page.getByRole("heading", { name: "Edit C" })).toBeVisible();
   await expect(page.getByText("Start (seconds)")).toBeVisible();
+  const dragChordStart = page.getByLabel("Drag chord start boundary");
+  await expect(dragChordStart).toBeVisible();
+  await expect(page.getByLabel("Drag chord end boundary")).toBeVisible();
+  await dragChordStart.focus();
+  await page.keyboard.press("ArrowRight");
+  await dragChordStart.dispatchEvent("pointerup");
+  await expect(page.locator(".timing-fields input").nth(0)).toHaveValue("0.01");
   await expect(page.getByRole("button", { name: "Split chord" })).toBeVisible();
   const timingInputs = page.locator(".timing-fields input");
   await timingInputs.nth(0).fill("0.10");
@@ -68,7 +75,7 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await page.getByRole("button", { name: "Undo" }).click();
   await expect(page.getByText("Selected", { exact: true })).toHaveCount(0);
   await page.getByRole("button", { name: "Undo" }).click();
-  await expect(timingInputs.nth(0)).toHaveValue("0.00");
+  await expect(timingInputs.nth(0)).toHaveValue("0.01");
   const playhead = page.getByLabel("Playback position");
   await playhead.focus();
   for (let step = 0; step < 100; step += 1) await page.keyboard.press("ArrowRight");

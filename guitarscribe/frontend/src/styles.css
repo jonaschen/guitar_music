@@ -503,6 +503,11 @@ h2 {
   gap: 0.65rem;
 }
 
+.chord-boundary-editor { display: grid; gap: 0.45rem; padding: 0.7rem; border: 1px solid var(--border); border-radius: 14px; background: rgba(241, 143, 59, 0.06); }
+.chord-boundary-editor p { margin: 0; color: var(--text-muted); font-size: 0.78rem; }
+.chord-boundary-editor label { display: grid; grid-template-columns: 5.5rem minmax(0, 1fr); gap: 0.5rem; align-items: center; font-size: 0.82rem; }
+.chord-boundary-editor input[type="range"] { width: 100%; accent-color: var(--accent); cursor: ew-resize; }
+
 .editor-actions {
   display: grid;
   gap: 0.65rem;
