@@ -333,6 +333,30 @@ async def test_revision_lyrics_api_forks_without_overwriting_parent(tmp_path):
     assert lyrics_response.json()["lines"][0]["text"] == "Edited"
     assert lyrics_response.json()["lines"][0]["start"] == 1.0
 
+
+@pytest.mark.asyncio
+async def test_revision_lyrics_api_splits_and_merges_lines(tmp_path):
+    from app.models.lyrics import LyricLine, LyricsTrack
+
+    store = RevisionStore(tmp_path / "revisions")
+    parent_id = store.save(make_score().model_copy(update={"lyrics": LyricsTrack(lines=[LyricLine(id="line-1", order=0, text="Hello world", start=0, end=4)])}))
+    app.dependency_overrides[get_revision_store] = lambda: store
+    try:
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://testserver") as client:
+            split = await client.post(f"/revisions/{parent_id}/lyrics/lines/line-1/split", json={"character_index": 6})
+            assert split.status_code == 200
+            split_body = split.json()
+            split_id = split_body["revision_id"]
+            assert [line["text"] for line in split_body["score"]["lyrics"]["lines"]] == ["Hello", "world"]
+            assert split_body["score"]["lyrics"]["lines"][0]["end"] == pytest.approx(2.18, abs=0.01)
+            merged = await client.post(f"/revisions/{split_id}/lyrics/lines/line-1/merge-next")
+    finally:
+        app.dependency_overrides.clear()
+
+    assert merged.status_code == 200
+    assert [line["text"] for line in merged.json()["score"]["lyrics"]["lines"]] == ["Hello world"]
+
 @pytest.mark.asyncio
 async def test_chordpro_export_endpoint():
     score = make_score()

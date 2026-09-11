@@ -1,4 +1,5 @@
 import tempfile
+from uuid import uuid4
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile, status
@@ -58,6 +59,10 @@ class LyricLinePatchRequest(BaseModel):
     text: str | None = Field(default=None, min_length=1)
     start: float | None = Field(default=None, ge=0)
     end: float | None = Field(default=None, ge=0)
+
+
+class LyricLineSplitRequest(BaseModel):
+    character_index: int = Field(ge=1, description="Zero-based boundary between the retained and new lyric text.")
 
 
 class LyricsRevisionResponse(BaseModel):
@@ -395,6 +400,85 @@ async def patch_revision_lyric_line(
     return _fork_lyrics_revision(
         revision_id,
         lyrics.model_copy(update={"lines": updated_lines, "revision": lyrics.revision + 1}),
+        revision_store,
+    )
+
+
+def _renumber_lyric_lines(lines: list[LyricLine]) -> list[LyricLine]:
+    return [line.model_copy(update={"order": index}) for index, line in enumerate(lines)]
+
+
+@app.post("/revisions/{revision_id}/lyrics/lines/{line_id}/split", response_model=LyricsRevisionResponse, tags=["Lyrics"], summary="Split one lyric line and fork a score revision")
+async def split_revision_lyric_line(
+    revision_id: str,
+    line_id: str,
+    request: LyricLineSplitRequest,
+    revision_store: RevisionStore = Depends(get_revision_store),
+) -> LyricsRevisionResponse:
+    try:
+        lyrics = revision_store.load(revision_id).lyrics
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    if lyrics is None:
+        raise HTTPException(status_code=404, detail="Revision has no lyrics")
+    lines = sorted(lyrics.lines, key=lambda line: line.order)
+    index = next((line_index for line_index, line in enumerate(lines) if line.id == line_id), -1)
+    if index < 0:
+        raise HTTPException(status_code=404, detail="Lyric line not found")
+    line = lines[index]
+    if request.character_index >= len(line.text):
+        raise HTTPException(status_code=422, detail="Split must fall inside lyric text")
+    before = line.text[:request.character_index].rstrip()
+    after = line.text[request.character_index:].lstrip()
+    if not before or not after:
+        raise HTTPException(status_code=422, detail="Split must leave text on both lyric lines")
+    split_time = None
+    if line.start is not None and line.end is not None:
+        split_time = line.start + (line.end - line.start) * (request.character_index / len(line.text))
+    first_words = [word for word in line.words if split_time is None or (word.start + word.end) / 2 <= split_time]
+    second_words = [word for word in line.words if split_time is None or (word.start + word.end) / 2 > split_time]
+    first = line.model_copy(update={"text": before, "end": split_time, "words": first_words, "edited": True, "origin": "user"})
+    second = LyricLine(
+        id=f"{line.id}-split-{uuid4().hex[:8]}", order=line.order + 1,
+        text=after, start=split_time, end=line.end, words=second_words,
+        confidence=line.confidence, edited=True, origin="user",
+    )
+    return _fork_lyrics_revision(
+        revision_id,
+        lyrics.model_copy(update={"lines": _renumber_lyric_lines([*lines[:index], first, second, *lines[index + 1:]]), "revision": lyrics.revision + 1}),
+        revision_store,
+    )
+
+
+@app.post("/revisions/{revision_id}/lyrics/lines/{line_id}/merge-next", response_model=LyricsRevisionResponse, tags=["Lyrics"], summary="Merge a lyric line with its next line and fork a score revision")
+async def merge_revision_lyric_line_with_next(
+    revision_id: str,
+    line_id: str,
+    revision_store: RevisionStore = Depends(get_revision_store),
+) -> LyricsRevisionResponse:
+    try:
+        lyrics = revision_store.load(revision_id).lyrics
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    if lyrics is None:
+        raise HTTPException(status_code=404, detail="Revision has no lyrics")
+    lines = sorted(lyrics.lines, key=lambda line: line.order)
+    index = next((line_index for line_index, line in enumerate(lines) if line.id == line_id), -1)
+    if index < 0:
+        raise HTTPException(status_code=404, detail="Lyric line not found")
+    if index + 1 >= len(lines):
+        raise HTTPException(status_code=422, detail="Cannot merge the final lyric line")
+    line, next_line = lines[index], lines[index + 1]
+    merged = line.model_copy(update={
+        "text": f"{line.text.rstrip()} {next_line.text.lstrip()}".strip(),
+        "end": next_line.end if next_line.end is not None else line.end,
+        "words": [*line.words, *next_line.words],
+        "edited": True,
+        "origin": "user",
+    })
+    return _fork_lyrics_revision(
+        revision_id,
+        lyrics.model_copy(update={"lines": _renumber_lyric_lines([*lines[:index], merged, *lines[index + 2:]]), "revision": lyrics.revision + 1}),
         revision_store,
     )
 
