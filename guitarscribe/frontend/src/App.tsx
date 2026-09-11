@@ -183,6 +183,7 @@ export function App() {
   const [separateVocals, setSeparateVocals] = useState(false);
   const [chordComplexity, setChordComplexity] = useState("standard");
   const [score, setScore] = useState<SongScore | null>(EMPTY_SCORE);
+  const [rhythmOptions, setRhythmOptions] = useState<SongScore["rhythm"][]>([]);
   const [analysisJob, setAnalysisJob] = useState<AnalysisJob | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const metronomeContextRef = useRef<AudioContext | null>(null);
@@ -336,6 +337,19 @@ export function App() {
       setAccidentalPreference(score.key_context.accidental_preference);
     }
   }, [score]);
+
+  useEffect(() => {
+    if (!score) {
+      setRhythmOptions([]);
+      return;
+    }
+    let disposed = false;
+    void fetch(`${API_BASE}/rhythm-patterns?time_signature=${encodeURIComponent(score.analysis.time_signature)}`)
+      .then((response) => response.ok ? response.json() : [])
+      .then((patterns: SongScore["rhythm"][]) => { if (!disposed) setRhythmOptions(patterns); })
+      .catch(() => { if (!disposed) setRhythmOptions([]); });
+    return () => { disposed = true; };
+  }, [score?.analysis.time_signature]);
 
   useEffect(() => {
     if (!score || score.chords.length === 0) {
@@ -1460,6 +1474,7 @@ export function App() {
 
                 <section className="rhythm-panel">
                   <div><h3>Rhythm suggestion</h3><p>{score.rhythm.label || "Suggested strumming pattern"} · {score.rhythm.subdivision}th-note grid</p></div>
+                  <label className="rhythm-selector">Pattern<select aria-label="Rhythm pattern" value={score.rhythm.pattern_id} onChange={(event) => { const selected = [...rhythmOptions, score.rhythm].find((pattern) => pattern.pattern_id === event.target.value); if (selected && selected.pattern_id !== score.rhythm.pattern_id) recordScoreChange({ ...score, rhythm: selected }); }}><option value={score.rhythm.pattern_id}>{score.rhythm.label || score.rhythm.pattern_id || "Current pattern"}</option>{rhythmOptions.filter((pattern) => pattern.pattern_id !== score.rhythm.pattern_id).map((pattern) => <option key={pattern.pattern_id} value={pattern.pattern_id}>{pattern.label}</option>)}</select></label>
                   <div className="rhythm-steps">{score.rhythm.display.map((stroke, index) => <span key={index} className={stroke ? "rhythm-step rhythm-step-active" : "rhythm-step"}>{stroke ?? "·"}</span>)}</div>
                 </section>
 

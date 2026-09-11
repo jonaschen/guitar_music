@@ -23,6 +23,7 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await page.route("**/api/v1/jobs/demo-job/audio", (route) => route.fulfill({ contentType: "audio/wav", body: "not-a-real-audio-file" }));
   await page.route("**/scores/transpose", (route) => route.fulfill({ json: { ...score, analysis: { ...score.analysis, key: "D" }, key_context: { ...score.key_context, target: { key: "D", mode: "major" }, shape: { key: "D", mode: "major" }, sounding: { key: "D", mode: "major" }, transpose_semitones: 2, audio_matches_notation: false }, chords: [{ ...score.chords[0], symbol: "D", shape_symbol: "D", source_symbol: "C" }] } }));
   await page.route("**/chord-voicings?*", (route) => route.fulfill({ json: [{ id: "closed-e-major-c", symbol: "C", shape_symbol: "C", frets: [8, 10, 10, 9, 8, 8], fingers: [1, 3, 4, 2, 1, 1], base_fret: 8, capo: 0, difficulty: 3.5, tags: ["closed", "barre", "e-shape"] }] }));
+  await page.route("**/rhythm-patterns?*", (route) => route.fulfill({ json: [{ subdivision: 8, pattern_id: "flowing", display: ["D", null, "D", "U"], confidence: 0.8, label: "Flowing strum" }, { subdivision: 8, pattern_id: "steady", display: ["D", null, "D", null], confidence: 0.8, label: "Steady strum" }] }));
   const lyricScore = { ...score, lyrics: { id: "lyrics-1", language: "und", source: "manual", timing_level: "none", raw_text: "One", revision: 1, lines: [{ id: "line-1", order: 0, start: null, end: null, text: "One", confidence: 1, origin: "user", edited: true }] } };
   await page.route("**/scores/lyrics/import-text", (route) => route.fulfill({ json: lyricScore }));
   await page.route("**/scores/lyrics/distribute-timing", (route) => route.fulfill({ json: { ...lyricScore, lyrics: { ...lyricScore.lyrics, revision: 2, lines: [{ ...lyricScore.lyrics.lines[0], start: 0, end: 8 }] } } }));
@@ -36,6 +37,9 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Browser test song" })).toBeVisible();
   await expect(page.getByText("Guitar settings")).toBeVisible();
   await expect(page.getByText("Rhythm suggestion")).toBeVisible();
+  await expect(page.getByRole("option", { name: "Steady strum" })).toBeAttached();
+  await page.getByLabel("Rhythm pattern").selectOption("steady");
+  await expect(page.getByText("Steady strum · 8th-note grid")).toBeVisible();
   await expect(page.getByText("Estimated score preview")).toBeVisible();
   await expect(page.getByRole("button", { name: "C4 in bar 1" })).toBeVisible();
   await expect(page.getByText("Playable Tab")).toBeVisible();

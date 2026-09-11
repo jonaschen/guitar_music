@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 from .core.config import Settings
 from .core.pipeline import AnalysisPipeline, create_pipeline
 from .models.audio import SourceRequest, SourceType
-from .models.analysis import AccidentalPreference
+from .models.analysis import AccidentalPreference, RhythmSuggestion
 from .models.jobs import AnalysisJob, JobStatus
 from .models.analysis import ChordVoicing
 from .services.voicings import ChordVoicingProvider
@@ -26,6 +26,7 @@ from .services.revisions import RevisionStore
 from .services.transposition import TranspositionService
 from .sources.youtube import YouTubeAudioDownloader, validate_youtube_url
 from .services.rate_limit import SubmissionRateLimiter
+from .postprocess.rhythm import RhythmSuggester
 
 
 class TransposeScoreRequest(BaseModel):
@@ -147,6 +148,12 @@ async def transpose_score(request: TransposeScoreRequest) -> SongScore:
         accidental_preference=request.accidental_preference,
         capo=request.capo,
     )
+
+
+@app.get("/rhythm-patterns", response_model=list[RhythmSuggestion], tags=["Scores"], summary="List local playable rhythm templates")
+async def list_rhythm_patterns(time_signature: str = "4/4") -> list[RhythmSuggestion]:
+    """Expose data-only local templates for manual score accompaniment edits."""
+    return RhythmSuggester(Settings.from_env().rhythm_patterns_dir).available_patterns(time_signature)
 
 
 @app.post(

@@ -61,6 +61,21 @@ class RhythmSuggester:
             label="Basic eighth-note strum",
         )
 
+    def available_patterns(self, time_signature: str) -> list[RhythmSuggestion]:
+        patterns = self._load_patterns(time_signature)
+        if not patterns:
+            return [self._fallback()]
+        return [
+            RhythmSuggestion(
+                subdivision=pattern["subdivision"],
+                pattern_id=pattern["pattern_id"],
+                display=pattern["display"],
+                confidence=pattern["confidence"],
+                label=pattern["label"],
+            )
+            for pattern in patterns
+        ]
+
     def suggest(self, beats: BeatAnalysis, chords: ChordAnalysis, features: AudioFeatures | None = None) -> RhythmSuggestion:
         patterns = self._load_patterns(beats.time_signature)
         if not patterns:

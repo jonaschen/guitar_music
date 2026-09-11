@@ -263,7 +263,7 @@
   - 至少涵蓋 Key、Capo 與 voicing 變更
 - [ ] **刷奏型選擇**（主文件 §2.3）
   - 已從 `rhythm-patterns/` 動態載入資料模板，並依每小節和弦變化密度在穩定四分與流動八分刷奏間選擇；無模板時會安全回退。
-  - UI 已渲染刷奏型（上刷 / 下刷 / 空拍）；仍待納入 onset strength 等音訊特徵與使用者手動覆寫。
+  - UI 已渲染刷奏型（上刷 / 下刷 / 空拍），並可手動覆寫 pattern，立即影響合成播放與 MIDI；仍待納入 onset strength 等音訊特徵。
 - [x] **GuitarSettings model**（追加文件 §8.2）
   - tuning、tuning_name、capo、max_capo、max_fret、handedness、difficulty
 

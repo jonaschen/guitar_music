@@ -83,6 +83,19 @@ async def test_openapi_documents_async_job_lifecycle():
 
 
 @pytest.mark.asyncio
+async def test_rhythm_pattern_endpoint_returns_playable_templates():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://testserver") as client:
+        response = await client.get("/rhythm-patterns", params={"time_signature": "4/4"})
+
+    assert response.status_code == 200
+    patterns = response.json()
+    assert patterns
+    assert patterns[0]["pattern_id"]
+    assert patterns[0]["display"]
+
+
+@pytest.mark.asyncio
 async def test_transpose_endpoint():
     payload = {
         "score": {
