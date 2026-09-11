@@ -632,6 +632,41 @@ export function App() {
     });
   }
 
+  function splitLyricLine(lineId: string) {
+    if (!score?.lyrics) return;
+    const lines = [...score.lyrics.lines].sort((left, right) => left.order - right.order);
+    const index = lines.findIndex((line) => line.id === lineId);
+    if (index < 0) return;
+    const line = lines[index];
+    const midpoint = Math.floor(line.text.length / 2);
+    const splitAt = line.text.lastIndexOf(" ", midpoint) > 0 ? line.text.lastIndexOf(" ", midpoint) : line.text.indexOf(" ", midpoint);
+    if (splitAt <= 0 || splitAt >= line.text.length - 1) {
+      setError("This lyric line needs a space before it can be split.");
+      return;
+    }
+    const before = line.text.slice(0, splitAt).trim();
+    const after = line.text.slice(splitAt).trim();
+    const splitTime = line.start !== null && line.start !== undefined && line.end !== null && line.end !== undefined
+      ? line.start + (line.end - line.start) * (splitAt / line.text.length)
+      : null;
+    const first = { ...line, text: before, end: splitTime, origin: "user", edited: true };
+    const second = { ...line, id: `${line.id}-split-${Date.now()}`, text: after, start: splitTime, origin: "user", edited: true };
+    const nextLines = [...lines.slice(0, index), first, second, ...lines.slice(index + 1)].map((item, order) => ({ ...item, order }));
+    recordScoreChange({ ...score, lyrics: { ...score.lyrics, revision: score.lyrics.revision + 1, lines: nextLines } });
+  }
+
+  function mergeLyricLineWithNext(lineId: string) {
+    if (!score?.lyrics) return;
+    const lines = [...score.lyrics.lines].sort((left, right) => left.order - right.order);
+    const index = lines.findIndex((line) => line.id === lineId);
+    if (index < 0 || index + 1 >= lines.length) return;
+    const line = lines[index];
+    const next = lines[index + 1];
+    const merged = { ...line, text: `${line.text.trim()} ${next.text.trim()}`.trim(), end: next.end ?? line.end, origin: "user", edited: true };
+    const nextLines = [...lines.slice(0, index), merged, ...lines.slice(index + 2)].map((item, order) => ({ ...item, order }));
+    recordScoreChange({ ...score, lyrics: { ...score.lyrics, revision: score.lyrics.revision + 1, lines: nextLines } });
+  }
+
   async function distributeLyricTiming() {
     if (!score?.lyrics) return;
     const response = await fetch(API_BASE + "/scores/lyrics/distribute-timing", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(score) });
@@ -1417,7 +1452,7 @@ export function App() {
                   <h3>Lyrics</h3>
                   <textarea value={lyricsDraft} onChange={(event) => setLyricsDraft(event.target.value)} placeholder="Paste lyrics you are allowed to use. One line per lyric line." rows={5} />
                   <div className="lyrics-actions"><button type="button" className="ghost-button" disabled={isImportingLyrics || !lyricsDraft.trim()} onClick={() => void saveLyrics()}>{isImportingLyrics ? "Importing..." : "Import lyrics"}</button><label className="ghost-button">Import LRC<input type="file" accept=".lrc,text/plain" onChange={importLrcFile} hidden /></label><button type="button" className="ghost-button" disabled={!score.lyrics?.lines.length} onClick={() => void distributeLyricTiming()}>Distribute timing</button><button type="button" className="ghost-button" onClick={() => setSnapLyricTiming((enabled) => !enabled)}>{snapLyricTiming ? "Snap to beat on" : "Snap to beat off"}</button></div>
-                  {score.lyrics?.lines.length ? <div className="lyrics-lines">{score.lyrics.lines.map((line) => {
+                  {score.lyrics?.lines.length ? <div className="lyrics-lines">{score.lyrics.lines.map((line, lineIndex) => {
                     const hasTiming = line.start !== null && line.start !== undefined && line.end !== null && line.end !== undefined;
                     const draft = lyricTimingDrafts[line.id];
                     const start = draft?.start ?? line.start ?? 0;
@@ -1427,6 +1462,8 @@ export function App() {
                       {editingLyricLineId === line.id ? <input aria-label={`Edit lyric line ${line.order}`} value={editingLyricText} autoFocus onChange={(event) => setEditingLyricText(event.target.value)} onBlur={() => saveLyricText(line.id)} onKeyDown={(event) => { if (event.key === "Enter") event.currentTarget.blur(); if (event.key === "Escape") setEditingLyricLineId(null); }} /> : <button type="button" onClick={() => line.start !== null && line.start !== undefined && seekTo(line.start)}>{line.text}</button>}
                       <span>{start.toFixed(1)}–{end.toFixed(1)}</span>
                       <button type="button" onClick={() => { setEditingLyricLineId(line.id); setEditingLyricText(line.text); }}>Edit text</button>
+                      <button type="button" onClick={() => splitLyricLine(line.id)}>Split line</button>
+                      <button type="button" disabled={lineIndex + 1 >= (score.lyrics?.lines.length ?? 0)} onClick={() => mergeLyricLineWithNext(line.id)}>Merge next</button>
                       <button type="button" onClick={() => setLyricTiming(line.id, "start")}>Set start</button>
                       <button type="button" onClick={() => setLyricTiming(line.id, "end")}>Set end</button>
                       {hasTiming ? <div className="lyric-timing-editor">
