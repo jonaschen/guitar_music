@@ -23,6 +23,9 @@ make serve-stack
 The frontend will listen on `http://localhost:5173`.
 The API will listen on `http://localhost:8000`.
 
+For persistent-data layout, backup/restore, resource controls, update checks,
+and safe network exposure, see [the operations guide](docs/OPERATIONS.md).
+
 ## Notes
 
 - Browser access from `http://localhost:5173` to `http://localhost:8000` is enabled via CORS in the backend API.

@@ -15,11 +15,11 @@
 | 里程碑 | 目標 | 進度 | 狀態 |
 |---|---|---|---|
 | **M0：技術 Spike** | Docker 內 DSP → JSON | 100% | ✅ 完成 |
-| **M1：後端 MVP** | FastAPI、非同步工作、SQLite、OpenAPI | ~94% | ⚠️ 進行中 |
+| **M1：後端 MVP** | FastAPI、非同步工作、SQLite、OpenAPI | ~96% | ⚠️ 進行中 |
 | **M2：Web UI MVP** | 上傳、進度、播放同步、和弦格、匯出 | ~96% | ⚠️ 進行中 |
 | **M3：可編輯樂譜** | 和弦編輯、移調、Capo、和弦指型、revision | ~93% | ⚠️ 進行中 |
 | **M4：簡化主旋律與 Tab** | 旋律顯示、指板映射、alphaTab、匯出 | ~93% | 🔧 進行中 |
-| **M5：品質與部署** | Golden dataset、E2E 測試、可觀測性 | ~78% | 🔧 進行中 |
+| **M5：品質與部署** | Golden dataset、E2E 測試、可觀測性 | ~82% | 🔧 進行中 |
 | **M6：歌詞與按譜演奏** | 歌詞匯入、時間標記、同步播放 | ~82% | 🔧 進行中 |
 
 **目前位置**：M0 完成；M1、M2 已可供本機試用；M3 的核心編輯與指型流程完成；M4 已有量化、Tab、MIDI/MusicXML 與原生旋律預覽；M5、M6 正在收斂。
@@ -426,9 +426,9 @@
 
 1. **Melody 分析在全混音上效果不佳** — 已加入模式化候選線與品質警告；Vocal focus 可於單次 job 勾選 Demucs 人聲分離（伺服器需另行啟用），失敗會安全退回全混音並顯示原因。CPU 隔離一首 5 分半 Live 曲約需數分鐘，適合作為較慢但品質較高的選項。
 2. **Chordino 安裝不穩定** — Docker build 自動降級為 Chromagram，但 Chromagram 只支援 24 組大小調
-3. **RhythmSuggester 為靜態** — 不讀取 `rhythm-patterns/` JSON 檔案，固定回傳 8 分音符型
-4. **完整標準譜 engraving 尚未整合** — 目前提供原生小節化旋律預覽、Tab 與 MusicXML 匯出；alphaTab 需在 Vite 相容性處理後導入。
-5. **指板映射為貪婪演算法** — 不考慮前後音符的手位轉換成本
+3. **RhythmSuggester 仍屬保守啟發式** — 已讀取本機 templates 並可手動覆寫，但尚未納入 onset strength 等音訊特徵
+4. **標準譜 engraving 有限** — alphaTab 已提供標準譜與吉他 Tab 預覽；複雜記譜的視覺校對仍待補強。
+5. **指板映射偏好 UI 未完成** — 映射已考慮連續音符手位成本，但使用者偏好仍不完整
 6. **無 Major/Minor 模式切換** — 追加文件 §4.2 提到「若功能未實作，UI 不提供模式切換」
 
 ---
