@@ -676,6 +676,13 @@ export function App() {
     recordScoreChange(await response.json());
   }
 
+  async function fitLyricTimingToBars() {
+    if (!score?.lyrics) return;
+    const response = await fetch(API_BASE + "/scores/lyrics/fit-timing-to-bars", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(score) });
+    if (!response.ok) throw new Error(await response.text());
+    recordScoreChange(await response.json());
+  }
+
   async function downloadLrc() {
     if (!score?.lyrics) return;
     const response = await fetch(`${API_BASE}/scores/lrc`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(score) });
@@ -1497,7 +1504,7 @@ export function App() {
                 <section className="lyrics-panel">
                   <h3>Lyrics</h3>
                   <textarea value={lyricsDraft} onChange={(event) => setLyricsDraft(event.target.value)} placeholder="Paste lyrics you are allowed to use. One line per lyric line." rows={5} />
-                  <div className="lyrics-actions"><button type="button" className="ghost-button" disabled={isImportingLyrics || !lyricsDraft.trim()} onClick={() => void saveLyrics()}>{isImportingLyrics ? "Importing..." : "Import lyrics"}</button><label className="ghost-button">Import LRC<input type="file" accept=".lrc,text/plain" onChange={importLrcFile} hidden /></label><button type="button" className="ghost-button" disabled={!score.lyrics?.lines.length} onClick={() => void distributeLyricTiming()}>Distribute timing</button><button type="button" className="ghost-button" onClick={() => setSnapLyricTiming((enabled) => !enabled)}>{snapLyricTiming ? "Snap to beat on" : "Snap to beat off"}</button></div>
+                  <div className="lyrics-actions"><button type="button" className="ghost-button" disabled={isImportingLyrics || !lyricsDraft.trim()} onClick={() => void saveLyrics()}>{isImportingLyrics ? "Importing..." : "Import lyrics"}</button><label className="ghost-button">Import LRC<input type="file" accept=".lrc,text/plain" onChange={importLrcFile} hidden /></label><button type="button" className="ghost-button" disabled={!score.lyrics?.lines.length} onClick={() => void distributeLyricTiming()}>Distribute timing</button><button type="button" className="ghost-button" disabled={!score.lyrics?.lines.length || !score.beats.length} onClick={() => void fitLyricTimingToBars()}>Fit timing to bars</button><button type="button" className="ghost-button" onClick={() => setSnapLyricTiming((enabled) => !enabled)}>{snapLyricTiming ? "Snap to beat on" : "Snap to beat off"}</button></div>
                   {score.lyrics?.lines.length ? <div className="lyrics-lines">{score.lyrics.lines.map((line, lineIndex) => {
                     const hasTiming = line.start !== null && line.start !== undefined && line.end !== null && line.end !== undefined;
                     const draft = lyricTimingDrafts[line.id];

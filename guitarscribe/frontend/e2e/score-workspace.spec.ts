@@ -30,6 +30,7 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await page.route("**/rhythm-patterns?*", (route) => route.fulfill({ json: [{ subdivision: 8, pattern_id: "flowing", display: ["D", null, "D", "U"], confidence: 0.8, label: "Flowing strum" }, { subdivision: 8, pattern_id: "steady", display: ["D", null, "D", null], confidence: 0.8, label: "Steady strum" }] }));
   const lyricScore = { ...score, lyrics: { id: "lyrics-1", language: "und", source: "manual", timing_level: "none", raw_text: "One two", revision: 1, lines: [{ id: "line-1", order: 0, start: null, end: null, text: "One two", confidence: 1, origin: "user", edited: true }] } };
   await page.route("**/scores/lyrics/import-text", (route) => route.fulfill({ json: lyricScore }));
+  await page.route("**/scores/lyrics/fit-timing-to-bars", (route) => route.fulfill({ json: { ...lyricScore, lyrics: { ...lyricScore.lyrics, revision: 2, lines: [{ ...lyricScore.lyrics.lines[0], start: 0, end: 8, origin: "alignment" }] } } }));
   await page.route("**/scores/lyrics/distribute-timing", (route) => route.fulfill({ json: { ...lyricScore, lyrics: { ...lyricScore.lyrics, revision: 2, lines: [{ ...lyricScore.lyrics.lines[0], start: 0, end: 8 }] } } }));
   await page.route("**/scores/musicxml", (route) => {
     musicXmlRequests += 1;
@@ -121,6 +122,8 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Snap to beat on" })).toBeVisible();
   await page.getByRole("button", { name: "Import lyrics" }).click();
   await expect(page.getByRole("button", { name: "One two", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Fit timing to bars" }).click();
+  await expect(page.getByText("0.0–8.0")).toBeVisible();
   await page.getByRole("button", { name: "Edit text" }).click();
   await page.getByLabel("Edit lyric line 0").fill("Edited lyric");
   await page.getByLabel("Edit lyric line 0").press("Enter");

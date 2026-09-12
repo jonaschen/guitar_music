@@ -208,6 +208,30 @@ async def test_remap_tab_endpoint_honors_guitar_mapping_preferences():
 
 
 @pytest.mark.asyncio
+async def test_fit_lyric_timing_to_bars_uses_detected_measure_starts():
+    from app.models.analysis import BeatInfo
+    from app.models.lyrics import LyricsTrack, LyricLine
+
+    score = make_score()
+    score.beats = [
+        BeatInfo(time=0.0, beat=1, measure=1),
+        BeatInfo(time=1.0, beat=1, measure=2),
+        BeatInfo(time=2.0, beat=1, measure=3),
+    ]
+    score.song.duration_seconds = 3.0
+    score.lyrics = LyricsTrack(lines=[LyricLine(id="l1", order=1, text="One"), LyricLine(id="l2", order=2, text="Two")])
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://testserver") as client:
+        response = await client.post("/scores/lyrics/fit-timing-to-bars", json=score.model_dump(mode="json"))
+
+    assert response.status_code == 200
+    lines = response.json()["lyrics"]["lines"]
+    assert [(line["start"], line["end"]) for line in lines] == [(0.0, 1.0), (1.0, 3.0)]
+    assert all(line["origin"] == "alignment" for line in lines)
+
+
+@pytest.mark.asyncio
 async def test_analyze_endpoint_requires_rights_confirmation():
     upload = StubUploadFile(filename="test.wav", content=b"RIFFfake")
 

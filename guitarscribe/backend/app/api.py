@@ -543,6 +543,41 @@ async def distribute_lyric_timing(score: SongScore) -> SongScore:
     lines = [line.model_copy(update={"start": index * duration, "end": (index + 1) * duration, "edited": True}) for index, line in enumerate(score.lyrics.lines)]
     return score.model_copy(update={"lyrics": score.lyrics.model_copy(update={"lines": lines, "revision": score.lyrics.revision + 1})})
 
+
+@app.post("/scores/lyrics/fit-timing-to-bars", response_model=SongScore)
+async def fit_lyric_timing_to_bars(score: SongScore) -> SongScore:
+    """Create editable line timing suggestions from detected musical boundaries.
+
+    This is structural assistance, not lyric recognition or forced alignment.
+    It uses measure starts where there are enough of them, then beat starts,
+    and safely falls back to even timing for very short analyses.
+    """
+    if score.lyrics is None or not score.lyrics.lines:
+        raise HTTPException(status_code=400, detail="Score has no lyric lines")
+    line_count = len(score.lyrics.lines)
+    measure_starts = sorted({beat.time for beat in score.beats if beat.beat == 1})
+    beat_starts = sorted({beat.time for beat in score.beats})
+    anchors = measure_starts if len(measure_starts) >= line_count else beat_starts if len(beat_starts) >= line_count else []
+    if not anchors:
+        return await distribute_lyric_timing(score)
+
+    def boundary(index: int) -> float:
+        anchor_index = (index * len(anchors)) // line_count
+        return anchors[anchor_index] if anchor_index < len(anchors) else score.song.duration_seconds
+
+    lines = [
+        line.model_copy(update={
+            "start": boundary(index),
+            "end": boundary(index + 1) if index + 1 < line_count else score.song.duration_seconds,
+            "confidence": min(line.confidence, 0.55),
+            "origin": "alignment",
+            "edited": True,
+        })
+        for index, line in enumerate(score.lyrics.lines)
+    ]
+    lyrics = score.lyrics.model_copy(update={"lines": lines, "revision": score.lyrics.revision + 1})
+    return score.model_copy(update={"lyrics": lyrics})
+
 class LyricTimingRequest(BaseModel):
     score: SongScore
     line_id: str
