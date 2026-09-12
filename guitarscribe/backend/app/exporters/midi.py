@@ -68,7 +68,7 @@ def compile_playback_manifest(score: SongScore) -> PlaybackManifest:
                 stroke = pattern[slot % len(pattern)]
                 if stroke and pitches:
                     ordered_pitches = pitches if stroke != "U" else tuple(reversed(pitches))
-                    offsets, velocities = _strum_profile(stroke, len(ordered_pitches))
+                    offsets, velocities = _strum_profile(stroke, len(ordered_pitches), step_seconds * 0.65)
                     events.append(PlaybackEvent(
                         id=f"guitar:{chord.id}:{slot}", track="guitar",
                         start=event_time, end=min(chord.end, event_time + step_seconds * 0.8),
@@ -118,15 +118,18 @@ def _selected_voicing_pitches(score: SongScore, chord) -> tuple[int, ...]:
     )
 
 
-def _strum_profile(stroke: str, string_count: int) -> tuple[tuple[float, ...], tuple[int, ...]]:
-    """Return a short, deterministic low-to-high or high-to-low strum profile.
+def _strum_profile(stroke: str, string_count: int, max_spread: float) -> tuple[tuple[float, ...], tuple[int, ...]]:
+    """Return a deterministic strum or arpeggio profile that fits its grid slot.
 
     Pitch order is already arranged by the caller for the requested stroke. A
-    12 ms string spread is audible but still comfortably within a sixteenth at
-    typical tempos; lower strings receive a slightly stronger attack.
+    ``A`` denotes a low-to-high arpeggio. Its longer spread remains inside the
+    rhythm slot, including at unusually high tempos; lower strings receive a
+    slightly stronger attack.
     """
-    base_velocity = 98 if stroke == "D" else 86
-    offsets = tuple(round(index * 0.012, 3) for index in range(string_count))
+    base_velocity = 98 if stroke == "D" else 86 if stroke == "U" else 78
+    preferred_interval = 0.012 if stroke in {"D", "U"} else 0.032
+    interval = min(preferred_interval, max_spread / max(string_count - 1, 1))
+    offsets = tuple(round(index * interval, 3) for index in range(string_count))
     velocities = tuple(max(1, base_velocity - index * 2) for index in range(string_count))
     return offsets, velocities
 

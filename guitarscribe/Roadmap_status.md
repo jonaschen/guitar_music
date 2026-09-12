@@ -482,7 +482,7 @@
   - 吉他 synth 已有 pick transient、快速 attack、衰減與低通濾波，較容易辨認為撥弦節奏；高品質 sample-based 吉他音色仍待後續資產與授權決策。
 - [ ] **Voicing-aware chord playback**
   - 已納入 tuning、capo、frets、muted/open strings、actual sounding pitch；down/up strum 現已在 canonical manifest 明確記錄逐弦 12ms spread 與 velocity，Web Audio 與 MIDI 共用此資料。
-  - 尚待 arpeggio templates 與更多使用者可選節奏型；key/capo/voicing 變更後會重新編譯受影響 events。
+  - 已加入可手動選擇的 4/4 arpeggio template；manifest 會以較長、但受 rhythm slot 限制的逐弦 spread 編譯，Web Audio 與 MIDI 共用。更多節奏型仍可擴充；key/capo/voicing 變更後會重新編譯受影響 events。
 - [ ] **Playback API 與 exports**
   - Playback manifest/compile/render endpoints，以及 LRC、ChordPro、MIDI export endpoints。
 

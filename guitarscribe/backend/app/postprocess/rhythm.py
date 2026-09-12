@@ -38,7 +38,7 @@ class RhythmSuggester:
                     or time_signature not in supported
                     or subdivision <= 0
                     or len(display) != expected_steps
-                    or any(stroke not in {"D", "U", None} for stroke in display)
+                    or any(stroke not in {"D", "U", "A", None} for stroke in display)
                 ):
                     continue
                 patterns.append({

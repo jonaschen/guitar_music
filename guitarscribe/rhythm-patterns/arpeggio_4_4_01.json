@@ -1,0 +1,9 @@
+{
+  "id": "arpeggio_4_4_01",
+  "name": "Gentle 4/4 Arpeggio",
+  "time_signature": "4/4",
+  "subdivision": 8,
+  "events": ["A", null, null, null, "A", null, null, null],
+  "accents": [0.8, 0.0, 0.0, 0.0, 0.65, 0.0, 0.0, 0.0],
+  "description": "Two low-to-high broken-chord sweeps per bar"
+}

@@ -69,6 +69,25 @@ def test_midi_export_includes_selected_guitar_voicing_when_melody_is_empty():
     assert bytes([0x81, 48, 0]) in output
 
 
+def test_playback_manifest_compiles_arpeggio_template_with_longer_spread():
+    score = SongScore(
+        song=SongInfo(duration_seconds=2),
+        analysis=AnalysisSummary(bpm=120),
+        chords=[ChordEvent(
+            id="c1", start=0.0, end=1.0, symbol="C", voicing_id="open-c",
+            available_voicings=[ChordVoicing(id="open-c", symbol="C", shape_symbol="C", frets=[None, 3, 2, 0, 1, 0])],
+        )],
+        rhythm=RhythmSuggestion(subdivision=8, display=["A"]),
+    )
+
+    event = next(event for event in compile_playback_manifest(score).events if event.track == "guitar")
+
+    assert event.stroke == "A"
+    assert event.pitch_offsets == (0.0, 0.032, 0.064, 0.096, 0.128)
+    assert event.pitch_velocities == (78, 76, 74, 72, 70)
+    assert event.start + event.pitch_offsets[-1] < event.end
+
+
 def test_playback_manifest_revision_changes_with_capo():
     score = SongScore(analysis=AnalysisSummary(capo=0))
 
