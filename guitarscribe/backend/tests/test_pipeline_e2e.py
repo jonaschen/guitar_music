@@ -34,11 +34,14 @@ async def test_pipeline_rejects_audio_over_duration_limit(tmp_path):
 
     class Source:
         async def fetch(self, request): return AudioAsset(path=tmp_path / "input.wav", source_type=SourceType.LOCAL)
+    workspace = tmp_path / "guitarscribe_duration_limit"
+    workspace.mkdir()
     class Preprocessor:
-        async def normalize(self, asset): return NormalizedAudio(path=tmp_path / "normalized.wav", duration_seconds=2.0)
+        async def normalize(self, asset): return NormalizedAudio(path=workspace / "normalized.wav", duration_seconds=2.0, temporary_directory=workspace)
     pipeline = AnalysisPipeline(Preprocessor(), None, None, None, None, None, None, None, Source(), max_duration_seconds=1)
     with pytest.raises(ValueError, match="duration exceeds"):
         await pipeline.run(SourceRequest(source_type=SourceType.LOCAL, path=tmp_path / "input.wav"), {})
+    assert not workspace.exists()
 
 
 @pytest.mark.asyncio
@@ -48,7 +51,9 @@ async def test_pipeline_falls_back_to_full_mix_when_vocal_separation_fails(tmp_p
     from app.models.audio import AudioAsset, NormalizedAudio
     from app.postprocess.melody import MelodyPostProcessor
 
-    normalized = NormalizedAudio(path=tmp_path / "normalized.wav", duration_seconds=8.0)
+    workspace = tmp_path / "guitarscribe_successful_pipeline"
+    workspace.mkdir()
+    normalized = NormalizedAudio(path=workspace / "normalized.wav", duration_seconds=8.0, temporary_directory=workspace)
 
     class Source:
         async def fetch(self, request):
@@ -103,6 +108,7 @@ async def test_pipeline_falls_back_to_full_mix_when_vocal_separation_fails(tmp_p
     assert score.analysis.confidence > 0
     assert any("Vocal separation failed" in warning for warning in score.analysis.warnings)
     assert any("without source separation" in warning for warning in score.analysis.warnings)
+    assert not workspace.exists()
 
 
 @pytest.mark.asyncio

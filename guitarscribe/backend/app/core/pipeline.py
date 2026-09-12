@@ -1,4 +1,6 @@
 import logging
+import shutil
+from pathlib import Path
 from typing import Awaitable, Callable, Dict, Any
 from ..models.audio import SourceRequest
 from ..models.score import SongScore, SongInfo, AnalysisSummary, Provenance, KeyContext, KeySignature
@@ -39,6 +41,29 @@ class AnalysisPipeline:
         options: Dict[str, Any],
         progress_callback: Callable[[str], Awaitable[None]] | None = None,
     ) -> SongScore:
+        temporary_directories: set[Path] = set()
+        try:
+            return await self._run(source_request, options, progress_callback, temporary_directories)
+        finally:
+            for directory in temporary_directories:
+                # Only remove workspaces created by GuitarScribe adapters;
+                # never remove a caller-provided local audio directory.
+                if not directory.name.startswith("guitarscribe_"):
+                    continue
+                try:
+                    shutil.rmtree(directory)
+                except FileNotFoundError:
+                    pass
+                except OSError as exc:
+                    logger.warning("Could not remove temporary audio workspace %s: %s", directory, exc)
+
+    async def _run(
+        self,
+        source_request: SourceRequest,
+        options: Dict[str, Any],
+        progress_callback: Callable[[str], Awaitable[None]] | None,
+        temporary_directories: set[Path],
+    ) -> SongScore:
         logger.info("Starting analysis pipeline")
 
         async def report(stage: str) -> None:
@@ -50,6 +75,8 @@ class AnalysisPipeline:
         asset = await self.source.fetch(source_request)
         await report("preprocessing")
         normalized = await self.preprocessor.normalize(asset)
+        if normalized.temporary_directory:
+            temporary_directories.add(normalized.temporary_directory)
         if normalized.duration_seconds > self.max_duration_seconds:
             raise ValueError(f"Audio duration exceeds the configured limit of {self.max_duration_seconds} seconds")
         
@@ -71,6 +98,8 @@ class AnalysisPipeline:
                 try:
                     await report("vocal_separation")
                     melody_audio, source_separated = await self.melody_separator.separate(normalized, melody_mode)
+                    if melody_audio.temporary_directory:
+                        temporary_directories.add(melody_audio.temporary_directory)
                     if source_separated:
                         separation_warnings.append("Vocal isolation was applied before melody extraction.")
                 except Exception as separation_error:

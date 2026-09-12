@@ -26,3 +26,6 @@ class NormalizedAudio(BaseModel):
     channels: int = 1
     duration_seconds: float
     bit_depth: int = 16
+    # When supplied, this directory was created solely for this analysis and
+    # can be removed after every consumer has finished reading the audio.
+    temporary_directory: Optional[Path] = None

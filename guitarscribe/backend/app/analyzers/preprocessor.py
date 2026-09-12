@@ -17,16 +17,14 @@ class FFmpegPreprocessor:
     async def normalize(self, asset: AudioAsset) -> NormalizedAudio:
         work_dir = Path(tempfile.mkdtemp(prefix="guitarscribe_"))
         output_path = work_dir / "normalized.wav"
-        ffmpeg_executable = self._resolve_ffmpeg()
-        
-        cmd = [
-            ffmpeg_executable, "-y", "-i", str(asset.path),
-            "-ar", "44100", "-ac", "1",
-            "-sample_fmt", "s16", "-f", "wav",
-            str(output_path)
-        ]
-        
         try:
+            ffmpeg_executable = self._resolve_ffmpeg()
+            cmd = [
+                ffmpeg_executable, "-y", "-i", str(asset.path),
+                "-ar", "44100", "-ac", "1",
+                "-sample_fmt", "s16", "-f", "wav",
+                str(output_path)
+            ]
             logger.info(f"Running ffmpeg on {asset.path}")
             result = subprocess.run(cmd, capture_output=True, timeout=self.timeout)
             if result.returncode != 0:
@@ -41,11 +39,14 @@ class FFmpegPreprocessor:
                 sample_rate=44100,
                 channels=1,
                 duration_seconds=info.duration,
-                bit_depth=16
+                bit_depth=16,
+                temporary_directory=work_dir,
             )
         except subprocess.TimeoutExpired:
+            shutil.rmtree(work_dir, ignore_errors=True)
             raise RuntimeError(f"FFmpeg timed out after {self.timeout}s")
         except Exception as e:
+            shutil.rmtree(work_dir, ignore_errors=True)
             raise RuntimeError(f"Normalization failed: {e}")
 
     def _resolve_ffmpeg(self) -> str:
@@ -90,16 +91,20 @@ class DemucsMelodySeparator:
         try:
             result = subprocess.run(cmd, capture_output=True, timeout=self.timeout)
         except subprocess.TimeoutExpired as exc:
+            shutil.rmtree(output_dir, ignore_errors=True)
             raise RuntimeError(f"Demucs timed out after {self.timeout}s") from exc
         if result.returncode != 0:
             stderr = result.stderr.decode(errors="replace").strip()
+            shutil.rmtree(output_dir, ignore_errors=True)
             raise RuntimeError(f"Demucs failed: {stderr[-500:]}")
 
         stems = list(output_dir.rglob("vocals.wav"))
         if len(stems) != 1:
+            shutil.rmtree(output_dir, ignore_errors=True)
             raise RuntimeError("Demucs did not produce exactly one vocals.wav stem")
         info = sf.info(str(stems[0]))
         return NormalizedAudio(
             path=stems[0], sample_rate=info.samplerate, channels=info.channels,
             duration_seconds=info.duration, bit_depth=audio.bit_depth,
+            temporary_directory=output_dir,
         ), True
