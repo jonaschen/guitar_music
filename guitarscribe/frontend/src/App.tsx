@@ -1,6 +1,7 @@
 import { ChangeEvent, FormEvent, lazy, Suspense, useEffect, useRef, useState } from "react";
 import type { AccidentalPreference, AnalysisJob, PlaybackManifest, PlaybackTrack, SongScore } from "./types";
 import { ChordDiagram } from "./ChordDiagram";
+import { createAudioContextTransportClock, createMediaTransportClock } from "./transportClock";
 
 const AlphaTabScore = lazy(() => import("./AlphaTabScore"));
 
@@ -395,7 +396,7 @@ export function App() {
     if (!isPlaying) return;
     const syncMediaPlayhead = () => {
       const audio = audioRef.current;
-      if (audio && !audio.paused) setPlaybackTime(audio.currentTime);
+      if (audio && !audio.paused) setPlaybackTime(createMediaTransportClock(audio).now());
       mediaAnimationRef.current = window.requestAnimationFrame(syncMediaPlayhead);
     };
     mediaAnimationRef.current = window.requestAnimationFrame(syncMediaPlayhead);
@@ -913,7 +914,7 @@ export function App() {
         const updatePlayhead = () => {
           const clock = synthClockRef.current;
           if (!clock) return;
-          const nextTime = clock.scoreStart + (context.currentTime - clock.contextStart) * playbackRate;
+          const nextTime = createAudioContextTransportClock(context, clock, playbackRate).now();
           if (nextTime >= segmentEnd) {
             if (requestedLoop) {
               scheduleSegment(requestedLoop[0], context.currentTime + 0.015);
@@ -986,7 +987,7 @@ export function App() {
     if (isSynthPlaying) stopSynth(false);
     setPlaybackTime(time);
     if (audioRef.current) {
-      audioRef.current.currentTime = time;
+      createMediaTransportClock(audioRef.current).seek?.(time);
     }
   }
 

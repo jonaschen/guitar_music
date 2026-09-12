@@ -468,6 +468,7 @@
   - 原曲模式以 media player 為 master；合成模式以 Web Audio transport 為 master。
   - React render 與 `setInterval` 不得作為音樂時鐘；UI 用 animation frame 讀取 playhead。
   - 原曲模式已補上 animation-frame 讀取 HTMLMediaElement 的 currentTime，讓 chord／measure／melody／lyric highlighter 不再受低頻 `timeupdate` 限制。
+  - 已抽出 `transportClock.ts`：media 與 AudioContext clock 都以單一 `now()` 介面提供 score 時間；RAF 僅取樣並渲染，不能推進播放時間。
 - [x] **本機音訊播放器與 score sync**
   - 已提供 Play/Pause/Stop/Seek、前後小節、chord/melody/lyric 高亮；media offset 校正仍待完成。
   - 點擊和弦、小節或歌詞可跳轉；保存 `media_offset_seconds` 並提供 ±0.1s 校正。
