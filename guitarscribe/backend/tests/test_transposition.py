@@ -1,6 +1,7 @@
 import pytest
 
-from app.models.analysis import AccidentalPreference, ChordEvent, ChordVoicing, MelodyNote
+from app.models.analysis import AccidentalPreference, ChordEvent, ChordVoicing, MelodyAnalysis, MelodyNote
+from app.fretboard.mapper import SimpleFretboardMapper
 from app.models.score import AnalysisSummary, KeyContext, KeySignature, SongInfo, SongScore
 from app.services.transposition import SHARP_NOTES, TranspositionService
 
@@ -77,6 +78,18 @@ def test_transpose_remaps_tab_for_the_new_pitch_and_capo():
     assert transposed_with_capo.melody[0].fret == 3
     # The original analysis result remains untouched.
     assert score.melody[0].fret == 3
+
+
+def test_fretboard_mapper_respects_max_fret_limit():
+    melody = SimpleFretboardMapper().map_notes(
+        MelodyAnalysis(notes=[MelodyNote(id="n1", start=0.0, end=0.5, midi=67, note="G4")]),
+        max_fret=2,
+        preference="low_position",
+    )
+
+    # G4 needs at least fret 3 on a standard-tuned guitar.
+    assert melody.notes[0].string is None
+    assert melody.notes[0].fret is None
 
 
 def test_transpose_rebuilds_a_playable_voicing_for_the_new_shape():

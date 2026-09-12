@@ -103,6 +103,8 @@ class TranspositionService:
         remapped_melody = self.fretboard_mapper.map_notes(
             MelodyAnalysis(notes=result.melody),
             capo=capo_value,
+            max_fret=result.guitar.max_fret,
+            preference=result.guitar.tab_preference,
         )
         result.melody = remapped_melody.notes
 

@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from .core.config import Settings
 from .core.pipeline import AnalysisPipeline, create_pipeline
 from .models.audio import SourceRequest, SourceType
-from .models.analysis import AccidentalPreference, RhythmSuggestion
+from .models.analysis import AccidentalPreference, MelodyAnalysis, RhythmSuggestion
 from .models.jobs import AnalysisJob, JobStatus
 from .models.analysis import ChordVoicing
 from .services.voicings import ChordVoicingProvider
@@ -29,6 +29,7 @@ from .services.transposition import TranspositionService
 from .sources.youtube import YouTubeAudioDownloader, validate_youtube_url
 from .services.rate_limit import SubmissionRateLimiter
 from .postprocess.rhythm import RhythmSuggester
+from .fretboard.mapper import SimpleFretboardMapper
 
 
 class TransposeScoreRequest(BaseModel):
@@ -169,6 +170,18 @@ async def transpose_score(request: TransposeScoreRequest) -> SongScore:
         accidental_preference=request.accidental_preference,
         capo=request.capo,
     )
+
+
+@app.post("/scores/remap-tab", response_model=SongScore, tags=["Scores"], summary="Remap melody Tab using saved guitar preferences")
+async def remap_tab(score: SongScore) -> SongScore:
+    result = score.model_copy(deep=True)
+    result.melody = SimpleFretboardMapper().map_notes(
+        MelodyAnalysis(notes=result.melody),
+        capo=result.analysis.capo,
+        max_fret=result.guitar.max_fret,
+        preference=result.guitar.tab_preference,
+    ).notes
+    return result
 
 
 @app.get("/rhythm-patterns", response_model=list[RhythmSuggestion], tags=["Scores"], summary="List local playable rhythm templates")

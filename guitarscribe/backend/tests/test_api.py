@@ -13,6 +13,7 @@ from app.api import (
     load_revision,
     save_revision,
 )
+from app.models.analysis import MelodyNote
 from app.models.score import AnalysisSummary, KeyContext, KeySignature, SongInfo, SongScore
 from app.services.revisions import RevisionStore
 from app.sources.youtube import validate_youtube_url
@@ -184,6 +185,24 @@ async def test_transpose_endpoint():
     assert body["chords"][0]["symbol"] == "E/G#"
     assert body["chords"][0]["shape_symbol"] == "D/F#"
     assert body["melody"][0]["midi"] == 69
+
+
+@pytest.mark.asyncio
+async def test_remap_tab_endpoint_honors_guitar_mapping_preferences():
+    score = make_score()
+    score.melody = [MelodyNote(id="n1", start=0.0, end=0.5, midi=67, note="G4")]
+    score.guitar.max_fret = 2
+    score.guitar.tab_preference = "low_position"
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://testserver") as client:
+        response = await client.post("/scores/remap-tab", json=score.model_dump(mode="json"))
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["guitar"]["tab_preference"] == "low_position"
+    assert body["melody"][0]["string"] is None
+    assert body["melody"][0]["fret"] is None
 
 
 @pytest.mark.asyncio

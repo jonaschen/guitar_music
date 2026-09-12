@@ -742,6 +742,22 @@ export function App() {
     recordScoreChange({ ...score, guitar: { ...score.guitar, [key]: value } });
   }
 
+  async function updateTabMapping(key: "max_fret" | "tab_preference", value: number | string) {
+    if (!score) return;
+    const nextScore = { ...score, guitar: { ...score.guitar, [key]: value } } as SongScore;
+    try {
+      const response = await fetch(`${API_BASE}/scores/remap-tab`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(nextScore),
+      });
+      if (!response.ok) throw new Error(await response.text());
+      recordScoreChange(await response.json() as SongScore);
+    } catch (requestError) {
+      setError(requestError instanceof Error ? `Could not remap Tab: ${requestError.message}` : "Could not remap Tab.");
+    }
+  }
+
   function updateChords(transform: (chords: ScoreChord[]) => ScoreChord[]) {
     if (!score) return;
     recordScoreChange({ ...score, chords: transform(score.chords) });
@@ -1387,7 +1403,8 @@ export function App() {
                 <section className="guitar-settings">
                   <h3>Guitar settings</h3>
                   <label className="field compact-field"><span>Max capo</span><select value={score.guitar.max_capo} onChange={(event) => updateGuitarSetting("max_capo", Number(event.target.value))}>{Array.from({ length: 13 }, (_, value) => <option key={value} value={value}>{value}</option>)}</select></label>
-                  <label className="field compact-field"><span>Max fret</span><select value={score.guitar.max_fret} onChange={(event) => updateGuitarSetting("max_fret", Number(event.target.value))}>{[5, 7, 9, 12, 15, 17, 19, 21, 24].map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
+                  <label className="field compact-field"><span>Max fret</span><select value={score.guitar.max_fret} onChange={(event) => void updateTabMapping("max_fret", Number(event.target.value))}>{[5, 7, 9, 12, 15, 17, 19, 21, 24].map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
+                  <label className="field compact-field"><span>Tab mapping</span><select value={score.guitar.tab_preference} onChange={(event) => void updateTabMapping("tab_preference", event.target.value)}><option value="balanced">Balanced</option><option value="low_position">Low position</option><option value="single_string">Stay on one string</option></select></label>
                   <label className="field compact-field"><span>Handedness</span><select value={score.guitar.handedness} onChange={(event) => updateGuitarSetting("handedness", event.target.value)}><option value="right">Right-handed</option><option value="left">Left-handed</option></select></label>
                   <label className="field compact-field"><span>Difficulty</span><select value={score.guitar.difficulty} onChange={(event) => updateGuitarSetting("difficulty", event.target.value)}><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option></select></label>
                 </section>

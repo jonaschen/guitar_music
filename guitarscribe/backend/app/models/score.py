@@ -39,6 +39,7 @@ class GuitarSettings(BaseModel):
     max_fret: int = Field(default=15, ge=1, le=24)
     handedness: str = "right"
     difficulty: str = "beginner"
+    tab_preference: str = "balanced"
 
 class Provenance(BaseModel):
     beat_engine: str = ""
