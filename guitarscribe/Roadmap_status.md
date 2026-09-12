@@ -312,6 +312,7 @@
   - 旋律與選定 chord voicing 的 accompaniment 分別輸出至 lead（channel 0）與 nylon guitar（channel 1）；即使沒有可信主旋律仍會保留可彈的和弦節奏。
 - [x] **旋律 confidence 與品質提示**（主文件 §7.5）
   - 依音符密度、平均信心與來源是否已分離提供可靠性與可讀警告；原始候選音高 debug 輸出仍待補。
+  - 可在不重跑 DSP 的情況下套用較嚴格的 confidence／時長／單音輪廓清理，並可用 Undo 回復完整偵測結果。
 
 ---
 

@@ -232,6 +232,25 @@ async def test_fit_lyric_timing_to_bars_uses_detected_measure_starts():
 
 
 @pytest.mark.asyncio
+async def test_simplify_melody_endpoint_filters_short_low_confidence_notes():
+    score = make_score()
+    score.melody = [
+        MelodyNote(id="keep", start=0.0, end=0.5, midi=67, note="G4", confidence=0.9),
+        MelodyNote(id="drop", start=0.5, end=0.58, midi=70, note="A#4", confidence=0.3),
+    ]
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://testserver") as client:
+        response = await client.post("/scores/melody/simplify", json={"score": score.model_dump(mode="json"), "mode": "vocal"})
+
+    assert response.status_code == 200
+    body = response.json()
+    assert [note["id"] for note in body["melody"]] == ["keep"]
+    assert body["melody"][0]["string"] == 1
+    assert any("simplified" in warning.lower() for warning in body["analysis"]["warnings"])
+
+
+@pytest.mark.asyncio
 async def test_analyze_endpoint_requires_rights_confirmation():
     upload = StubUploadFile(filename="test.wav", content=b"RIFFfake")
 

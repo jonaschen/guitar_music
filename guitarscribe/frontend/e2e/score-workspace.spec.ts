@@ -26,6 +26,7 @@ test("renders an analyzed score workspace", async ({ page }) => {
     const requested = route.request().postDataJSON() as typeof score;
     return route.fulfill({ json: requested });
   });
+  await page.route("**/scores/melody/simplify", (route) => route.fulfill({ json: score }));
   await page.route("**/chord-voicings?*", (route) => route.fulfill({ json: [{ id: "closed-e-major-c", symbol: "C", shape_symbol: "C", frets: [8, 10, 10, 9, 8, 8], fingers: [1, 3, 4, 2, 1, 1], base_fret: 8, capo: 0, difficulty: 3.5, tags: ["closed", "barre", "e-shape"] }] }));
   await page.route("**/rhythm-patterns?*", (route) => route.fulfill({ json: [{ subdivision: 8, pattern_id: "flowing", display: ["D", null, "D", "U"], confidence: 0.8, label: "Flowing strum" }, { subdivision: 8, pattern_id: "steady", display: ["D", null, "D", null], confidence: 0.8, label: "Steady strum" }] }));
   const lyricScore = { ...score, lyrics: { id: "lyrics-1", language: "und", source: "manual", timing_level: "none", raw_text: "One two", revision: 1, lines: [{ id: "line-1", order: 0, start: null, end: null, text: "One two", confidence: 1, origin: "user", edited: true }] } };
@@ -52,6 +53,7 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await page.getByLabel("Rhythm pattern").selectOption("steady");
   await expect(page.getByText("Steady strum · 8th-note grid")).toBeVisible();
   await expect(page.getByText("Estimated score preview")).toBeVisible();
+  await page.getByRole("button", { name: "Simplify melody" }).click();
   await expect(page.getByRole("button", { name: "C4 in bar 1" })).toBeVisible();
   await expect(page.getByText("Playable Tab")).toBeVisible();
   await expect.poll(() => musicXmlRequests).toBeGreaterThan(0);

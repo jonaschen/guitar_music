@@ -683,6 +683,21 @@ export function App() {
     recordScoreChange(await response.json());
   }
 
+  async function simplifyMelody() {
+    if (!score || score.melody.length === 0) return;
+    try {
+      const response = await fetch(`${API_BASE}/scores/melody/simplify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ score, mode: melodyMode, min_confidence: 0.55, min_duration: 0.16 }),
+      });
+      if (!response.ok) throw new Error(await response.text());
+      recordScoreChange(await response.json() as SongScore);
+    } catch (simplifyError) {
+      setError(simplifyError instanceof Error ? `Could not simplify melody: ${simplifyError.message}` : "Could not simplify melody.");
+    }
+  }
+
   async function downloadLrc() {
     if (!score?.lyrics) return;
     const response = await fetch(`${API_BASE}/scores/lrc`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(score) });
@@ -1571,7 +1586,7 @@ export function App() {
 
                 {score.melody.length > 0 ? <>
                 <section className="melody-panel">
-                  <div><h3>Estimated melody timeline</h3><p>Click a note to seek. Check Analysis notes above for transcription limitations.</p></div>
+                  <div><h3>Estimated melody timeline</h3><p>Click a note to seek. Check Analysis notes above for transcription limitations.</p></div><button type="button" className="ghost-button melody-simplify" onClick={() => void simplifyMelody()}>Simplify melody</button>
                   <div className="melody-timeline" aria-label="Detected melody notes">{score.melody.map((note) => { const showLabel = melodyTimelineLabelIds.has(note.id); return <button key={note.id} type="button" aria-label={`${note.note} at ${note.start.toFixed(2)} seconds`} className={`melody-note ${showLabel ? "melody-note-label" : "melody-note-dot"}${activeMelodyNoteId === note.id ? " melody-note-active" : ""}`} title={note.note + " · " + note.start.toFixed(2) + "s"} onClick={() => seekTo(note.start)} style={{ left: String((note.start / Math.max(score.song.duration_seconds, 1)) * 100) + "%", bottom: String(Math.max(0, Math.min(85, (note.midi - 40) * 1.8))) + "%" }}>{showLabel ? note.note : "•"}</button>; })}</div>
                 </section>
 

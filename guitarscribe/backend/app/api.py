@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from .core.config import Settings
 from .core.pipeline import AnalysisPipeline, create_pipeline
 from .models.audio import SourceRequest, SourceType
-from .models.analysis import AccidentalPreference, MelodyAnalysis, RhythmSuggestion
+from .models.analysis import AccidentalPreference, MelodyAnalysis, MelodyMode, RhythmSuggestion
 from .models.jobs import AnalysisJob, JobStatus
 from .models.analysis import ChordVoicing
 from .services.voicings import ChordVoicingProvider
@@ -30,6 +30,7 @@ from .sources.youtube import YouTubeAudioDownloader, validate_youtube_url
 from .services.rate_limit import SubmissionRateLimiter
 from .postprocess.rhythm import RhythmSuggester
 from .fretboard.mapper import SimpleFretboardMapper
+from .postprocess.melody import MelodyPostProcessor
 
 
 class TransposeScoreRequest(BaseModel):
@@ -182,6 +183,41 @@ async def remap_tab(score: SongScore) -> SongScore:
         max_fret=result.guitar.max_fret,
         preference=result.guitar.tab_preference,
     ).notes
+    return result
+
+
+class SimplifyMelodyRequest(BaseModel):
+    score: SongScore
+    mode: MelodyMode = MelodyMode.VOCAL
+    min_confidence: float = Field(default=0.55, ge=0, le=1)
+    min_duration: float = Field(default=0.16, ge=0.04, le=2)
+
+
+@app.post("/scores/melody/simplify", response_model=SongScore, tags=["Scores"], summary="Create a cleaner editable melody draft without DSP")
+async def simplify_melody(request: SimplifyMelodyRequest) -> SongScore:
+    """Apply stricter note cleanup to an existing analysis result.
+
+    This is intentionally a reversible score edit, not a second transcription.
+    It removes low-confidence/very short candidates, restores a monophonic
+    contour, and rebuilds the displayed Tab positions.
+    """
+    result = request.score.model_copy(deep=True)
+    processor = MelodyPostProcessor()
+    notes = processor.remove_low_confidence(result.melody, request.min_confidence)
+    notes = processor.remove_short_notes(notes, request.min_duration)
+    notes = processor.quantize_to_beats(notes, result.beats)
+    notes = processor.select_monophonic_line(notes, request.mode)
+    notes = processor.remove_register_outliers(notes)
+    notes = processor.merge_repeated(notes)
+    result.melody = SimpleFretboardMapper().map_notes(
+        MelodyAnalysis(notes=notes),
+        capo=result.analysis.capo,
+        max_fret=result.guitar.max_fret,
+        preference=result.guitar.tab_preference,
+    ).notes
+    warning = "Melody was simplified from the existing estimate; compare it with the source audio and use Undo to restore all candidates."
+    if warning not in result.analysis.warnings:
+        result.analysis.warnings.append(warning)
     return result
 
 

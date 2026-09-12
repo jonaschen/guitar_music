@@ -741,6 +741,7 @@ h2 {
 .melody-empty p { color: var(--text-muted); font-size: 0.85rem; }
 .melody-panel h3, .melody-panel p { margin: 0; }
 .melody-panel p { color: var(--text-muted); font-size: 0.85rem; }
+.melody-simplify { justify-self: start; padding: 0.45rem 0.75rem; font-size: 0.8rem; }
 .melody-timeline { position: relative; height: 9rem; overflow: hidden; border-radius: 14px; background: repeating-linear-gradient(to bottom, rgba(255,255,255,0.06) 0 1px, transparent 1px 1.5rem); }
 .melody-note { position: absolute; z-index: 1; transform: translateX(-50%); border: 0; color: #172016; background: #ffcb7d; font-weight: 700; cursor: pointer; }
 .melody-note-label { min-width: 1.65rem; height: 1.35rem; padding: 0 0.25rem; overflow: hidden; border-radius: 0.35rem; font-size: 0.72rem; }
