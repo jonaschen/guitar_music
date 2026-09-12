@@ -124,6 +124,7 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await expect(page.getByRole("button", { name: "One two", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Fit timing to bars" }).click();
   await expect(page.getByText("0.0–8.0")).toBeVisible();
+  await expect(page.getByText("Suggested · 100%")).toBeVisible();
   await page.getByRole("button", { name: "Edit text" }).click();
   await page.getByLabel("Edit lyric line 0").fill("Edited lyric");
   await page.getByLabel("Edit lyric line 0").press("Enter");

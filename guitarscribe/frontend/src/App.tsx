@@ -1514,6 +1514,7 @@ export function App() {
                     return <div key={line.id} className={active ? "lyric-line lyric-line-active" : "lyric-line"}>
                       {editingLyricLineId === line.id ? <input aria-label={`Edit lyric line ${line.order}`} value={editingLyricText} autoFocus onChange={(event) => setEditingLyricText(event.target.value)} onBlur={() => saveLyricText(line.id)} onKeyDown={(event) => { if (event.key === "Enter") event.currentTarget.blur(); if (event.key === "Escape") setEditingLyricLineId(null); }} /> : <button type="button" onClick={() => line.start !== null && line.start !== undefined && seekTo(line.start)}>{line.text}</button>}
                       <span>{start.toFixed(1)}–{end.toFixed(1)}</span>
+                      {line.origin === "alignment" ? <span className="lyric-suggestion" title="Structural timing suggestion; review and edit this line.">Suggested · {Math.round(line.confidence * 100)}%</span> : null}
                       <button type="button" onClick={() => { setEditingLyricLineId(line.id); setEditingLyricText(line.text); }}>Edit text</button>
                       <button type="button" onClick={() => splitLyricLine(line.id)}>Split line</button>
                       <button type="button" disabled={lineIndex + 1 >= (score.lyrics?.lines.length ?? 0)} onClick={() => mergeLyricLineWithNext(line.id)}>Merge next</button>

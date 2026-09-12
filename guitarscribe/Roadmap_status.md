@@ -495,7 +495,7 @@
 
 ### 後續實驗與明確排除
 
-- [ ] **歌詞自動對時**：已提供依小節／拍點的結構輔助 fallback（每行標記 0.55 confidence），不宣稱為語音辨識或 forced alignment；仍待評估 vocal/ASR timing。
+- [ ] **歌詞自動對時**：已提供依小節／拍點的結構輔助 fallback；UI 會顯示 Suggested 與各行 confidence，不宣稱為語音辨識或 forced alignment；仍待評估 vocal/ASR timing。
 - [ ] **歌詞辨識初稿**：feature flag `FEATURE_LYRICS_TRANSCRIPTION=false`；保留 raw result、不可視為確定歌詞。
 - [ ] **逐字 karaoke timing**：不阻塞逐行 MVP。
 - [ ] **麥克風追譜與演奏評分**：獨立專案階段，不納入目前 MVP。

@@ -685,6 +685,7 @@ h2 {
 .lyric-line > :first-child { flex: 1 1 12rem; min-width: 0; text-align: left; }
 .lyric-line input { border: 1px solid var(--accent-2); border-radius: 0.35rem; padding: 0.3rem 0.4rem; background: rgba(0, 0, 0, 0.18); color: var(--text); }
 .lyric-line-active { border-color: #7dd3fc; color: var(--text); background: rgba(125, 211, 252, 0.12); }
+.lyric-suggestion { padding: 0.18rem 0.42rem; border: 1px solid rgba(241, 143, 59, 0.42); border-radius: 999px; color: #ffd6ad; background: rgba(241, 143, 59, 0.1); font-size: 0.7rem; font-weight: 700; white-space: nowrap; }
 .lyric-timing-editor { display: grid; grid-template-columns: repeat(2, minmax(8rem, 1fr)); gap: 0.45rem; width: 100%; padding: 0.35rem 0.1rem 0; }
 .lyric-timing-editor label { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.35rem; align-items: center; font-size: 0.78rem; }
 .lyric-timing-editor input[type="range"] { width: 100%; padding: 0; accent-color: var(--accent); cursor: ew-resize; }
