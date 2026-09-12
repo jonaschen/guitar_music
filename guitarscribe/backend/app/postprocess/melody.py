@@ -76,6 +76,28 @@ class MelodyPostProcessor:
         upper = pitches[int((len(pitches) - 1) * 0.90)] + margin_semitones
         return [note for note in notes if lower <= note.midi <= upper]
 
+    def remove_isolated_pitch_leaps(self, notes: List[MelodyNote], max_leap: int = 9) -> List[MelodyNote]:
+        """Remove brief one-note register spikes that immediately return.
+
+        This is deliberately conservative: real melodic leaps remain unless a
+        short middle note is far from *both* neighbours and those neighbours
+        are themselves close in pitch. It is used only by the user-triggered
+        simplification pass, where Undo remains available.
+        """
+        if len(notes) < 3:
+            return notes
+        kept = [notes[0]]
+        for index in range(1, len(notes) - 1):
+            previous, current, following = notes[index - 1], notes[index], notes[index + 1]
+            is_brief = current.end - current.start <= 0.5
+            returns_to_register = abs(previous.midi - following.midi) <= max_leap
+            is_spike = abs(current.midi - previous.midi) > max_leap and abs(current.midi - following.midi) > max_leap
+            if is_brief and returns_to_register and is_spike:
+                continue
+            kept.append(current)
+        kept.append(notes[-1])
+        return kept
+
     def keep_cross_checked_notes(
         self, primary: List[MelodyNote], reference: List[MelodyNote], pitch_tolerance: int = 2
     ) -> List[MelodyNote]:

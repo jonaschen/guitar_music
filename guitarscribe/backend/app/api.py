@@ -207,6 +207,7 @@ async def simplify_melody(request: SimplifyMelodyRequest) -> SongScore:
     notes = processor.remove_short_notes(notes, request.min_duration)
     notes = processor.quantize_to_beats(notes, result.beats)
     notes = processor.select_monophonic_line(notes, request.mode)
+    notes = processor.remove_isolated_pitch_leaps(notes)
     notes = processor.remove_register_outliers(notes)
     notes = processor.merge_repeated(notes)
     result.melody = SimpleFretboardMapper().map_notes(

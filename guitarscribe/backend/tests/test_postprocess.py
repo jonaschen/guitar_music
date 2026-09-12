@@ -85,6 +85,28 @@ def test_melody_skips_out_of_range_and_implausible_jumps():
     assert [note.id for note in selected] == ["base"]
 
 
+def test_melody_simplification_removes_brief_isolated_register_spike():
+    pp = MelodyPostProcessor()
+    notes = [
+        MelodyNote(id="left", start=0.0, end=0.4, midi=60, note="C4", confidence=0.9),
+        MelodyNote(id="spike", start=0.5, end=0.75, midi=76, note="E5", confidence=0.9),
+        MelodyNote(id="right", start=1.0, end=1.4, midi=62, note="D4", confidence=0.9),
+    ]
+
+    assert [note.id for note in pp.remove_isolated_pitch_leaps(notes)] == ["left", "right"]
+
+
+def test_melody_simplification_keeps_sustained_or_continuing_leaps():
+    pp = MelodyPostProcessor()
+    sustained = [
+        MelodyNote(id="left", start=0.0, end=0.4, midi=60, note="C4", confidence=0.9),
+        MelodyNote(id="long", start=0.5, end=1.2, midi=76, note="E5", confidence=0.9),
+        MelodyNote(id="right", start=1.3, end=1.7, midi=62, note="D4", confidence=0.9),
+    ]
+
+    assert [note.id for note in pp.remove_isolated_pitch_leaps(sustained)] == ["left", "long", "right"]
+
+
 def test_melody_quality_discloses_full_mix_limit_and_sparse_output():
     pp = MelodyPostProcessor()
     notes = [MelodyNote(id="one", start=0.0, end=0.5, midi=60, note="C4", confidence=0.9)]
