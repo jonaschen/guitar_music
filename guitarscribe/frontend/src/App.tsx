@@ -211,6 +211,7 @@ export function App() {
   const [loopEnd, setLoopEnd] = useState<number | null>(null);
   const [followPlayhead, setFollowPlayhead] = useState(true);
   const [beatTimingDraft, setBeatTimingDraft] = useState<{ index: number; time: number } | null>(null);
+  const [beatNudgeMeasures, setBeatNudgeMeasures] = useState(1);
   const [error, setError] = useState<string>("");
   const [lyricsDraft, setLyricsDraft] = useState("");
   const [editingLyricLineId, setEditingLyricLineId] = useState<string | null>(null);
@@ -1006,6 +1007,32 @@ export function App() {
     });
   }
 
+  function nudgeActiveBeatRange(seconds: number) {
+    if (!score || activeBeatIndex < 0) return;
+    const firstMeasure = score.beats[activeBeatIndex].measure;
+    const indexes = score.beats
+      .map((beat, index) => ({ beat, index }))
+      .filter(({ beat }) => beat.measure >= firstMeasure && beat.measure < firstMeasure + beatNudgeMeasures)
+      .map(({ index }) => index);
+    if (indexes.length === 0) return;
+
+    const firstIndex = indexes[0];
+    const lastIndex = indexes.at(-1)!;
+    const firstTime = score.beats[firstIndex].time;
+    const lastTime = score.beats[lastIndex].time;
+    const minimum = (score.beats[firstIndex - 1]?.time ?? 0) + 0.02 - firstTime;
+    const maximum = (score.beats[lastIndex + 1]?.time ?? score.song.duration_seconds) - 0.02 - lastTime;
+    if (seconds < minimum || seconds > maximum) {
+      setError("This bar range must remain at least 0.02 seconds away from its neighboring beats.");
+      return;
+    }
+    const selected = new Set(indexes);
+    recordScoreChange({
+      ...score,
+      beats: score.beats.map((beat, index) => selected.has(index) ? { ...beat, time: Number((beat.time + seconds).toFixed(3)) } : beat),
+    });
+  }
+
   function rebuildBeatGrid(points: SongScore["beats"], bpm: number) {
     if (!score) return;
     const beatsPerMeasure = Number(score.analysis.time_signature.charAt(0)) || 4;
@@ -1448,6 +1475,7 @@ export function App() {
                     <button type="button" className="ghost-button" disabled={score.beats.length < 3} onClick={correctHalfTime}>Half-time</button><button type="button" className="ghost-button" disabled={score.beats.length < 2} onClick={correctDoubleTime}>Double-time</button>
                     <span className="transport-beat-grid">{activeBeatIndex >= 0 ? `Current beat ${score.beats[activeBeatIndex].beat} · Bar ${score.beats[activeBeatIndex].measure} at ${score.beats[activeBeatIndex].time.toFixed(1)}s` : "No current beat"}</span><button type="button" className="ghost-button" disabled={activeBeatIndex < 0} onClick={setActiveBeatAtPlayhead}>Set beat at playhead</button>
                     {activeBeatTimingBounds && activeBeatIndex >= 0 ? <label className="beat-timing-control">Drag beat<input aria-label="Drag current beat time" type="range" min={activeBeatTimingBounds.min} max={Math.max(activeBeatTimingBounds.min, activeBeatTimingBounds.max)} step="0.01" value={activeBeatTimingBounds.value} onChange={(event) => setBeatTimingDraft({ index: activeBeatIndex, time: Number(event.target.value) })} onPointerUp={() => commitBeatTiming(activeBeatIndex, activeBeatTimingBounds.value)} /></label> : null}
+                    <label className="transport-speed">Nudge range <select aria-label="Beat nudge range" value={beatNudgeMeasures} onChange={(event) => setBeatNudgeMeasures(Number(event.target.value))}><option value={1}>1 bar</option><option value={2}>2 bars</option><option value={4}>4 bars</option></select></label><button type="button" className="ghost-button" disabled={activeBeatIndex < 0} onClick={() => nudgeActiveBeatRange(-0.1)}>Range −100ms</button><button type="button" className="ghost-button" disabled={activeBeatIndex < 0} onClick={() => nudgeActiveBeatRange(0.1)}>Range +100ms</button>
                     <label className="transport-speed">Count-in <select value={countInMeasures} onChange={(event) => setCountInMeasures(Number(event.target.value))}><option value={0}>Off</option><option value={1}>1 bar</option><option value={2}>2 bars</option></select></label>
                     <button type="button" className="ghost-button" onClick={() => stopSynth(true)}>Stop</button>
                     <label className="transport-speed">Speed <select value={playbackRate} onChange={(event) => setSpeed(Number(event.target.value))}>{[0.5, 0.6, 0.75, 0.9, 1, 1.1, 1.25, 1.5].map((rate) => <option key={rate} value={rate}>{Math.round(rate * 100)}%</option>)}</select></label>

@@ -58,6 +58,10 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await expect(page.getByText("Beat grid 0.0s")).toBeVisible();
   await page.getByRole("button", { name: "Beat +100ms" }).click();
   await expect(page.getByText("Beat grid 0.1s")).toBeVisible();
+  await page.getByLabel("Playback position").fill("0.1");
+  await page.getByLabel("Beat nudge range").selectOption("2");
+  await page.getByRole("button", { name: "Range +100ms" }).click();
+  await expect(page.getByText("Beat grid 0.2s")).toBeVisible();
   await page.getByRole("button", { name: "Half-time" }).click();
   await expect(page.locator(".metric-card").filter({ hasText: "BPM" }).getByText("60", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Double-time" }).click();
@@ -90,12 +94,12 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await playhead.focus();
   for (let step = 0; step < 100; step += 1) await page.keyboard.press("ArrowRight");
   await expect(playhead).toHaveValue("1");
-  await expect(page.getByText("Current beat 2 · Bar 1 at 0.6s")).toBeVisible();
+  await expect(page.getByText("Current beat 2 · Bar 1 at 0.7s")).toBeVisible();
   const dragCurrentBeat = page.getByLabel("Drag current beat time");
   await dragCurrentBeat.focus();
   await page.keyboard.press("ArrowRight");
   await dragCurrentBeat.dispatchEvent("pointerup");
-  await expect(dragCurrentBeat).toHaveValue("0.61");
+  await expect(dragCurrentBeat).toHaveValue("0.71");
   const setBeatAtPlayhead = page.getByRole("button", { name: "Set beat at playhead" });
   await setBeatAtPlayhead.scrollIntoViewIfNeeded();
   await setBeatAtPlayhead.click({ force: true });
