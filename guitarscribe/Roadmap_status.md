@@ -1,6 +1,6 @@
 # GuitarScribe 開發進度與待辦事項
 
-> 最後更新：2026-09-11
+> 最後更新：2026-09-12
 > 參考規格文件：  
 > 1. `GuitarScribe_Web_UI_AI_Handoff.md`（主交接文件）  
 > 2. `GuitarScribe_UI_Key_and_Chord_Voicings_Addendum.md`（升降 Key 與和弦指型追加規格）  
@@ -17,10 +17,10 @@
 | **M0：技術 Spike** | Docker 內 DSP → JSON | 100% | ✅ 完成 |
 | **M1：後端 MVP** | FastAPI、非同步工作、SQLite、OpenAPI | ~96% | ⚠️ 進行中 |
 | **M2：Web UI MVP** | 上傳、進度、播放同步、和弦格、匯出 | ~96% | ⚠️ 進行中 |
-| **M3：可編輯樂譜** | 和弦編輯、移調、Capo、和弦指型、revision | ~93% | ⚠️ 進行中 |
-| **M4：簡化主旋律與 Tab** | 旋律顯示、指板映射、alphaTab、匯出 | ~93% | 🔧 進行中 |
-| **M5：品質與部署** | Golden dataset、E2E 測試、可觀測性 | ~82% | 🔧 進行中 |
-| **M6：歌詞與按譜演奏** | 歌詞匯入、時間標記、同步播放 | ~82% | 🔧 進行中 |
+| **M3：可編輯樂譜** | 和弦編輯、移調、Capo、和弦指型、revision | ~96% | ⚠️ 進行中 |
+| **M4：簡化主旋律與 Tab** | 旋律顯示、指板映射、alphaTab、匯出 | ~94% | 🔧 進行中 |
+| **M5：品質與部署** | Golden dataset、E2E 測試、可觀測性 | ~90% | 🔧 進行中 |
+| **M6：歌詞與按譜演奏** | 歌詞匯入、時間標記、同步播放 | ~90% | 🔧 進行中 |
 
 **目前位置**：M0 完成；M1、M2 已可供本機試用；M3 的核心編輯與指型流程完成；M4 已有量化、Tab、MIDI/MusicXML 與原生旋律預覽；M5、M6 正在收斂。
 
@@ -359,8 +359,9 @@
   - [x] 分析併發與等待佇列都有可設定上限；佇列滿時會回覆 HTTP 503 與 Retry-After。
   - 檔案大小與 duration 硬限制
   - 匯出檔名特殊字元清理
-- [ ] **部署文件與備份政策**
-  - [x] GitHub Actions CI：main push 與 pull request 會分別執行 Docker backend pytest、frontend build 與 Playwright E2E。
+- [x] **部署文件與備份政策**
+  - `docs/OPERATIONS.md` 已涵蓋持久化資料位置、停機備份／還原、資源控制、安全曝露邊界與更新前驗證。
+  - GitHub Actions CI：main push 與 pull request 會分別執行 Docker backend pytest、frontend build 與 Playwright E2E。
 
 ---
 
@@ -432,14 +433,14 @@
 2. **Chordino 安裝不穩定** — Docker build 自動降級為 Chromagram，但 Chromagram 只支援 24 組大小調
 3. **RhythmSuggester 仍屬保守啟發式** — 已讀取本機 templates 並可手動覆寫，但尚未納入 onset strength 等音訊特徵
 4. **標準譜 engraving 有限** — alphaTab 已提供標準譜與吉他 Tab 預覽；複雜記譜的視覺校對仍待補強。
-5. **指板映射偏好 UI 未完成** — 映射已考慮連續音符手位成本，但使用者偏好仍不完整
+5. **指板映射仍是啟發式** — 已提供平衡／低把位／盡量同弦與最高琴格限制；自訂調弦、手指／換把生物力學與全曲最佳化仍待補強。
 6. **無 Major/Minor 模式切換** — 追加文件 §4.2 提到「若功能未實作，UI 不提供模式切換」
 
 ---
 
 ## Milestone 6：歌詞與按譜演奏
 
-> 依據 `GuitarScribe_Lyrics_and_Score_Playback_Addendum.md` v1.0。需求已確認，尚未實作。
+> 依據 `GuitarScribe_Lyrics_and_Score_Playback_Addendum.md` v1.0。核心 MVP 已實作，剩餘項目聚焦在時鐘抽象、音色與自動歌詞能力。
 
 **目標**：使用者可匯入並修正逐行歌詞；原曲或合成樂譜播放時，歌詞、和弦、小節與旋律以同一主時鐘同步高亮。
 
@@ -448,7 +449,7 @@
 - [x] **Lyrics data model 與 schema**
   - 新增 `LyricsTrack`、`LyricLine`、預留 `WordTiming`、source/raw_text/revision/origin/confidence。
   - `SongScore` 與 JSON Schema 納入 lyrics；原始匯入內容與使用者修正版分開保存。
-- [ ] **歌詞儲存與 revision API**
+- [x] **歌詞儲存與 revision API**
   - SQLite scores/revisions 持久化已完成；提供 revision-based lyrics read、整體更新與單行 PATCH。每次歌詞 API 修改都 fork 新 revision，保留父版本。
   - 已提供 split 與 merge-next API；分割會按文字比例切分已知 line timing，並重編行號。所有歌詞修改可保存 revision。
 - [x] **TXT/LRC 匯入與 LRC 匯出**
@@ -479,15 +480,15 @@
 - [x] **Playback compiler 與 immutable event sequence**
   - 已定義 frozen canonical guitar/melody/metronome events、manifest 與 16 字元內容 revision。
   - 由 score、key/capo、selected voicing 實際音高、rhythm 與 melody 編譯；MIDI 與 Web Audio UI 已讀同一 manifest。
-- [ ] **Web Audio synth 與分軌控制**
+- [x] **Web Audio synth 與分軌控制**
   - 已接 canonical manifest 與 AudioContext clock，提供 score play/pause/stop、Guitar/melody/metronome mute、volume、solo 與合成模式 count-in；原曲與合成播放互斥。
   - 已完成 0.35 秒 look-ahead scheduler：不再在開始播放時建立整首歌的 oscillator；已結束的 source 會釋放。畫面 playhead 仍由 AudioContext clock 經 requestAnimationFrame 推導。
   - 已在頁面回到前景時恢復既有 AudioContext；被背景節流後已逾時的 events 會跳過、持續中的音符會由目前 playhead 重接。
   - 吉他 synth 已有 pick transient、快速 attack、衰減與低通濾波，較容易辨認為撥弦節奏；高品質 sample-based 吉他音色仍待後續資產與授權決策。
-- [ ] **Voicing-aware chord playback**
+- [x] **Voicing-aware chord playback**
   - 已納入 tuning、capo、frets、muted/open strings、actual sounding pitch；down/up strum 現已在 canonical manifest 明確記錄逐弦 12ms spread 與 velocity，Web Audio 與 MIDI 共用此資料。
   - 已加入可手動選擇的 4/4 arpeggio template；manifest 會以較長、但受 rhythm slot 限制的逐弦 spread 編譯，Web Audio 與 MIDI 共用。更多節奏型仍可擴充；key/capo/voicing 變更後會重新編譯受影響 events。
-- [ ] **Playback API 與 exports**
+- [x] **Playback API 與 exports**
   - Playback manifest/compile/render endpoints，以及 LRC、ChordPro、MIDI export endpoints。
 
 ### 後續實驗與明確排除
@@ -499,8 +500,8 @@
 
 ### M6 驗收條件
 
-- [ ] 使用者可合法貼上或匯入 LRC，完成逐行修正與手動對時。
-- [ ] 原曲播放時 lyric/chord/measure/melody highlighter 以同一 media clock 同步。
-- [ ] 合成播放時所有音符由 Web Audio clock 排程，並能依 selected voicing 正確發聲。
-- [ ] Key、Capo、voicing 改變不重跑 DSP；lyrics timestamps 不被改寫，playback compilation 會失效並重建。
-- [ ] 不自動抓取/保存未授權歌詞，且含 lyrics 的 JSON/LRC/ChordPro export 可用。
+- [x] 使用者可合法貼上或匯入 LRC，完成逐行修正與手動對時。
+- [x] 原曲播放時 lyric/chord/measure/melody highlighter 以同一 media clock 同步。
+- [x] 合成播放時所有音符由 Web Audio clock 排程，並能依 selected voicing 正確發聲。
+- [x] Key、Capo、voicing 改變不重跑 DSP；lyrics timestamps 不被改寫，playback compilation 會失效並重建。
+- [x] 不自動抓取/保存未授權歌詞，且含 lyrics 的 JSON/LRC/ChordPro export 可用。
