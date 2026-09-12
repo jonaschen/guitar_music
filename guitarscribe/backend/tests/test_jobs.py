@@ -4,7 +4,7 @@ import pytest
 
 from app.models.score import AnalysisSummary, KeyContext, KeySignature, SongInfo, SongScore
 from app.models.jobs import AnalysisJob, JobStatus
-from app.services.jobs import AnalysisJobService, JobStore
+from app.services.jobs import AnalysisJobService, JobStore, safe_audio_suffix
 
 
 class StubPipeline:
@@ -60,6 +60,24 @@ async def test_job_service_persists_completed_score_and_progress(tmp_path):
     assert completed.separate_vocals is True
     assert service.get(created.id).score is not None
     assert (tmp_path / "jobs" / "jobs.sqlite3").exists()
+
+
+@pytest.mark.asyncio
+async def test_job_service_safely_handles_untrusted_upload_filenames(tmp_path):
+    service = AnalysisJobService(JobStore(tmp_path / "jobs"), pipeline_factory=StubPipeline)
+
+    created = await service.submit("../../outside.$$$", b"RIFFfake", "vocal", "standard")
+    await wait_for_terminal(service, created.id)
+
+    assert (tmp_path / "jobs" / created.id / "input.wav").read_bytes() == b"RIFFfake"
+    assert not (tmp_path / "outside.$$$").exists()
+
+
+def test_safe_audio_suffix_accepts_only_short_alphanumeric_extensions():
+    assert safe_audio_suffix("recording.MP3") == ".mp3"
+    assert safe_audio_suffix("../../recording.$$$") == ".wav"
+    assert safe_audio_suffix("recording.verylongextension") == ".wav"
+    assert safe_audio_suffix("recording.wav/../../outside") == ".wav"
 
 
 @pytest.mark.asyncio

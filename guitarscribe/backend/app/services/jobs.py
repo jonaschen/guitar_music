@@ -2,6 +2,7 @@ import asyncio
 import shutil
 import sqlite3
 import logging
+import re
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -25,6 +26,12 @@ STAGE_DETAILS: dict[str, tuple[JobStatus, int, str]] = {
     "melody_analysis": (JobStatus.MELODY_ANALYSIS, 75, "Extracting melody"),
     "postprocessing": (JobStatus.POSTPROCESSING, 90, "Preparing guitar chart"),
 }
+
+
+def safe_audio_suffix(filename: str | None) -> str:
+    """Keep an untrusted filename from influencing a temporary path."""
+    suffix = Path(filename or "").suffix.lower()
+    return suffix if re.fullmatch(r"\.[a-z0-9]{1,10}", suffix) else ".wav"
 
 
 def _now() -> str:
@@ -134,7 +141,7 @@ class AnalysisJobService:
         )
         directory = self.store.job_dir(job_id)
         directory.mkdir(parents=True, exist_ok=True)
-        suffix = Path(filename).suffix or ".wav"
+        suffix = safe_audio_suffix(filename)
         (directory / f"input{suffix}").write_bytes(content)
         self.store.save(job)
         logger.info(

@@ -19,7 +19,7 @@ from .services.voicing_optimizer import SongVoicingOptimizer
 from .services.lyrics import import_lrc, import_text
 from .models.score import SongScore
 from .models.lyrics import LyricLine, LyricsTrack
-from .services.jobs import AnalysisJobService, JobStore
+from .services.jobs import AnalysisJobService, JobStore, safe_audio_suffix
 from .exporters.chordpro import ChordProExporter
 from .exporters.lrc import export_lrc
 from .exporters.midi import PlaybackManifest, compile_playback_manifest, export_midi
@@ -294,7 +294,7 @@ async def analyze_audio(
     if not rights_confirmed:
         raise HTTPException(status_code=400, detail="Rights must be confirmed")
 
-    suffix = Path(audio_file.filename or "upload.wav").suffix or ".wav"
+    suffix = safe_audio_suffix(audio_file.filename)
     temp_path: Path | None = None
     try:
         with tempfile.NamedTemporaryFile(delete=False, suffix=suffix, prefix="guitarscribe_upload_") as temp_file:
