@@ -585,11 +585,29 @@ h2 {
   }
 
   .field-row,
-  .toolbar,
-  .secondary-toolbar,
   .summary-grid {
     grid-template-columns: 1fr;
   }
+
+  /* Keep dense arrangement controls readable without making the result page
+     * a long single-column form on a phone. */
+  .toolbar,
+  .secondary-toolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+    padding: 0.7rem;
+  }
+
+  .toolbar-actions,
+  .wide-button {
+    grid-column: 1 / -1;
+  }
+
+  .toolbar-block strong { font-size: 0.95rem; }
+  .toolbar select,
+  .toolbar .compact-field select { padding: 0.7rem 0.75rem; }
+  .panel-header { flex-wrap: wrap; gap: 0.55rem; }
+  .status-pill { padding: 0.4rem 0.65rem; }
 }
 
 .job-progress {

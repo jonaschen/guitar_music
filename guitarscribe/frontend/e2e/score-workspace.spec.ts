@@ -40,6 +40,10 @@ test("renders an analyzed score workspace", async ({ page }) => {
 
   await expect(page.getByRole("heading", { name: "Browser test song" })).toBeVisible();
   await expect(page.getByText("Guitar settings")).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.getByLabel("Tab mapping")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Back to source key" })).toBeVisible();
+  await page.setViewportSize({ width: 1280, height: 720 });
   await page.getByLabel("Tab mapping").selectOption("low_position");
   await expect(page.getByLabel("Tab mapping")).toHaveValue("low_position");
   await expect(page.getByText("Rhythm suggestion")).toBeVisible();
