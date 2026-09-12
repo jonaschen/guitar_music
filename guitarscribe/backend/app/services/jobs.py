@@ -28,6 +28,10 @@ STAGE_DETAILS: dict[str, tuple[JobStatus, int, str]] = {
 }
 
 
+class JobQueueFullError(RuntimeError):
+    pass
+
+
 def safe_audio_suffix(filename: str | None) -> str:
     """Keep an untrusted filename from influencing a temporary path."""
     suffix = Path(filename or "").suffix.lower()
@@ -114,12 +118,14 @@ class AnalysisJobService:
         store: JobStore,
         pipeline_factory: Callable[[], AnalysisPipeline],
         max_concurrent_jobs: int = 1,
+        max_queued_jobs: int = 3,
         job_ttl_seconds: int = 24 * 60 * 60,
         youtube_downloader: YouTubeAudioDownloader | None = None,
     ):
         self.store = store
         self.pipeline_factory = pipeline_factory
         self.tasks: dict[str, asyncio.Task[None]] = {}
+        self.max_pending_jobs = max_concurrent_jobs + max_queued_jobs
         self.semaphore = asyncio.Semaphore(max_concurrent_jobs)
         self.youtube_downloader = youtube_downloader
         self.store.cleanup_expired(job_ttl_seconds)
@@ -129,6 +135,7 @@ class AnalysisJobService:
         self, filename: str, content: bytes, melody_mode: str,
         chord_complexity: str, separate_vocals: bool = False,
     ) -> AnalysisJob:
+        self._ensure_queue_capacity()
         job_id = uuid4().hex
         now = _now()
         job = AnalysisJob(
@@ -154,6 +161,7 @@ class AnalysisJobService:
     async def submit_youtube(self, url: str, melody_mode: str, chord_complexity: str, separate_vocals: bool = False) -> AnalysisJob:
         if self.youtube_downloader is None:
             raise RuntimeError("YouTube import is not enabled on this server")
+        self._ensure_queue_capacity()
         job_id = uuid4().hex
         now = _now()
         job = AnalysisJob(
@@ -164,6 +172,10 @@ class AnalysisJobService:
         self.store.save(job)
         self.tasks[job_id] = asyncio.create_task(self._run(job_id))
         return job
+
+    def _ensure_queue_capacity(self) -> None:
+        if len(self.tasks) >= self.max_pending_jobs:
+            raise JobQueueFullError("Analysis queue is full; wait for a running job to finish and try again.")
 
     def get(self, job_id: str) -> AnalysisJob:
         return self.store.load(job_id)

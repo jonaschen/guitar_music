@@ -356,6 +356,7 @@
   - 效能指標（分析時間、記憶體用量）
 - [ ] **資源限制完善**（主文件 §12）
   - [x] Per-client submission rate limiting（預設每小時 5 次，可設定；多 worker 部署仍需 shared limiter）
+  - [x] 分析併發與等待佇列都有可設定上限；佇列滿時會回覆 HTTP 503 與 Retry-After。
   - 檔案大小與 duration 硬限制
   - 匯出檔名特殊字元清理
 - [ ] **部署文件與備份政策**

@@ -48,6 +48,8 @@ options:
 |---|---:|---|
 | `GUITARSCRIBE_MAX_DURATION_SECONDS` | `600` | Reject audio beyond this duration. |
 | `GUITARSCRIBE_MAX_UPLOAD_BYTES` | 100 MiB | Reject oversized upload bodies. |
+| `GUITARSCRIBE_MAX_CONCURRENT_JOBS` | `1` | Maximum simultaneous analyses on this host. |
+| `GUITARSCRIBE_MAX_QUEUED_JOBS` | `3` | Maximum waiting analyses; later submissions receive HTTP 503. |
 | `GUITARSCRIBE_SUBMISSION_RATE_LIMIT` | `5` | Per-client submissions during the window; set `0` only for trusted development. |
 | `GUITARSCRIBE_SUBMISSION_RATE_WINDOW_SECONDS` | `3600` | Rate-limit window. |
 | `GUITARSCRIBE_MELODY_SEPARATOR` | `off` | Enable `demucs` only after building its optional dependency. |

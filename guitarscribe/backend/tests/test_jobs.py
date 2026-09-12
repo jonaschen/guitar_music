@@ -4,7 +4,7 @@ import pytest
 
 from app.models.score import AnalysisSummary, KeyContext, KeySignature, SongInfo, SongScore
 from app.models.jobs import AnalysisJob, JobStatus
-from app.services.jobs import AnalysisJobService, JobStore, safe_audio_suffix
+from app.services.jobs import AnalysisJobService, JobQueueFullError, JobStore, safe_audio_suffix
 
 
 class StubPipeline:
@@ -92,6 +92,25 @@ async def test_job_service_cancels_active_job(tmp_path):
 
     assert cancelled.status.value == "cancelled"
     assert service.get(created.id).status.value == "cancelled"
+
+
+@pytest.mark.asyncio
+async def test_job_service_rejects_submissions_when_the_pending_queue_is_full(tmp_path):
+    pipeline = WaitingPipeline()
+    service = AnalysisJobService(
+        JobStore(tmp_path / "jobs"), pipeline_factory=lambda: pipeline,
+        max_concurrent_jobs=1, max_queued_jobs=1,
+    )
+    first = await service.submit("first.wav", b"RIFFfake", "vocal", "standard")
+    await pipeline.started.wait()
+    second = await service.submit("second.wav", b"RIFFfake", "vocal", "standard")
+
+    with pytest.raises(JobQueueFullError, match="queue is full"):
+        await service.submit("third.wav", b"RIFFfake", "vocal", "standard")
+
+    service.cancel(first.id)
+    service.cancel(second.id)
+    await asyncio.sleep(0)
 
 def test_job_store_removes_only_expired_directories(tmp_path):
     import os

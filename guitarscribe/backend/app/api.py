@@ -19,7 +19,7 @@ from .services.voicing_optimizer import SongVoicingOptimizer
 from .services.lyrics import import_lrc, import_text
 from .models.score import SongScore
 from .models.lyrics import LyricLine, LyricsTrack
-from .services.jobs import AnalysisJobService, JobStore, safe_audio_suffix
+from .services.jobs import AnalysisJobService, JobQueueFullError, JobStore, safe_audio_suffix
 from .exporters.chordpro import ChordProExporter
 from .exporters.lrc import export_lrc
 from .exporters.midi import PlaybackManifest, compile_playback_manifest, export_midi
@@ -151,6 +151,7 @@ def get_job_service() -> AnalysisJobService:
             JobStore(settings.work_dir / "jobs"),
             pipeline_factory=lambda: create_pipeline(settings),
             max_concurrent_jobs=settings.max_concurrent_jobs,
+        max_queued_jobs=settings.max_queued_jobs,
         job_ttl_seconds=settings.job_ttl_seconds,
         youtube_downloader=YouTubeAudioDownloader(settings.youtube_dl_binary, settings.youtube_download_timeout_seconds, settings.max_upload_bytes) if settings.youtube_enabled else None,
         )
@@ -213,13 +214,16 @@ async def create_analysis_job(
     content = await audio_file.read()
     if len(content) > Settings.from_env().max_upload_bytes:
         raise HTTPException(status_code=413, detail="Audio upload exceeds the configured size limit")
-    return await job_service.submit(
-        filename=audio_file.filename or "upload.wav",
-        content=content,
-        melody_mode=melody_mode,
-        separate_vocals=separate_vocals,
-        chord_complexity=chord_complexity,
-    )
+    try:
+        return await job_service.submit(
+            filename=audio_file.filename or "upload.wav",
+            content=content,
+            melody_mode=melody_mode,
+            separate_vocals=separate_vocals,
+            chord_complexity=chord_complexity,
+        )
+    except JobQueueFullError as exc:
+        raise HTTPException(status_code=503, detail=str(exc), headers={"Retry-After": "30"}) from exc
 
 
 @app.post(

@@ -9,6 +9,7 @@ from app.api import (
     analyze_audio,
     app,
     get_job_service,
+    get_submission_limiter,
     get_revision_store,
     load_revision,
     save_revision,
@@ -16,6 +17,7 @@ from app.api import (
 from app.models.analysis import MelodyNote
 from app.models.score import AnalysisSummary, KeyContext, KeySignature, SongInfo, SongScore
 from app.services.revisions import RevisionStore
+from app.services.rate_limit import SubmissionRateLimiter
 from app.sources.youtube import validate_youtube_url
 
 
@@ -294,6 +296,38 @@ async def test_job_endpoints_queue_poll_and_return_completed_score(tmp_path):
         assert body["progress"] == 100
         assert body["score"]["analysis"]["key"] == "G"
     finally:
+        app.dependency_overrides.clear()
+
+
+@pytest.mark.asyncio
+async def test_job_endpoint_returns_service_unavailable_when_queue_is_full(tmp_path):
+    from app.services.jobs import AnalysisJobService, JobStore
+    from tests.test_jobs import WaitingPipeline
+
+    pipeline = WaitingPipeline()
+    service = AnalysisJobService(
+        JobStore(tmp_path / "jobs"), pipeline_factory=lambda: pipeline,
+        max_concurrent_jobs=1, max_queued_jobs=1,
+    )
+    app.dependency_overrides[get_job_service] = lambda: service
+    app.dependency_overrides[get_submission_limiter] = lambda: SubmissionRateLimiter(limit=0, window_seconds=60)
+    try:
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://testserver") as client:
+            first = await client.post("/api/v1/jobs", data={"rights_confirmed": "true"}, files={"audio_file": ("first.wav", b"RIFFfake", "audio/wav")})
+            await pipeline.started.wait()
+            second = await client.post("/api/v1/jobs", data={"rights_confirmed": "true"}, files={"audio_file": ("second.wav", b"RIFFfake", "audio/wav")})
+            rejected = await client.post("/api/v1/jobs", data={"rights_confirmed": "true"}, files={"audio_file": ("third.wav", b"RIFFfake", "audio/wav")})
+
+        assert first.status_code == 202
+        assert second.status_code == 202
+        assert rejected.status_code == 503
+        assert rejected.headers["retry-after"] == "30"
+        assert "queue is full" in rejected.json()["detail"]
+    finally:
+        service.cancel(first.json()["id"])
+        service.cancel(second.json()["id"])
+        await asyncio.sleep(0)
         app.dependency_overrides.clear()
 
 
