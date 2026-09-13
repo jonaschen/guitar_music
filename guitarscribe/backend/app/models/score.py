@@ -45,6 +45,11 @@ class Provenance(BaseModel):
     beat_engine: str = ""
     chord_engine: str = ""
     melody_engine: str = ""
+    beat_engine_version: str = ""
+    chord_engine_version: str = ""
+    melody_engine_version: str = ""
+    tempo_map_version: str = "legacy-beat-grid-v1"
+    parameters: dict[str, str | int | float | bool] = Field(default_factory=dict)
 
 class SongScore(BaseModel):
     schema_version: str = "1.0"

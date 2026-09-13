@@ -80,6 +80,11 @@ export type SongScore = {
     beat_engine: string;
     chord_engine: string;
     melody_engine: string;
+    beat_engine_version?: string;
+    chord_engine_version?: string;
+    melody_engine_version?: string;
+    tempo_map_version?: string;
+    parameters?: Record<string, string | number | boolean>;
   };
 };
 

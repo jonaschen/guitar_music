@@ -167,7 +167,16 @@ class AnalysisPipeline:
             provenance=Provenance(
                 beat_engine=beats.engine,
                 chord_engine=chords.engine,
-                melody_engine=melody.engine
+                melody_engine=melody.engine,
+                beat_engine_version=beats.engine_version,
+                chord_engine_version=chords.engine_version,
+                melody_engine_version=melody.engine_version,
+                parameters={
+                    "melody_mode": melody_mode.value,
+                    "separate_vocals_requested": separate_vocals,
+                    "vocal_source_separated": source_separated,
+                    "chord_complexity": complexity.value,
+                },
             )
         )
 

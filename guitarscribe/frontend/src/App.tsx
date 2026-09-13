@@ -1299,11 +1299,11 @@ export function App() {
 
             <div className="field-row">
               <label className="field">
-                <span>Melody focus</span>
+                <span>Melody focus (Beta)</span>
                 <select value={melodyMode} onChange={(event) => setMelodyMode(event.target.value)}>
-                  <option value="vocal">Vocal</option>
-                  <option value="guitar">Guitar</option>
-                  <option value="mix">Most prominent</option>
+                  <option value="vocal">Vocal melody (Beta)</option>
+                  <option value="guitar">Guitar melody (Experimental)</option>
+                  <option value="mix">Full-mix lead guess (Experimental)</option>
                 </select>
               </label>
 
@@ -1580,20 +1580,20 @@ export function App() {
                     <strong>{score.analysis.time_signature}</strong>
                   </article>
                   <article className="metric-card">
-                    <span>Chords</span>
-                    <strong>{score.chords.length}</strong>
+                    <span>Detected key</span>
+                    <strong>{score.analysis.key} {score.analysis.mode}</strong>
                   </article>
                   <article className="metric-card">
-                    <span>Melody notes</span>
-                    <strong>{score.melody.length}</strong>
+                    <span>Chord chart</span>
+                    <strong>Needs review</strong>
                   </article>
                   <article className="metric-card">
                     <span>Melody engine</span>
                     <strong className="metric-engine">{score.provenance.melody_engine.replace(/_/g, " ") || "—"}</strong>
                   </article>
                   <article className="metric-card">
-                    <span>Melody reliability</span>
-                    <strong>{Math.round(score.analysis.confidence * 100)}%</strong>
+                    <span>Melody status</span>
+                    <strong>Experimental</strong>
                   </article>
                 </div>
 
@@ -1604,7 +1604,7 @@ export function App() {
                 </section>
 
                 {score.melody.length > 0 ? <details className="melody-workspace workspace-disclosure">
-                <summary>Melody &amp; Tab previews · {score.melody.length} notes</summary>
+                <summary>Melody &amp; Tab previews · Experimental</summary>
                 <section className="melody-panel">
                   <div><h3>Estimated melody timeline</h3><p>Click a note to seek. Check Analysis notes above for transcription limitations.</p></div><button type="button" className="ghost-button melody-simplify" onClick={() => void simplifyMelody()}>Simplify melody</button>
                   <div className="melody-timeline" aria-label="Detected melody notes">{score.melody.map((note) => { const showLabel = melodyTimelineLabelIds.has(note.id); return <button key={note.id} type="button" aria-label={`${note.note} at ${note.start.toFixed(2)} seconds`} className={`melody-note ${showLabel ? "melody-note-label" : "melody-note-dot"}${activeMelodyNoteId === note.id ? " melody-note-active" : ""}`} title={note.note + " · " + note.start.toFixed(2) + "s"} onClick={() => seekTo(note.start)} style={{ left: String((note.start / Math.max(score.song.duration_seconds, 1)) * 100) + "%", bottom: String(Math.max(0, Math.min(85, (note.midi - 40) * 1.8))) + "%" }}>{showLabel ? note.note : "•"}</button>; })}</div>

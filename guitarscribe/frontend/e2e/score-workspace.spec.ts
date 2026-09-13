@@ -52,7 +52,8 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await expect(page.getByRole("option", { name: "Steady strum" })).toBeAttached();
   await page.getByLabel("Rhythm pattern").selectOption("steady");
   await expect(page.getByText("Steady strum · 8th-note grid")).toBeVisible();
-  await page.getByText("Melody & Tab previews · 1 notes").click();
+  await expect(page.getByText("Melody reliability")).toHaveCount(0);
+  await page.getByText("Melody & Tab previews · Experimental").click();
   await expect(page.getByText("Estimated score preview")).toBeVisible();
   await page.getByRole("button", { name: "Simplify melody" }).click();
   await expect(page.getByRole("button", { name: "C4 in bar 1" })).toBeVisible();

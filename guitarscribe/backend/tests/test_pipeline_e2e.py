@@ -19,6 +19,8 @@ async def test_pipeline_e2e(sample_wav):
     score = await pipeline.run(request, {"chord_complexity": "standard"})
     
     assert score.schema_version == "1.0"
+    assert score.provenance.tempo_map_version == "legacy-beat-grid-v1"
+    assert score.provenance.parameters["melody_mode"] == "vocal"
     assert len(score.chords) > 0
     assert len(score.beats) > 0
     assert 60 <= score.analysis.bpm <= 200

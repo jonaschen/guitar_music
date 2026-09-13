@@ -1,6 +1,6 @@
 # GuitarScribe 開發進度與待辦事項
 
-> 最後更新：2026-09-12
+> 最後更新：2026-09-13
 > 參考規格文件：  
 > 1. `GuitarScribe_Web_UI_AI_Handoff.md`（主交接文件）  
 > 2. `GuitarScribe_UI_Key_and_Chord_Voicings_Addendum.md`（升降 Key 與和弦指型追加規格）  
@@ -23,6 +23,19 @@
 | **M6：歌詞與按譜演奏** | 歌詞匯入、時間標記、同步播放 | ~90% | 🔧 進行中 |
 
 **目前位置**：M0 完成；M1、M2 已可供本機試用；M3 的核心編輯與指型流程完成；M4 已有量化、Tab、MIDI/MusicXML 與原生旋律預覽；M5、M6 正在收斂。
+
+### Recovery Quality Gates（取代功能百分比作為出貨判斷）
+
+| Gate | 驗收目標 | 狀態 |
+|---|---|---|
+| **G0 Baseline Ready** | 合法 golden set、版本化標註、baseline artifacts | 🔧 進行中：標註 schema 與 analysis manifest 已建立；仍缺 12–20 首合法標註片段 |
+| **G1 Timing Trustworthy** | 16 小節 downbeat 自然、可用少量 anchors 修正 | ❌ 未通過 |
+| **G2 Chord Draft Playable** | Easy set 80% 可在 ≤5 次編輯後伴奏 | ❌ 未通過 |
+| **G3 Vocal Melody Recognizable** | Easy set 80% 副歌可在 10 秒內辨認 | ❌ 未通過 |
+| **G4 Product Flow Usable** | 預設 lead sheet 流程可在 2 分鐘內定位並修正錯誤 | ❌ 未通過 |
+| **G5 Live Recording Experimental** | Live／rubato 壓力測試 | 🧪 Experimental，不阻擋首版 |
+
+Melody／Tab 現於 UI 明確標示 Beta／Experimental；未校準的 Melody reliability 百分比與候選事件數不再作為主要品質 KPI。
 
 ---
 
