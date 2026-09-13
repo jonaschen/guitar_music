@@ -295,6 +295,7 @@ export function App() {
         const nextJob = await getAnalysisJob(analysisJob.id);
         if (disposed) return;
         setAnalysisJob(nextJob);
+        setError("");
         if (nextJob.status === "completed" && nextJob.score) {
           replaceScore(nextJob.score);
           if (nextJob.source_type === "youtube") setAudioUrl(`${API_BASE}/api/v1/jobs/${nextJob.id}/audio`);
@@ -307,8 +308,7 @@ export function App() {
         }
       } catch (pollError) {
         if (!disposed) {
-          setStatus("error");
-          setError(pollError instanceof Error ? pollError.message : "Could not read analysis progress.");
+          setError("The backend is temporarily busy; progress will reconnect automatically.");
         }
       }
     };
