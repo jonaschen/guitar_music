@@ -71,7 +71,7 @@ class FFmpegPreprocessor:
 class DemucsMelodySeparator:
     """Optional vocal isolation adapter; Demucs is deliberately not in the base image."""
 
-    def __init__(self, binary: str | None = None, model: str = "htdemucs", timeout: int = 900):
+    def __init__(self, binary: str | None = None, model: str = "htdemucs", timeout: int = 1800):
         self.binary = binary
         self.model = model
         self.timeout = timeout

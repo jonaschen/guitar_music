@@ -62,3 +62,7 @@ async def test_demucs_separator_leaves_non_vocal_mode_unchanged(sample_wav):
 
     assert separated is audio
     assert did_separate is False
+
+
+def test_demucs_separator_allows_full_song_cpu_runtime():
+    assert DemucsMelodySeparator(binary="/usr/local/bin/demucs").timeout == 1800
