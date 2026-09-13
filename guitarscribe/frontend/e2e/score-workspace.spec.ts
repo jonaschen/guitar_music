@@ -18,7 +18,6 @@ const musicXml = `<?xml version="1.0" encoding="UTF-8"?>
 
 test("renders an analyzed score workspace", async ({ page }) => {
   let musicXmlRequests = 0;
-  await page.addInitScript(() => localStorage.setItem("guitarscribe.activeJobId", "demo-job"));
   await page.route("**/api/v1/jobs/demo-job", (route) => route.fulfill({ json: { id: "demo-job", status: "completed", progress: 100, message: "Analysis complete", source_type: "youtube", melody_mode: "vocal", chord_complexity: "standard", created_at: "2026-01-01T00:00:00Z", updated_at: "2026-01-01T00:00:00Z", error: null, score } }));
   await page.route("**/api/v1/jobs/demo-job/audio", (route) => route.fulfill({ contentType: "audio/wav", body: "not-a-real-audio-file" }));
   await page.route("**/scores/transpose", (route) => route.fulfill({ json: { ...score, analysis: { ...score.analysis, key: "D" }, key_context: { ...score.key_context, target: { key: "D", mode: "major" }, shape: { key: "D", mode: "major" }, sounding: { key: "D", mode: "major" }, transpose_semitones: 2, audio_matches_notation: false }, chords: [{ ...score.chords[0], symbol: "D", shape_symbol: "D", source_symbol: "C" }] } }));
@@ -38,9 +37,10 @@ test("renders an analyzed score workspace", async ({ page }) => {
     return route.fulfill({ contentType: "application/vnd.recordare.musicxml+xml", body: musicXml });
   });
 
-  await page.goto("/");
+  await page.goto("/?job=demo-job");
 
   await expect(page.getByRole("heading", { name: "Browser test song" })).toBeVisible();
+  await expect.poll(() => page.evaluate(() => localStorage.getItem("guitarscribe.activeJobId"))).toBe("demo-job");
   await expect(page.getByText("Guitar settings")).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.getByLabel("Tab mapping")).toBeVisible();

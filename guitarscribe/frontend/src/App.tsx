@@ -266,14 +266,16 @@ export function App() {
   }
 
   useEffect(() => {
-    const savedJobId = window.localStorage.getItem("guitarscribe.activeJobId");
+    const linkedJobId = new URLSearchParams(window.location.search).get("job");
+    const savedJobId = linkedJobId ?? window.localStorage.getItem("guitarscribe.activeJobId");
     if (!savedJobId) return;
+    window.localStorage.setItem("guitarscribe.activeJobId", savedJobId);
     setStatus("queued");
     void getAnalysisJob(savedJobId).then((job) => {
       setAnalysisJob(job);
       if (job.status === "completed" && job.score) { replaceScore(job.score); if (job.source_type === "youtube") setAudioUrl(`${API_BASE}/api/v1/jobs/${job.id}/audio`); setStatus("ready"); }
       if (job.status === "failed" || job.status === "cancelled") { setStatus("error"); setError(job.error ?? job.message); }
-    }).catch(() => window.localStorage.removeItem("guitarscribe.activeJobId"));
+    }).catch(() => setError("Could not reconnect to this analysis yet. Refresh to retry; the saved job ID was preserved."));
   }, []);
 
   useEffect(() => {
