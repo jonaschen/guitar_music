@@ -1,28 +1,43 @@
 # GuitarScribe 開發進度與待辦事項
 
-> 最後更新：2026-09-13
+> 最後更新：2026-09-14
 > 參考規格文件：  
 > 1. `GuitarScribe_Web_UI_AI_Handoff.md`（主交接文件）  
 > 2. `GuitarScribe_UI_Key_and_Chord_Voicings_Addendum.md`（升降 Key 與和弦指型追加規格）  
 > 3. `GuitarScribe_Lyrics_and_Score_Playback_Addendum.md`（歌詞與按譜演奏追加規格）
+> 4. `GuitarScribe_Recovery_and_Quality_Plan_v1.0.md`（品質救援與 release gates）
+> 5. `GuitarScribe_Reference_Projects_Research_2026.md`（引擎、診斷工具與授權研究）
 >  
 > 若兩份文件在移調、Capo 或和弦指型上衝突，以追加文件為準。
 
 ---
 
-## 整體進度概覽
+## 2026-09-14 重新基準化決策
 
-| 里程碑 | 目標 | 進度 | 狀態 |
+依 `GuitarScribe_Recovery_and_Quality_Plan_v1.0.md`、`GuitarScribe_Reference_Projects_Research_2026.md` 與實際 Live 錄音驗收，原 M0–M6 百分比停止作為出貨完成度。它們只描述工程資產是否存在，不代表拍點、和弦或旋律在音樂上正確。
+
+核心決策：
+
+1. 凍結新匯出格式、自動歌詞、指型美術與大規模 chord vocabulary 擴充。
+2. 第一產品目標改為「可信、可修正、可伴奏的 Quick Chord Chart」。
+3. 現有主旋律路線停止調參式修補；pYIN 與 Basic Pitch 降級為 stem-first candidate engines，正式輸出必須等待來源分區與 phrase decoder。
+4. 修復順序固定為：品質基準／診斷 → Timing bake-off → Canonical TempoMap → Chord bake-off／sequence decoder → Compact lead sheet → Melody reconstruction。
+5. 所有第三方引擎先經 adapter、獨立容器、授權審查與相同 golden excerpts 比較，不直接耦合正式 API schema。
+6. Live／rubato 保留為 Experimental 壓力測試；第一個 release gate 只採乾淨、穩定 4/4 的合法錄音。
+
+## Legacy Milestone 資產狀態
+
+| 里程碑 | 既有工程資產 | 狀態 | 重新歸屬 |
 |---|---|---|---|
-| **M0：技術 Spike** | Docker 內 DSP → JSON | 100% | ✅ 完成 |
-| **M1：後端 MVP** | FastAPI、非同步工作、SQLite、OpenAPI | ~96% | ⚠️ 進行中 |
-| **M2：Web UI MVP** | 上傳、進度、播放同步、和弦格、匯出 | ~96% | ⚠️ 進行中 |
-| **M3：可編輯樂譜** | 和弦編輯、移調、Capo、和弦指型、revision | ~96% | ⚠️ 進行中 |
-| **M4：簡化主旋律與 Tab** | 旋律顯示、指板映射、alphaTab、匯出 | ~94% | 🔧 進行中 |
-| **M5：品質與部署** | Golden dataset、E2E 測試、可觀測性 | ~90% | 🔧 進行中 |
-| **M6：歌詞與按譜演奏** | 歌詞匯入、時間標記、同步播放 | ~90% | 🔧 進行中 |
+| **M0：技術 Spike** | Docker 內 DSP → JSON | ✅ 保留完成資產 | QR0 baseline |
+| **M1：後端 MVP** | FastAPI、job、SQLite、OpenAPI | ⚠️ 保留；CPU worker／stage retry 未完成 | QR6 |
+| **M2：Web UI MVP** | 上傳、播放、和弦格、匯出 | ⚠️ 保留；預設流程需重整 | QR5 |
+| **M3：可編輯樂譜** | 和弦編輯、移調、Capo、指型、revision | ⚠️ 保留；仍依 legacy beat grid | QR2–QR5 |
+| **M4：簡化主旋律與 Tab** | 候選音高、Tab、alphaTab、匯出 | 🧪 Experimental；人工辨識驗收失敗 | QR4 |
+| **M5：品質與部署** | 自動測試、初步 metrics、Docker | 🔧 重新開啟；缺合法 golden set 與標準 MIR gate | QR0／QR6 |
+| **M6：歌詞與按譜演奏** | 手動歌詞、逐行 timing、同步播放 | ⏸ 核心資產保留；自動歌詞／karaoke 暫緩 | QR5 之後 |
 
-**目前位置**：M0 完成；M1、M2 已可供本機試用；M3 的核心編輯與指型流程完成；M4 已有量化、Tab、MIDI/MusicXML 與原生旋律預覽；M5、M6 正在收斂。
+**目前位置**：工程骨架可用，但品質救援仍位於 QR0；G1 Timing、G2 Chord Draft 與 G3 Melody 三個音樂品質 gate 都尚未通過。
 
 ### Recovery Quality Gates（取代功能百分比作為出貨判斷）
 
@@ -44,6 +59,138 @@ Recovery 執行紀錄：
 - [x] `UX-001`：Melody／Tab 標為 Beta／Experimental，移除未校準 reliability 百分比。
 - [x] `DBG-001`：新分析會保存 Original／Vocal Stem／Raw Detector／Final Melody 四路診斷音訊；Web UI 可在相同 playhead 切換比較。未執行 vocal isolation 時不會假裝存在 Vocal Stem。
 - [x] `DBG-002` 基礎：Original waveform 疊加 beat、downbeat/bar、chord boundary、final melody 與 playhead；可點擊或用鍵盤跳至確切時間。區段標記與縮放仍待補。
+
+## Quality Recovery Milestones（目前主 Roadmap）
+
+### QR0：可信基準、Adapter 與診斷環境
+
+**狀態：進行中。退出後開啟 G0 Baseline Ready。**
+
+已完成：
+
+- [x] Original／Vocal Stem／Raw Detector／Final Melody 四路同步 A/B/C/D 音訊。
+- [x] 原始 waveform 與 beat、bar、chord、melody、playhead overlay 基礎。
+- [x] 版本化 quality annotation schema 與錯誤分類。
+- [x] analyzer 名稱、版本、選項、vocal separation 與 legacy Tempo Map version provenance。
+- [x] Melody／Tab 標為 Beta／Experimental，移除未校準的單一 reliability 百分比。
+
+下一步：
+
+- [ ] `QA-001` 建立首批 6 首合法 bake-off excerpts（Easy 3、Medium 2、Hard 1），最終擴充至 12–20 首。
+- [ ] `QA-003` 導入 `mir_eval` adapter，分別輸出 timing、chord、melody 指標與 annotation sonification；不產生單一綜合分數。
+- [ ] `ARCH-001` 定義 `TimingResult`、`ChordResult`、`MelodyCandidateResult` canonical adapter interfaces，保存 raw result 後才轉正式模型。
+- [ ] `DBG-002b` 以 wavesurfer.js Regions／Timeline／Minimap 取代目前 provisional canvas，支援縮放與可拖曳區域。
+- [ ] `DBG-004` 一鍵保存 `wrong beat`、`wrong chord`、`wrong melody`、`should be silence` 與選取區間。
+- [ ] `REG-001` 保存目前 commit、參數、輸出音訊、JSON、metrics 與人工備註為不可覆蓋 baseline。
+- [ ] 完成 BeatNet、Omnizart、autochord、Chordino、Demucs 與模型權重的授權／維護決策記錄。
+
+退出條件：至少 6 段合法短片段可重複分析；任一錯誤可在 30 秒內定位到 source、timing、detector 或 post-processing；每次改動可產生 before/after report。
+
+### QR1：Timing Engine Bake-off
+
+**狀態：未開始；依賴 QR0 excerpts 與 metrics。**
+
+- [ ] 將現有 Librosa 封裝為 timing baseline adapter，不再把第一個 pulse 宣稱為 downbeat。
+- [ ] BeatNet 放入獨立 Python 3.9 optional worker/container；不污染主 Python dependency graph。
+- [ ] 對相同 6 段比較 beat、downbeat、tempo、meter、phase error、速度、記憶體與人工 click audition。
+- [ ] 保留多個 tempo／meter／phase 候選；不在 benchmark 前直接替換預設引擎。
+- [ ] BeatNet license／model redistribution 完成審查後，才能成為 primary candidate；現有 Librosa 保留 fallback。
+
+退出條件：選出一個 timing primary 與一個 fallback；Easy set 至少 80% 可連續聽 16 小節而 downbeat click 自然落在第一拍。
+
+### QR2：Canonical TempoMap 與人工校正
+
+**狀態：未開始；現有 first-beat、half/double、nudge 僅視為 legacy correction tools。**
+
+- [ ] 建立 versioned `TempoMap {beats, downbeats, meter, tempoSegments, pickup, anchors, version}`。
+- [ ] 支援 pickup、不完整第一小節、half/double tempo 候選與 1–3 個 timing anchors。
+- [ ] anchors 間局部 tempo interpolation，支援穩定曲與有限 tempo drift。
+- [ ] Beat／Downbeat audition 使用不同 click；加入 waveform 拖曳與 keyboard correction。
+- [ ] chords、melody、lyrics、playback、MusicXML、MIDI 全部只讀同一 TempoMap revision。
+- [ ] 加入 first-boundary、pickup、tempo change 與 MusicXML measure regression fixtures。
+
+退出條件：G1 Timing Trustworthy 通過；失敗的 Easy 片段可用第一拍加最多 2 個 anchors 修正，所有下游立即一致 reflow。
+
+### QR3：Chord Engine Bake-off 與可伴奏草稿
+
+**狀態：未開始；現有 beat-synchronous chroma decoder 只作 baseline。**
+
+- [ ] 在統一 major／minor／N.C. label set 下比較現有 decoder、Omnizart、autochord；Chordino 僅作可選傳統 baseline。
+- [ ] 先做 harmonic change detection，再做 chord label；禁止每拍強制產生事件。
+- [ ] Sequence decoder 加入 N.C.、duration prior、change penalty 與弱調性先驗。
+- [ ] borrowed chord 保留；低信心孤立 outlier 降權並標記 review，不以 smoothing 強制覆蓋。
+- [ ] 使用 duration-weighted chord accuracy、boundary tolerance、fragmentation ratio 與人工伴奏測試。
+- [ ] 選定 primary/fallback 後再逐層評估 dominant 7、maj7、min7、sus、slash/inversion。
+
+退出條件：G2 Chord Draft Playable 通過；Easy set 事件數不超過人工參考 1.25 倍，至少 80% 片段可在不超過 5 次編輯下作為伴奏草稿。
+
+### QR4：主旋律重新研究與重建
+
+**狀態：未開始；現有 Final Melody 已確認不可辨認，停止 threshold／smoothing 疊加。依賴 QR2。**
+
+- [ ] Basic Pitch 僅接受單一 vocal／lead stem；full mix 僅可作 diagnostic candidate。
+- [ ] Omnizart vocal note／contour 作第二意見，不直接寫正式 SongScore。
+- [ ] 先分類 Vocal／Instrumental Lead／No Melody，再依區段選擇來源。
+- [ ] 建立 phrase graph，以音程連續性、節奏位置、休止、重複動機及和弦／調性相容度解碼。
+- [ ] 合併 vibrato／slide／裝飾音，處理 octave error；輪廓穩定後才量化。
+- [ ] 同時保留 humanized timing 與 notated timing；低信心段落保持空白。
+- [ ] Melody-only blind recognition test 成為 release gate，不再以 note count 或 detector confidence 驗收。
+
+退出條件：G3 Vocal Melody Recognizable 通過；Easy vocal set 至少 80% 副歌片段可由熟悉歌曲的測試者在 10 秒內辨認。Instrumental lead 與 Live 仍可維持 Experimental。
+
+### QR5：Compact Lead Sheet 與演奏流程
+
+**狀態：未開始；現有收合 UI 與卡片 grid 只作過渡。依賴 QR2／QR3。**
+
+- [ ] 預設入口改為 Quick Chord Chart；Vocal Melody Beta 與 Live Experimental 為次要模式。
+- [ ] 結果第一屏顯示 transport、Key／Capo 與前 8–16 小節；進階 analyzer／revision／export 收入 More。
+- [ ] 4／8 小節一行，延續用 `%`／延長線；加入 section、repeat collapse 與 virtualization。
+- [ ] Chord／Roman Numeral／Nashville Number 切換，非調內低信心事件標示待確認。
+- [ ] contextual editor 使用 Bar／Beat／Slot；raw seconds 降為次要資訊。
+- [ ] sticky transport 整合 loop、slowdown、metronome、transpose、Capo 與 Undo／Redo。
+
+退出條件：G4 Product Flow Usable 通過；使用者不展開 Advanced 即可跟譜，並能在 2 分鐘內定位與修正一個錯拍或錯和弦。
+
+### QR6：Worker、Cache 與可恢復性
+
+**狀態：部分完成，可與 QR1–QR5 平行。**
+
+已完成：Demucs 非阻塞子程序、30 分鐘 timeout、completed job persistence、恢復 URL、artifact retention 與暫時 polling retry。
+
+- [ ] 所有 CPU-heavy analyzers 移出 Web process，API health check 在任何 stage 都能即時回應。
+- [ ] stage 顯示 elapsed time 與合理 ETA range；不假裝精準百分比。
+- [ ] 以 input hash、engine/model version、parameter hash cache 每個 stage artifact。
+- [ ] Timing／Chord／Melody 可單獨 retry 與版本比較，不重跑 download／separation。
+- [ ] server restart 後 active job 可恢復或明確續跑，不只保留 completed result。
+
+退出條件：長分析不阻塞 API；任一 stage 可獨立重跑；重新啟動後工作與 artifact 狀態一致且可解釋。
+
+## 接下來兩個 Sprint
+
+### Sprint A：看得見且量得到的 baseline
+
+1. `ARCH-001` canonical analyzer result interfaces。
+2. `QA-003` mir_eval adapter 與分層 report schema。
+3. `DBG-002b` wavesurfer.js Regions／Timeline／Minimap。
+4. `DBG-004` 選區錯誤標記與 annotation export。
+5. `REG-001` baseline artifact manifest／hash／不可覆蓋輸出。
+6. 取得首批 6 段合法 excerpts；若資料未齊，完成 synthetic timing/chord fixtures，但不得用它們宣稱音樂品質 gate 通過。
+
+### Sprint B：先修時間，再決定和弦引擎
+
+1. BeatNet optional container 與 Librosa adapter 同片段比較。
+2. beat/downbeat sonification、phase 與 drift report。
+3. Timing primary/fallback 決策與 license note。
+4. TempoMap schema、first downbeat、pickup、anchors 原型。
+5. 只在 Timing 候選確定後啟動 Omnizart／autochord chord bake-off。
+
+### 明確暫緩
+
+- 自動歌詞辨識、逐字 karaoke、麥克風評分。
+- 新 export 格式、PDF 美術與更多 chord diagram。
+- 全曲自動 voicing 最佳化擴充。
+- 在沒有 golden before/after report 時繼續調整旋律 threshold、register filter 或 smoothing。
+- 直接在主 backend 安裝 BeatNet、madmom、Omnizart、autochord、Essentia 全套依賴。
 
 ---
 
