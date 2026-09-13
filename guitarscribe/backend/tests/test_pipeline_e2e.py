@@ -160,3 +160,5 @@ async def test_pipeline_reports_successful_vocal_separation(tmp_path):
     assert score.analysis.confidence > 0
     assert not any("without source separation" in warning for warning in score.analysis.warnings)
     assert (artifacts / "vocal-stem.wav").read_bytes() == b"vocal-stem"
+    assert (artifacts / "raw-melody.wav").is_file()
+    assert (artifacts / "final-melody.wav").is_file()

@@ -42,7 +42,7 @@ Recovery 執行紀錄：
 - [x] `QA-002`：版本化 quality annotation model 已涵蓋 rights/hash、難度、excerpt、beat/downbeat、chord region、section、melody 與錯誤分類。
 - [x] `DBG-003` 基礎：新分析結果保存 analyzer 版本、選項、vocal separation 結果與 tempo map version；完整參數 hash 待補。
 - [x] `UX-001`：Melody／Tab 標為 Beta／Experimental，移除未校準 reliability 百分比。
-- [ ] `DBG-001`：Original／Vocal Stem A/B 已可在相同 playhead 切換；Raw detector／Final result 尚待接入。
+- [x] `DBG-001`：新分析會保存 Original／Vocal Stem／Raw Detector／Final Melody 四路診斷音訊；Web UI 可在相同 playhead 切換比較。未執行 vocal isolation 時不會假裝存在 Vocal Stem。
 
 ---
 

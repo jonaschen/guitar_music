@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import shutil
 from pathlib import Path
@@ -17,6 +18,7 @@ from ..postprocess.melody import MelodyPostProcessor
 from ..postprocess.rhythm import RhythmSuggester
 from ..fretboard.mapper import SimpleFretboardMapper
 from ..sources.local import LocalAudioSource
+from ..evaluation.diagnostic_audio import render_melody_diagnostic
 
 logger = logging.getLogger(__name__)
 
@@ -88,11 +90,12 @@ class AnalysisPipeline:
         complexity = ChordComplexity(options.get("chord_complexity", "standard"))
         chords.chords = self.chord_post.process(chords.chords, beats, complexity)
         
+        melody_mode = MelodyMode(options.get("melody_mode", "vocal"))
+        separate_vocals = bool(options.get("separate_vocals", False))
+        source_separated = False
+        raw_detector_notes = []
         try:
-            melody_mode = MelodyMode(options.get("melody_mode", "vocal"))
-            separate_vocals = bool(options.get("separate_vocals", False))
             melody_audio = normalized
-            source_separated = False
             separation_warnings: list[str] = []
             if separate_vocals and self.melody_separator and melody_mode == MelodyMode.VOCAL:
                 try:
@@ -121,6 +124,7 @@ class AnalysisPipeline:
                 logger.warning("pYIN vocal tracing failed; falling back to Basic Pitch: %s", melody_error)
                 separation_warnings.append("Vocal pitch tracing failed; used Basic Pitch on the isolated vocal stem.")
                 melody = await self.melody_analyzer.analyze(melody_audio, beats, melody_mode)
+            raw_detector_notes = [note.model_copy(deep=True) for note in melody.notes]
             melody.notes = self.melody_post.process(melody.notes, beats.beats, melody_mode)
             if source_separated and analyzer is not self.melody_analyzer:
                 try:
@@ -143,6 +147,23 @@ class AnalysisPipeline:
             
         await report("postprocessing")
         rhythm = self.rhythm_suggester.suggest(beats, chords)
+        artifact_directory = options.get("_artifact_directory")
+        if artifact_directory:
+            artifact_path = Path(artifact_directory)
+            if raw_detector_notes:
+                await asyncio.to_thread(
+                    render_melody_diagnostic,
+                    raw_detector_notes,
+                    normalized.duration_seconds,
+                    artifact_path / "raw-melody.wav",
+                )
+            if melody.notes:
+                await asyncio.to_thread(
+                    render_melody_diagnostic,
+                    melody.notes,
+                    normalized.duration_seconds,
+                    artifact_path / "final-melody.wav",
+                )
         
         return SongScore(
             song=SongInfo(

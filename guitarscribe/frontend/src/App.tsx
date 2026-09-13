@@ -49,6 +49,7 @@ const SYNTH_SCHEDULER_INTERVAL_MS = 50;
 
 type AnalyzeState = "idle" | "queued" | "ready" | "error";
 type ScoreChord = SongScore["chords"][number];
+type DiagnosticAudioTrack = "source" | "vocal-stem" | "raw-melody" | "final-melody";
 
 const EMPTY_SCORE: SongScore | null = null;
 
@@ -198,7 +199,7 @@ export function App() {
   const synthClockRef = useRef<{ contextStart: number; scoreStart: number } | null>(null);
   const lastMetronomeBeatRef = useRef<number | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [diagnosticAudioTrack, setDiagnosticAudioTrack] = useState<"source" | "vocal-stem">("source");
+  const [diagnosticAudioTrack, setDiagnosticAudioTrack] = useState<DiagnosticAudioTrack>("source");
   const [playbackTime, setPlaybackTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isSynthPlaying, setIsSynthPlaying] = useState(false);
@@ -1017,7 +1018,7 @@ export function App() {
     }
   }
 
-  function selectDiagnosticAudioTrack(track: "source" | "vocal-stem") {
+  function selectDiagnosticAudioTrack(track: DiagnosticAudioTrack) {
     if (!analysisJob || track === diagnosticAudioTrack) return;
     audioRef.current?.pause();
     setIsPlaying(false);
@@ -1025,7 +1026,7 @@ export function App() {
     setDiagnosticAudioTrack(track);
     setAudioUrl(track === "source"
       ? `${API_BASE}/api/v1/jobs/${analysisJob.id}/audio`
-      : `${API_BASE}/api/v1/jobs/${analysisJob.id}/artifacts/vocal-stem`);
+      : `${API_BASE}/api/v1/jobs/${analysisJob.id}/artifacts/${track}`);
   }
 
   function seekMeasure(direction: -1 | 1) {
@@ -1519,7 +1520,12 @@ export function App() {
                       onPause={() => setIsPlaying(false)}
                       onEnded={() => setIsPlaying(false)}
                     />
-                    {analysisJob?.status === "completed" ? <div className="diagnostic-track-switcher" aria-label="Diagnostic audio source"><span>Compare audio</span><button type="button" className={diagnosticAudioTrack === "source" ? "ghost-button diagnostic-track-active" : "ghost-button"} onClick={() => selectDiagnosticAudioTrack("source")}>Original</button><button type="button" className={diagnosticAudioTrack === "vocal-stem" ? "ghost-button diagnostic-track-active" : "ghost-button"} disabled={!analysisJob.artifacts?.includes("vocal-stem")} onClick={() => selectDiagnosticAudioTrack("vocal-stem")}>Vocal stem</button></div> : null}
+                    {analysisJob?.status === "completed" ? <div className="diagnostic-track-switcher" aria-label="Diagnostic audio source"><span>Compare audio</span>{([
+                      ["source", "Original"],
+                      ["vocal-stem", "Vocal stem"],
+                      ["raw-melody", "Raw detector"],
+                      ["final-melody", "Final melody"],
+                    ] as Array<[DiagnosticAudioTrack, string]>).map(([track, label]) => <button key={track} type="button" className={diagnosticAudioTrack === track ? "ghost-button diagnostic-track-active" : "ghost-button"} disabled={track !== "source" && !analysisJob.artifacts?.includes(track)} onClick={() => selectDiagnosticAudioTrack(track)}>{label}</button>)}</div> : null}
                     <button type="button" className="ghost-button" onClick={() => seekMeasure(-1)}>Previous bar</button>
                     <button type="button" className="ghost-button" disabled={isCountingIn} onClick={() => void togglePlayback()}>
                       {isCountingIn ? "Counting in..." : isPlaying ? "Pause" : "Play"}

@@ -241,8 +241,9 @@ class AnalysisJobService:
             job.message = "Analysis complete"
             job.score = score
             job.artifacts = ["source"]
-            if (directory / "vocal-stem.wav").is_file():
-                job.artifacts.append("vocal-stem")
+            for artifact_name in ("vocal-stem", "raw-melody", "final-melody"):
+                if (directory / f"{artifact_name}.wav").is_file():
+                    job.artifacts.append(artifact_name)
             job.updated_at = _now()
             self.store.save(job)
             logger.info("analysis_job_completed job_id=%s duration_seconds=%.3f", job_id, time.monotonic() - started)
