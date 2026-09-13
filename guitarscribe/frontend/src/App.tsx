@@ -1342,6 +1342,7 @@ export function App() {
               <span>{analysisJob.progress}%</span>
             </div>
             <progress value={analysisJob.progress} max="100">{analysisJob.progress}%</progress>
+            {analysisJob.status === "vocal_separation" ? <p className="job-stage-note">This stage may stay at 66% while Demucs is actively processing. You can leave this page open; do not submit the same song again.</p> : null}
             <button className="ghost-button" type="button" onClick={() => void cancelCurrentJob()}>Cancel analysis</button>
           </section>
         ) : null}

@@ -1,3 +1,4 @@
+import asyncio
 import subprocess
 import tempfile
 import shutil
@@ -88,13 +89,29 @@ class DemucsMelodySeparator:
             executable, "--two-stems", "vocals", "-n", self.model,
             "--out", str(output_dir), str(audio.path),
         ]
+        process = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
         try:
-            result = subprocess.run(cmd, capture_output=True, timeout=self.timeout)
-        except subprocess.TimeoutExpired as exc:
+            _stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=self.timeout)
+        except asyncio.TimeoutError as exc:
+            process.kill()
+            await process.wait()
             shutil.rmtree(output_dir, ignore_errors=True)
             raise RuntimeError(f"Demucs timed out after {self.timeout}s") from exc
-        if result.returncode != 0:
-            stderr = result.stderr.decode(errors="replace").strip()
+        except asyncio.CancelledError:
+            process.terminate()
+            try:
+                await asyncio.wait_for(process.wait(), timeout=5)
+            except asyncio.TimeoutError:
+                process.kill()
+                await process.wait()
+            shutil.rmtree(output_dir, ignore_errors=True)
+            raise
+        if process.returncode != 0:
+            stderr = stderr.decode(errors="replace").strip()
             shutil.rmtree(output_dir, ignore_errors=True)
             raise RuntimeError(f"Demucs failed: {stderr[-500:]}")
 

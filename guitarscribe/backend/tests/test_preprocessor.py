@@ -1,7 +1,6 @@
 import pytest
 from pathlib import Path
 import shutil
-from types import SimpleNamespace
 from app.analyzers.preprocessor import DemucsMelodySeparator, FFmpegPreprocessor
 from app.models.audio import AudioAsset, NormalizedAudio, SourceType
 from app.models.analysis import MelodyMode
@@ -30,14 +29,20 @@ async def test_normalize_missing_file(tmp_path):
 
 @pytest.mark.asyncio
 async def test_demucs_separator_uses_generated_vocal_stem(sample_wav, monkeypatch):
-    def fake_run(cmd, capture_output, timeout):
+    class FakeProcess:
+        returncode = 0
+
+        async def communicate(self):
+            return b"", b""
+
+    async def fake_create_subprocess_exec(*cmd, stdout, stderr):
         output_dir = Path(cmd[cmd.index("--out") + 1])
         stem = output_dir / "htdemucs" / "test" / "vocals.wav"
         stem.parent.mkdir(parents=True)
         shutil.copyfile(sample_wav, stem)
-        return SimpleNamespace(returncode=0, stderr=b"")
+        return FakeProcess()
 
-    monkeypatch.setattr("app.analyzers.preprocessor.subprocess.run", fake_run)
+    monkeypatch.setattr("app.analyzers.preprocessor.asyncio.create_subprocess_exec", fake_create_subprocess_exec)
     separator = DemucsMelodySeparator(binary="/usr/local/bin/demucs")
     audio = NormalizedAudio(path=sample_wav, duration_seconds=8.0)
 

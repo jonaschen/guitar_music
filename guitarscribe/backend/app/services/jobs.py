@@ -22,7 +22,11 @@ STAGE_DETAILS: dict[str, tuple[JobStatus, int, str]] = {
     "preprocessing": (JobStatus.PREPROCESSING, 15, "Normalizing audio"),
     "beat_analysis": (JobStatus.BEAT_ANALYSIS, 35, "Finding beats and bars"),
     "chord_analysis": (JobStatus.CHORD_ANALYSIS, 55, "Recognizing chords"),
-    "vocal_separation": (JobStatus.VOCAL_SEPARATION, 66, "Isolating vocals for melody focus"),
+    "vocal_separation": (
+        JobStatus.VOCAL_SEPARATION,
+        66,
+        "Isolating vocals — a full song can take 15–25 minutes on CPU",
+    ),
     "melody_analysis": (JobStatus.MELODY_ANALYSIS, 75, "Extracting melody"),
     "postprocessing": (JobStatus.POSTPROCESSING, 90, "Preparing guitar chart"),
 }
