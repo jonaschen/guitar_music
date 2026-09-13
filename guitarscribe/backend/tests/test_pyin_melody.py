@@ -33,6 +33,13 @@ def test_pyin_frames_do_not_create_notes_from_short_or_unvoiced_noise():
     assert notes == []
 
 
+def test_pyin_frames_preserve_low_voiced_probability_for_downstream_filtering():
+    notes = frames_to_notes([60.0, 60.0, 60.0], [0.12, 0.18, 0.15], hop_seconds=0.05)
+
+    assert len(notes) == 1
+    assert notes[0].confidence == pytest.approx(0.15)
+
+
 @pytest.mark.asyncio
 async def test_pyin_analyzes_a_short_monophonic_voice_like_fixture(tmp_path):
     sample_rate = 22050

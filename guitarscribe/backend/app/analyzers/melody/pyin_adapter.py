@@ -60,9 +60,11 @@ def frames_to_notes(
     notes: list[MelodyNote] = []
     for index, (start, end, pitches, probabilities) in enumerate(events, start=1):
         pitch = int(round(median(pitches)))
-        # Downstream processing applies a 0.4 confidence floor. pYIN's voiced
-        # probability is useful but can be conservative on breathy vocals.
-        confidence = max(0.45, min(0.95, sum(probabilities) / max(1, len(probabilities))))
+        # Preserve pYIN's voiced probability.  A previous artificial 0.45
+        # floor accidentally promoted weak stem leakage above the downstream
+        # 0.4 acceptance threshold, making accompaniment artifacts sound like
+        # a melody.  A small lower clamp only keeps the serialized value sane.
+        confidence = max(0.05, min(0.95, sum(probabilities) / max(1, len(probabilities))))
         notes.append(MelodyNote(
             id=f"pyin-{index}", start=start * hop_seconds, end=end * hop_seconds,
             midi=pitch, note=midi_to_note_name(pitch), confidence=confidence,
