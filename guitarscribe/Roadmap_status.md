@@ -43,6 +43,7 @@ Recovery 執行紀錄：
 - [x] `DBG-003` 基礎：新分析結果保存 analyzer 版本、選項、vocal separation 結果與 tempo map version；完整參數 hash 待補。
 - [x] `UX-001`：Melody／Tab 標為 Beta／Experimental，移除未校準 reliability 百分比。
 - [x] `DBG-001`：新分析會保存 Original／Vocal Stem／Raw Detector／Final Melody 四路診斷音訊；Web UI 可在相同 playhead 切換比較。未執行 vocal isolation 時不會假裝存在 Vocal Stem。
+- [x] `DBG-002` 基礎：Original waveform 疊加 beat、downbeat/bar、chord boundary、final melody 與 playhead；可點擊或用鍵盤跳至確切時間。區段標記與縮放仍待補。
 
 ---
 

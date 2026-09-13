@@ -50,6 +50,8 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await page.getByRole("button", { name: "Raw detector" }).click();
   await expect(page.getByRole("button", { name: "Raw detector" })).toHaveClass(/diagnostic-track-active/);
   await page.getByRole("button", { name: "Final melody" }).click();
+  await expect(page.getByRole("slider", { name: "Diagnostic waveform and analysis overlay" })).toBeVisible();
+  await expect(page.getByText("Chord boundary", { exact: true })).toBeVisible();
   await expect.poll(() => page.evaluate(() => localStorage.getItem("guitarscribe.activeJobId"))).toBe("demo-job");
   await expect(page.getByText("Guitar settings")).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });

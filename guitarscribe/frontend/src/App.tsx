@@ -2,6 +2,7 @@ import { ChangeEvent, FormEvent, lazy, Suspense, useEffect, useRef, useState } f
 import type { AccidentalPreference, AnalysisJob, PlaybackManifest, PlaybackTrack, SongScore } from "./types";
 import { ChordDiagram } from "./ChordDiagram";
 import { createAudioContextTransportClock, createMediaTransportClock } from "./transportClock";
+import { DiagnosticTimeline } from "./DiagnosticTimeline";
 
 const AlphaTabScore = lazy(() => import("./AlphaTabScore"));
 
@@ -1548,6 +1549,7 @@ export function App() {
                     <label className="transport-speed">Speed <select value={playbackRate} onChange={(event) => setSpeed(Number(event.target.value))}>{[0.5, 0.6, 0.75, 0.9, 1, 1.1, 1.25, 1.5].map((rate) => <option key={rate} value={rate}>{Math.round(rate * 100)}%</option>)}</select></label>
                     <input className="transport-timeline" type="range" min="0" max={score.song.duration_seconds || 0} step="0.01" value={Math.min(playbackTime, score.song.duration_seconds)} onChange={(event) => seekTo(Number(event.target.value))} aria-label="Playback position" />
                     <span>{playbackTime.toFixed(1)}s / {score.song.duration_seconds.toFixed(1)}s</span>
+                    {analysisJob?.status === "completed" ? <DiagnosticTimeline audioUrl={`${API_BASE}/api/v1/jobs/${analysisJob.id}/audio`} score={score} playbackTime={playbackTime} onSeek={seekTo} /> : null}
                   </section>
                 ) : null}
 
