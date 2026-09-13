@@ -1030,6 +1030,20 @@ export function App() {
     });
   }
 
+  function setFirstDetectedBeat(beatNumber: number) {
+    if (!score || score.beats.length === 0) return;
+    const beatsPerMeasure = Number(score.analysis.time_signature.charAt(0)) || 4;
+    const phase = Math.max(0, Math.min(beatsPerMeasure - 1, beatNumber - 1));
+    recordScoreChange({
+      ...score,
+      beats: score.beats.map((beat, index) => ({
+        ...beat,
+        beat: (index + phase) % beatsPerMeasure + 1,
+        measure: Math.floor((index + phase) / beatsPerMeasure) + 1,
+      })),
+    });
+  }
+
   function nudgeActiveBeatRange(seconds: number) {
     if (!score || activeBeatIndex < 0) return;
     const firstMeasure = score.beats[activeBeatIndex].measure;
@@ -1496,6 +1510,7 @@ export function App() {
                     <button type="button" className="ghost-button" onClick={() => setFollowPlayhead((enabled) => !enabled)}>{followPlayhead ? "Follow score on" : "Follow score off"}</button>
                     <span className="transport-beat-grid">Beat grid {score.beats[0]?.time.toFixed(1) ?? "—"}s</span><button type="button" className="ghost-button" disabled={!score.beats.length || score.beats[0].time < 0.1} onClick={() => nudgeBeatGrid(-0.1)}>Beat −100ms</button><button type="button" className="ghost-button" disabled={!score.beats.length} onClick={() => nudgeBeatGrid(0.1)}>Beat +100ms</button>
                     <button type="button" className="ghost-button" disabled={score.beats.length < 3} onClick={correctHalfTime}>Half-time</button><button type="button" className="ghost-button" disabled={score.beats.length < 2} onClick={correctDoubleTime}>Double-time</button>
+                    <label className="transport-speed">First detected beat <select aria-label="First detected beat in bar" value={score.beats[0]?.beat ?? 1} disabled={!score.beats.length} onChange={(event) => setFirstDetectedBeat(Number(event.target.value))}>{Array.from({ length: Number(score.analysis.time_signature.charAt(0)) || 4 }, (_, index) => <option key={index + 1} value={index + 1}>{index + 1}</option>)}</select></label>
                     <span className="transport-beat-grid">{activeBeatIndex >= 0 ? `Current beat ${score.beats[activeBeatIndex].beat} · Bar ${score.beats[activeBeatIndex].measure} at ${score.beats[activeBeatIndex].time.toFixed(1)}s` : "No current beat"}</span><button type="button" className="ghost-button" disabled={activeBeatIndex < 0} onClick={setActiveBeatAtPlayhead}>Set beat at playhead</button>
                     {activeBeatTimingBounds && activeBeatIndex >= 0 ? <label className="beat-timing-control">Drag beat<input aria-label="Drag current beat time" type="range" min={activeBeatTimingBounds.min} max={Math.max(activeBeatTimingBounds.min, activeBeatTimingBounds.max)} step="0.01" value={activeBeatTimingBounds.value} onChange={(event) => setBeatTimingDraft({ index: activeBeatIndex, time: Number(event.target.value) })} onPointerUp={() => commitBeatTiming(activeBeatIndex, activeBeatTimingBounds.value)} /></label> : null}
                     <label className="transport-speed">Nudge range <select aria-label="Beat nudge range" value={beatNudgeMeasures} onChange={(event) => setBeatNudgeMeasures(Number(event.target.value))}><option value={1}>1 bar</option><option value={2}>2 bars</option><option value={4}>4 bars</option></select></label><button type="button" className="ghost-button" disabled={activeBeatIndex < 0} onClick={() => nudgeActiveBeatRange(-0.1)}>Range −100ms</button><button type="button" className="ghost-button" disabled={activeBeatIndex < 0} onClick={() => nudgeActiveBeatRange(0.1)}>Range +100ms</button>
@@ -1507,17 +1522,18 @@ export function App() {
                   </section>
                 ) : null}
 
-                <section className="synth-panel">
-                  <div><h3>Compiled score playback</h3><p>Web Audio uses the current key, capo, selected voicings, rhythm, and estimated melody.</p></div>
+                <details className="synth-panel workspace-disclosure">
+                  <summary>Compiled score playback</summary>
+                  <p>Web Audio uses the current key, capo, selected voicings, rhythm, and estimated melody.</p>
                   <div className="synth-controls">
                     <button type="button" className="ghost-button" onClick={() => void toggleSynthPlayback()}>{isSynthPlaying ? "Pause score" : "Play score"}</button>
                     <button type="button" className="ghost-button" onClick={() => stopSynth(true)}>Stop score</button>
                     {(["guitar", "melody", "metronome"] as PlaybackTrack[]).map((track) => <label className="synth-track" key={track}><input type="checkbox" checked={synthTracks[track]} onChange={() => { if (isSynthPlaying) stopSynth(false); setSynthTracks((tracks) => ({ ...tracks, [track]: !tracks[track] })); }} /><span>{track}</span><input type="range" min="0" max="1" step="0.05" value={synthVolumes[track]} onChange={(event) => { if (isSynthPlaying) stopSynth(false); setSynthVolumes((volumes) => ({ ...volumes, [track]: Number(event.target.value) })); }} aria-label={track + " volume"} /><button type="button" className={synthSoloTrack === track ? "synth-solo synth-solo-active" : "synth-solo"} onClick={() => { if (isSynthPlaying) stopSynth(false); setSynthSoloTrack((current) => current === track ? null : track); }}>{synthSoloTrack === track ? "Soloed" : "Solo"}</button></label>)}
                   </div>
-                </section>
+                </details>
 
-                <section className="lyrics-panel">
-                  <h3>Lyrics</h3>
+                <details className="lyrics-panel workspace-disclosure">
+                  <summary>Lyrics{score.lyrics?.lines.length ? ` · ${score.lyrics.lines.length} lines` : ""}</summary>
                   <textarea value={lyricsDraft} onChange={(event) => setLyricsDraft(event.target.value)} placeholder="Paste lyrics you are allowed to use. One line per lyric line." rows={5} />
                   <div className="lyrics-actions"><button type="button" className="ghost-button" disabled={isImportingLyrics || !lyricsDraft.trim()} onClick={() => void saveLyrics()}>{isImportingLyrics ? "Importing..." : "Import lyrics"}</button><label className="ghost-button">Import LRC<input type="file" accept=".lrc,text/plain" onChange={importLrcFile} hidden /></label><button type="button" className="ghost-button" disabled={!score.lyrics?.lines.length} onClick={() => void distributeLyricTiming()}>Distribute timing</button><button type="button" className="ghost-button" disabled={!score.lyrics?.lines.length || !score.beats.length} onClick={() => void fitLyricTimingToBars()}>Fit timing to bars</button><button type="button" className="ghost-button" onClick={() => setSnapLyricTiming((enabled) => !enabled)}>{snapLyricTiming ? "Snap to beat on" : "Snap to beat off"}</button></div>
                   {score.lyrics?.lines.length ? <div className="lyrics-lines">{score.lyrics.lines.map((line, lineIndex) => {
@@ -1541,7 +1557,7 @@ export function App() {
                       </div> : <span className="lyric-timing-hint">Set both boundaries, or distribute timing, to drag this line.</span>}
                     </div>;
                   })}</div> : null}
-                </section>
+                </details>
 
                 <div className="export-actions">
                   <button type="button" className="ghost-button" onClick={downloadScoreJson}>Download JSON</button>
@@ -1584,7 +1600,8 @@ export function App() {
                   <div className="rhythm-steps">{score.rhythm.display.map((stroke, index) => <span key={index} title={stroke === "A" ? "Arpeggio" : undefined} className={stroke ? "rhythm-step rhythm-step-active" : "rhythm-step"}>{stroke === "A" ? "⌁" : stroke ?? "·"}</span>)}</div>
                 </section>
 
-                {score.melody.length > 0 ? <>
+                {score.melody.length > 0 ? <details className="melody-workspace workspace-disclosure">
+                <summary>Melody &amp; Tab previews · {score.melody.length} notes</summary>
                 <section className="melody-panel">
                   <div><h3>Estimated melody timeline</h3><p>Click a note to seek. Check Analysis notes above for transcription limitations.</p></div><button type="button" className="ghost-button melody-simplify" onClick={() => void simplifyMelody()}>Simplify melody</button>
                   <div className="melody-timeline" aria-label="Detected melody notes">{score.melody.map((note) => { const showLabel = melodyTimelineLabelIds.has(note.id); return <button key={note.id} type="button" aria-label={`${note.note} at ${note.start.toFixed(2)} seconds`} className={`melody-note ${showLabel ? "melody-note-label" : "melody-note-dot"}${activeMelodyNoteId === note.id ? " melody-note-active" : ""}`} title={note.note + " · " + note.start.toFixed(2) + "s"} onClick={() => seekTo(note.start)} style={{ left: String((note.start / Math.max(score.song.duration_seconds, 1)) * 100) + "%", bottom: String(Math.max(0, Math.min(85, (note.midi - 40) * 1.8))) + "%" }}>{showLabel ? note.note : "•"}</button>; })}</div>
@@ -1615,7 +1632,7 @@ export function App() {
                   </div> : null}
                   {activeMeasureGroup && !activeMeasureNotes.length ? <p className="tab-empty">No playable melody note is mapped in this bar.</p> : null}
                 </section>
-                </> : <section className="melody-empty" aria-live="polite"><h3>Melody not detected</h3><p>This analysis returned no confident melody notes, so Tab and melody exports are not ready. Try a clearer lead-vocal or single-guitar recording. A future retry may produce a different result.</p></section>}
+                </details> : <section className="melody-empty" aria-live="polite"><h3>Melody not detected</h3><p>This analysis returned no confident melody notes, so Tab and melody exports are not ready. Try a clearer lead-vocal or single-guitar recording. A future retry may produce a different result.</p></section>}
 
                 <div className="chord-sheet">
                   {measureGroups.map((group) => (

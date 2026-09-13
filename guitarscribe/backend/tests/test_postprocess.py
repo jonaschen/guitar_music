@@ -1,7 +1,7 @@
 import pytest
 from app.postprocess.chords import ChordPostProcessor
 from app.postprocess.melody import MelodyPostProcessor
-from app.models.analysis import BeatInfo, ChordComplexity, MelodyMode, MelodyNote
+from app.models.analysis import BeatAnalysis, BeatInfo, ChordComplexity, ChordEvent, MelodyMode, MelodyNote
 
 def test_chord_smooth(sample_chord_analysis, sample_beat_analysis):
     pp = ChordPostProcessor()
@@ -13,6 +13,23 @@ def test_chord_simplify(sample_chord_analysis):
     pp = ChordPostProcessor()
     simplified = pp.simplify(sample_chord_analysis.chords, ChordComplexity.SIMPLE)
     assert simplified[-1].symbol == "G" # Gmaj7 -> G
+
+
+def test_chord_postprocess_collapses_low_confidence_one_beat_return_flicker():
+    pp = ChordPostProcessor()
+    beats = BeatAnalysis(
+        bpm=120,
+        beats=[BeatInfo(time=time, beat=index + 1, measure=1) for index, time in enumerate([0.0, 0.5, 1.0, 1.5])],
+    )
+    chords = [
+        ChordEvent(id="c1", start=0, end=0.5, symbol="C", confidence=0.8),
+        ChordEvent(id="g", start=0.5, end=1.0, symbol="G", confidence=0.52),
+        ChordEvent(id="c2", start=1.0, end=1.5, symbol="C", confidence=0.8),
+    ]
+
+    smoothed = pp.smooth_low_confidence_return_chords(chords, beats)
+
+    assert [(chord.symbol, chord.start, chord.end) for chord in smoothed] == [("C", 0, 1.5)]
 
 def test_melody_remove_short():
     pp = MelodyPostProcessor()

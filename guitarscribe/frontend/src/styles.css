@@ -360,6 +360,33 @@ h2 {
   margin-bottom: 1rem;
 }
 
+.workspace-disclosure {
+  margin-bottom: 1rem;
+}
+
+.workspace-disclosure > summary {
+  cursor: pointer;
+  color: var(--text);
+  font-weight: 700;
+  list-style-position: inside;
+}
+
+.workspace-disclosure[open] > summary {
+  margin-bottom: 0.75rem;
+}
+
+.melody-workspace {
+  padding: 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.melody-workspace > section,
+.melody-workspace > .alphatab-panel {
+  margin-bottom: 0.8rem;
+}
+
 .metric-card,
 .measure-card {
   border-radius: 22px;
@@ -586,8 +613,11 @@ h2 {
 
   .field-row,
   .summary-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .metric-card { padding: 0.7rem; }
+  .metric-card strong { margin-top: 0.3rem; font-size: 1.15rem; }
 
   /* Keep dense arrangement controls readable without making the result page
      * a long single-column form on a phone. */

@@ -48,6 +48,34 @@ class ChordPostProcessor:
                     merged.append(chord)
         return merged
 
+    def smooth_low_confidence_return_chords(self, chords: List[ChordEvent], beats: BeatAnalysis) -> List[ChordEvent]:
+        """Collapse a weak one-beat A-B-A flicker into a lead-sheet A span."""
+        if len(chords) < 3 or len(beats.beats) < 2:
+            return chords
+        intervals = [right.time - left.time for left, right in zip(beats.beats, beats.beats[1:]) if right.time > left.time]
+        typical_beat = sorted(intervals)[len(intervals) // 2] if intervals else 0.5
+        result: list[ChordEvent] = []
+        index = 0
+        while index < len(chords):
+            if index + 2 < len(chords):
+                left, middle, right = chords[index:index + 3]
+                middle_duration = middle.end - middle.start
+                if (
+                    left.symbol == right.symbol
+                    and middle.confidence < 0.6
+                    and middle_duration <= typical_beat * 1.25
+                    and abs(left.end - middle.start) < 0.02
+                    and abs(middle.end - right.start) < 0.02
+                ):
+                    left.end = right.end
+                    left.confidence = max(left.confidence, right.confidence)
+                    result.append(left)
+                    index += 3
+                    continue
+            result.append(chords[index])
+            index += 1
+        return result
+
     def simplify(self, chords: List[ChordEvent], level: ChordComplexity) -> List[ChordEvent]:
         if level == ChordComplexity.FULL:
             return chords
@@ -68,5 +96,6 @@ class ChordPostProcessor:
         chords = self.smooth_chords(chords, beats)
         chords = self.snap_to_beats(chords, beats)
         chords = self.merge_consecutive(chords)
+        chords = self.smooth_low_confidence_return_chords(chords, beats)
         chords = self.simplify(chords, complexity)
         return chords

@@ -52,6 +52,7 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await expect(page.getByRole("option", { name: "Steady strum" })).toBeAttached();
   await page.getByLabel("Rhythm pattern").selectOption("steady");
   await expect(page.getByText("Steady strum · 8th-note grid")).toBeVisible();
+  await page.getByText("Melody & Tab previews · 1 notes").click();
   await expect(page.getByText("Estimated score preview")).toBeVisible();
   await page.getByRole("button", { name: "Simplify melody" }).click();
   await expect(page.getByRole("button", { name: "C4 in bar 1" })).toBeVisible();
@@ -63,6 +64,10 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await page.getByRole("button", { name: "Follow score on" }).click();
   await expect(page.getByRole("button", { name: "Follow score off" })).toBeVisible();
   await expect(page.getByText("Beat grid 0.0s")).toBeVisible();
+  await page.getByLabel("First detected beat in bar").selectOption("2");
+  await expect(page.getByLabel("First detected beat in bar")).toHaveValue("2");
+  await page.getByRole("button", { name: "Undo" }).click();
+  await expect(page.getByLabel("First detected beat in bar")).toHaveValue("1");
   await page.getByRole("button", { name: "Beat +100ms" }).click();
   await expect(page.getByText("Beat grid 0.1s")).toBeVisible();
   await page.getByLabel("Playback position").fill("0.1");
@@ -119,6 +124,7 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await expect(page.locator(".toolbar-block").nth(1)).toContainText("D major");
   await page.getByRole("button", { name: "Undo" }).click();
   await expect(page.locator(".toolbar-block").nth(1)).toContainText("C major");
+  await page.getByText("Lyrics", { exact: true }).click();
   await page.locator(".lyrics-panel textarea").fill("One two");
   await page.getByRole("button", { name: "Snap to beat off" }).click();
   await expect(page.getByRole("button", { name: "Snap to beat on" })).toBeVisible();

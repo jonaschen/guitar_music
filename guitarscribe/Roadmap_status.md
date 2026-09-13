@@ -137,6 +137,7 @@
 - [x] **和弦格對齊小節**
   - 依 `beats[].measure` 分組；小節為外層卡片、和弦在小節內以緊湊 adaptive grid 排列。
   - 小節卡最低寬度 10rem、和弦卡最低寬度 5.25rem；窄螢幕不再強制每個和弦一整列。
+  - 旋律時間軸、標準譜、Tab、歌詞與合成播放改為按需展開；手機摘要改為緊湊雙欄，避免長歌曲結果頁過度縱向延伸。
 - [x] **JSON 匯出按鈕**（主文件 §4.4）
   - 後端 `JsonScoreExporter` 已存在，但 UI 無下載按鈕
 - [x] **ChordPro 匯出**（主文件 §4.4）
@@ -261,6 +262,10 @@
   - 已提供 half-time / double-time 切換：重新建立 beat／measure 編號並相應調整 BPM，不重跑 DSP，可 Undo。
   - 已可將播放頭所在 beat 設為目前時間，或以 range handle 逐拍拖曳；兩者皆保護相鄰 beat 的排序。
   - 可選擇播放頭所在起算的 1、2 或 4 小節，整段 ±100ms 平移且維持原有拍距與相鄰拍點間隔。
+  - 可指定第一個偵測拍為小節內第 1–4 拍，整首重新編排 beat／measure 並支援 Undo，用來修正自動 beat tracker 不知道真正 downbeat 的整體小節相位錯誤。
+- [x] **Beat-synchronous 和弦解碼與簡譜式平滑**
+  - Chromagram 證據先以偵測拍點聚合，再輸出拍點對齊的和弦段落；低信心、只維持一拍的 A–B–A 假跳動會合併回主要和弦。
+  - 調性估算改用整首和弦的時長加權大小調音階／功能相容度，不再直接把出現最多的單一和弦當作主和弦。
 - [x] **Undo / Redo**（追加文件 §11）
   - 至少涵蓋 Key、Capo 與 voicing 變更
 - [ ] **刷奏型選擇**（主文件 §2.3）
@@ -433,7 +438,7 @@
 ## 已知問題與限制
 
 1. **Melody 分析在全混音上效果不佳** — 已加入模式化候選線與品質警告；Vocal focus 可於單次 job 勾選 Demucs 人聲分離（伺服器需另行啟用），失敗會安全退回全混音並顯示原因。CPU 隔離一首 5 分半 Live 曲約需數分鐘，適合作為較慢但品質較高的選項。
-2. **Chordino 安裝不穩定** — Docker build 自動降級為 Chromagram，但 Chromagram 只支援 24 組大小調
+2. **Chordino 安裝不穩定** — Docker build 自動降級為 Chromagram；fallback 已改為 beat-synchronous 與大小調功能相容度估算，但仍只支援 24 組大小三和弦，不能可靠辨識七和弦、sus、add 或 slash chord。
 3. **RhythmSuggester 仍屬保守啟發式** — 已讀取本機 templates 並可手動覆寫，但尚未納入 onset strength 等音訊特徵
 4. **標準譜 engraving 有限** — alphaTab 已提供標準譜與吉他 Tab 預覽；複雜記譜的視覺校對仍待補強。
 5. **指板映射仍是啟發式** — 已提供平衡／低把位／盡量同弦與最高琴格限制；自訂調弦、手指／換把生物力學與全曲最佳化仍待補強。
