@@ -187,6 +187,7 @@ export function App() {
   const [rhythmOptions, setRhythmOptions] = useState<SongScore["rhythm"][]>([]);
   const [analysisJob, setAnalysisJob] = useState<AnalysisJob | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const pendingAudioTrackSeekRef = useRef<number | null>(null);
   const metronomeContextRef = useRef<AudioContext | null>(null);
   const synthContextRef = useRef<AudioContext | null>(null);
   const synthSourcesRef = useRef<AudioScheduledSourceNode[]>([]);
@@ -197,6 +198,7 @@ export function App() {
   const synthClockRef = useRef<{ contextStart: number; scoreStart: number } | null>(null);
   const lastMetronomeBeatRef = useRef<number | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [diagnosticAudioTrack, setDiagnosticAudioTrack] = useState<"source" | "vocal-stem">("source");
   const [playbackTime, setPlaybackTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isSynthPlaying, setIsSynthPlaying] = useState(false);
@@ -273,7 +275,7 @@ export function App() {
     setStatus("queued");
     void getAnalysisJob(savedJobId).then((job) => {
       setAnalysisJob(job);
-      if (job.status === "completed" && job.score) { replaceScore(job.score); if (job.source_type === "youtube") setAudioUrl(`${API_BASE}/api/v1/jobs/${job.id}/audio`); setStatus("ready"); }
+      if (job.status === "completed" && job.score) { replaceScore(job.score); setAudioUrl(`${API_BASE}/api/v1/jobs/${job.id}/audio`); setStatus("ready"); }
       if (job.status === "failed" || job.status === "cancelled") { setStatus("error"); setError(job.error ?? job.message); }
     }).catch(() => setError("Could not reconnect to this analysis yet. Refresh to retry; the saved job ID was preserved."));
   }, []);
@@ -300,7 +302,7 @@ export function App() {
         setError("");
         if (nextJob.status === "completed" && nextJob.score) {
           replaceScore(nextJob.score);
-          if (nextJob.source_type === "youtube") setAudioUrl(`${API_BASE}/api/v1/jobs/${nextJob.id}/audio`);
+          setAudioUrl(`${API_BASE}/api/v1/jobs/${nextJob.id}/audio`);
           setRevisionId("");
           setSaveStatus("Analysis loaded. Save to create a revision.");
           setStatus("ready");
@@ -1015,6 +1017,17 @@ export function App() {
     }
   }
 
+  function selectDiagnosticAudioTrack(track: "source" | "vocal-stem") {
+    if (!analysisJob || track === diagnosticAudioTrack) return;
+    audioRef.current?.pause();
+    setIsPlaying(false);
+    pendingAudioTrackSeekRef.current = playbackTime;
+    setDiagnosticAudioTrack(track);
+    setAudioUrl(track === "source"
+      ? `${API_BASE}/api/v1/jobs/${analysisJob.id}/audio`
+      : `${API_BASE}/api/v1/jobs/${analysisJob.id}/artifacts/vocal-stem`);
+  }
+
   function seekMeasure(direction: -1 | 1) {
     if (!score) return;
     const measureStarts = Array.from(new Map(score.beats.map((beat) => [beat.measure, beat.time])).entries());
@@ -1495,11 +1508,18 @@ export function App() {
                     <audio
                       ref={audioRef}
                       src={audioUrl}
+                      onLoadedMetadata={(event) => {
+                        if (pendingAudioTrackSeekRef.current !== null) {
+                          event.currentTarget.currentTime = pendingAudioTrackSeekRef.current;
+                          pendingAudioTrackSeekRef.current = null;
+                        }
+                      }}
                       onTimeUpdate={(event) => handlePlaybackTime(event.currentTarget.currentTime)}
                       onPlay={() => setIsPlaying(true)}
                       onPause={() => setIsPlaying(false)}
                       onEnded={() => setIsPlaying(false)}
                     />
+                    {analysisJob?.status === "completed" ? <div className="diagnostic-track-switcher" aria-label="Diagnostic audio source"><span>Compare audio</span><button type="button" className={diagnosticAudioTrack === "source" ? "ghost-button diagnostic-track-active" : "ghost-button"} onClick={() => selectDiagnosticAudioTrack("source")}>Original</button><button type="button" className={diagnosticAudioTrack === "vocal-stem" ? "ghost-button diagnostic-track-active" : "ghost-button"} disabled={!analysisJob.artifacts?.includes("vocal-stem")} onClick={() => selectDiagnosticAudioTrack("vocal-stem")}>Vocal stem</button></div> : null}
                     <button type="button" className="ghost-button" onClick={() => seekMeasure(-1)}>Previous bar</button>
                     <button type="button" className="ghost-button" disabled={isCountingIn} onClick={() => void togglePlayback()}>
                       {isCountingIn ? "Counting in..." : isPlaying ? "Pause" : "Play"}

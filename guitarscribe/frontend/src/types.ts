@@ -115,6 +115,7 @@ export interface AnalysisJob {
   updated_at: string;
   error: string | null;
   score: SongScore | null;
+  artifacts?: string[];
 }
 
 export type LyricsTrack = {

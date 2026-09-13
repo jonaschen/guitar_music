@@ -46,3 +46,4 @@ class AnalysisJob(BaseModel):
     updated_at: str
     error: str | None = None
     score: SongScore | None = None
+    artifacts: list[str] = Field(default_factory=list)

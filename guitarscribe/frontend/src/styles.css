@@ -680,6 +680,24 @@ h2 {
   border-radius: 0.8rem;
 }
 
+.diagnostic-track-switcher {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding-right: 0.65rem;
+  border-right: 1px solid var(--border);
+}
+
+.diagnostic-track-switcher > span {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.diagnostic-track-active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 .chord-block-active {
   outline: 2px solid #7dd3fc;
   outline-offset: -2px;

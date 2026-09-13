@@ -316,10 +316,24 @@ async def get_job_audio(job_id: str, job_service: AnalysisJobService = Depends(g
         raise HTTPException(status_code=404, detail="Analysis job not found") from exc
     if job.status != JobStatus.COMPLETED:
         raise HTTPException(status_code=409, detail="Audio is available after analysis completes")
-    candidates = list(job_service.store.job_dir(job_id).glob("input.wav"))
+    candidates = list(job_service.store.job_dir(job_id).glob("input.*"))
     if not candidates:
         raise HTTPException(status_code=404, detail="Job audio is unavailable")
-    return FileResponse(candidates[0], media_type="audio/wav", filename="guitarscribe-source.wav")
+    return FileResponse(candidates[0], filename=f"guitarscribe-source{candidates[0].suffix}")
+
+
+@app.get("/api/v1/jobs/{job_id}/artifacts/vocal-stem", tags=["Analysis jobs"], summary="Play the isolated vocal diagnostic artifact")
+async def get_job_vocal_stem(job_id: str, job_service: AnalysisJobService = Depends(get_job_service)) -> FileResponse:
+    try:
+        job = job_service.get(job_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Analysis job not found") from exc
+    if job.status != JobStatus.COMPLETED:
+        raise HTTPException(status_code=409, detail="Diagnostic audio is available after analysis completes")
+    stem = job_service.store.job_dir(job_id) / "vocal-stem.wav"
+    if not stem.is_file():
+        raise HTTPException(status_code=404, detail="This analysis has no isolated vocal artifact")
+    return FileResponse(stem, media_type="audio/wav", filename="guitarscribe-vocal-stem.wav")
 
 
 @app.post("/analyses", response_model=SongScore, deprecated=True, tags=["Analysis jobs"], summary="Analyze an upload synchronously (legacy)")

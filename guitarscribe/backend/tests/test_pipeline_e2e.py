@@ -122,6 +122,9 @@ async def test_pipeline_reports_successful_vocal_separation(tmp_path):
 
     normalized = NormalizedAudio(path=tmp_path / "mix.wav", duration_seconds=8.0)
     vocals = NormalizedAudio(path=tmp_path / "vocals.wav", duration_seconds=8.0)
+    vocals.path.write_bytes(b"vocal-stem")
+    artifacts = tmp_path / "artifacts"
+    artifacts.mkdir()
 
     class Source:
         async def fetch(self, request): return AudioAsset(path=normalized.path, source_type=SourceType.LOCAL)
@@ -150,9 +153,10 @@ async def test_pipeline_reports_successful_vocal_separation(tmp_path):
     )
     score = await pipeline.run(
         SourceRequest(source_type=SourceType.LOCAL, path=normalized.path),
-        {"melody_mode": "vocal", "separate_vocals": True},
+        {"melody_mode": "vocal", "separate_vocals": True, "_artifact_directory": str(artifacts)},
     )
 
     assert "Vocal isolation was applied before melody extraction." in score.analysis.warnings
     assert score.analysis.confidence > 0
     assert not any("without source separation" in warning for warning in score.analysis.warnings)
+    assert (artifacts / "vocal-stem.wav").read_bytes() == b"vocal-stem"

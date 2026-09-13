@@ -229,6 +229,7 @@ class AnalysisJobService:
                     "melody_mode": job.melody_mode,
                     "separate_vocals": job.separate_vocals,
                     "chord_complexity": job.chord_complexity,
+                    "_artifact_directory": str(directory),
                 },
                 progress_callback=report,
             )
@@ -239,6 +240,9 @@ class AnalysisJobService:
             job.progress = 100
             job.message = "Analysis complete"
             job.score = score
+            job.artifacts = ["source"]
+            if (directory / "vocal-stem.wav").is_file():
+                job.artifacts.append("vocal-stem")
             job.updated_at = _now()
             self.store.save(job)
             logger.info("analysis_job_completed job_id=%s duration_seconds=%.3f", job_id, time.monotonic() - started)

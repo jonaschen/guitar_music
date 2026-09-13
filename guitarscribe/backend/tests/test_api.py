@@ -338,6 +338,15 @@ async def test_job_endpoints_queue_poll_and_return_completed_score(tmp_path):
         assert response.status_code == 200
         assert body["progress"] == 100
         assert body["score"]["analysis"]["key"] == "G"
+        assert body["artifacts"] == ["source"]
+        async with AsyncClient(transport=transport, base_url="http://testserver") as artifact_client:
+            audio_response = await artifact_client.get(f"/api/v1/jobs/{job_id}/audio")
+            assert audio_response.status_code == 200
+            assert audio_response.content == b"RIFFfake"
+            (service.store.job_dir(job_id) / "vocal-stem.wav").write_bytes(b"vocal")
+            stem_response = await artifact_client.get(f"/api/v1/jobs/{job_id}/artifacts/vocal-stem")
+            assert stem_response.status_code == 200
+            assert stem_response.content == b"vocal"
     finally:
         app.dependency_overrides.clear()
 

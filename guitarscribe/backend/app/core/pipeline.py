@@ -101,6 +101,10 @@ class AnalysisPipeline:
                     if melody_audio.temporary_directory:
                         temporary_directories.add(melody_audio.temporary_directory)
                     if source_separated:
+                        artifact_directory = options.get("_artifact_directory")
+                        if artifact_directory:
+                            artifact_path = Path(artifact_directory) / "vocal-stem.wav"
+                            shutil.copy2(melody_audio.path, artifact_path)
                         separation_warnings.append("Vocal isolation was applied before melody extraction.")
                 except Exception as separation_error:
                     logger.warning("Vocal separation failed; using full mix: %s", separation_error)
