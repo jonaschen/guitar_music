@@ -118,6 +118,7 @@ async def test_pipeline_reports_successful_vocal_separation(tmp_path):
     from app.core.pipeline import AnalysisPipeline
     from app.models.analysis import BeatAnalysis, ChordAnalysis, MelodyAnalysis, MelodyMode, MelodyNote, RhythmSuggestion
     from app.models.audio import AudioAsset, NormalizedAudio
+    from app.models.candidates import AnalyzerRun, TimingCandidate, TimingResult
     from app.postprocess.melody import MelodyPostProcessor
 
     normalized = NormalizedAudio(path=tmp_path / "mix.wav", duration_seconds=8.0)
@@ -131,7 +132,13 @@ async def test_pipeline_reports_successful_vocal_separation(tmp_path):
     class Preprocessor:
         async def normalize(self, asset): return normalized
     class BeatAnalyzer:
-        async def analyze(self, audio): return BeatAnalysis(bpm=120.0)
+        async def analyze_candidates(self, audio):
+            return TimingResult(
+                run=AnalyzerRun(engine="candidate-test", engine_version="1"),
+                candidates=[TimingCandidate(bpm=120, beats=[0, 0.5], downbeats=[0])],
+            )
+        def project(self, result):
+            return BeatAnalysis(bpm=result.candidates[0].bpm, engine=result.run.engine)
     class ChordAnalyzer:
         async def analyze(self, audio, beats): return ChordAnalysis()
     class ChordPost:
@@ -162,3 +169,7 @@ async def test_pipeline_reports_successful_vocal_separation(tmp_path):
     assert (artifacts / "vocal-stem.wav").read_bytes() == b"vocal-stem"
     assert (artifacts / "raw-melody.wav").is_file()
     assert (artifacts / "final-melody.wav").is_file()
+    timing_artifact = artifacts / "timing-candidates.json"
+    assert timing_artifact.is_file()
+    assert '"raw_artifact": "timing-candidates.json"' in timing_artifact.read_text()
+    assert score.provenance.beat_engine == "candidate-test"

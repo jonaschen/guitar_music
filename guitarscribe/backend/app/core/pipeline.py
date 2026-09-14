@@ -8,6 +8,7 @@ from ..models.score import SongScore, SongInfo, AnalysisSummary, Provenance, Key
 from ..models.analysis import AudioFeatures, MelodyAnalysis, MelodyMode, ChordComplexity
 from .config import Settings, ChordEngine
 from ..analyzers.preprocessor import DemucsMelodySeparator, FFmpegPreprocessor
+from ..analyzers.protocols import TimingCandidateAnalyzer
 from ..analyzers.beats.librosa_beats import LibrosaBeatAnalyzer
 from ..analyzers.chords.chromagram import ChromagramChordAnalyzer
 from ..analyzers.chords.chordino import ChordinoChordAnalyzer
@@ -83,7 +84,18 @@ class AnalysisPipeline:
             raise ValueError(f"Audio duration exceeds the configured limit of {self.max_duration_seconds} seconds")
         
         await report("beat_analysis")
-        beats = await self.beat_analyzer.analyze(normalized)
+        if isinstance(self.beat_analyzer, TimingCandidateAnalyzer):
+            timing_result = await self.beat_analyzer.analyze_candidates(normalized)
+            artifact_directory = options.get("_artifact_directory")
+            if artifact_directory:
+                artifact_name = "timing-candidates.json"
+                timing_result.run.raw_artifact = artifact_name
+                (Path(artifact_directory) / artifact_name).write_text(
+                    timing_result.model_dump_json(indent=2) + "\n"
+                )
+            beats = self.beat_analyzer.project(timing_result)
+        else:
+            beats = await self.beat_analyzer.analyze(normalized)
         
         await report("chord_analysis")
         chords = await self.chord_analyzer.analyze(normalized, beats)

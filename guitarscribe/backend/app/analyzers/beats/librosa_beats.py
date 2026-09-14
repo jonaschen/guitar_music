@@ -61,9 +61,8 @@ class LibrosaBeatAnalyzer:
             logger.error(f"Beat analysis failed: {e}")
             raise RuntimeError(f"Beat analysis failed: {e}")
 
-    async def analyze(self, audio: NormalizedAudio) -> BeatAnalysis:
+    def project(self, result: TimingResult) -> BeatAnalysis:
         """Project the legacy phase-zero choice while preserving ambiguity upstream."""
-        result = await self.analyze_candidates(audio)
         selected = result.candidates[0]
         beats = [
             BeatInfo(
@@ -87,3 +86,6 @@ class LibrosaBeatAnalyzer:
                 "Librosa detects beat pulses but not downbeats; the legacy score currently assumes the first detected pulse is beat 1."
             ],
         )
+
+    async def analyze(self, audio: NormalizedAudio) -> BeatAnalysis:
+        return self.project(await self.analyze_candidates(audio))

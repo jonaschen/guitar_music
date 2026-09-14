@@ -41,6 +41,8 @@ class ScoreExporter(Protocol):
 class TimingCandidateAnalyzer(Protocol):
     async def analyze_candidates(self, audio: NormalizedAudio) -> TimingResult: ...
 
+    def project(self, result: TimingResult) -> BeatAnalysis: ...
+
 
 @runtime_checkable
 class ChordCandidateAnalyzer(Protocol):
