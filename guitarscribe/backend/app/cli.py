@@ -11,6 +11,8 @@ from .models.audio import SourceRequest, SourceType
 from .exporters.json_exporter import JsonScoreExporter
 from .models.score import SongScore
 from .evaluation.metrics import evaluate_score
+from .evaluation.annotations import QualityAnnotation
+from .evaluation.quality_report import evaluate_quality_layers
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -100,6 +102,22 @@ def evaluate(
         failures.append(f"melody_pitch_accuracy {metrics['melody_pitch_accuracy']} is below {min_melody_pitch_accuracy}")
     if failures:
         raise click.ClickException("Golden quality gate failed: " + "; ".join(failures))
+
+
+@main.command("quality-report")
+@click.argument("score_file", type=click.Path(exists=True, path_type=Path))
+@click.argument("annotation_file", type=click.Path(exists=True, path_type=Path))
+@click.option("--output", "output_file", type=click.Path(path_type=Path), help="Write the report to this JSON file.")
+def quality_report(score_file: Path, annotation_file: Path, output_file: Path | None):
+    """Produce separate mir_eval timing, chord, melody, and review layers."""
+    score = SongScore.model_validate_json(score_file.read_text())
+    annotation = QualityAnnotation.model_validate_json(annotation_file.read_text())
+    report = evaluate_quality_layers(score, annotation)
+    rendered = json.dumps(report, indent=2, sort_keys=True)
+    if output_file:
+        output_file.write_text(rendered + "\n")
+    else:
+        click.echo(rendered)
 
 
 @main.command()

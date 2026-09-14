@@ -32,7 +32,7 @@ WORKDIR /app
 
 # Install Python dependencies, including the melody analyzer extra.
 COPY pyproject.toml ./
-RUN pip install --no-cache-dir -e '.[dev,melody]'
+RUN pip install --no-cache-dir -e '.[dev,melody,quality]'
 
 # Optional CPU-only vocal isolation. Disabled by default to keep the base image small.
 ARG INSTALL_SEPARATION=false

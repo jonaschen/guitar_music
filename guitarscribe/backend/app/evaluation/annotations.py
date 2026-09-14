@@ -58,6 +58,7 @@ class QualityAnnotation(BaseModel):
     difficulty: Literal["easy", "medium", "hard"]
     excerpt_start: float = Field(ge=0)
     excerpt_end: float = Field(gt=0)
+    tempo_bpm: float | None = Field(default=None, gt=0)
     meter: str = "4/4"
     beats: list[TimePointAnnotation] = Field(default_factory=list)
     downbeats: list[TimePointAnnotation] = Field(default_factory=list)

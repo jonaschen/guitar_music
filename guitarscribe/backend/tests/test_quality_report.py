@@ -1,0 +1,86 @@
+import json
+
+import pytest
+from click.testing import CliRunner
+
+from app.cli import main
+from app.evaluation.annotations import QualityAnnotation
+from app.evaluation.quality_report import evaluate_quality_layers
+from app.models.analysis import BeatInfo, ChordEvent, MelodyNote
+from app.models.score import AnalysisSummary, SongScore
+
+
+def make_annotation() -> QualityAnnotation:
+    return QualityAnnotation(
+        recording_id="legal-easy-01",
+        source_sha256="a" * 64,
+        rights_note="Original test fixture",
+        difficulty="easy",
+        excerpt_start=0,
+        excerpt_end=2,
+        tempo_bpm=120,
+        beats=[{"time": value} for value in (0, 0.5, 1, 1.5)],
+        downbeats=[{"time": 0}],
+        chords=[
+            {"start": 0, "end": 1, "label": "C"},
+            {"start": 1, "end": 2, "label": "Am"},
+        ],
+        melody=[
+            {"start": 0, "end": 0.5, "midi": 60},
+            {"start": 0.5, "end": 1, "midi": 62},
+        ],
+        listening_notes=["Recognizable lead phrase"],
+    )
+
+
+def make_score() -> SongScore:
+    return SongScore(
+        analysis=AnalysisSummary(bpm=120),
+        beats=[
+            BeatInfo(time=0, beat=1, measure=1),
+            BeatInfo(time=0.5, beat=2, measure=1),
+            BeatInfo(time=1, beat=3, measure=1),
+            BeatInfo(time=1.5, beat=4, measure=1),
+        ],
+        chords=[
+            ChordEvent(id="c1", start=0, end=1, symbol="C"),
+            ChordEvent(id="c2", start=1, end=2, symbol="Am"),
+        ],
+        melody=[
+            MelodyNote(id="m1", start=0, end=0.5, midi=60, note="C4"),
+            MelodyNote(id="m2", start=0.5, end=1, midi=62, note="D4"),
+        ],
+    )
+
+
+def test_layered_quality_report_scores_perfect_match_without_combining_layers():
+    report = evaluate_quality_layers(make_score(), make_annotation())
+
+    assert "overall" not in report
+    assert report["timing"]["beat_f_measure"] == pytest.approx(1)
+    assert report["timing"]["downbeat_f_measure"] == pytest.approx(1)
+    assert report["chord"]["majmin_weighted_accuracy"] == pytest.approx(1)
+    assert report["chord"]["root_weighted_accuracy"] == pytest.approx(1)
+    assert report["chord"]["boundary_f_measure"] == pytest.approx(1)
+    assert report["chord"]["fragmentation_ratio"] == pytest.approx(1)
+    assert report["melody"]["raw_pitch_accuracy"] == pytest.approx(1)
+    assert report["melody"]["overall_accuracy"] == pytest.approx(1)
+    assert report["human_review"]["required"] is True
+
+
+def test_quality_report_cli_writes_versioned_report(tmp_path):
+    score_path = tmp_path / "score.json"
+    annotation_path = tmp_path / "annotation.json"
+    output_path = tmp_path / "report.json"
+    score_path.write_text(make_score().model_dump_json())
+    annotation_path.write_text(make_annotation().model_dump_json())
+
+    result = CliRunner().invoke(
+        main,
+        ["quality-report", str(score_path), str(annotation_path), "--output", str(output_path)],
+    )
+
+    assert result.exit_code == 0, result.output
+    report = json.loads(output_path.read_text())
+    assert report["schema_version"] == "1.0"
+    assert report["recording_id"] == "legal-easy-01"

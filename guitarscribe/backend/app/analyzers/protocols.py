@@ -2,6 +2,7 @@ from typing import Protocol, runtime_checkable
 from ..models.audio import SourceRequest, AudioAsset, NormalizedAudio
 from ..models.analysis import BeatAnalysis, ChordAnalysis, MelodyAnalysis, MelodyMode, RhythmSuggestion, AudioFeatures, ChordComplexity
 from ..models.score import SongScore
+from ..models.candidates import ChordResult, MelodyCandidateResult, TimingResult
 
 @runtime_checkable
 class AudioSource(Protocol):
@@ -34,3 +35,18 @@ class FretboardMapper(Protocol):
 @runtime_checkable
 class ScoreExporter(Protocol):
     def export(self, score: SongScore) -> str: ...
+
+
+@runtime_checkable
+class TimingCandidateAnalyzer(Protocol):
+    async def analyze_candidates(self, audio: NormalizedAudio) -> TimingResult: ...
+
+
+@runtime_checkable
+class ChordCandidateAnalyzer(Protocol):
+    async def analyze_candidates(self, audio: NormalizedAudio, timing: TimingResult) -> ChordResult: ...
+
+
+@runtime_checkable
+class MelodyCandidateAnalyzer(Protocol):
+    async def analyze_candidates(self, audio: NormalizedAudio, timing: TimingResult) -> MelodyCandidateResult: ...
