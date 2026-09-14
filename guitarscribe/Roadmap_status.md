@@ -57,6 +57,7 @@ Recovery 執行紀錄：
 - [x] `QA-002`：版本化 quality annotation model 已涵蓋 rights/hash、難度、excerpt、beat/downbeat、chord region、section、melody 與錯誤分類。
 - [x] `QA-003a`：`mir_eval` 分層 report 已可獨立輸出 beat/downbeat/tempo/phase、chord root/maj-min/boundary/fragmentation、melody voicing/pitch/chroma 指標及人工聆聽欄位；不產生跨層綜合分數。
 - [x] `ARCH-001a`：已定義 versioned analyzer run metadata 與 `TimingResult`、`ChordResult`、`MelodyCandidateResult` canonical candidate contracts；第三方引擎可保存 raw artifact 位置，不必污染正式 `SongScore` schema。
+- [x] `TIM-001a`：現有 Librosa 已可輸出 canonical timing candidates，同時保留 0.5×／1×／2× tempo 與四種 phase，不再把第一個 pulse 當成已偵測的 downbeat；legacy projection 會明確警告其 phase 仍為假設。
 - [x] `DBG-003` 基礎：新分析結果保存 analyzer 版本、選項、vocal separation 結果與 tempo map version；完整參數 hash 待補。
 - [x] `UX-001`：Melody／Tab 標為 Beta／Experimental，移除未校準 reliability 百分比。
 - [x] `DBG-001`：新分析會保存 Original／Vocal Stem／Raw Detector／Final Melody 四路診斷音訊；Web UI 可在相同 playhead 切換比較。未執行 vocal isolation 時不會假裝存在 Vocal Stem。
@@ -92,7 +93,7 @@ Recovery 執行紀錄：
 
 **狀態：未開始；依賴 QR0 excerpts 與 metrics。**
 
-- [ ] 將現有 Librosa 封裝為 timing baseline adapter，不再把第一個 pulse 宣稱為 downbeat。
+- [x] 將現有 Librosa 封裝為 timing baseline adapter，保留 tempo／phase 候選，並明確標示 legacy score 的首拍只是 phase-zero 假設。
 - [ ] BeatNet 放入獨立 Python 3.9 optional worker/container；不污染主 Python dependency graph。
 - [ ] 對相同 6 段比較 beat、downbeat、tempo、meter、phase error、速度、記憶體與人工 click audition。
 - [ ] 保留多個 tempo／meter／phase 候選；不在 benchmark 前直接替換預設引擎。
