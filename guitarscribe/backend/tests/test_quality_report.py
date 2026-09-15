@@ -1,6 +1,7 @@
 import json
 
 import pytest
+import soundfile as sf
 from click.testing import CliRunner
 
 from app.cli import main
@@ -72,15 +73,33 @@ def test_quality_report_cli_writes_versioned_report(tmp_path):
     score_path = tmp_path / "score.json"
     annotation_path = tmp_path / "annotation.json"
     output_path = tmp_path / "report.json"
+    audio_path = tmp_path / "sonifications"
     score_path.write_text(make_score().model_dump_json())
     annotation_path.write_text(make_annotation().model_dump_json())
 
     result = CliRunner().invoke(
         main,
-        ["quality-report", str(score_path), str(annotation_path), "--output", str(output_path)],
+        [
+            "quality-report",
+            str(score_path),
+            str(annotation_path),
+            "--output",
+            str(output_path),
+            "--sonification-dir",
+            str(audio_path),
+        ],
     )
 
     assert result.exit_code == 0, result.output
     report = json.loads(output_path.read_text())
     assert report["schema_version"] == "1.0"
     assert report["recording_id"] == "legal-easy-01"
+    assert set(report["sonifications"]) == {
+        "reference_timing", "estimated_timing", "reference_chords",
+        "estimated_chords", "reference_melody", "estimated_melody",
+    }
+    for filename in report["sonifications"].values():
+        samples, sample_rate = sf.read(audio_path / filename)
+        assert sample_rate == 16000
+        assert len(samples) == 32000
+        assert samples.any()

@@ -13,6 +13,8 @@ from .models.score import SongScore
 from .evaluation.metrics import evaluate_score
 from .evaluation.annotations import QualityAnnotation
 from .evaluation.quality_report import evaluate_quality_layers
+from .evaluation.sonification import render_quality_sonifications
+from .evaluation.batch_report import build_quality_batch
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -108,16 +110,48 @@ def evaluate(
 @click.argument("score_file", type=click.Path(exists=True, path_type=Path))
 @click.argument("annotation_file", type=click.Path(exists=True, path_type=Path))
 @click.option("--output", "output_file", type=click.Path(path_type=Path), help="Write the report to this JSON file.")
-def quality_report(score_file: Path, annotation_file: Path, output_file: Path | None):
+@click.option("--sonification-dir", type=click.Path(path_type=Path), help="Render reference/estimated WAV pairs here.")
+def quality_report(
+    score_file: Path,
+    annotation_file: Path,
+    output_file: Path | None,
+    sonification_dir: Path | None,
+):
     """Produce separate mir_eval timing, chord, melody, and review layers."""
     score = SongScore.model_validate_json(score_file.read_text())
     annotation = QualityAnnotation.model_validate_json(annotation_file.read_text())
     report = evaluate_quality_layers(score, annotation)
+    if sonification_dir:
+        report["sonifications"] = render_quality_sonifications(score, annotation, sonification_dir)
     rendered = json.dumps(report, indent=2, sort_keys=True)
     if output_file:
         output_file.write_text(rendered + "\n")
     else:
         click.echo(rendered)
+
+
+@main.command("quality-batch")
+@click.argument("annotations_directory", type=click.Path(exists=True, file_okay=False, path_type=Path))
+@click.argument("baseline_scores_directory", type=click.Path(exists=True, file_okay=False, path_type=Path))
+@click.argument("candidate_scores_directory", type=click.Path(exists=True, file_okay=False, path_type=Path))
+@click.argument("output_directory", type=click.Path(path_type=Path))
+def quality_batch(
+    annotations_directory: Path,
+    baseline_scores_directory: Path,
+    candidate_scores_directory: Path,
+    output_directory: Path,
+):
+    """Build an immutable layered before/after report and audition bundle."""
+    try:
+        report_path = build_quality_batch(
+            annotations_directory,
+            baseline_scores_directory,
+            candidate_scores_directory,
+            output_directory,
+        )
+    except (FileExistsError, FileNotFoundError, ValueError) as exc:
+        raise click.ClickException(str(exc)) from exc
+    click.echo(str(report_path))
 
 
 @main.command()

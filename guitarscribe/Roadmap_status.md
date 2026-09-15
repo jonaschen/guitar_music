@@ -58,6 +58,8 @@ Recovery 執行紀錄：
 - [x] `QA-003a`：`mir_eval` 分層 report 已可獨立輸出 beat/downbeat/tempo/phase、chord root/maj-min/boundary/fragmentation、melody voicing/pitch/chroma 指標及人工聆聽欄位；不產生跨層綜合分數。
 - [x] `ARCH-001a`：已定義 versioned analyzer run metadata 與 `TimingResult`、`ChordResult`、`MelodyCandidateResult` canonical candidate contracts；第三方引擎可保存 raw artifact 位置，不必污染正式 `SongScore` schema。
 - [x] `TIM-001a`：現有 Librosa 已可輸出 canonical timing candidates，同時保留 0.5×／1×／2× tempo 與四種 phase；每次 job 先保存 `timing-candidates.json` raw artifact 才投影 legacy score，且明確警告 phase 仍為假設。
+- [x] `QA-003b1`：quality report CLI 可產生 reference／estimated 的 timing click、chord triad、melody tone 六路 deterministic WAV，供人工分層 A/B 聆聽。
+- [x] `QA-003b2`／`REG-001a`：可批次產生不可覆蓋的 baseline/candidate 分層 metrics、delta、source hash 與配對 sonification bundle；失敗時不留下不完整報告。
 - [x] `DBG-003` 基礎：新分析結果保存 analyzer 版本、選項、vocal separation 結果與 tempo map version；完整參數 hash 待補。
 - [x] `UX-001`：Melody／Tab 標為 Beta／Experimental，移除未校準 reliability 百分比。
 - [x] `DBG-001`：新分析會保存 Original／Vocal Stem／Raw Detector／Final Melody 四路診斷音訊；Web UI 可在相同 playhead 切換比較。未執行 vocal isolation 時不會假裝存在 Vocal Stem。
@@ -80,7 +82,7 @@ Recovery 執行紀錄：
 下一步：
 
 - [ ] `QA-001` 建立首批 6 首合法 bake-off excerpts（Easy 3、Medium 2、Hard 1），最終擴充至 12–20 首。
-- [ ] `QA-003b` 為 reference annotation 與 analyzer output 產生可聽的 click/chord/melody sonification，並加入 before/after batch report。
+- [ ] `REG-001b` 在 batch manifest 補齊 git commit、完整 analyzer parameters/hash、耗時與資源用量，並建立首份真實 baseline bundle。
 - [ ] `ARCH-001b` 將現有 Librosa／Chordino fallback／pYIN／Basic Pitch 以 adapter 接入 canonical contracts，且先保存 raw result 才投影到正式模型。
 - [ ] `DBG-002b` 以 wavesurfer.js Regions／Timeline／Minimap 取代目前 provisional canvas，支援縮放與可拖曳區域。
 - [ ] `DBG-004` 一鍵保存 `wrong beat`、`wrong chord`、`wrong melody`、`should be silence` 與選取區間。
