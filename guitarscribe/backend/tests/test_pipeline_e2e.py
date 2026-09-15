@@ -6,7 +6,7 @@ from app.models.audio import SourceRequest, SourceType
 @pytest.mark.slow
 @pytest.mark.e2e
 @pytest.mark.asyncio
-async def test_pipeline_e2e(sample_wav):
+async def test_pipeline_e2e(sample_wav, tmp_path):
     settings = Settings(chord_engine=ChordEngine.CHROMAGRAM)
     pipeline = create_pipeline(settings)
     
@@ -16,7 +16,12 @@ async def test_pipeline_e2e(sample_wav):
         rights_confirmed=True
     )
     
-    score = await pipeline.run(request, {"chord_complexity": "standard"})
+    artifacts = tmp_path / "artifacts"
+    artifacts.mkdir()
+    score = await pipeline.run(
+        request,
+        {"chord_complexity": "standard", "_artifact_directory": str(artifacts)},
+    )
     
     assert score.schema_version == "1.0"
     assert score.provenance.tempo_map_version == "legacy-beat-grid-v1"
@@ -24,6 +29,8 @@ async def test_pipeline_e2e(sample_wav):
     assert len(score.chords) > 0
     assert len(score.beats) > 0
     assert 60 <= score.analysis.bpm <= 200
+    assert (artifacts / "timing-candidates.json").is_file()
+    assert (artifacts / "chord-candidates.json").is_file()
     
     json_str = score.model_dump_json()
     assert isinstance(json_str, str)

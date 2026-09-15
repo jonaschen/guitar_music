@@ -48,6 +48,9 @@ class ChordResult(BaseModel):
     run: AnalyzerRun
     vocabulary: str = "majmin-nc"
     regions: list[ChordCandidateRegion] = Field(default_factory=list)
+    key: str = "C"
+    mode: str = "major"
+    confidence: float = Field(default=0, ge=0, le=1)
 
 
 class MelodyCandidateNote(BaseModel):

@@ -8,10 +8,11 @@ from ..models.score import SongScore, SongInfo, AnalysisSummary, Provenance, Key
 from ..models.analysis import AudioFeatures, MelodyAnalysis, MelodyMode, ChordComplexity
 from .config import Settings, ChordEngine
 from ..analyzers.preprocessor import DemucsMelodySeparator, FFmpegPreprocessor
-from ..analyzers.protocols import TimingCandidateAnalyzer
+from ..analyzers.protocols import ChordCandidateAnalyzer, TimingCandidateAnalyzer
 from ..analyzers.beats.librosa_beats import LibrosaBeatAnalyzer
 from ..analyzers.chords.chromagram import ChromagramChordAnalyzer
 from ..analyzers.chords.chordino import ChordinoChordAnalyzer
+from ..analyzers.chords.canonical_adapter import CanonicalChordAnalyzerAdapter
 from ..analyzers.melody.basic_pitch_adapter import BasicPitchMelodyAnalyzer
 from ..analyzers.melody.pyin_adapter import PyinVocalMelodyAnalyzer
 from ..postprocess.chords import ChordPostProcessor
@@ -84,6 +85,7 @@ class AnalysisPipeline:
             raise ValueError(f"Audio duration exceeds the configured limit of {self.max_duration_seconds} seconds")
         
         await report("beat_analysis")
+        timing_result = None
         if isinstance(self.beat_analyzer, TimingCandidateAnalyzer):
             timing_result = await self.beat_analyzer.analyze_candidates(normalized)
             artifact_directory = options.get("_artifact_directory")
@@ -98,7 +100,18 @@ class AnalysisPipeline:
             beats = await self.beat_analyzer.analyze(normalized)
         
         await report("chord_analysis")
-        chords = await self.chord_analyzer.analyze(normalized, beats)
+        if timing_result is not None and isinstance(self.chord_analyzer, ChordCandidateAnalyzer):
+            chord_result = await self.chord_analyzer.analyze_candidates(normalized, timing_result)
+            artifact_directory = options.get("_artifact_directory")
+            if artifact_directory:
+                artifact_name = "chord-candidates.json"
+                chord_result.run.raw_artifact = artifact_name
+                (Path(artifact_directory) / artifact_name).write_text(
+                    chord_result.model_dump_json(indent=2) + "\n"
+                )
+            chords = self.chord_analyzer.project(chord_result)
+        else:
+            chords = await self.chord_analyzer.analyze(normalized, beats)
         complexity = ChordComplexity(options.get("chord_complexity", "standard"))
         chords.chords = self.chord_post.process(chords.chords, beats, complexity)
         
@@ -234,6 +247,7 @@ def create_pipeline(settings: Settings) -> AnalysisPipeline:
             
     if chord_analyzer is None:
         chord_analyzer = ChromagramChordAnalyzer()
+    chord_analyzer = CanonicalChordAnalyzerAdapter(chord_analyzer)
         
     melody_analyzer = BasicPitchMelodyAnalyzer()
     vocal_melody_analyzer = PyinVocalMelodyAnalyzer()

@@ -48,6 +48,8 @@ class TimingCandidateAnalyzer(Protocol):
 class ChordCandidateAnalyzer(Protocol):
     async def analyze_candidates(self, audio: NormalizedAudio, timing: TimingResult) -> ChordResult: ...
 
+    def project(self, result: ChordResult) -> ChordAnalysis: ...
+
 
 @runtime_checkable
 class MelodyCandidateAnalyzer(Protocol):
