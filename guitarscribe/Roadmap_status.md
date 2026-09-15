@@ -62,6 +62,7 @@ Recovery 執行紀錄：
 - [x] `QA-003b2`／`REG-001a`：可批次產生不可覆蓋的 baseline/candidate 分層 metrics、delta、source hash 與配對 sonification bundle；失敗時不留下不完整報告。
 - [x] `REG-001b1`：batch manifest 保存 baseline/candidate commit、canonical score SHA-256 與完整 analyzer provenance/parameters，並提供 Docker CLI 操作文件。
 - [x] `ARCH-001b1`：Chordino／Chromagram 已由共用 adapter 輸出 canonical chord regions，job 先保存 `chord-candidates.json` 再進入正式 chord post-processing；更底層 chroma/frame evidence 尚待保存。
+- [x] `UX-002`：分析 reconnect 會區分永久 404 與暫時網路錯誤；過期 job 自動清除 localStorage／URL 並恢復新分析流程，暫時斷線每 2 秒自動重試。
 - [x] `DBG-003` 基礎：新分析結果保存 analyzer 版本、選項、vocal separation 結果與 tempo map version；完整參數 hash 待補。
 - [x] `UX-001`：Melody／Tab 標為 Beta／Experimental，移除未校準 reliability 百分比。
 - [x] `DBG-001`：新分析會保存 Original／Vocal Stem／Raw Detector／Final Melody 四路診斷音訊；Web UI 可在相同 playhead 切換比較。未執行 vocal isolation 時不會假裝存在 Vocal Stem。

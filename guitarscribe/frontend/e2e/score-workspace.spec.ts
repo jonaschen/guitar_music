@@ -16,6 +16,40 @@ const score = {
 const musicXml = `<?xml version="1.0" encoding="UTF-8"?>
 <score-partwise version="3.1"><part-list><score-part id="P1"><part-name>Guitar</part-name></score-part></part-list><part id="P1"><measure number="1"><attributes><divisions>480</divisions><time><beats>4</beats><beat-type>4</beat-type></time><clef><sign>TAB</sign><line>5</line></clef></attributes><note><pitch><step>C</step><octave>4</octave></pitch><duration>480</duration><type>quarter</type><notations><technical><string>2</string><fret>1</fret></technical></notations></note><note><rest/><duration>1440</duration><type>half</type></note></measure></part></score-partwise>`;
 
+test("clears an expired saved job instead of trapping refresh in a 404 loop", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("guitarscribe.activeJobId", "expired-job"));
+  await page.route("**/api/v1/jobs/expired-job", (route) => route.fulfill({
+    status: 404,
+    contentType: "application/json",
+    body: JSON.stringify({ detail: "Analysis job not found" }),
+  }));
+
+  await page.goto("/?job=expired-job");
+
+  await expect(page.getByText("This saved analysis has expired or is no longer available. Start a new analysis below.")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Start analysis" })).toBeEnabled();
+  await expect.poll(() => page.evaluate(() => localStorage.getItem("guitarscribe.activeJobId"))).toBeNull();
+  await expect.poll(() => new URL(page.url()).searchParams.has("job")).toBe(false);
+});
+
+test("automatically retries a temporary reconnect failure", async ({ page }) => {
+  let requests = 0;
+  await page.addInitScript(() => localStorage.setItem("guitarscribe.activeJobId", "retry-job"));
+  await page.route("**/api/v1/jobs/retry-job", (route) => {
+    requests += 1;
+    // React StrictMode initializes effects twice in development. Fail both
+    // initial attempts so only the scheduled retry can recover the score.
+    if (requests <= 2) return route.abort("connectionfailed");
+    return route.fulfill({ json: { id: "retry-job", status: "completed", progress: 100, message: "Analysis complete", source_type: "youtube", melody_mode: "vocal", chord_complexity: "standard", created_at: "2026-01-01T00:00:00Z", updated_at: "2026-01-01T00:00:00Z", error: null, artifacts: ["source"], score } });
+  });
+
+  await page.goto("/");
+
+  await expect(page.getByText("The backend is temporarily unavailable. Reconnecting automatically...")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Browser test song" })).toBeVisible({ timeout: 7000 });
+  expect(requests).toBeGreaterThanOrEqual(3);
+});
+
 test("renders an analyzed score workspace", async ({ page }) => {
   let musicXmlRequests = 0;
   await page.route("**/api/v1/jobs/demo-job", (route) => route.fulfill({ json: { id: "demo-job", status: "completed", progress: 100, message: "Analysis complete", source_type: "youtube", melody_mode: "vocal", chord_complexity: "standard", created_at: "2026-01-01T00:00:00Z", updated_at: "2026-01-01T00:00:00Z", error: null, artifacts: ["source", "vocal-stem", "raw-melody", "final-melody"], score } }));
@@ -116,8 +150,7 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await page.getByRole("button", { name: "Undo" }).click();
   await expect(timingInputs.nth(0)).toHaveValue("0.01");
   const playhead = page.getByLabel("Playback position");
-  await playhead.focus();
-  for (let step = 0; step < 100; step += 1) await page.keyboard.press("ArrowRight");
+  await playhead.fill("1");
   await expect(playhead).toHaveValue("1");
   await expect(page.getByText("Current beat 2 · Bar 1 at 0.7s")).toBeVisible();
   const dragCurrentBeat = page.getByLabel("Drag current beat time");

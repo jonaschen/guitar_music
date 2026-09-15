@@ -54,6 +54,13 @@ type DiagnosticAudioTrack = "source" | "vocal-stem" | "raw-melody" | "final-melo
 
 const EMPTY_SCORE: SongScore | null = null;
 
+class ApiError extends Error {
+  constructor(public readonly status: number, message: string) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
 function getPitchClass(key: string): number {
   return NOTE_TO_PITCH[key] ?? 0;
 }
@@ -98,7 +105,7 @@ async function createYouTubeAnalysisJob(url: string, melodyMode: string, separat
 async function getAnalysisJob(jobId: string): Promise<AnalysisJob> {
   const response = await fetch(`${API_BASE}/api/v1/jobs/${jobId}`);
   if (!response.ok) {
-    throw new Error(await response.text());
+    throw new ApiError(response.status, await response.text());
   }
   return response.json();
 }
@@ -273,13 +280,52 @@ export function App() {
     const linkedJobId = new URLSearchParams(window.location.search).get("job");
     const savedJobId = linkedJobId ?? window.localStorage.getItem("guitarscribe.activeJobId");
     if (!savedJobId) return;
-    window.localStorage.setItem("guitarscribe.activeJobId", savedJobId);
     setStatus("queued");
-    void getAnalysisJob(savedJobId).then((job) => {
-      setAnalysisJob(job);
-      if (job.status === "completed" && job.score) { replaceScore(job.score); setAudioUrl(`${API_BASE}/api/v1/jobs/${job.id}/audio`); setStatus("ready"); }
-      if (job.status === "failed" || job.status === "cancelled") { setStatus("error"); setError(job.error ?? job.message); }
-    }).catch(() => setError("Could not reconnect to this analysis yet. Refresh to retry; the saved job ID was preserved."));
+    let disposed = false;
+    let retryTimer: number | undefined;
+    const restore = async () => {
+      try {
+        const job = await getAnalysisJob(savedJobId);
+        if (disposed) return;
+        window.localStorage.setItem("guitarscribe.activeJobId", savedJobId);
+        setAnalysisJob(job);
+        setError("");
+        if (job.status === "completed" && job.score) {
+          replaceScore(job.score);
+          setAudioUrl(`${API_BASE}/api/v1/jobs/${job.id}/audio`);
+          setStatus("ready");
+        } else if (job.status === "completed") {
+          setStatus("error");
+          setError("This analysis completed without a recoverable score. Please run it again.");
+        } else if (job.status === "failed" || job.status === "cancelled") {
+          setStatus("error");
+          setError(job.error ?? job.message);
+        }
+      } catch (restoreError) {
+        if (disposed) return;
+        if (restoreError instanceof ApiError && restoreError.status === 404) {
+          if (window.localStorage.getItem("guitarscribe.activeJobId") === savedJobId) {
+            window.localStorage.removeItem("guitarscribe.activeJobId");
+          }
+          if (linkedJobId === savedJobId) {
+            const url = new URL(window.location.href);
+            url.searchParams.delete("job");
+            window.history.replaceState({}, "", url);
+          }
+          setAnalysisJob(null);
+          setStatus("idle");
+          setError("This saved analysis has expired or is no longer available. Start a new analysis below.");
+          return;
+        }
+        setError("The backend is temporarily unavailable. Reconnecting automatically...");
+        retryTimer = window.setTimeout(() => void restore(), 2000);
+      }
+    };
+    void restore();
+    return () => {
+      disposed = true;
+      if (retryTimer !== undefined) window.clearTimeout(retryTimer);
+    };
   }, []);
 
   useEffect(() => {
