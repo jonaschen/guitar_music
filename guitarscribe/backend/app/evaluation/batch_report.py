@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import hashlib
 import json
 from pathlib import Path
 import shutil
@@ -16,6 +17,16 @@ from ..models.score import SongScore
 
 
 LAYERS = ("timing", "chord", "melody")
+
+
+def _score_manifest(score: SongScore) -> dict[str, Any]:
+    canonical = json.dumps(
+        score.model_dump(mode="json"), sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode()
+    return {
+        "score_sha256": hashlib.sha256(canonical).hexdigest(),
+        "provenance": score.provenance.model_dump(mode="json"),
+    }
 
 
 def _numeric_delta(before: dict[str, Any], after: dict[str, Any]) -> dict[str, float]:
@@ -54,6 +65,8 @@ def build_quality_batch(
     baseline_scores_directory: Path,
     candidate_scores_directory: Path,
     output_directory: Path,
+    baseline_commit: str = "unknown",
+    candidate_commit: str = "unknown",
 ) -> Path:
     """Create a new report directory; existing destinations are never overwritten."""
     if output_directory.exists():
@@ -88,6 +101,8 @@ def build_quality_batch(
             recordings.append({
                 "recording_id": annotation.recording_id,
                 "annotation_source_sha256": annotation.source_sha256,
+                "baseline_manifest": _score_manifest(baseline_score),
+                "candidate_manifest": _score_manifest(candidate_score),
                 "baseline": {layer: baseline_report[layer] for layer in LAYERS},
                 "candidate": {layer: candidate_report[layer] for layer in LAYERS},
                 "delta": {
@@ -105,6 +120,10 @@ def build_quality_batch(
             "schema_version": "1.0",
             "generated_at": datetime.now(timezone.utc).isoformat(),
             "recording_count": len(recordings),
+            "runs": {
+                "baseline": {"git_commit": baseline_commit},
+                "candidate": {"git_commit": candidate_commit},
+            },
             "summary": {layer: _layer_summary(recordings, layer) for layer in LAYERS},
             "recordings": recordings,
         }

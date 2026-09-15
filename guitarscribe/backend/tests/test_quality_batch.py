@@ -57,14 +57,21 @@ def test_quality_batch_creates_immutable_layered_bundle(tmp_path):
 
     result = CliRunner().invoke(
         main,
-        ["quality-batch", str(annotations), str(baseline), str(candidate), str(output)],
+        [
+            "quality-batch", str(annotations), str(baseline), str(candidate), str(output),
+            "--baseline-commit", "abc123", "--candidate-commit", "def456",
+        ],
     )
 
     assert result.exit_code == 0, result.output
     report = json.loads((output / "report.json").read_text())
     assert "overall" not in report
     assert report["recording_count"] == 1
+    assert report["runs"]["baseline"]["git_commit"] == "abc123"
+    assert report["runs"]["candidate"]["git_commit"] == "def456"
     item = report["recordings"][0]
+    assert len(item["baseline_manifest"]["score_sha256"]) == 64
+    assert item["candidate_manifest"]["provenance"]["tempo_map_version"] == "legacy-beat-grid-v1"
     assert item["delta"]["melody"]["raw_pitch_accuracy"] > 0
     assert report["summary"]["melody"]["raw_pitch_accuracy"]["delta_mean"] > 0
     assert (output / item["sonifications"]["candidate"]["estimated_melody"]).is_file()

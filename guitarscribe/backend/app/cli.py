@@ -135,11 +135,15 @@ def quality_report(
 @click.argument("baseline_scores_directory", type=click.Path(exists=True, file_okay=False, path_type=Path))
 @click.argument("candidate_scores_directory", type=click.Path(exists=True, file_okay=False, path_type=Path))
 @click.argument("output_directory", type=click.Path(path_type=Path))
+@click.option("--baseline-commit", default="unknown", show_default=True, help="Git commit that produced baseline scores.")
+@click.option("--candidate-commit", default="unknown", show_default=True, help="Git commit that produced candidate scores.")
 def quality_batch(
     annotations_directory: Path,
     baseline_scores_directory: Path,
     candidate_scores_directory: Path,
     output_directory: Path,
+    baseline_commit: str,
+    candidate_commit: str,
 ):
     """Build an immutable layered before/after report and audition bundle."""
     try:
@@ -148,6 +152,8 @@ def quality_batch(
             baseline_scores_directory,
             candidate_scores_directory,
             output_directory,
+            baseline_commit,
+            candidate_commit,
         )
     except (FileExistsError, FileNotFoundError, ValueError) as exc:
         raise click.ClickException(str(exc)) from exc

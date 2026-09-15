@@ -79,4 +79,30 @@ docker compose run --rm -v "$PWD/backend:/app" -v "$PWD:/workspace:ro" backend \
     --max-bpm-relative-error 0.05 --min-beat-f-measure 0.8 --min-chord-symbol-recall 0.7
 ```
 
-The command reports relative BPM error, beat F-measure, chord-symbol recall, and onset/pitch melody accuracy. It is intended for regression comparison, not as a claim of full-song transcription accuracy.
+The legacy command reports relative BPM error, beat F-measure, chord-symbol
+recall, and onset/pitch melody accuracy. For the recovery quality gates, use
+the layered report instead; it never combines timing, chord, and melody into a
+single score, and can render six reference/estimated audition tracks:
+
+```bash
+docker compose run --rm -v "$PWD/backend:/app" -v "$PWD:/workspace" backend \
+  python -m app.cli quality-report /workspace/output/result.json \
+    /workspace/fixtures/annotations/test_progression.json \
+    --output /workspace/output/quality-report.json \
+    --sonification-dir /workspace/output/quality-audio
+```
+
+Once score files are named by each annotation's `recording_id`, compare two
+runs as an immutable bundle. The destination must not already exist:
+
+```bash
+docker compose run --rm -v "$PWD/backend:/app" -v "$PWD:/workspace" backend \
+  python -m app.cli quality-batch /workspace/fixtures/annotations \
+    /workspace/output/baseline /workspace/output/candidate \
+    /workspace/output/comparison-2026-09-15 \
+    --baseline-commit BASELINE_SHA --candidate-commit CANDIDATE_SHA
+```
+
+The bundle records source hashes, canonical score hashes, analyzer provenance,
+per-layer deltas, and paired WAV files. These tools are intended for regression
+comparison, not as a claim of full-song transcription accuracy.
