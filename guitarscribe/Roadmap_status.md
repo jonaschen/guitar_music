@@ -136,6 +136,7 @@ Recovery 執行紀錄：
 - [x] `CHORD-SEQ-001` baseline sequence decoder 結合聲學證據、短事件 change penalty、N.C. 與弱調性／五度解決 prior；樂理只用於接近候選的 tie-break，不禁止 borrowed／chromatic chord。
 - [x] `CHORD-QA-001` quality report 增加 boundary precision／recall、事件數與每分鐘密度、1.25 fragmentation gate、review load；低信心 chromatic、理論修正與未被覆寫的孤立 outlier 會在 SongScore／Web UI 明確標記 Review。
 - [x] `CHORD-QA-002` change、N.C.、duration/change penalty、五度解決與調性 prior 權重集中為具名 decoder config，並寫入 canonical analyzer provenance，確保 threshold bake-off 可重現。
+- [x] `CHORD-QA-003` decoder 參數一路保存到 SongScore provenance；`chord-calibration` 可比較多組完整 run，以 accuracy／boundary／fragmentation error／review load 產生 Pareto frontier，保留人工伴奏試聽作最終決策。
 
 - [ ] 在統一 major／minor／N.C. label set 下比較現有 decoder、Omnizart、autochord；Chordino 僅作可選傳統 baseline。
 - [ ] 將 harmonic change detector 納入人工標註 excerpt bake-off，依 boundary F-measure 校準 threshold，並與候選引擎共同比較。

@@ -60,6 +60,7 @@ class ChordAnalysis(BaseModel):
     confidence: float = 0.0
     engine: str = ""
     engine_version: str = ""
+    parameters: dict[str, str | int | float | bool] = Field(default_factory=dict)
     warnings: list[str] = Field(default_factory=list)
 
 class MelodyNote(BaseModel):

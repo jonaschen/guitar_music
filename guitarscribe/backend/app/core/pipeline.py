@@ -226,6 +226,7 @@ class AnalysisPipeline:
                     "separate_vocals_requested": separate_vocals,
                     "vocal_source_separated": source_separated,
                     "chord_complexity": complexity.value,
+                    **chords.parameters,
                 },
             )
         )

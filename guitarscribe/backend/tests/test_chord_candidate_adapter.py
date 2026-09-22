@@ -37,3 +37,4 @@ async def test_chord_adapter_uses_canonical_timing_and_round_trips_regions(norma
     assert projected.key == "A"
     assert projected.mode == "minor"
     assert projected.chords[0].symbol == "Am"
+    assert projected.parameters["decoder_change_threshold"] == 0.12

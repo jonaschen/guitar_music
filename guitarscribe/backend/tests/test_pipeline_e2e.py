@@ -26,6 +26,7 @@ async def test_pipeline_e2e(sample_wav, tmp_path):
     assert score.schema_version == "1.0"
     assert score.provenance.tempo_map_version == "legacy-beat-grid-v1"
     assert score.provenance.parameters["melody_mode"] == "vocal"
+    assert score.provenance.parameters["decoder_change_threshold"] == 0.12
     assert len(score.chords) > 0
     assert len(score.beats) > 0
     assert 60 <= score.analysis.bpm <= 200

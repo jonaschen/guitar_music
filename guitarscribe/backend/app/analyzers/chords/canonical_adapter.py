@@ -79,6 +79,7 @@ class CanonicalChordAnalyzerAdapter:
             confidence=result.confidence,
             engine=result.run.engine,
             engine_version=result.run.engine_version,
+            parameters=result.run.parameters,
         )
 
     async def analyze(self, audio: NormalizedAudio, beats: BeatAnalysis) -> ChordAnalysis:

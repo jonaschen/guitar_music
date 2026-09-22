@@ -15,6 +15,7 @@ from .evaluation.annotations import QualityAnnotation
 from .evaluation.quality_report import evaluate_quality_layers
 from .evaluation.sonification import render_quality_sonifications
 from .evaluation.batch_report import build_quality_batch
+from .evaluation.chord_calibration import build_chord_calibration
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -155,6 +156,19 @@ def quality_batch(
             baseline_commit,
             candidate_commit,
         )
+    except (FileExistsError, FileNotFoundError, ValueError) as exc:
+        raise click.ClickException(str(exc)) from exc
+    click.echo(str(report_path))
+
+
+@main.command("chord-calibration")
+@click.argument("annotations_directory", type=click.Path(exists=True, file_okay=False, path_type=Path))
+@click.argument("runs_directory", type=click.Path(exists=True, file_okay=False, path_type=Path))
+@click.argument("output_file", type=click.Path(path_type=Path))
+def chord_calibration(annotations_directory: Path, runs_directory: Path, output_file: Path):
+    """Compare decoder runs and emit a Pareto set for human audition."""
+    try:
+        report_path = build_chord_calibration(annotations_directory, runs_directory, output_file)
     except (FileExistsError, FileNotFoundError, ValueError) as exc:
         raise click.ClickException(str(exc)) from exc
     click.echo(str(report_path))

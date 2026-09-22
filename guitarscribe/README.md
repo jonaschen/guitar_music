@@ -106,3 +106,22 @@ docker compose run --rm -v "$PWD/backend:/app" -v "$PWD:/workspace" backend \
 The bundle records source hashes, canonical score hashes, analyzer provenance,
 per-layer deltas, and paired WAV files. These tools are intended for regression
 comparison, not as a claim of full-song transcription accuracy.
+
+To compare three or more chord-decoder configurations, place each complete run
+in a named subdirectory (for example `runs/default/*.json` and
+`runs/conservative/*.json`). Every score filename must match an annotation's
+`recording_id`. The calibration command retains all non-dominated settings
+instead of inventing a combined quality score:
+
+```bash
+docker compose run --rm -v "$PWD/backend:/app" -v "$PWD:/workspace" backend \
+  python -m app.cli chord-calibration /workspace/quality/annotations \
+    /workspace/output/runs /workspace/output/chord-calibration.json
+```
+
+The report compares duration-weighted maj/min accuracy, boundary F-measure,
+distance from the ideal fragmentation ratio, and Review-event load. It also
+enforces the 1.25 fragmentation gate and records decoder parameters from each
+score's provenance. The Pareto frontier narrows the candidates; paired
+sonification and human accompaniment audition remain required before choosing
+a default.

@@ -327,7 +327,8 @@ class ChromagramChordAnalyzer:
                 mode=mode,
                 confidence=0.6,
                 engine="chromagram",
-                engine_version="1.2"
+                engine_version="1.2",
+                parameters=self.parameters,
             )
             
         except Exception as e:
