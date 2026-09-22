@@ -113,7 +113,7 @@ class AnalysisPipeline:
         else:
             chords = await self.chord_analyzer.analyze(normalized, beats)
         complexity = ChordComplexity(options.get("chord_complexity", "standard"))
-        chords.chords = self.chord_post.process(chords.chords, beats, complexity)
+        chords.chords = self.chord_post.process(chords.chords, beats, complexity, chords.key, chords.mode)
         
         melody_mode = MelodyMode(options.get("melody_mode", "vocal"))
         separate_vocals = bool(options.get("separate_vocals", False))

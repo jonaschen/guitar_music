@@ -1725,6 +1725,7 @@ export function App() {
                           >
                             <span className="chord-symbol">{chord.symbol}</span>
                             <span className="chord-meta">{start.toFixed(1)}s - {end.toFixed(1)}s</span>
+                            {chord.roman_numeral ? <span className="shape-meta">{chord.roman_numeral} · {chord.harmonic_function?.replace(/_/g, " ")}</span> : null}
                             <span className="shape-meta">Shape: {chord.shape_symbol ?? chord.symbol}</span>
                             {continues ? <span className="continuation-badge">Continues</span> : null}
                             {chord.edited ? <span className="edit-badge">Edited</span> : null}

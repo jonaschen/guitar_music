@@ -7,6 +7,8 @@
 > 3. `GuitarScribe_Lyrics_and_Score_Playback_Addendum.md`（歌詞與按譜演奏追加規格）
 > 4. `GuitarScribe_Recovery_and_Quality_Plan_v1.0.md`（品質救援與 release gates）
 > 5. `GuitarScribe_Reference_Projects_Research_2026.md`（引擎、診斷工具與授權研究）
+> 6. `吉他五度圈學習指南.md`（功能和聲、五度圈、轉調與 voice leading）
+> 7. `吉他CAGED系統探索.md`（CAGED、音程結構與吉他編配幾何）
 >  
 > 若兩份文件在移調、Capo 或和弦指型上衝突，以追加文件為準。
 
@@ -121,7 +123,13 @@ Recovery 執行紀錄：
 
 ### QR3：Chord Engine Bake-off 與可伴奏草稿
 
-**狀態：未開始；現有 beat-synchronous chroma decoder 只作 baseline。**
+**狀態：進行中；現有 beat-synchronous chroma decoder 只作 baseline。**
+
+已完成：
+
+- [x] `CHORD-TH-001` 建立保守的功能和聲 context layer：輸出 Roman numeral 與 tonic／predominant／dominant／secondary dominant／modal mixture／chromatic；辨認 V/x 與 minor-key harmonic dominant。
+- [x] `CHORD-TH-002` 只修正低信心、無合理五度解決的調內平行 major/minor 誤判；以獨立 `detected_symbol` 保存原始辨識，不覆蓋高信心 borrowed chord 或 secondary dominant，也不干擾正式和弦的移調來源。
+- [x] 和弦卡片顯示 Roman numeral 與 harmonic function；CAGED 仍定位為後段 voicing／voice-leading 編配層，不用指型反推聲學標籤。
 
 - [ ] 在統一 major／minor／N.C. label set 下比較現有 decoder、Omnizart、autochord；Chordino 僅作可選傳統 baseline。
 - [ ] 先做 harmonic change detection，再做 chord label；禁止每拍強制產生事件。

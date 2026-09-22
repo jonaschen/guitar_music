@@ -39,6 +39,7 @@ class ChordEvent(BaseModel):
     start: float
     end: float
     symbol: str
+    detected_symbol: Optional[str] = None
     source_symbol: Optional[str] = None
     shape_symbol: Optional[str] = None
     confidence: float = 0.0
@@ -46,6 +47,9 @@ class ChordEvent(BaseModel):
     edited: bool = False
     voicing_id: Optional[str] = None
     available_voicings: list["ChordVoicing"] = Field(default_factory=list)
+    roman_numeral: Optional[str] = None
+    harmonic_function: Optional[str] = None
+    theory_confidence: Optional[float] = Field(default=None, ge=0, le=1)
 
 class ChordAnalysis(BaseModel):
     chords: list[ChordEvent] = Field(default_factory=list)

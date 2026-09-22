@@ -81,7 +81,7 @@ async def test_pipeline_falls_back_to_full_mix_when_vocal_separation_fails(tmp_p
             return ChordAnalysis()
 
     class ChordPost:
-        def process(self, chords, beats, complexity):
+        def process(self, chords, beats, complexity, key, mode):
             return chords
 
     class Separator:
@@ -149,7 +149,7 @@ async def test_pipeline_reports_successful_vocal_separation(tmp_path):
     class ChordAnalyzer:
         async def analyze(self, audio, beats): return ChordAnalysis()
     class ChordPost:
-        def process(self, chords, beats, complexity): return chords
+        def process(self, chords, beats, complexity, key, mode): return chords
     class Separator:
         async def separate(self, audio, mode): return vocals, True
     class MelodyAnalyzer:

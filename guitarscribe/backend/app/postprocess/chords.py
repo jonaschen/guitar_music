@@ -1,6 +1,7 @@
 from typing import List
 import re
 from ..models.analysis import ChordEvent, BeatAnalysis, ChordComplexity
+from .harmony import apply_harmonic_context
 
 class ChordPostProcessor:
     def smooth_chords(self, chords: List[ChordEvent], beats: BeatAnalysis, min_duration: float = 0.3) -> List[ChordEvent]:
@@ -92,10 +93,14 @@ class ChordPostProcessor:
                     chord.symbol = match.group(1)
         return chords
 
-    def process(self, chords: List[ChordEvent], beats: BeatAnalysis, complexity: ChordComplexity) -> List[ChordEvent]:
+    def process(
+        self, chords: List[ChordEvent], beats: BeatAnalysis, complexity: ChordComplexity,
+        key: str = "C", mode: str = "major",
+    ) -> List[ChordEvent]:
         chords = self.smooth_chords(chords, beats)
         chords = self.snap_to_beats(chords, beats)
         chords = self.merge_consecutive(chords)
         chords = self.smooth_low_confidence_return_chords(chords, beats)
+        chords = apply_harmonic_context(chords, key, mode)
         chords = self.simplify(chords, complexity)
         return chords

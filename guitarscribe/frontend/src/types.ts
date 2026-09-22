@@ -37,6 +37,7 @@ export type SongScore = {
     start: number;
     end: number;
     symbol: string;
+    detected_symbol?: string | null;
     source_symbol?: string | null;
     shape_symbol?: string | null;
     confidence: number;
@@ -54,6 +55,9 @@ export type SongScore = {
       difficulty: number;
       tags: string[];
     }>;
+    roman_numeral?: string | null;
+    harmonic_function?: string | null;
+    theory_confidence?: number | null;
   }>;
   melody: Array<{
     id: string;

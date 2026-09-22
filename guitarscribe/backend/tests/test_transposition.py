@@ -113,6 +113,18 @@ def test_transpose_uses_flat_spelling_when_requested():
     assert service.transpose_chord_symbol("C/E", 3, AccidentalPreference.FLATS) == "Eb/G"
 
 
+def test_transpose_uses_theory_corrected_symbol_not_raw_detector_symbol():
+    score = make_score()
+    score.chords[0].symbol = "Dm"
+    score.chords[0].detected_symbol = "D"
+
+    transposed = TranspositionService().transpose_score(score, semitones=2)
+
+    assert transposed.chords[0].symbol == "Em"
+    assert transposed.chords[0].source_symbol == "Dm"
+    assert transposed.chords[0].detected_symbol == "D"
+
+
 @pytest.mark.parametrize("semitones", range(12))
 def test_transpose_covers_every_pitch_class_for_key_chord_slash_bass_and_melody(semitones):
     service = TranspositionService()
