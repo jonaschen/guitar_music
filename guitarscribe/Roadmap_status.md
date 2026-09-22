@@ -137,6 +137,7 @@ Recovery 執行紀錄：
 - [x] `CHORD-QA-001` quality report 增加 boundary precision／recall、事件數與每分鐘密度、1.25 fragmentation gate、review load；低信心 chromatic、理論修正與未被覆寫的孤立 outlier 會在 SongScore／Web UI 明確標記 Review。
 - [x] `CHORD-QA-002` change、N.C.、duration/change penalty、五度解決與調性 prior 權重集中為具名 decoder config，並寫入 canonical analyzer provenance，確保 threshold bake-off 可重現。
 - [x] `CHORD-QA-003` decoder 參數一路保存到 SongScore provenance；`chord-calibration` 可比較多組完整 run，以 accuracy／boundary／fragmentation error／review load 產生 Pareto frontier，保留人工伴奏試聽作最終決策。
+- [x] `CHORD-QA-004` 所有 decoder 校準參數可由 `GUITARSCRIBE_CHORD_*` 環境變數設定，pipeline 使用並自動記錄實值，不需改碼即可產生多組 comparison run。
 
 - [ ] 在統一 major／minor／N.C. label set 下比較現有 decoder、Omnizart、autochord；Chordino 僅作可選傳統 baseline。
 - [ ] 將 harmonic change detector 納入人工標註 excerpt bake-off，依 boundary F-measure 校準 threshold，並與候選引擎共同比較。

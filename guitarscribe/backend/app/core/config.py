@@ -17,6 +17,12 @@ class Settings(BaseModel):
     job_ttl_seconds: int = 24 * 60 * 60
     work_dir: Path = Path("/tmp/guitarscribe")
     chord_engine: ChordEngine = ChordEngine.AUTO
+    chord_change_threshold: float = Field(default=0.12, ge=0, le=2)
+    chord_no_chord_threshold: float = Field(default=0.18, ge=0, le=1)
+    chord_base_change_penalty: float = Field(default=0.04, ge=0, le=1)
+    chord_short_event_change_penalty: float = Field(default=0.05, ge=0, le=1)
+    chord_circle_fifths_bonus: float = Field(default=0.015, ge=0, le=1)
+    chord_tonal_prior_scale: float = Field(default=1.0, ge=0, le=4)
     melody_engine: str = "basic_pitch"
     melody_separator: str = "off"
     demucs_binary: Optional[str] = None
@@ -39,6 +45,12 @@ class Settings(BaseModel):
             job_ttl_seconds=int(os.environ.get("GUITARSCRIBE_JOB_TTL_SECONDS", str(24 * 60 * 60))),
             work_dir=Path(os.environ.get("GUITARSCRIBE_WORK_DIR", "/tmp/guitarscribe")),
             chord_engine=ChordEngine(os.environ.get("GUITARSCRIBE_CHORD_ENGINE", "auto")),
+            chord_change_threshold=float(os.environ.get("GUITARSCRIBE_CHORD_CHANGE_THRESHOLD", "0.12")),
+            chord_no_chord_threshold=float(os.environ.get("GUITARSCRIBE_CHORD_NO_CHORD_THRESHOLD", "0.18")),
+            chord_base_change_penalty=float(os.environ.get("GUITARSCRIBE_CHORD_BASE_CHANGE_PENALTY", "0.04")),
+            chord_short_event_change_penalty=float(os.environ.get("GUITARSCRIBE_CHORD_SHORT_EVENT_CHANGE_PENALTY", "0.05")),
+            chord_circle_fifths_bonus=float(os.environ.get("GUITARSCRIBE_CHORD_CIRCLE_FIFTHS_BONUS", "0.015")),
+            chord_tonal_prior_scale=float(os.environ.get("GUITARSCRIBE_CHORD_TONAL_PRIOR_SCALE", "1.0")),
             melody_engine=os.environ.get("GUITARSCRIBE_MELODY_ENGINE", "basic_pitch"),
             melody_separator=os.environ.get("GUITARSCRIBE_MELODY_SEPARATOR", "off"),
             demucs_binary=os.environ.get("GUITARSCRIBE_DEMUCS_BINARY"),

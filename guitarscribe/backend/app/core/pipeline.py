@@ -10,7 +10,7 @@ from .config import Settings, ChordEngine
 from ..analyzers.preprocessor import DemucsMelodySeparator, FFmpegPreprocessor
 from ..analyzers.protocols import ChordCandidateAnalyzer, TimingCandidateAnalyzer
 from ..analyzers.beats.librosa_beats import LibrosaBeatAnalyzer
-from ..analyzers.chords.chromagram import ChromagramChordAnalyzer
+from ..analyzers.chords.chromagram import ChordDecoderConfig, ChromagramChordAnalyzer
 from ..analyzers.chords.chordino import ChordinoChordAnalyzer
 from ..analyzers.chords.canonical_adapter import CanonicalChordAnalyzerAdapter
 from ..analyzers.melody.basic_pitch_adapter import BasicPitchMelodyAnalyzer
@@ -247,7 +247,14 @@ def create_pipeline(settings: Settings) -> AnalysisPipeline:
             logger.info("Falling back to Chromagram for chord analysis")
             
     if chord_analyzer is None:
-        chord_analyzer = ChromagramChordAnalyzer()
+        chord_analyzer = ChromagramChordAnalyzer(ChordDecoderConfig(
+            change_threshold=settings.chord_change_threshold,
+            no_chord_threshold=settings.chord_no_chord_threshold,
+            base_change_penalty=settings.chord_base_change_penalty,
+            short_event_change_penalty=settings.chord_short_event_change_penalty,
+            circle_fifths_bonus=settings.chord_circle_fifths_bonus,
+            tonal_prior_scale=settings.chord_tonal_prior_scale,
+        ))
     chord_analyzer = CanonicalChordAnalyzerAdapter(chord_analyzer)
         
     melody_analyzer = BasicPitchMelodyAnalyzer()

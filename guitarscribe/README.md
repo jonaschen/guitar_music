@@ -125,3 +125,17 @@ enforces the 1.25 fragmentation gate and records decoder parameters from each
 score's provenance. The Pareto frontier narrows the candidates; paired
 sonification and human accompaniment audition remain required before choosing
 a default.
+
+Generate a comparison run without changing source code by overriding the
+documented `GUITARSCRIBE_CHORD_*` values from `.env.example`. For example, a
+more conservative segmentation run can use:
+
+```bash
+docker compose run --rm \
+  -e GUITARSCRIBE_CHORD_ENGINE=chromagram \
+  -e GUITARSCRIBE_CHORD_CHANGE_THRESHOLD=0.18 \
+  -e GUITARSCRIBE_CHORD_BASE_CHANGE_PENALTY=0.06 \
+  -v "$PWD/backend:/app" -v "$PWD:/workspace" backend \
+  python -m app.cli analyze /workspace/quality/audio/easy-01.wav \
+    --output /workspace/output/runs/conservative/easy-01.json
+```
