@@ -131,6 +131,7 @@ Recovery 執行紀錄：
 - [x] `CHORD-TH-002` 只修正低信心、無合理五度解決的調內平行 major/minor 誤判；以獨立 `detected_symbol` 保存原始辨識，不覆蓋高信心 borrowed chord 或 secondary dominant，也不干擾正式和弦的移調來源。
 - [x] 和弦卡片顯示 Roman numeral 與 harmonic function；CAGED 仍定位為後段 voicing／voice-leading 編配層，不用指型反推聲學標籤。
 - [x] `CAGED-001` major triad 提供完整 C／A／G／E／D movable shape family；minor triad 先提供實用的 A／E／D anchors，刻意不生成不符合人體工學的完整 C／G minor grip。
+- [x] `CAGED-002` voicing optimizer 改為整段 dynamic programming，以難度、把位、逐弦手指移動、低音移動與可保留共同音選擇連續指型，不再逐顆只比較 base fret。
 - [x] `CHORD-SEG-001` chromagram 先以完整和弦證據輪廓偵測 harmonic change，再為區段指派 label；beat grid 只限制可能邊界，不再強迫每拍各自判定和弦。
 - [x] `CHORD-SEQ-001` baseline sequence decoder 結合聲學證據、短事件 change penalty、N.C. 與弱調性／五度解決 prior；樂理只用於接近候選的 tie-break，不禁止 borrowed／chromatic chord。
 
