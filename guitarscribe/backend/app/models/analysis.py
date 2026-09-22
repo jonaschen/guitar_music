@@ -50,6 +50,8 @@ class ChordEvent(BaseModel):
     roman_numeral: Optional[str] = None
     harmonic_function: Optional[str] = None
     theory_confidence: Optional[float] = Field(default=None, ge=0, le=1)
+    needs_review: bool = False
+    review_reasons: list[str] = Field(default_factory=list)
 
 class ChordAnalysis(BaseModel):
     chords: list[ChordEvent] = Field(default_factory=list)

@@ -31,6 +31,30 @@ def test_chord_postprocess_collapses_low_confidence_one_beat_return_flicker():
 
     assert [(chord.symbol, chord.start, chord.end) for chord in smoothed] == [("C", 0, 1.5)]
 
+
+def test_chord_review_flags_explain_uncertain_outliers_without_rewriting_them():
+    chords = [
+        ChordEvent(id="c1", start=0, end=1, symbol="C", confidence=0.9),
+        ChordEvent(id="fs", start=1, end=2, symbol="F#", confidence=0.55, harmonic_function="chromatic"),
+        ChordEvent(id="c2", start=2, end=3, symbol="C", confidence=0.9),
+    ]
+
+    reviewed = ChordPostProcessor().mark_review_candidates(chords)
+
+    assert reviewed[1].symbol == "F#"
+    assert reviewed[1].needs_review is True
+    assert reviewed[1].review_reasons == ["low_confidence_chromatic", "isolated_outlier"]
+    assert reviewed[0].needs_review is False
+
+
+def test_user_edited_chord_is_not_marked_for_model_review():
+    chord = ChordEvent(id="user", start=0, end=1, symbol="C#", confidence=0.1, edited=True)
+
+    reviewed = ChordPostProcessor().mark_review_candidates([chord])
+
+    assert reviewed[0].needs_review is False
+    assert reviewed[0].review_reasons == []
+
 def test_melody_remove_short():
     pp = MelodyPostProcessor()
     notes = [

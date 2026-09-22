@@ -134,12 +134,13 @@ Recovery 執行紀錄：
 - [x] `CAGED-002` voicing optimizer 改為整段 dynamic programming，以難度、把位、逐弦手指移動、低音移動與可保留共同音選擇連續指型，不再逐顆只比較 base fret。
 - [x] `CHORD-SEG-001` chromagram 先以完整和弦證據輪廓偵測 harmonic change，再為區段指派 label；beat grid 只限制可能邊界，不再強迫每拍各自判定和弦。
 - [x] `CHORD-SEQ-001` baseline sequence decoder 結合聲學證據、短事件 change penalty、N.C. 與弱調性／五度解決 prior；樂理只用於接近候選的 tie-break，不禁止 borrowed／chromatic chord。
+- [x] `CHORD-QA-001` quality report 增加 boundary precision／recall、事件數與每分鐘密度、1.25 fragmentation gate、review load；低信心 chromatic、理論修正與未被覆寫的孤立 outlier 會在 SongScore／Web UI 明確標記 Review。
 
 - [ ] 在統一 major／minor／N.C. label set 下比較現有 decoder、Omnizart、autochord；Chordino 僅作可選傳統 baseline。
 - [ ] 將 harmonic change detector 納入人工標註 excerpt bake-off，依 boundary F-measure 校準 threshold，並與候選引擎共同比較。
 - [ ] 以人工標註 excerpt 校準 sequence decoder 權重，並將低信心孤立 outlier 明確標記為 review。
-- [ ] borrowed chord 保留；低信心孤立 outlier 降權並標記 review，不以 smoothing 強制覆蓋。
-- [ ] 使用 duration-weighted chord accuracy、boundary tolerance、fragmentation ratio 與人工伴奏測試。
+- [x] borrowed chord 保留；低信心孤立 outlier 降權並標記 review，不以 smoothing 強制覆蓋。
+- [ ] 自動 report 已包含 duration-weighted chord accuracy、boundary tolerance 與 fragmentation ratio；仍需完成 Easy set 人工伴奏測試。
 - [ ] 選定 primary/fallback 後再逐層評估 dominant 7、maj7、min7、sus、slash/inversion。
 
 退出條件：G2 Chord Draft Playable 通過；Easy set 事件數不超過人工參考 1.25 倍，至少 80% 片段可在不超過 5 次編輯下作為伴奏草稿。

@@ -93,6 +93,28 @@ class ChordPostProcessor:
                     chord.symbol = match.group(1)
         return chords
 
+    def mark_review_candidates(self, chords: List[ChordEvent]) -> List[ChordEvent]:
+        """Flag uncertainty without silently replacing musically valid outliers."""
+        for index, chord in enumerate(chords):
+            if chord.edited:
+                chord.needs_review = False
+                chord.review_reasons = []
+                continue
+            reasons: list[str] = []
+            if chord.confidence < 0.5:
+                reasons.append("low_confidence")
+            if chord.detected_symbol and chord.detected_symbol != chord.symbol:
+                reasons.append("theory_corrected")
+            if chord.harmonic_function == "chromatic" and chord.confidence < 0.65:
+                reasons.append("low_confidence_chromatic")
+            if 0 < index < len(chords) - 1:
+                previous, following = chords[index - 1], chords[index + 1]
+                if previous.symbol == following.symbol != chord.symbol:
+                    reasons.append("isolated_outlier")
+            chord.review_reasons = list(dict.fromkeys(reasons))
+            chord.needs_review = bool(chord.review_reasons)
+        return chords
+
     def process(
         self, chords: List[ChordEvent], beats: BeatAnalysis, complexity: ChordComplexity,
         key: str = "C", mode: str = "major",
@@ -102,5 +124,6 @@ class ChordPostProcessor:
         chords = self.merge_consecutive(chords)
         chords = self.smooth_low_confidence_return_chords(chords, beats)
         chords = apply_harmonic_context(chords, key, mode)
+        chords = self.mark_review_candidates(chords)
         chords = self.simplify(chords, complexity)
         return chords

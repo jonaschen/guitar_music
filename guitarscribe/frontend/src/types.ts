@@ -58,6 +58,8 @@ export type SongScore = {
     roman_numeral?: string | null;
     harmonic_function?: string | null;
     theory_confidence?: number | null;
+    needs_review?: boolean;
+    review_reasons?: string[];
   }>;
   melody: Array<{
     id: string;

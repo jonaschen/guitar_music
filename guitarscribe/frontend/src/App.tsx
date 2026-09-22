@@ -1728,6 +1728,7 @@ export function App() {
                             {chord.roman_numeral ? <span className="shape-meta">{chord.roman_numeral} · {chord.harmonic_function?.replace(/_/g, " ")}</span> : null}
                             <span className="shape-meta">Shape: {chord.shape_symbol ?? chord.symbol}</span>
                             {continues ? <span className="continuation-badge">Continues</span> : null}
+                            {chord.needs_review ? <span className="review-badge" title={(chord.review_reasons ?? []).join(", ")}>Review</span> : null}
                             {chord.edited ? <span className="edit-badge">Edited</span> : null}
                           </button>
                         )) : <span className="measure-empty">No chord change</span>}

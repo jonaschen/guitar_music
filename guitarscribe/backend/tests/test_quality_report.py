@@ -62,8 +62,12 @@ def test_layered_quality_report_scores_perfect_match_without_combining_layers():
     assert report["timing"]["downbeat_f_measure"] == pytest.approx(1)
     assert report["chord"]["majmin_weighted_accuracy"] == pytest.approx(1)
     assert report["chord"]["root_weighted_accuracy"] == pytest.approx(1)
+    assert report["chord"]["boundary_precision"] == pytest.approx(1)
+    assert report["chord"]["boundary_recall"] == pytest.approx(1)
     assert report["chord"]["boundary_f_measure"] == pytest.approx(1)
     assert report["chord"]["fragmentation_ratio"] == pytest.approx(1)
+    assert report["chord"]["over_fragmented"] is False
+    assert report["chord"]["review_event_count"] == 0
     assert report["melody"]["raw_pitch_accuracy"] == pytest.approx(1)
     assert report["melody"]["overall_accuracy"] == pytest.approx(1)
     assert report["human_review"]["required"] is True
@@ -92,7 +96,7 @@ def test_quality_report_cli_writes_versioned_report(tmp_path):
 
     assert result.exit_code == 0, result.output
     report = json.loads(output_path.read_text())
-    assert report["schema_version"] == "1.0"
+    assert report["schema_version"] == "1.1"
     assert report["recording_id"] == "legal-easy-01"
     assert set(report["sonifications"]) == {
         "reference_timing", "estimated_timing", "reference_chords",
@@ -103,3 +107,22 @@ def test_quality_report_cli_writes_versioned_report(tmp_path):
         assert sample_rate == 16000
         assert len(samples) == 32000
         assert samples.any()
+
+
+def test_chord_report_exposes_over_fragmentation_and_review_load():
+    score = make_score()
+    score.chords = [
+        ChordEvent(id="c1", start=0, end=0.5, symbol="C"),
+        ChordEvent(id="g", start=0.5, end=1, symbol="G", needs_review=True, review_reasons=["isolated_outlier"]),
+        ChordEvent(id="a1", start=1, end=1.5, symbol="Am"),
+        ChordEvent(id="a2", start=1.5, end=2, symbol="A", needs_review=True, review_reasons=["low_confidence"]),
+    ]
+
+    chord_report = evaluate_quality_layers(score, make_annotation())["chord"]
+
+    assert chord_report["estimated_event_count"] == 4
+    assert chord_report["excess_event_count"] == 2
+    assert chord_report["fragmentation_ratio"] == pytest.approx(2)
+    assert chord_report["over_fragmented"] is True
+    assert chord_report["review_event_count"] == 2
+    assert chord_report["review_event_ratio"] == pytest.approx(0.5)
