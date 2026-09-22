@@ -130,6 +130,7 @@ Recovery 執行紀錄：
 - [x] `CHORD-TH-001` 建立保守的功能和聲 context layer：輸出 Roman numeral 與 tonic／predominant／dominant／secondary dominant／modal mixture／chromatic；辨認 V/x 與 minor-key harmonic dominant。
 - [x] `CHORD-TH-002` 只修正低信心、無合理五度解決的調內平行 major/minor 誤判；以獨立 `detected_symbol` 保存原始辨識，不覆蓋高信心 borrowed chord 或 secondary dominant，也不干擾正式和弦的移調來源。
 - [x] 和弦卡片顯示 Roman numeral 與 harmonic function；CAGED 仍定位為後段 voicing／voice-leading 編配層，不用指型反推聲學標籤。
+- [x] `CAGED-001` major triad 提供完整 C／A／G／E／D movable shape family；minor triad 先提供實用的 A／E／D anchors，刻意不生成不符合人體工學的完整 C／G minor grip。
 
 - [ ] 在統一 major／minor／N.C. label set 下比較現有 decoder、Omnizart、autochord；Chordino 僅作可選傳統 baseline。
 - [ ] 先做 harmonic change detection，再做 chord label；禁止每拍強制產生事件。

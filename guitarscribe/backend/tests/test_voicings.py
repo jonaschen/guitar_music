@@ -5,7 +5,7 @@ def test_common_open_voicing_is_available():
     voicings = ChordVoicingProvider().get("G", capo=2)
     assert voicings[0].id == "open-g"
     assert voicings[0].capo == 2
-    assert len(voicings) == 4
+    assert len(voicings) >= 4
     assert voicings[1].base_fret == 3
 
 
@@ -24,3 +24,17 @@ def test_closed_major_and_minor_shapes_are_available():
     minor_tags = {tag for voicing in ChordVoicingProvider().get("F#m") for tag in voicing.tags}
     assert {"e-shape", "a-shape"} <= major_tags
     assert {"e-shape", "a-shape"} <= minor_tags
+
+
+def test_major_triad_exposes_complete_caged_shape_family():
+    shape_tags = {tag for voicing in ChordVoicingProvider().get("C") for tag in voicing.tags}
+
+    assert {"c-shape", "a-shape", "g-shape", "e-shape", "d-shape"} <= shape_tags
+
+
+def test_minor_triad_omits_impractical_c_and_g_shapes_but_keeps_three_anchors():
+    shape_tags = {tag for voicing in ChordVoicingProvider().get("Cm") for tag in voicing.tags}
+
+    assert {"a-shape", "e-shape", "d-shape"} <= shape_tags
+    assert "c-shape" not in shape_tags
+    assert "g-shape" not in shape_tags

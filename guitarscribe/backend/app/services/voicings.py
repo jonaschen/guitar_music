@@ -21,27 +21,77 @@ ROOT_RE = re.compile(r"^([A-G](?:#|b)?)")
 TRIAD_RE = re.compile(r"^([A-G](?:#|b)?)(m)?$")
 
 class ChordVoicingProvider:
-    def _closed_shapes(self, symbol: str) -> list[dict]:
+    def _caged_shapes(self, symbol: str) -> list[dict]:
         match = TRIAD_RE.match(symbol)
         if not match:
             return []
         root, minor = match.groups()
         low_e = ROOT_PITCH[root] or 12
         a_string = (ROOT_PITCH[root] - 5) % 12 or 12
+        d_string = (ROOT_PITCH[root] - 10) % 12 or 12
         suffix = "minor" if minor else "major"
-        return [
-            {"id": f"closed-e-{suffix}-{root}", "frets": [low_e, low_e + 2, low_e + 2, low_e + (0 if minor else 1), low_e, low_e], "fingers": [1, 3, 4, 2 if not minor else 1, 1, 1], "base_fret": low_e, "difficulty": 3.5, "tags": ["closed", "barre", "movable", "e-shape"]},
-            {"id": f"closed-a-{suffix}-{root}", "frets": [None, a_string, a_string + 2, a_string + 2, a_string + (1 if minor else 2), a_string], "fingers": [None, 1, 3, 4, 2 if minor else 3, 1], "base_fret": a_string, "difficulty": 3.5, "tags": ["closed", "barre", "movable", "a-shape"]},
+        shapes = [
+            {"id": f"closed-e-{suffix}-{root}", "frets": [low_e, low_e + 2, low_e + 2, low_e + (0 if minor else 1), low_e, low_e], "fingers": [1, 3, 4, 2 if not minor else 1, 1, 1], "base_fret": low_e, "difficulty": 3.5, "tags": ["closed", "barre", "movable", "caged", "e-shape"]},
+            {"id": f"closed-a-{suffix}-{root}", "frets": [None, a_string, a_string + 2, a_string + 2, a_string + (1 if minor else 2), a_string], "fingers": [None, 1, 3, 4, 2 if minor else 3, 1], "base_fret": a_string, "difficulty": 3.5, "tags": ["closed", "barre", "movable", "caged", "a-shape"]},
         ]
+        if minor:
+            shapes.append({
+                "id": f"closed-d-minor-{root}",
+                "frets": [None, None, d_string, d_string + 2, d_string + 3, d_string + 1],
+                "fingers": [None, None, 1, 3, 4, 2], "base_fret": d_string,
+                "difficulty": 4.0, "tags": ["closed", "movable", "caged", "d-shape", "advanced"],
+            })
+            return shapes
+
+        c_root = (ROOT_PITCH[root] - 5) % 12
+        if c_root < 3:
+            c_root += 12
+        g_root = ROOT_PITCH[root]
+        if g_root < 3:
+            g_root += 12
+        shapes.extend([
+            {
+                "id": f"closed-c-major-{root}",
+                "frets": [None, c_root, c_root - 1, c_root - 3, c_root - 2, c_root - 3],
+                "fingers": [None, 4, 3, 1, 2, 1], "base_fret": c_root - 3,
+                "difficulty": 4.1, "tags": ["closed", "movable", "caged", "c-shape", "advanced"],
+            },
+            {
+                "id": f"closed-g-major-{root}",
+                "frets": [g_root, g_root - 1, g_root - 3, g_root - 3, g_root - 3, g_root],
+                "fingers": [4, 3, 1, 1, 1, 4], "base_fret": g_root - 3,
+                "difficulty": 4.5, "tags": ["closed", "movable", "caged", "g-shape", "advanced"],
+            },
+            {
+                "id": f"closed-d-major-{root}",
+                "frets": [None, None, d_string, d_string + 2, d_string + 3, d_string + 2],
+                "fingers": [None, None, 1, 2, 4, 3], "base_fret": d_string,
+                "difficulty": 4.0, "tags": ["closed", "movable", "caged", "d-shape", "advanced"],
+            },
+        ])
+        return shapes
 
     def get(self, symbol: str, capo: int = 0, max_fret: int = 15) -> list[ChordVoicing]:
-        shapes = COMMON_VOICINGS.get(symbol, []) + self._closed_shapes(symbol)
+        shapes = [
+            {**shape, "frets": list(shape["frets"]), "fingers": list(shape["fingers"]), "tags": list(shape["tags"])}
+            for shape in [*COMMON_VOICINGS.get(symbol, []), *self._caged_shapes(symbol)]
+        ]
+        unique_shapes = []
+        seen_frets: dict[tuple, int] = {}
+        for shape in shapes:
+            fret_key = tuple(shape["frets"])
+            if fret_key not in seen_frets:
+                seen_frets[fret_key] = len(unique_shapes)
+                unique_shapes.append(shape)
+            else:
+                existing = unique_shapes[seen_frets[fret_key]]
+                existing["tags"] = list(dict.fromkeys([*existing["tags"], *shape["tags"]]))
         voicings = [
             ChordVoicing(
                 id=shape["id"], symbol=symbol, shape_symbol=symbol, frets=shape["frets"],
                 fingers=shape["fingers"], base_fret=shape.get("base_fret", 1), capo=capo, difficulty=shape["difficulty"], tags=shape["tags"],
             )
-            for shape in shapes
+            for shape in unique_shapes
             if max(fret for fret in shape["frets"] if fret is not None) <= max_fret
         ]
         if voicings:
