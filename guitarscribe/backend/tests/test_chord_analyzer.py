@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from app.analyzers.chords.chromagram import ChromagramChordAnalyzer, _decode_region_sequence, decode_beat_synchronous_chords, estimate_key_from_chords, get_chord_templates, normalize_low_confidence_qualities
+from app.analyzers.chords.chromagram import ChordDecoderConfig, ChromagramChordAnalyzer, _decode_region_sequence, decode_beat_synchronous_chords, estimate_key_from_chords, get_chord_templates, normalize_low_confidence_qualities
 from app.analyzers.chords.chordino import ChordinoChordAnalyzer
 from app.models.analysis import BeatAnalysis, BeatInfo, ChordEvent
 
@@ -98,6 +98,19 @@ def test_sequence_decoder_leaves_silence_as_no_chord_gap():
     assert [(event.symbol, event.start, event.end) for event in events] == [
         ("C", 0.0, 0.5), ("G", 1.0, 1.5),
     ]
+
+
+def test_chord_decoder_parameters_are_named_for_reproducible_bakeoffs():
+    config = ChordDecoderConfig(change_threshold=0.2, no_chord_threshold=0.22)
+
+    assert ChromagramChordAnalyzer(config).parameters == {
+        "decoder_change_threshold": 0.2,
+        "decoder_no_chord_threshold": 0.22,
+        "decoder_base_change_penalty": 0.04,
+        "decoder_short_event_change_penalty": 0.05,
+        "decoder_circle_fifths_bonus": 0.015,
+        "decoder_tonal_prior_scale": 1.0,
+    }
 
 
 def test_chromagram_key_estimate_prefers_duration_weighted_diatonic_key():

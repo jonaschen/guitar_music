@@ -1,4 +1,5 @@
 import logging
+from dataclasses import asdict, dataclass
 import numpy as np
 import librosa
 from ...models.audio import NormalizedAudio
@@ -9,6 +10,19 @@ logger = logging.getLogger(__name__)
 
 ROOTS = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B']
 ROOT_TO_PITCH = {root: index for index, root in enumerate(ROOTS)}
+
+
+@dataclass(frozen=True)
+class ChordDecoderConfig:
+    change_threshold: float = 0.12
+    no_chord_threshold: float = 0.18
+    base_change_penalty: float = 0.04
+    short_event_change_penalty: float = 0.05
+    circle_fifths_bonus: float = 0.015
+    tonal_prior_scale: float = 1.0
+
+    def parameters(self) -> dict[str, float]:
+        return {f"decoder_{key}": value for key, value in asdict(self).items()}
 
 def get_chord_templates():
     templates = []
@@ -102,12 +116,12 @@ def _detect_harmonic_regions(
     return regions
 
 
-def _transition_bonus(previous: str, current: str) -> float:
+def _transition_bonus(previous: str, current: str, bonus: float = 0.015) -> float:
     """Give circle-of-fifths resolution a small preference, never a veto."""
     previous_chord = parse_chord(previous)
     current_chord = parse_chord(current)
     if previous_chord and current_chord and (previous_chord[1] + 5) % 12 == current_chord[1]:
-        return 0.015
+        return bonus
     return 0.0
 
 
@@ -116,20 +130,21 @@ def _decode_region_sequence(
     labels: list[str],
     key: str,
     mode: str,
-    no_chord_threshold: float = 0.18,
+    config: ChordDecoderConfig | None = None,
 ) -> list[tuple[float, float, str, float]]:
     """Decode a stable maj/min/N.C. path over pre-detected regions."""
     if not regions:
         return []
+    config = config or ChordDecoderConfig()
     chord_indices = [index for index, label in enumerate(labels) if label != "N"]
     nc_index = labels.index("N")
     emissions: list[np.ndarray] = []
     for _, _, scores in regions:
         values = np.asarray(scores, dtype=float).copy()
         best_chord = max(float(values[index]) for index in chord_indices)
-        values[nc_index] = max(0.0, no_chord_threshold * 2 - best_chord)
+        values[nc_index] = max(0.0, config.no_chord_threshold * 2 - best_chord)
         for index in chord_indices:
-            values[index] += tonal_bias(labels[index], key, mode)
+            values[index] += tonal_bias(labels[index], key, mode) * config.tonal_prior_scale
         emissions.append(values)
 
     path_scores = emissions[0].copy()
@@ -138,7 +153,7 @@ def _decode_region_sequence(
         start, end, _ = regions[region_index]
         duration = max(0.0, end - start)
         # A new label needs more evidence when it would create a brief event.
-        change_penalty = 0.04 + 0.05 * max(0.0, 1.0 - min(duration, 1.0))
+        change_penalty = config.base_change_penalty + config.short_event_change_penalty * max(0.0, 1.0 - min(duration, 1.0))
         next_scores = np.full(len(labels), -np.inf)
         pointers = np.zeros(len(labels), dtype=int)
         for current_index, current_label in enumerate(labels):
@@ -146,7 +161,7 @@ def _decode_region_sequence(
             for previous_index, previous_label in enumerate(labels):
                 if previous_index != current_index:
                     candidates[previous_index] -= change_penalty
-                    candidates[previous_index] += _transition_bonus(previous_label, current_label)
+                    candidates[previous_index] += _transition_bonus(previous_label, current_label, config.circle_fifths_bonus)
             best_previous = int(np.argmax(candidates))
             next_scores[current_index] = candidates[best_previous] + emissions[region_index][current_index]
             pointers[current_index] = best_previous
@@ -176,24 +191,26 @@ def decode_beat_synchronous_chords(
     beats: BeatAnalysis,
     duration_seconds: float,
     labels: list[str],
+    config: ChordDecoderConfig | None = None,
 ) -> list[ChordEvent]:
     """Detect beat-constrained harmonic regions, then assign chord labels."""
+    config = config or ChordDecoderConfig()
     boundaries = [0.0]
     boundaries.extend(beat.time for beat in beats.beats if 0.02 < beat.time < duration_seconds - 0.02)
     boundaries.append(duration_seconds)
     boundaries = sorted(set(boundaries))
-    regions = _detect_harmonic_regions(similarities, frame_times, boundaries)
+    regions = _detect_harmonic_regions(similarities, frame_times, boundaries, config.change_threshold)
     preliminary: list[tuple[float, float, str, float]] = []
     for start, end, scores in regions:
         best_index = int(np.argmax(scores))
         ordered = np.sort(scores)
         best = float(ordered[-1])
         margin = best - float(ordered[-2]) if len(ordered) > 1 else best
-        label = "N" if best < 0.18 else labels[best_index]
+        label = "N" if best < config.no_chord_threshold else labels[best_index]
         confidence = max(0.05, min(0.95, 0.45 + margin))
         preliminary.append((float(start), float(end), label, confidence))
     key, mode = estimate_key_from_chords(_group_segments(preliminary))
-    return _group_segments(_decode_region_sequence(regions, labels, key, mode))
+    return _group_segments(_decode_region_sequence(regions, labels, key, mode, config))
 
 
 def estimate_key_from_chords(events: list[ChordEvent]) -> tuple[str, str]:
@@ -257,6 +274,13 @@ def normalize_low_confidence_qualities(
     return _group_segments(normalized)
 
 class ChromagramChordAnalyzer:
+    def __init__(self, decoder_config: ChordDecoderConfig | None = None):
+        self.decoder_config = decoder_config or ChordDecoderConfig()
+
+    @property
+    def parameters(self) -> dict[str, float]:
+        return self.decoder_config.parameters()
+
     async def analyze(self, audio: NormalizedAudio, beats: BeatAnalysis) -> ChordAnalysis:
         logger.info(f"Analyzing chords with chromagram for {audio.path}")
         try:
@@ -276,7 +300,9 @@ class ChromagramChordAnalyzer:
             times = librosa.frames_to_time(np.arange(chroma.shape[1]), sr=sr, hop_length=hop_length)
             
             if len(beats.beats) >= 2:
-                events = decode_beat_synchronous_chords(similarities, times, beats, audio.duration_seconds, labels)
+                events = decode_beat_synchronous_chords(
+                    similarities, times, beats, audio.duration_seconds, labels, self.decoder_config
+                )
             else:
                 segments = []
                 current_label = None

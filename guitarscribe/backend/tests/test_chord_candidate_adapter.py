@@ -8,6 +8,8 @@ from app.models.candidates import AnalyzerRun, TimingCandidate, TimingResult
 @pytest.mark.asyncio
 async def test_chord_adapter_uses_canonical_timing_and_round_trips_regions(normalized_audio):
     class LegacyAnalyzer:
+        parameters = {"decoder_change_threshold": 0.12}
+
         async def analyze(self, audio, beats):
             assert beats.bpm == 120
             assert [beat.time for beat in beats.beats] == [0, 0.5, 1, 1.5]
@@ -30,6 +32,7 @@ async def test_chord_adapter_uses_canonical_timing_and_round_trips_regions(norma
     projected = adapter.project(result)
 
     assert result.run.parameters["timing_engine"] == "timing-test"
+    assert result.run.parameters["decoder_change_threshold"] == 0.12
     assert result.regions[0].label == "Am"
     assert projected.key == "A"
     assert projected.mode == "minor"

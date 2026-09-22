@@ -36,11 +36,16 @@ class CanonicalChordAnalyzerAdapter:
 
     async def analyze_candidates(self, audio: NormalizedAudio, timing: TimingResult) -> ChordResult:
         analysis = await self.analyzer.analyze(audio, self._timing_projection(timing))
+        analyzer_parameters = getattr(self.analyzer, "parameters", {})
         return ChordResult(
             run=AnalyzerRun(
                 engine=analysis.engine or type(self.analyzer).__name__,
                 engine_version=analysis.engine_version,
-                parameters={"timing_engine": timing.run.engine, "timing_candidate_index": 0},
+                parameters={
+                    "timing_engine": timing.run.engine,
+                    "timing_candidate_index": 0,
+                    **analyzer_parameters,
+                },
             ),
             regions=[
                 ChordCandidateRegion(
