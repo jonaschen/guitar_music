@@ -49,6 +49,24 @@ def test_chromagram_decoder_aggregates_frames_into_beat_aligned_events():
     ]
 
 
+def test_chromagram_decoder_does_not_turn_small_argmax_flips_into_changes():
+    _, labels = get_chord_templates()
+    frame_times = np.arange(0, 1, 0.25)
+    similarities = np.zeros((len(labels), len(frame_times)))
+    similarities[labels.index("C"), :2] = 0.50
+    similarities[labels.index("G"), :2] = 0.49
+    similarities[labels.index("C"), 2:] = 0.49
+    similarities[labels.index("G"), 2:] = 0.50
+    beats = BeatAnalysis(
+        bpm=120,
+        beats=[BeatInfo(time=0.0, beat=1, measure=1), BeatInfo(time=0.5, beat=2, measure=1)],
+    )
+
+    events = decode_beat_synchronous_chords(similarities, frame_times, beats, 1.0, labels)
+
+    assert [(event.symbol, event.start, event.end) for event in events] == [("C", 0.0, 1.0)]
+
+
 def test_chromagram_key_estimate_prefers_duration_weighted_diatonic_key():
     events = [
         ChordEvent(id="c", start=0, end=4, symbol="C"),

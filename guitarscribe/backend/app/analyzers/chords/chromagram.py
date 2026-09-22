@@ -50,6 +50,57 @@ def _group_segments(segments: list[tuple[float, float, str, float]]) -> list[Cho
     return events
 
 
+def _evidence_distance(left: np.ndarray, right: np.ndarray) -> float:
+    """Compare chord evidence while ignoring changes in overall loudness."""
+    left = left - np.mean(left)
+    right = right - np.mean(right)
+    left_norm = float(np.linalg.norm(left))
+    right_norm = float(np.linalg.norm(right))
+    if left_norm < 1e-8 and right_norm < 1e-8:
+        return 0.0
+    if left_norm < 1e-8 or right_norm < 1e-8:
+        return 1.0
+    similarity = float(np.dot(left, right) / (left_norm * right_norm))
+    return 1.0 - max(-1.0, min(1.0, similarity))
+
+
+def _detect_harmonic_regions(
+    similarities: np.ndarray,
+    frame_times: np.ndarray,
+    boundaries: list[float],
+    change_threshold: float = 0.12,
+) -> list[tuple[float, float, np.ndarray]]:
+    """Find harmonic changes before assigning chord labels.
+
+    Beat positions constrain where a lead-sheet change may occur, but they do
+    not force a new chord on every beat. Adjacent beat slots with nearly the
+    same complete template-evidence profile are decoded as one region. This
+    also suppresses tiny C/G (or major/minor) argmax flips caused by noise.
+    """
+    slots: list[tuple[float, float, np.ndarray, np.ndarray]] = []
+    for start, end in zip(boundaries, boundaries[1:]):
+        indexes = np.flatnonzero((frame_times >= start) & (frame_times < end))
+        if len(indexes):
+            slots.append((float(start), float(end), indexes, np.mean(similarities[:, indexes], axis=1)))
+    if not slots:
+        return []
+
+    regions: list[tuple[float, float, np.ndarray]] = []
+    region_start = slots[0][0]
+    region_indexes = list(slots[0][2])
+    previous_evidence = slots[0][3]
+    for start, end, indexes, evidence in slots[1:]:
+        if _evidence_distance(previous_evidence, evidence) >= change_threshold:
+            region_scores = np.mean(similarities[:, region_indexes], axis=1)
+            regions.append((region_start, start, region_scores))
+            region_start = start
+            region_indexes = []
+        region_indexes.extend(indexes)
+        previous_evidence = evidence
+    regions.append((region_start, slots[-1][1], np.mean(similarities[:, region_indexes], axis=1)))
+    return regions
+
+
 def decode_beat_synchronous_chords(
     similarities: np.ndarray,
     frame_times: np.ndarray,
@@ -57,17 +108,13 @@ def decode_beat_synchronous_chords(
     duration_seconds: float,
     labels: list[str],
 ) -> list[ChordEvent]:
-    """Aggregate frame-level chord evidence into notation-friendly beat slots."""
+    """Detect beat-constrained harmonic regions, then assign chord labels."""
     boundaries = [0.0]
     boundaries.extend(beat.time for beat in beats.beats if 0.02 < beat.time < duration_seconds - 0.02)
     boundaries.append(duration_seconds)
     boundaries = sorted(set(boundaries))
     segments: list[tuple[float, float, str, float]] = []
-    for start, end in zip(boundaries, boundaries[1:]):
-        indexes = np.flatnonzero((frame_times >= start) & (frame_times < end))
-        if not len(indexes):
-            continue
-        scores = np.mean(similarities[:, indexes], axis=1)
+    for start, end, scores in _detect_harmonic_regions(similarities, frame_times, boundaries):
         best_index = int(np.argmax(scores))
         ordered = np.sort(scores)
         best = float(ordered[-1])
