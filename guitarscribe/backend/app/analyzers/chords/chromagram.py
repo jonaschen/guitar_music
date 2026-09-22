@@ -3,6 +3,7 @@ import numpy as np
 import librosa
 from ...models.audio import NormalizedAudio
 from ...models.analysis import BeatAnalysis, ChordAnalysis, ChordEvent
+from ...postprocess.harmony import parse_chord, tonal_bias
 
 logger = logging.getLogger(__name__)
 
@@ -101,6 +102,74 @@ def _detect_harmonic_regions(
     return regions
 
 
+def _transition_bonus(previous: str, current: str) -> float:
+    """Give circle-of-fifths resolution a small preference, never a veto."""
+    previous_chord = parse_chord(previous)
+    current_chord = parse_chord(current)
+    if previous_chord and current_chord and (previous_chord[1] + 5) % 12 == current_chord[1]:
+        return 0.015
+    return 0.0
+
+
+def _decode_region_sequence(
+    regions: list[tuple[float, float, np.ndarray]],
+    labels: list[str],
+    key: str,
+    mode: str,
+    no_chord_threshold: float = 0.18,
+) -> list[tuple[float, float, str, float]]:
+    """Decode a stable maj/min/N.C. path over pre-detected regions."""
+    if not regions:
+        return []
+    chord_indices = [index for index, label in enumerate(labels) if label != "N"]
+    nc_index = labels.index("N")
+    emissions: list[np.ndarray] = []
+    for _, _, scores in regions:
+        values = np.asarray(scores, dtype=float).copy()
+        best_chord = max(float(values[index]) for index in chord_indices)
+        values[nc_index] = max(0.0, no_chord_threshold * 2 - best_chord)
+        for index in chord_indices:
+            values[index] += tonal_bias(labels[index], key, mode)
+        emissions.append(values)
+
+    path_scores = emissions[0].copy()
+    backpointers: list[np.ndarray] = []
+    for region_index in range(1, len(regions)):
+        start, end, _ = regions[region_index]
+        duration = max(0.0, end - start)
+        # A new label needs more evidence when it would create a brief event.
+        change_penalty = 0.04 + 0.05 * max(0.0, 1.0 - min(duration, 1.0))
+        next_scores = np.full(len(labels), -np.inf)
+        pointers = np.zeros(len(labels), dtype=int)
+        for current_index, current_label in enumerate(labels):
+            candidates = path_scores.copy()
+            for previous_index, previous_label in enumerate(labels):
+                if previous_index != current_index:
+                    candidates[previous_index] -= change_penalty
+                    candidates[previous_index] += _transition_bonus(previous_label, current_label)
+            best_previous = int(np.argmax(candidates))
+            next_scores[current_index] = candidates[best_previous] + emissions[region_index][current_index]
+            pointers[current_index] = best_previous
+        path_scores = next_scores
+        backpointers.append(pointers)
+
+    state = int(np.argmax(path_scores))
+    states = [state]
+    for pointers in reversed(backpointers):
+        state = int(pointers[state])
+        states.append(state)
+    states.reverse()
+
+    decoded: list[tuple[float, float, str, float]] = []
+    for (start, end, _), state, emission in zip(regions, states, emissions):
+        label = labels[state]
+        alternatives = np.delete(emission, state)
+        margin = float(emission[state] - np.max(alternatives)) if len(alternatives) else float(emission[state])
+        confidence = max(0.05, min(0.95, 0.45 + margin))
+        decoded.append((start, end, label, confidence))
+    return decoded
+
+
 def decode_beat_synchronous_chords(
     similarities: np.ndarray,
     frame_times: np.ndarray,
@@ -113,16 +182,18 @@ def decode_beat_synchronous_chords(
     boundaries.extend(beat.time for beat in beats.beats if 0.02 < beat.time < duration_seconds - 0.02)
     boundaries.append(duration_seconds)
     boundaries = sorted(set(boundaries))
-    segments: list[tuple[float, float, str, float]] = []
-    for start, end, scores in _detect_harmonic_regions(similarities, frame_times, boundaries):
+    regions = _detect_harmonic_regions(similarities, frame_times, boundaries)
+    preliminary: list[tuple[float, float, str, float]] = []
+    for start, end, scores in regions:
         best_index = int(np.argmax(scores))
         ordered = np.sort(scores)
         best = float(ordered[-1])
         margin = best - float(ordered[-2]) if len(ordered) > 1 else best
         label = "N" if best < 0.18 else labels[best_index]
         confidence = max(0.05, min(0.95, 0.45 + margin))
-        segments.append((float(start), float(end), label, confidence))
-    return _group_segments(segments)
+        preliminary.append((float(start), float(end), label, confidence))
+    key, mode = estimate_key_from_chords(_group_segments(preliminary))
+    return _group_segments(_decode_region_sequence(regions, labels, key, mode))
 
 
 def estimate_key_from_chords(events: list[ChordEvent]) -> tuple[str, str]:
@@ -230,7 +301,7 @@ class ChromagramChordAnalyzer:
                 mode=mode,
                 confidence=0.6,
                 engine="chromagram",
-                engine_version="1.0"
+                engine_version="1.2"
             )
             
         except Exception as e:

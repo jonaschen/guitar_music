@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from app.analyzers.chords.chromagram import ChromagramChordAnalyzer, decode_beat_synchronous_chords, estimate_key_from_chords, get_chord_templates, normalize_low_confidence_qualities
+from app.analyzers.chords.chromagram import ChromagramChordAnalyzer, _decode_region_sequence, decode_beat_synchronous_chords, estimate_key_from_chords, get_chord_templates, normalize_low_confidence_qualities
 from app.analyzers.chords.chordino import ChordinoChordAnalyzer
 from app.models.analysis import BeatAnalysis, BeatInfo, ChordEvent
 
@@ -65,6 +65,39 @@ def test_chromagram_decoder_does_not_turn_small_argmax_flips_into_changes():
     events = decode_beat_synchronous_chords(similarities, frame_times, beats, 1.0, labels)
 
     assert [(event.symbol, event.start, event.end) for event in events] == [("C", 0.0, 1.0)]
+
+
+def test_sequence_decoder_rejects_brief_low_margin_outlier():
+    _, labels = get_chord_templates()
+    c_index = labels.index("C")
+    g_index = labels.index("G")
+    regions = []
+    for start, end, c_score, g_score in [(0, 1, 0.8, 0.1), (1, 1.5, 0.49, 0.5), (1.5, 2.5, 0.8, 0.1)]:
+        scores = np.zeros(len(labels))
+        scores[c_index], scores[g_index] = c_score, g_score
+        regions.append((start, end, scores))
+
+    decoded = _decode_region_sequence(regions, labels, "C", "major")
+
+    assert [label for _, _, label, _ in decoded] == ["C", "C", "C"]
+
+
+def test_sequence_decoder_leaves_silence_as_no_chord_gap():
+    _, labels = get_chord_templates()
+    frame_times = np.arange(0, 1.5, 0.25)
+    similarities = np.zeros((len(labels), len(frame_times)))
+    similarities[labels.index("C"), :2] = 0.8
+    similarities[labels.index("G"), 4:] = 0.8
+    beats = BeatAnalysis(
+        bpm=120,
+        beats=[BeatInfo(time=time, beat=index + 1, measure=1) for index, time in enumerate([0.0, 0.5, 1.0])],
+    )
+
+    events = decode_beat_synchronous_chords(similarities, frame_times, beats, 1.5, labels)
+
+    assert [(event.symbol, event.start, event.end) for event in events] == [
+        ("C", 0.0, 0.5), ("G", 1.0, 1.5),
+    ]
 
 
 def test_chromagram_key_estimate_prefers_duration_weighted_diatonic_key():

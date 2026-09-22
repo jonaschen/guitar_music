@@ -47,6 +47,29 @@ def _scale(key: str, mode: str) -> tuple[list[int], tuple[str, ...]]:
     return [((tonic + interval) % 12) for interval in intervals], qualities
 
 
+def tonal_bias(symbol: str, key: str, mode: str) -> float:
+    """Return a deliberately weak prior for sequence decoding.
+
+    Acoustic evidence must remain able to select borrowed and chromatic
+    chords. The prior only breaks close ties between otherwise plausible
+    major/minor candidates.
+    """
+    parsed = parse_chord(symbol)
+    if not parsed:
+        return 0.0
+    _, root_pitch, quality = parsed
+    scale, qualities = _scale(key, mode)
+    if root_pitch not in scale:
+        return -0.01
+    degree = scale.index(root_pitch)
+    expected = qualities[degree]
+    if quality == expected:
+        return 0.025
+    if degree == 4 and quality in {"major", "minor", "dominant"}:
+        return 0.02
+    return 0.005
+
+
 def _roman(degree: int, quality: str) -> str:
     numeral = ROMAN_LOWER[degree] if quality in {"minor", "diminished"} else ROMAN_UPPER[degree]
     return numeral + ("°" if quality == "diminished" else "+" if quality == "augmented" else "")

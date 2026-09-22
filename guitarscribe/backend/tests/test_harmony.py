@@ -1,5 +1,5 @@
 from app.models.analysis import ChordEvent
-from app.postprocess.harmony import apply_harmonic_context
+from app.postprocess.harmony import apply_harmonic_context, tonal_bias
 
 
 def chord(symbol: str, confidence: float = 0.8) -> ChordEvent:
@@ -56,3 +56,9 @@ def test_minor_key_accepts_harmonic_minor_dominant():
     assert chords[1].symbol == "E7"
     assert chords[1].roman_numeral == "V"
     assert chords[1].harmonic_function == "dominant"
+
+
+def test_tonal_bias_is_weak_and_does_not_forbid_borrowed_chords():
+    assert tonal_bias("Dm", "C", "major") > tonal_bias("D", "C", "major")
+    assert tonal_bias("Bb", "C", "major") == -0.01
+    assert tonal_bias("N", "C", "major") == 0.0

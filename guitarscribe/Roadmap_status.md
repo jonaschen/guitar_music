@@ -132,10 +132,11 @@ Recovery 執行紀錄：
 - [x] 和弦卡片顯示 Roman numeral 與 harmonic function；CAGED 仍定位為後段 voicing／voice-leading 編配層，不用指型反推聲學標籤。
 - [x] `CAGED-001` major triad 提供完整 C／A／G／E／D movable shape family；minor triad 先提供實用的 A／E／D anchors，刻意不生成不符合人體工學的完整 C／G minor grip。
 - [x] `CHORD-SEG-001` chromagram 先以完整和弦證據輪廓偵測 harmonic change，再為區段指派 label；beat grid 只限制可能邊界，不再強迫每拍各自判定和弦。
+- [x] `CHORD-SEQ-001` baseline sequence decoder 結合聲學證據、短事件 change penalty、N.C. 與弱調性／五度解決 prior；樂理只用於接近候選的 tie-break，不禁止 borrowed／chromatic chord。
 
 - [ ] 在統一 major／minor／N.C. label set 下比較現有 decoder、Omnizart、autochord；Chordino 僅作可選傳統 baseline。
 - [ ] 將 harmonic change detector 納入人工標註 excerpt bake-off，依 boundary F-measure 校準 threshold，並與候選引擎共同比較。
-- [ ] Sequence decoder 加入 N.C.、duration prior、change penalty 與弱調性先驗。
+- [ ] 以人工標註 excerpt 校準 sequence decoder 權重，並將低信心孤立 outlier 明確標記為 review。
 - [ ] borrowed chord 保留；低信心孤立 outlier 降權並標記 review，不以 smoothing 強制覆蓋。
 - [ ] 使用 duration-weighted chord accuracy、boundary tolerance、fragmentation ratio 與人工伴奏測試。
 - [ ] 選定 primary/fallback 後再逐層評估 dominant 7、maj7、min7、sus、slash/inversion。
