@@ -17,6 +17,7 @@ from .evaluation.sonification import render_quality_sonifications
 from .evaluation.batch_report import build_quality_batch
 from .evaluation.chord_calibration import build_chord_calibration
 from .evaluation.annotation_audit import audit_quality_annotations
+from .evaluation.annotation_authoring import create_annotation_draft
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -198,6 +199,38 @@ def quality_audit(
         raise click.ClickException("Quality annotation audit failed")
     if require_quality_gate and not report["ready_for_calibration"]:
         raise click.ClickException("No valid quality-gate excerpt is available")
+
+
+@main.command("quality-annotation-init")
+@click.argument("source_audio", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@click.argument("output_file", type=click.Path(path_type=Path))
+@click.option("--recording-id", required=True)
+@click.option("--rights-note", required=True)
+@click.option("--difficulty", type=click.Choice(["easy", "medium", "hard"]), required=True)
+@click.option("--excerpt-start", type=click.FloatRange(min=0), required=True)
+@click.option("--excerpt-end", type=click.FloatRange(min=0), required=True)
+@click.option("--tempo-bpm", type=click.FloatRange(min=1), default=None)
+@click.option("--meter", default="4/4", show_default=True)
+def quality_annotation_init(
+    source_audio: Path,
+    output_file: Path,
+    recording_id: str,
+    rights_note: str,
+    difficulty: str,
+    excerpt_start: float,
+    excerpt_end: float,
+    tempo_bpm: float | None,
+    meter: str,
+):
+    """Create a hashed draft without inventing musical ground truth."""
+    try:
+        path = create_annotation_draft(
+            source_audio, output_file, recording_id, rights_note, difficulty,
+            excerpt_start, excerpt_end, tempo_bpm, meter,
+        )
+    except (FileExistsError, ValueError) as exc:
+        raise click.ClickException(str(exc)) from exc
+    click.echo(str(path))
 
 
 @main.command()

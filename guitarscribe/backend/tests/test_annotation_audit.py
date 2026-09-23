@@ -11,6 +11,8 @@ def gate_annotation(source_file: str, digest: str) -> QualityAnnotation:
     return QualityAnnotation(
         recording_id="easy-gate-01",
         evaluation_tier="quality_gate",
+        annotation_status="reviewed",
+        reviewed_by="test-reviewer",
         source_file=source_file,
         source_sha256=digest,
         rights_note="Original test-team recording",

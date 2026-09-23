@@ -54,6 +54,8 @@ class QualityAnnotation(BaseModel):
     schema_version: Literal["1.0"] = "1.0"
     recording_id: str = Field(min_length=1)
     evaluation_tier: Literal["smoke", "quality_gate"] = "smoke"
+    annotation_status: Literal["draft", "reviewed"] = "draft"
+    reviewed_by: str | None = Field(default=None, min_length=1)
     source_file: str | None = None
     source_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     rights_note: str = Field(min_length=1)

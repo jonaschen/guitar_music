@@ -8,6 +8,8 @@ def test_quality_annotation_schema_captures_quality_gate_ground_truth():
     annotation = QualityAnnotation(
         recording_id="licensed-easy-01",
         evaluation_tier="quality_gate",
+        annotation_status="reviewed",
+        reviewed_by="test-reviewer",
         source_file="licensed-easy-01.wav",
         source_sha256="a" * 64,
         rights_note="Original recording owned by the test team.",
@@ -24,6 +26,7 @@ def test_quality_annotation_schema_captures_quality_gate_ground_truth():
 
     assert annotation.schema_version == "1.0"
     assert annotation.evaluation_tier == "quality_gate"
+    assert annotation.annotation_status == "reviewed"
     assert annotation.sections[0].melody_source == "vocal"
     assert "source_sha256" in QualityAnnotation.model_json_schema()["properties"]
 

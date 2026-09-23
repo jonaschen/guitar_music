@@ -144,6 +144,22 @@ tempo and full beat/downbeat coverage, and gap-free chord regions. Its report
 also shows progress toward the 12-excerpt G0 minimum. Smoke-only data may pass
 integrity validation but is never marked decision-ready.
 
+Start a new formal annotation as a hashed draft. This command deliberately
+leaves beats, downbeats, chords, and melody empty for a human annotator:
+
+```bash
+docker compose run --rm -v "$PWD/backend:/app" -v "$PWD:/workspace" backend \
+  python -m app.cli quality-annotation-init /workspace/quality/audio/easy-01.wav \
+    /workspace/quality/annotations/easy-01.json \
+    --recording-id easy-01 --difficulty easy \
+    --rights-note "Original recording owned by the test team" \
+    --excerpt-start 0 --excerpt-end 45 --tempo-bpm 120
+```
+
+After manual verification, set `annotation_status` to `reviewed` and record
+`reviewed_by`. Drafts cannot pass the formal audit even if their arrays happen
+to be structurally complete.
+
 Generate a comparison run without changing source code by overriding the
 documented `GUITARSCRIBE_CHORD_*` values from `.env.example`. For example, a
 more conservative segmentation run can use:

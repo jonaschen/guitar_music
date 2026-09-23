@@ -40,6 +40,11 @@ def audit_quality_annotations(annotations_directory: Path, audio_directory: Path
     audio_root = audio_directory.resolve()
     for annotation in annotations:
         recording_id = annotation.recording_id
+        if annotation.evaluation_tier == "quality_gate":
+            if annotation.annotation_status != "reviewed":
+                issues.append(_issue(recording_id, "unreviewed_annotation", "quality gate must be reviewed"))
+            if not annotation.reviewed_by:
+                issues.append(_issue(recording_id, "missing_reviewer", "quality gate requires reviewed_by"))
         if annotation.source_file:
             source_path = (audio_directory / annotation.source_file).resolve()
             if source_path != audio_root and audio_root not in source_path.parents:
