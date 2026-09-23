@@ -64,6 +64,8 @@ def test_chord_calibration_reports_pareto_runs_without_combined_score(tmp_path):
     assert by_name["stable"]["gates"]["fragmentation_1_25"] is True
     assert by_name["fragmented"]["gates"]["fragmentation_1_25"] is False
     assert report["human_audition_required"] is True
+    assert report["annotation_tiers"] == {"quality_gate": 0, "smoke": 1}
+    assert report["decision_ready"] is False
 
 
 def test_chord_calibration_rejects_incomplete_runs(tmp_path):

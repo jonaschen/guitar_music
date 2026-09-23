@@ -16,6 +16,7 @@ from .evaluation.quality_report import evaluate_quality_layers
 from .evaluation.sonification import render_quality_sonifications
 from .evaluation.batch_report import build_quality_batch
 from .evaluation.chord_calibration import build_chord_calibration
+from .evaluation.annotation_audit import audit_quality_annotations
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -172,6 +173,31 @@ def chord_calibration(annotations_directory: Path, runs_directory: Path, output_
     except (FileExistsError, FileNotFoundError, ValueError) as exc:
         raise click.ClickException(str(exc)) from exc
     click.echo(str(report_path))
+
+
+@main.command("quality-audit")
+@click.argument("annotations_directory", type=click.Path(exists=True, file_okay=False, path_type=Path))
+@click.argument("audio_directory", type=click.Path(exists=True, file_okay=False, path_type=Path))
+@click.option("--output", "output_file", type=click.Path(path_type=Path))
+@click.option("--require-quality-gate", is_flag=True, help="Fail unless at least one valid 30-60 second gate excerpt exists.")
+def quality_audit(
+    annotations_directory: Path,
+    audio_directory: Path,
+    output_file: Path | None,
+    require_quality_gate: bool,
+):
+    """Validate annotation structure, coverage, and source-audio hashes."""
+    report = audit_quality_annotations(annotations_directory, audio_directory)
+    rendered = json.dumps(report, indent=2, sort_keys=True)
+    if output_file:
+        output_file.parent.mkdir(parents=True, exist_ok=True)
+        output_file.write_text(rendered + "\n")
+    else:
+        click.echo(rendered)
+    if not report["valid"]:
+        raise click.ClickException("Quality annotation audit failed")
+    if require_quality_gate and not report["ready_for_calibration"]:
+        raise click.ClickException("No valid quality-gate excerpt is available")
 
 
 @main.command()

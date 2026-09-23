@@ -53,6 +53,8 @@ class QualityAnnotation(BaseModel):
 
     schema_version: Literal["1.0"] = "1.0"
     recording_id: str = Field(min_length=1)
+    evaluation_tier: Literal["smoke", "quality_gate"] = "smoke"
+    source_file: str | None = None
     source_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     rights_note: str = Field(min_length=1)
     difficulty: Literal["easy", "medium", "hard"]
@@ -75,4 +77,9 @@ class QualityAnnotation(BaseModel):
     def validate_excerpt(self):
         if self.excerpt_end <= self.excerpt_start:
             raise ValueError("excerpt end must be after start")
+        duration = self.excerpt_end - self.excerpt_start
+        if self.evaluation_tier == "quality_gate" and not 30 <= duration <= 60:
+            raise ValueError("quality-gate excerpts must be 30 to 60 seconds")
+        if self.evaluation_tier == "quality_gate" and not self.source_file:
+            raise ValueError("quality-gate excerpts require source_file")
         return self

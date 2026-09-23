@@ -130,6 +130,11 @@ def build_chord_calibration(
         "objectives": OBJECTIVES,
         "pareto_frontier": frontier,
         "human_audition_required": True,
+        "annotation_tiers": {
+            "quality_gate": sum(annotation.evaluation_tier == "quality_gate" for annotation in annotations),
+            "smoke": sum(annotation.evaluation_tier == "smoke" for annotation in annotations),
+        },
+        "decision_ready": sum(annotation.evaluation_tier == "quality_gate" for annotation in annotations) >= 12,
         "runs": runs,
     }
     output_file.parent.mkdir(parents=True, exist_ok=True)

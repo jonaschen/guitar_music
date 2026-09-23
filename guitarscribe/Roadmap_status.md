@@ -141,6 +141,7 @@ Recovery 執行紀錄：
 - [x] `CHORD-QA-005` annotation 的 `acceptable_labels` 正式納入 duration-weighted maj/min 與 root accuracy；報告同時保留 strict／acceptable 指標，calibration 以 acceptable accuracy 避免懲罰明確標註的合理替代簡譜。
 - [x] `CHORD-QA-006` 加入具來源雜湊與完整 beat/downbeat/chord ground truth 的 `synthetic-easy-01` quality smoke annotation；明確標示僅驗證 plumbing，不計入 30–60 秒 Easy listening set。
 - [x] `CHORD-QA-007` 完成首次端到端 smoke calibration：default 為 4 events／acceptable maj-min 0.936／boundary F 0.667／fragmentation 1.0；conservative 為 3 events／0.749／0.8／0.75。兩者各有取捨而同列 Pareto frontier，因此不以合成短片段更換預設值。
+- [x] `CHORD-QA-008` annotation 明確區分 smoke／quality_gate；quality gate 強制 30–60 秒與 source file。`quality-audit` 驗證 schema、唯一 ID、SHA-256、beat/downbeat 與 chord 全區段無縫覆蓋，並輸出是否可進入 calibration。
 
 - [ ] 在統一 major／minor／N.C. label set 下比較現有 decoder、Omnizart、autochord；Chordino 僅作可選傳統 baseline。
 - [ ] 將 harmonic change detector 納入人工標註 excerpt bake-off，依 boundary F-measure 校準 threshold，並與候選引擎共同比較。

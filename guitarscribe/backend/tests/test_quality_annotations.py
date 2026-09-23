@@ -7,6 +7,8 @@ from app.evaluation.annotations import QualityAnnotation
 def test_quality_annotation_schema_captures_quality_gate_ground_truth():
     annotation = QualityAnnotation(
         recording_id="licensed-easy-01",
+        evaluation_tier="quality_gate",
+        source_file="licensed-easy-01.wav",
         source_sha256="a" * 64,
         rights_note="Original recording owned by the test team.",
         difficulty="easy",
@@ -21,6 +23,7 @@ def test_quality_annotation_schema_captures_quality_gate_ground_truth():
     )
 
     assert annotation.schema_version == "1.0"
+    assert annotation.evaluation_tier == "quality_gate"
     assert annotation.sections[0].melody_source == "vocal"
     assert "source_sha256" in QualityAnnotation.model_json_schema()["properties"]
 
@@ -34,4 +37,18 @@ def test_quality_annotation_rejects_invalid_intervals():
             difficulty="easy",
             excerpt_start=10,
             excerpt_end=9,
+        )
+
+
+def test_quality_gate_rejects_short_smoke_length_and_missing_source_file():
+    with pytest.raises(ValidationError, match="30 to 60 seconds"):
+        QualityAnnotation(
+            recording_id="too-short",
+            evaluation_tier="quality_gate",
+            source_file="too-short.wav",
+            source_sha256="c" * 64,
+            rights_note="Licensed fixture",
+            difficulty="easy",
+            excerpt_start=0,
+            excerpt_end=8,
         )

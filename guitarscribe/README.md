@@ -131,6 +131,19 @@ smoke annotation for checking this plumbing against
 `fixtures/audio/test_progression.wav`. It is intentionally not counted as one
 of the required 30–60 second Easy listening excerpts.
 
+Before generating score runs, audit new annotations and their source files:
+
+```bash
+docker compose run --rm -v "$PWD/backend:/app" -v "$PWD:/workspace:ro" backend \
+  python -m app.cli quality-audit /workspace/quality/annotations \
+    /workspace/quality/audio --require-quality-gate
+```
+
+The audit checks source SHA-256, unique IDs, the 30–60 second gate duration,
+tempo and full beat/downbeat coverage, and gap-free chord regions. Its report
+also shows progress toward the 12-excerpt G0 minimum. Smoke-only data may pass
+integrity validation but is never marked decision-ready.
+
 Generate a comparison run without changing source code by overriding the
 documented `GUITARSCRIBE_CHORD_*` values from `.env.example`. For example, a
 more conservative segmentation run can use:
