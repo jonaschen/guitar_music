@@ -57,6 +57,7 @@ def test_chord_calibration_reports_pareto_runs_without_combined_score(tmp_path):
     report = json.loads(output.read_text())
     assert "overall" not in report
     assert report["selection_method"] == "pareto_frontier"
+    assert report["objectives"]["acceptable_majmin_weighted_accuracy"] == "maximize"
     assert report["pareto_frontier"] == ["stable"]
     by_name = {run["name"]: run for run in report["runs"]}
     assert by_name["stable"]["decoder_parameters"]["decoder_change_threshold"] == 0.12

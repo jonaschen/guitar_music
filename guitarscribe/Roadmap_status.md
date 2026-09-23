@@ -138,6 +138,9 @@ Recovery 執行紀錄：
 - [x] `CHORD-QA-002` change、N.C.、duration/change penalty、五度解決與調性 prior 權重集中為具名 decoder config，並寫入 canonical analyzer provenance，確保 threshold bake-off 可重現。
 - [x] `CHORD-QA-003` decoder 參數一路保存到 SongScore provenance；`chord-calibration` 可比較多組完整 run，以 accuracy／boundary／fragmentation error／review load 產生 Pareto frontier，保留人工伴奏試聽作最終決策。
 - [x] `CHORD-QA-004` 所有 decoder 校準參數可由 `GUITARSCRIBE_CHORD_*` 環境變數設定，pipeline 使用並自動記錄實值，不需改碼即可產生多組 comparison run。
+- [x] `CHORD-QA-005` annotation 的 `acceptable_labels` 正式納入 duration-weighted maj/min 與 root accuracy；報告同時保留 strict／acceptable 指標，calibration 以 acceptable accuracy 避免懲罰明確標註的合理替代簡譜。
+- [x] `CHORD-QA-006` 加入具來源雜湊與完整 beat/downbeat/chord ground truth 的 `synthetic-easy-01` quality smoke annotation；明確標示僅驗證 plumbing，不計入 30–60 秒 Easy listening set。
+- [x] `CHORD-QA-007` 完成首次端到端 smoke calibration：default 為 4 events／acceptable maj-min 0.936／boundary F 0.667／fragmentation 1.0；conservative 為 3 events／0.749／0.8／0.75。兩者各有取捨而同列 Pareto frontier，因此不以合成短片段更換預設值。
 
 - [ ] 在統一 major／minor／N.C. label set 下比較現有 decoder、Omnizart、autochord；Chordino 僅作可選傳統 baseline。
 - [ ] 將 harmonic change detector 納入人工標註 excerpt bake-off，依 boundary F-measure 校準 threshold，並與候選引擎共同比較。

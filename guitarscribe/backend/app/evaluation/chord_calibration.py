@@ -13,7 +13,7 @@ from ..models.score import SongScore
 
 
 OBJECTIVES = {
-    "majmin_weighted_accuracy": "maximize",
+    "acceptable_majmin_weighted_accuracy": "maximize",
     "boundary_f_measure": "maximize",
     "fragmentation_error": "minimize",
     "review_event_ratio": "minimize",
@@ -96,7 +96,7 @@ def build_chord_calibration(
             for metric in numeric_metrics
         }
         summary["fragmentation_error"] = abs(summary.get("fragmentation_ratio", 0.0) - 1.0)
-        summary.setdefault("majmin_weighted_accuracy", 0.0)
+        summary.setdefault("acceptable_majmin_weighted_accuracy", 0.0)
         summary.setdefault("boundary_f_measure", 0.0)
         summary.setdefault("review_event_ratio", 0.0)
         runs.append({

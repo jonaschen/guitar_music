@@ -126,6 +126,11 @@ score's provenance. The Pareto frontier narrows the candidates; paired
 sonification and human accompaniment audition remain required before choosing
 a default.
 
+`fixtures/quality/annotations/synthetic-easy-01.json` is a short, legally safe
+smoke annotation for checking this plumbing against
+`fixtures/audio/test_progression.wav`. It is intentionally not counted as one
+of the required 30–60 second Easy listening excerpts.
+
 Generate a comparison run without changing source code by overriding the
 documented `GUITARSCRIBE_CHORD_*` values from `.env.example`. For example, a
 more conservative segmentation run can use:

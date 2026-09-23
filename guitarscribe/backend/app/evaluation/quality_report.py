@@ -82,6 +82,30 @@ def _note_contour(notes: list[MelodyNote] | list[Any], start: float, end: float,
     return times, frequencies
 
 
+def _acceptable_chord_accuracy(
+    reference_regions: list[Any],
+    estimated_intervals: np.ndarray,
+    estimated_labels: list[str],
+    comparator,
+) -> float:
+    """Duration-weighted score against any explicitly accepted label."""
+    total_duration = sum(region.end - region.start for region in reference_regions)
+    if total_duration <= 0:
+        return 0.0
+    matched_duration = 0.0
+    for region in reference_regions:
+        accepted = [_mir_eval_chord_label(region.label)] + [
+            _mir_eval_chord_label(label) for label in region.acceptable_labels
+        ]
+        for (estimated_start, estimated_end), estimated_label in zip(estimated_intervals, estimated_labels):
+            overlap = min(region.end, float(estimated_end)) - max(region.start, float(estimated_start))
+            if overlap <= 0:
+                continue
+            scores = comparator(accepted, [estimated_label] * len(accepted))
+            matched_duration += overlap * max(0.0, max(float(score) for score in scores))
+    return matched_duration / total_duration
+
+
 def evaluate_quality_layers(score: SongScore, annotation: QualityAnnotation) -> dict[str, Any]:
     """Return separate timing/chord/melody metrics with no synthetic overall score."""
     reference_beats = np.asarray([point.time for point in annotation.beats], dtype=float)
@@ -124,6 +148,12 @@ def evaluate_quality_layers(score: SongScore, annotation: QualityAnnotation) -> 
             chord = {
                 "majmin_weighted_accuracy": float(mir_scores["majmin"]),
                 "root_weighted_accuracy": float(mir_scores["root"]),
+                "acceptable_majmin_weighted_accuracy": _acceptable_chord_accuracy(
+                    annotation.chords, estimated_intervals, estimated_labels, mir_eval.chord.majmin
+                ),
+                "acceptable_root_weighted_accuracy": _acceptable_chord_accuracy(
+                    annotation.chords, estimated_intervals, estimated_labels, mir_eval.chord.root
+                ),
                 "boundary_precision": boundaries["precision"],
                 "boundary_recall": boundaries["recall"],
                 "boundary_f_measure": boundaries["f_measure"],
@@ -161,7 +191,7 @@ def evaluate_quality_layers(score: SongScore, annotation: QualityAnnotation) -> 
         }
 
     return {
-        "schema_version": "1.1",
+        "schema_version": "1.2",
         "recording_id": annotation.recording_id,
         "timing": timing,
         "chord": chord,

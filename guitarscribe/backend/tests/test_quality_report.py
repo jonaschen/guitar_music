@@ -62,6 +62,8 @@ def test_layered_quality_report_scores_perfect_match_without_combining_layers():
     assert report["timing"]["downbeat_f_measure"] == pytest.approx(1)
     assert report["chord"]["majmin_weighted_accuracy"] == pytest.approx(1)
     assert report["chord"]["root_weighted_accuracy"] == pytest.approx(1)
+    assert report["chord"]["acceptable_majmin_weighted_accuracy"] == pytest.approx(1)
+    assert report["chord"]["acceptable_root_weighted_accuracy"] == pytest.approx(1)
     assert report["chord"]["boundary_precision"] == pytest.approx(1)
     assert report["chord"]["boundary_recall"] == pytest.approx(1)
     assert report["chord"]["boundary_f_measure"] == pytest.approx(1)
@@ -96,7 +98,7 @@ def test_quality_report_cli_writes_versioned_report(tmp_path):
 
     assert result.exit_code == 0, result.output
     report = json.loads(output_path.read_text())
-    assert report["schema_version"] == "1.1"
+    assert report["schema_version"] == "1.2"
     assert report["recording_id"] == "legal-easy-01"
     assert set(report["sonifications"]) == {
         "reference_timing", "estimated_timing", "reference_chords",
@@ -126,3 +128,16 @@ def test_chord_report_exposes_over_fragmentation_and_review_load():
     assert chord_report["over_fragmented"] is True
     assert chord_report["review_event_count"] == 2
     assert chord_report["review_event_ratio"] == pytest.approx(0.5)
+
+
+def test_chord_report_honors_explicit_alternative_harmonic_readings():
+    reference = make_annotation()
+    reference.chords[0].acceptable_labels = ["Am"]
+    estimated = make_score()
+    estimated.chords[0].symbol = "Am"
+
+    chord_report = evaluate_quality_layers(estimated, reference)["chord"]
+
+    assert chord_report["majmin_weighted_accuracy"] < 1
+    assert chord_report["acceptable_majmin_weighted_accuracy"] == pytest.approx(1)
+    assert chord_report["acceptable_root_weighted_accuracy"] == pytest.approx(1)
