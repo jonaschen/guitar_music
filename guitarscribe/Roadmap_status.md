@@ -144,6 +144,7 @@ Recovery 執行紀錄：
 - [x] `CHORD-QA-008` annotation 明確區分 smoke／quality_gate；quality gate 強制 30–60 秒與 source file。`quality-audit` 驗證 schema、唯一 ID、SHA-256、beat/downbeat 與 chord 全區段無縫覆蓋，並輸出是否可進入 calibration。
 - [x] `CHORD-QA-009` `quality-annotation-init` 由合法來源音訊建立不可覆蓋的 hashed draft，只填 metadata、不偽造 beat/chord truth；quality gate 必須明確標成 reviewed 並記錄 reviewer 才能通過 audit。
 - [x] `CHORD-CAND-001` chromagram 1.3 每個 harmonic region 保存 raw top-3 maj/min/N.C. evidence、acoustic rank 與 decoder-selected 標記；major/minor 理論修正延後至 postprocess，candidate lattice 經 canonical artifact round-trip，能區分聲學候選不足與 sequence prior 選擇錯誤。
+- [x] `CHORD-CAND-002` quality report 增加 duration-weighted acoustic top-1／top-3 acceptable maj-min coverage 與 decoder override event ratio；可分流「聲學候選未召回」和「sequence／theory 選錯」兩類修正工作。
 
 - [ ] 在統一 major／minor／N.C. label set 下比較現有 decoder、Omnizart、autochord；Chordino 僅作可選傳統 baseline。
 - [ ] 將 harmonic change detector 納入人工標註 excerpt bake-off，依 boundary F-measure 校準 threshold，並與候選引擎共同比較。

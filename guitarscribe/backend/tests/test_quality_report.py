@@ -7,7 +7,7 @@ from click.testing import CliRunner
 from app.cli import main
 from app.evaluation.annotations import QualityAnnotation
 from app.evaluation.quality_report import evaluate_quality_layers
-from app.models.analysis import BeatInfo, ChordEvent, MelodyNote
+from app.models.analysis import BeatInfo, ChordEvent, ChordLabelCandidate, MelodyNote
 from app.models.score import AnalysisSummary, SongScore
 
 
@@ -141,3 +141,25 @@ def test_chord_report_honors_explicit_alternative_harmonic_readings():
     assert chord_report["majmin_weighted_accuracy"] < 1
     assert chord_report["acceptable_majmin_weighted_accuracy"] == pytest.approx(1)
     assert chord_report["acceptable_root_weighted_accuracy"] == pytest.approx(1)
+
+
+def test_chord_report_separates_acoustic_candidate_recall_from_decoder_choice():
+    reference = make_annotation()
+    estimated = make_score()
+    estimated.chords[0].symbol = "G"
+    estimated.chords[0].label_candidates = [
+        ChordLabelCandidate(label="G", score=0.7, acoustic_rank=1, decoder_selected=True),
+        ChordLabelCandidate(label="C", score=0.68, acoustic_rank=2),
+        ChordLabelCandidate(label="Am", score=0.5, acoustic_rank=3),
+    ]
+    estimated.chords[1].label_candidates = [
+        ChordLabelCandidate(label="Am", score=0.8, acoustic_rank=1),
+        ChordLabelCandidate(label="C", score=0.75, acoustic_rank=2, decoder_selected=True),
+        ChordLabelCandidate(label="Em", score=0.4, acoustic_rank=3),
+    ]
+
+    chord_report = evaluate_quality_layers(estimated, reference)["chord"]
+
+    assert chord_report["acoustic_top1_acceptable_majmin_coverage"] == pytest.approx(0.5)
+    assert chord_report["acoustic_top3_acceptable_majmin_coverage"] == pytest.approx(1)
+    assert chord_report["decoder_override_event_ratio"] == pytest.approx(0.5)

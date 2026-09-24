@@ -106,6 +106,40 @@ def _acceptable_chord_accuracy(
     return matched_duration / total_duration
 
 
+def _candidate_lattice_accuracy(
+    reference_regions: list[Any],
+    estimated_regions: list[Any],
+    maximum_rank: int,
+) -> float:
+    """Measure whether an acceptable maj/min reading exists in acoustic top-k."""
+    total_duration = sum(region.end - region.start for region in reference_regions)
+    if total_duration <= 0:
+        return 0.0
+    matched_duration = 0.0
+    for reference in reference_regions:
+        accepted = [_mir_eval_chord_label(reference.label)] + [
+            _mir_eval_chord_label(label) for label in reference.acceptable_labels
+        ]
+        for event in estimated_regions:
+            overlap = min(reference.end, event.end) - max(reference.start, event.start)
+            if overlap <= 0:
+                continue
+            candidates = [
+                _mir_eval_chord_label(candidate.label)
+                for candidate in event.label_candidates
+                if candidate.acoustic_rank <= maximum_rank
+            ]
+            if not candidates:
+                continue
+            scores = [
+                float(mir_eval.chord.majmin([expected], [candidate])[0])
+                for expected in accepted
+                for candidate in candidates
+            ]
+            matched_duration += overlap * max(0.0, max(scores))
+    return matched_duration / total_duration
+
+
 def evaluate_quality_layers(score: SongScore, annotation: QualityAnnotation) -> dict[str, Any]:
     """Return separate timing/chord/melody metrics with no synthetic overall score."""
     reference_beats = np.asarray([point.time for point in annotation.beats], dtype=float)
@@ -166,6 +200,19 @@ def evaluate_quality_layers(score: SongScore, annotation: QualityAnnotation) -> 
                 "review_event_count": review_count,
                 "review_event_ratio": review_count / len(estimated_regions),
             }
+            if all(event.label_candidates for event in estimated_regions):
+                chord.update({
+                    "acoustic_top1_acceptable_majmin_coverage": _candidate_lattice_accuracy(
+                        annotation.chords, estimated_regions, 1
+                    ),
+                    "acoustic_top3_acceptable_majmin_coverage": _candidate_lattice_accuracy(
+                        annotation.chords, estimated_regions, 3
+                    ),
+                    "decoder_override_event_ratio": sum(
+                        any(candidate.decoder_selected and candidate.acoustic_rank > 1 for candidate in event.label_candidates)
+                        for event in estimated_regions
+                    ) / len(estimated_regions),
+                })
         else:
             chord = {
                 "status": "no_estimated_chords",
