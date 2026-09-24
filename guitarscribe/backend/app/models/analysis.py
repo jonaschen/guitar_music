@@ -62,6 +62,8 @@ class ChordEvent(BaseModel):
 
 class ChordAnalysis(BaseModel):
     chords: list[ChordEvent] = Field(default_factory=list)
+    # Analyzer regions include N.C. and retain evidence before event merging.
+    raw_regions: list[ChordEvent] | None = None
     key: str = "C"
     mode: str = "major"
     confidence: float = 0.0

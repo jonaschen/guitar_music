@@ -107,6 +107,13 @@ The bundle records source hashes, canonical score hashes, analyzer provenance,
 per-layer deltas, and paired WAV files. These tools are intended for regression
 comparison, not as a claim of full-song transcription accuracy.
 
+Chromagram 1.4 writes unmerged harmonic regions, including `N` (no chord),
+to `chord-candidates.json`. Each region retains its own candidates and selected
+label. SongScore projects `N` regions as gaps; these gaps produce no guitar
+playback events. Candidate scores are heuristic evidence, not calibrated
+probabilities; the `N` score is derived from the configured evidence threshold.
+Adjacent regions may have the same selected label but different alternatives.
+
 To compare three or more chord-decoder configurations, place each complete run
 in a named subdirectory (for example `runs/default/*.json` and
 `runs/conservative/*.json`). Every score filename must match an annotation's

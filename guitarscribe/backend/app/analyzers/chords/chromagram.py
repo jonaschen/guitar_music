@@ -232,11 +232,15 @@ def decode_beat_synchronous_chords(
     duration_seconds: float,
     labels: list[str],
     config: ChordDecoderConfig | None = None,
+    *,
+    preserve_regions: bool = False,
 ) -> list[ChordEvent]:
     """Detect beat-constrained harmonic regions, then assign chord labels."""
     config = config or ChordDecoderConfig()
     boundaries = [0.0]
     boundaries.extend(beat.time for beat in beats.beats if 0.02 < beat.time < duration_seconds - 0.02)
+    if len(beats.beats) < 2:
+        boundaries.extend(float(time) for time in frame_times if 0 < time < duration_seconds)
     boundaries.append(duration_seconds)
     boundaries = sorted(set(boundaries))
     regions = _detect_harmonic_regions(similarities, frame_times, boundaries, config.change_threshold)
@@ -250,7 +254,11 @@ def decode_beat_synchronous_chords(
         confidence = max(0.05, min(0.95, 0.45 + margin))
         preliminary.append((float(start), float(end), label, confidence))
     key, mode = estimate_key_from_chords(_group_segments(preliminary))
-    events = _group_segments(_decode_region_sequence(regions, labels, key, mode, config))
+    decoded = _decode_region_sequence(regions, labels, key, mode, config)
+    events = [
+        ChordEvent(id=f"region-{index + 1}", start=start, end=end, symbol=label, confidence=confidence)
+        for index, (start, end, label, confidence) in enumerate(decoded)
+    ] if preserve_regions else _group_segments(decoded)
     return _attach_region_candidates(events, regions, labels, config)
 
 
@@ -336,38 +344,25 @@ class ChromagramChordAnalyzer:
             templates_norm = templates / (np.linalg.norm(templates, axis=1, keepdims=True) + 1e-6)
             
             similarities = np.dot(templates_norm, chroma_norm)
-            best_chords = np.argmax(similarities, axis=0)
             
             times = librosa.frames_to_time(np.arange(chroma.shape[1]), sr=sr, hop_length=hop_length)
             
-            if len(beats.beats) >= 2:
-                events = decode_beat_synchronous_chords(
-                    similarities, times, beats, audio.duration_seconds, labels, self.decoder_config
-                )
-            else:
-                segments = []
-                current_label = None
-                start_time = 0.0
-                for i, chord_id in enumerate(best_chords):
-                    label = labels[chord_id]
-                    t = float(times[i])
-                    if label != current_label:
-                        if current_label is not None:
-                            segments.append((start_time, t, current_label, 0.5))
-                        current_label, start_time = label, t
-                if current_label is not None:
-                    segments.append((start_time, float(audio.duration_seconds), current_label, 0.5))
-                events = _group_segments(segments)
+            raw_regions = decode_beat_synchronous_chords(
+                similarities, times, beats, audio.duration_seconds, labels,
+                self.decoder_config, preserve_regions=True,
+            )
+            events = [event.model_copy(deep=True) for event in raw_regions if event.symbol != "N"]
 
             key, mode = estimate_key_from_chords(events)
                 
             return ChordAnalysis(
                 chords=events,
+                raw_regions=raw_regions,
                 key=key,
                 mode=mode,
                 confidence=0.6,
                 engine="chromagram",
-                engine_version="1.3",
+                engine_version="1.4",
                 parameters=self.parameters,
             )
             

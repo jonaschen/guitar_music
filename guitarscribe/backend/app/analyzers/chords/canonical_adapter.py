@@ -55,7 +55,7 @@ class CanonicalChordAnalyzerAdapter:
                     confidence=event.confidence,
                     label_candidates=event.label_candidates,
                 )
-                for event in analysis.chords
+                for event in (analysis.raw_regions if analysis.raw_regions is not None else analysis.chords)
             ],
             key=analysis.key,
             mode=analysis.mode,
@@ -75,6 +75,7 @@ class CanonicalChordAnalyzerAdapter:
                     label_candidates=region.label_candidates,
                 )
                 for index, region in enumerate(result.regions)
+                if region.label not in {"N", "NC", "N.C.", "no_chord"}
             ],
             key=result.key,
             mode=result.mode,

@@ -150,6 +150,7 @@ Recovery 執行紀錄：
 - [x] `CHORD-CAND-001` chromagram 1.3 每個 harmonic region 保存 raw top-3 maj/min/N.C. evidence、acoustic rank 與 decoder-selected 標記；major/minor 理論修正延後至 postprocess，candidate lattice 經 canonical artifact round-trip，能區分聲學候選不足與 sequence prior 選擇錯誤。
 - [x] `CHORD-CAND-002` quality report 增加 duration-weighted acoustic top-1／top-3 acceptable maj-min coverage 與 decoder override event ratio；可分流「聲學候選未召回」和「sequence／theory 選錯」兩類修正工作。
 - [x] `CHORD-OUTPUT-001` 正式 postprocess 停用短事件刪除、A–B–A 覆蓋、跨休止合併及二次拍點吸附；保留 decoder 時間、label 與候選，以副本處理避免污染輸入。修正 standard complexity 將 maj7 誤截為 minor 的問題；provenance 記錄 postprocess v2。需重新分析才能套用。
+- [x] `CHORD-CAND-003` chromagram 1.4 保存未合併的區段與 N.C. 至 canonical artifact；每段保留自身候選，避免合併平均後掩蓋局部證據。投影 SongScore 時 N.C. 成為空白，後處理與播放維持休止；無可靠 beat 時亦使用同一候選／N.C. 解碼路徑。這是證據保存修正，尚未證明真實混音的 N.C. 偵測準確率。
 
 - [ ] 在統一 major／minor／N.C. label set 下比較現有 decoder、Omnizart、autochord；Chordino 僅作可選傳統 baseline。
 - [ ] 將 harmonic change detector 納入人工標註 excerpt bake-off，依 boundary F-measure 校準 threshold，並與候選引擎共同比較。
