@@ -60,6 +60,12 @@ export type SongScore = {
     theory_confidence?: number | null;
     needs_review?: boolean;
     review_reasons?: string[];
+    label_candidates?: Array<{
+      label: string;
+      score: number;
+      acoustic_rank: number;
+      decoder_selected: boolean;
+    }>;
   }>;
   melody: Array<{
     id: string;

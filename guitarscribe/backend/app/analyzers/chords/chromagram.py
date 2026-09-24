@@ -3,7 +3,7 @@ from dataclasses import asdict, dataclass
 import numpy as np
 import librosa
 from ...models.audio import NormalizedAudio
-from ...models.analysis import BeatAnalysis, ChordAnalysis, ChordEvent
+from ...models.analysis import BeatAnalysis, ChordAnalysis, ChordEvent, ChordLabelCandidate
 from ...postprocess.harmony import parse_chord, tonal_bias
 
 logger = logging.getLogger(__name__)
@@ -185,6 +185,46 @@ def _decode_region_sequence(
     return decoded
 
 
+def _attach_region_candidates(
+    events: list[ChordEvent],
+    regions: list[tuple[float, float, np.ndarray]],
+    labels: list[str],
+    config: ChordDecoderConfig,
+    limit: int = 3,
+) -> list[ChordEvent]:
+    """Attach raw regional alternatives separately from decoder priors."""
+    nc_index = labels.index("N")
+    chord_indices = [index for index, label in enumerate(labels) if label != "N"]
+    for event in events:
+        weighted_scores = np.zeros(len(labels), dtype=float)
+        total_weight = 0.0
+        for start, end, scores in regions:
+            overlap = min(event.end, end) - max(event.start, start)
+            if overlap > 0:
+                weighted_scores += np.asarray(scores, dtype=float) * overlap
+                total_weight += overlap
+        if total_weight <= 0:
+            continue
+        weighted_scores /= total_weight
+        best_chord = max(float(weighted_scores[index]) for index in chord_indices)
+        weighted_scores[nc_index] = max(0.0, config.no_chord_threshold * 2 - best_chord)
+        ordered = [int(index) for index in np.argsort(weighted_scores)[::-1]]
+        selected_index = labels.index(event.symbol)
+        retained = ordered[:limit]
+        if selected_index not in retained:
+            retained.append(selected_index)
+        event.label_candidates = [
+            ChordLabelCandidate(
+                label=labels[index],
+                score=round(max(0.0, min(1.0, float(weighted_scores[index]))), 4),
+                acoustic_rank=ordered.index(index) + 1,
+                decoder_selected=index == selected_index,
+            )
+            for index in retained
+        ]
+    return events
+
+
 def decode_beat_synchronous_chords(
     similarities: np.ndarray,
     frame_times: np.ndarray,
@@ -210,7 +250,8 @@ def decode_beat_synchronous_chords(
         confidence = max(0.05, min(0.95, 0.45 + margin))
         preliminary.append((float(start), float(end), label, confidence))
     key, mode = estimate_key_from_chords(_group_segments(preliminary))
-    return _group_segments(_decode_region_sequence(regions, labels, key, mode, config))
+    events = _group_segments(_decode_region_sequence(regions, labels, key, mode, config))
+    return _attach_region_candidates(events, regions, labels, config)
 
 
 def estimate_key_from_chords(events: list[ChordEvent]) -> tuple[str, str]:
@@ -319,7 +360,6 @@ class ChromagramChordAnalyzer:
                 events = _group_segments(segments)
 
             key, mode = estimate_key_from_chords(events)
-            events = normalize_low_confidence_qualities(events, key, mode)
                 
             return ChordAnalysis(
                 chords=events,
@@ -327,7 +367,7 @@ class ChromagramChordAnalyzer:
                 mode=mode,
                 confidence=0.6,
                 engine="chromagram",
-                engine_version="1.2",
+                engine_version="1.3",
                 parameters=self.parameters,
             )
             

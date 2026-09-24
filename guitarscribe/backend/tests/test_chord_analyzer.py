@@ -47,6 +47,10 @@ def test_chromagram_decoder_aggregates_frames_into_beat_aligned_events():
     assert [(event.symbol, event.start, event.end) for event in events] == [
         ("C", 0.0, 1.0), ("G", 1.0, 1.5), ("C", 1.5, 2.0),
     ]
+    assert all(len(event.label_candidates) >= 3 for event in events)
+    assert all(sum(candidate.decoder_selected for candidate in event.label_candidates) == 1 for event in events)
+    assert events[0].label_candidates[0].label == "C"
+    assert events[0].label_candidates[0].acoustic_rank == 1
 
 
 def test_chromagram_decoder_does_not_turn_small_argmax_flips_into_changes():
@@ -65,6 +69,7 @@ def test_chromagram_decoder_does_not_turn_small_argmax_flips_into_changes():
     events = decode_beat_synchronous_chords(similarities, frame_times, beats, 1.0, labels)
 
     assert [(event.symbol, event.start, event.end) for event in events] == [("C", 0.0, 1.0)]
+    assert {candidate.label for candidate in events[0].label_candidates[:2]} == {"C", "G"}
 
 
 def test_sequence_decoder_rejects_brief_low_margin_outlier():

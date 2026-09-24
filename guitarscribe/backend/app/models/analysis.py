@@ -34,6 +34,12 @@ class BeatAnalysis(BaseModel):
     engine_version: str = ""
     warnings: list[str] = Field(default_factory=list)
 
+class ChordLabelCandidate(BaseModel):
+    label: str
+    score: float = Field(ge=0, le=1)
+    acoustic_rank: int = Field(ge=1)
+    decoder_selected: bool = False
+
 class ChordEvent(BaseModel):
     id: str
     start: float
@@ -52,6 +58,7 @@ class ChordEvent(BaseModel):
     theory_confidence: Optional[float] = Field(default=None, ge=0, le=1)
     needs_review: bool = False
     review_reasons: list[str] = Field(default_factory=list)
+    label_candidates: list[ChordLabelCandidate] = Field(default_factory=list)
 
 class ChordAnalysis(BaseModel):
     chords: list[ChordEvent] = Field(default_factory=list)

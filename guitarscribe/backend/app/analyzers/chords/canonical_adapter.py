@@ -53,6 +53,7 @@ class CanonicalChordAnalyzerAdapter:
                     end=event.end,
                     label=event.symbol,
                     confidence=event.confidence,
+                    label_candidates=event.label_candidates,
                 )
                 for event in analysis.chords
             ],
@@ -71,6 +72,7 @@ class CanonicalChordAnalyzerAdapter:
                     end=region.end,
                     symbol=region.label,
                     confidence=region.confidence,
+                    label_candidates=region.label_candidates,
                 )
                 for index, region in enumerate(result.regions)
             ],

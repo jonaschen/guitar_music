@@ -9,6 +9,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, model_validator
 
+from .analysis import ChordLabelCandidate
+
 
 class AnalyzerRun(BaseModel):
     engine: str = Field(min_length=1)
@@ -36,6 +38,7 @@ class ChordCandidateRegion(BaseModel):
     end: float = Field(gt=0)
     label: str
     confidence: float = Field(default=0, ge=0, le=1)
+    label_candidates: list[ChordLabelCandidate] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def validate_interval(self):

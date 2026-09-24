@@ -2,6 +2,7 @@ import pytest
 from app.core.config import Settings, ChordEngine
 from app.core.pipeline import create_pipeline
 from app.models.audio import SourceRequest, SourceType
+from app.models.candidates import ChordResult
 
 @pytest.mark.slow
 @pytest.mark.e2e
@@ -32,6 +33,9 @@ async def test_pipeline_e2e(sample_wav, tmp_path):
     assert 60 <= score.analysis.bpm <= 200
     assert (artifacts / "timing-candidates.json").is_file()
     assert (artifacts / "chord-candidates.json").is_file()
+    chord_artifact = ChordResult.model_validate_json((artifacts / "chord-candidates.json").read_text())
+    assert chord_artifact.regions
+    assert all(region.label_candidates for region in chord_artifact.regions)
     
     json_str = score.model_dump_json()
     assert isinstance(json_str, str)
