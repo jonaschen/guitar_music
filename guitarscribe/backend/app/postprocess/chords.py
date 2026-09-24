@@ -88,7 +88,7 @@ class ChordPostProcessor:
                 if match:
                     chord.symbol = match.group(1) + (match.group(2) or '')
             elif level == ChordComplexity.STANDARD:
-                match = re.match(r'^([A-G][b#]?(?:m)?(?:7|maj7|m7|dim|aug)?(?:/[A-G][b#]?)?)', chord.symbol)
+                match = re.match(r'^([A-G][b#]?(?:maj7|m7|dim|aug|7|m)?(?:/[A-G][b#]?)?)', chord.symbol)
                 if match:
                     chord.symbol = match.group(1)
         return chords
@@ -103,10 +103,14 @@ class ChordPostProcessor:
             reasons: list[str] = []
             if chord.confidence < 0.5:
                 reasons.append("low_confidence")
+            if chord.end - chord.start < 0.3:
+                reasons.append("short_event")
             if chord.detected_symbol and chord.detected_symbol != chord.symbol:
                 reasons.append("theory_corrected")
             if chord.harmonic_function == "chromatic" and chord.confidence < 0.65:
                 reasons.append("low_confidence_chromatic")
+            if chord.harmonic_function == "modal_mixture" and chord.confidence < 0.65:
+                reasons.append("low_confidence_modal_mixture")
             if 0 < index < len(chords) - 1:
                 previous, following = chords[index - 1], chords[index + 1]
                 if previous.symbol == following.symbol != chord.symbol:
@@ -119,11 +123,12 @@ class ChordPostProcessor:
         self, chords: List[ChordEvent], beats: BeatAnalysis, complexity: ChordComplexity,
         key: str = "C", mode: str = "major",
     ) -> List[ChordEvent]:
-        chords = self.smooth_chords(chords, beats)
-        chords = self.snap_to_beats(chords, beats)
-        chords = self.merge_consecutive(chords)
-        chords = self.smooth_low_confidence_return_chords(chords, beats)
-        chords = apply_harmonic_context(chords, key, mode)
-        chords = self.mark_review_candidates(chords)
+        # Segmentation and sequence selection belong to the analyzer. Repeating
+        # smoothing here erased short changes and N.C. gaps, while independent
+        # endpoint snapping could collapse a valid short interval to zero.
+        # Keep candidate evidence and intervals intact for review and replay.
+        chords = [chord.model_copy(deep=True) for chord in chords]
         chords = self.simplify(chords, complexity)
+        chords = apply_harmonic_context(chords, key, mode, correction_threshold=0.0)
+        chords = self.mark_review_candidates(chords)
         return chords

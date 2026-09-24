@@ -227,6 +227,7 @@ class AnalysisPipeline:
                     "vocal_source_separated": source_separated,
                     "chord_complexity": complexity.value,
                     **chords.parameters,
+                    "chord_postprocess_version": "2-preserve-decoder-events",
                 },
             )
         )

@@ -41,6 +41,10 @@
 
 **目前位置**：工程骨架可用，但品質救援仍位於 QR0；G1 Timing、G2 Chord Draft 與 G3 Melody 三個音樂品質 gate 都尚未通過。
 
+2026-09-24 計畫核對：QR0 診斷／標註／校準工具與 QR3 baseline 已實作，正式 quality-gate excerpts 仍為 0。QR1 引擎比較、QR2 TempoMap、QR4 主旋律重建與 QR5 新版 lead sheet 尚未完成。自動測試數量與工具 checkpoint 不代表音樂品質驗收進度。
+
+本輪優先修復正式和弦後處理對 decoder 結果的破壞；接續優先序為：保全 N.C.／區段候選證據 → 完成首批 6 段人工標註與 baseline → timing／chord engine bake-off 及 TempoMap。正式資料仍需人工核對，不能以 smoke fixture 代替。
+
 ### Recovery Quality Gates（取代功能百分比作為出貨判斷）
 
 | Gate | 驗收目標 | 狀態 |
@@ -128,7 +132,7 @@ Recovery 執行紀錄：
 已完成：
 
 - [x] `CHORD-TH-001` 建立保守的功能和聲 context layer：輸出 Roman numeral 與 tonic／predominant／dominant／secondary dominant／modal mixture／chromatic；辨認 V/x 與 minor-key harmonic dominant。
-- [x] `CHORD-TH-002` 只修正低信心、無合理五度解決的調內平行 major/minor 誤判；以獨立 `detected_symbol` 保存原始辨識，不覆蓋高信心 borrowed chord 或 secondary dominant，也不干擾正式和弦的移調來源。
+- [x] `CHORD-TH-002` 歷史實作提供低信心 major/minor 修正與 `detected_symbol`；2026-09-24 正式輸出停用此硬修正，樂理只註記功能與 Review，避免低信心 borrowed chord 被改寫。
 - [x] 和弦卡片顯示 Roman numeral 與 harmonic function；CAGED 仍定位為後段 voicing／voice-leading 編配層，不用指型反推聲學標籤。
 - [x] `CAGED-001` major triad 提供完整 C／A／G／E／D movable shape family；minor triad 先提供實用的 A／E／D anchors，刻意不生成不符合人體工學的完整 C／G minor grip。
 - [x] `CAGED-002` voicing optimizer 改為整段 dynamic programming，以難度、把位、逐弦手指移動、低音移動與可保留共同音選擇連續指型，不再逐顆只比較 base fret。
@@ -145,6 +149,7 @@ Recovery 執行紀錄：
 - [x] `CHORD-QA-009` `quality-annotation-init` 由合法來源音訊建立不可覆蓋的 hashed draft，只填 metadata、不偽造 beat/chord truth；quality gate 必須明確標成 reviewed 並記錄 reviewer 才能通過 audit。
 - [x] `CHORD-CAND-001` chromagram 1.3 每個 harmonic region 保存 raw top-3 maj/min/N.C. evidence、acoustic rank 與 decoder-selected 標記；major/minor 理論修正延後至 postprocess，candidate lattice 經 canonical artifact round-trip，能區分聲學候選不足與 sequence prior 選擇錯誤。
 - [x] `CHORD-CAND-002` quality report 增加 duration-weighted acoustic top-1／top-3 acceptable maj-min coverage 與 decoder override event ratio；可分流「聲學候選未召回」和「sequence／theory 選錯」兩類修正工作。
+- [x] `CHORD-OUTPUT-001` 正式 postprocess 停用短事件刪除、A–B–A 覆蓋、跨休止合併及二次拍點吸附；保留 decoder 時間、label 與候選，以副本處理避免污染輸入。修正 standard complexity 將 maj7 誤截為 minor 的問題；provenance 記錄 postprocess v2。需重新分析才能套用。
 
 - [ ] 在統一 major／minor／N.C. label set 下比較現有 decoder、Omnizart、autochord；Chordino 僅作可選傳統 baseline。
 - [ ] 將 harmonic change detector 納入人工標註 excerpt bake-off，依 boundary F-measure 校準 threshold，並與候選引擎共同比較。
