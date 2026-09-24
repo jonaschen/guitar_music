@@ -45,6 +45,8 @@
 
 本輪優先修復正式和弦後處理對 decoder 結果的破壞；接續優先序為：保全 N.C.／區段候選證據 → 完成首批 6 段人工標註與 baseline → timing／chord engine bake-off 及 TempoMap。正式資料仍需人工核對，不能以 smoke fixture 代替。
 
+2026-09-25 和弦試聽 checkpoint：已保全 decoder 事件、N.C. 與區段候選，修正完整 excerpt 的休止評估；UI 現在明示小節內與整小節的未配置和弦空隙，跨小節和弦點擊定位到當地起點。下一步需要人工比較原曲的換和弦時間、漏抓區段與 downbeat，詳見 [測試清單](docs/Chord_Checkpoint_Test_2026-09-25.md)。此 checkpoint 不代表 G1／G2 通過，主旋律仍未解決。
+
 ### Recovery Quality Gates（取代功能百分比作為出貨判斷）
 
 | Gate | 驗收目標 | 狀態 |

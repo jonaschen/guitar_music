@@ -466,15 +466,23 @@ export function App() {
     });
     const measures = Array.from(starts.entries()).sort(([left], [right]) => left - right);
     const ranges = measures.length ? measures.map(([measure, start], index) => ({ measure, start, end: measures[index + 1]?.[1] ?? score.song.duration_seconds })) : [{ measure: 1, start: 0, end: score.song.duration_seconds }];
-    return ranges.map((range) => ({
-      ...range,
-      chords: score.chords.filter((chord) => chord.start < range.end && chord.end > range.start).map((chord) => ({
+    return ranges.map((range) => {
+      const chords = score.chords.filter((chord) => chord.start < range.end && chord.end > range.start).map((chord) => ({
         chord,
         start: Math.max(chord.start, range.start),
         end: Math.min(chord.end, range.end),
         continues: chord.start < range.start || chord.end > range.end,
-      })),
-    }));
+      })).sort((left, right) => left.start - right.start);
+      const spans: Array<{ chord: ScoreChord | null; start: number; end: number; continues: boolean }> = [];
+      let cursor = range.start;
+      for (const chord of chords) {
+        if (chord.start > cursor + 0.001) spans.push({ chord: null, start: cursor, end: chord.start, continues: false });
+        spans.push(chord);
+        cursor = Math.max(cursor, chord.end);
+      }
+      if (cursor < range.end - 0.001) spans.push({ chord: null, start: cursor, end: range.end, continues: false });
+      return { ...range, chords, spans };
+    });
   })() : [];
 
   const selectedChord = score?.chords.find((chord) => chord.id === selectedChordId) ?? null;
@@ -1191,9 +1199,9 @@ export function App() {
     if (audioRef.current) audioRef.current.playbackRate = nextRate;
   }
 
-  function selectChord(chord: ScoreChord) {
+  function selectChord(chord: ScoreChord, seekTime = chord.start) {
     setSelectedChordId(chord.id);
-    seekTo(chord.start);
+    seekTo(seekTime);
     setChordDraft(chord.symbol);
   }
 
@@ -1716,12 +1724,12 @@ export function App() {
                     <div key={"measure-" + group.measure} className="measure-card">
                       <div className="measure-header">Bar {group.measure}</div>
                       <div className="measure-chords">
-                        {group.chords.length ? group.chords.map(({ chord, start, end, continues }) => (
+                        {group.spans.map(({ chord, start, end, continues }) => chord ? (
                           <button
                             key={chord.id + "-" + group.measure}
                             type="button"
                             className={"chord-block" + (selectedChordId === chord.id ? " chord-block-selected" : "") + (activeChordId === chord.id ? " chord-block-active" : "")}
-                            onClick={() => selectChord(chord)}
+                            onClick={() => selectChord(chord, start)}
                           >
                             <span className="chord-symbol">{chord.symbol}</span>
                             <span className="chord-meta">{start.toFixed(1)}s - {end.toFixed(1)}s</span>
@@ -1731,7 +1739,16 @@ export function App() {
                             {chord.needs_review ? <span className="review-badge" title={(chord.review_reasons ?? []).join(", ")}>Review</span> : null}
                             {chord.edited ? <span className="edit-badge">Edited</span> : null}
                           </button>
-                        )) : <span className="measure-empty">No chord change</span>}
+                        ) : (
+                          <button key={"gap-" + start} type="button" className="chord-block chord-gap"
+                            aria-label={"No chord assigned from " + start.toFixed(1) + " to " + end.toFixed(1) + " seconds"}
+                            title="No chord assigned here. Click to listen and check whether a chord is missing."
+                            onClick={() => seekTo(start)}>
+                            <span className="chord-symbol">N.C.</span>
+                            <span className="chord-meta">{start.toFixed(1)}s - {end.toFixed(1)}s</span>
+                            <span className="shape-meta">No chord assigned</span>
+                          </button>
+                        ))}
                       </div>
                     </div>
                   ))}

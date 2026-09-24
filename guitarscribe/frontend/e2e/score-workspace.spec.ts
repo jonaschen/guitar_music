@@ -50,6 +50,35 @@ test("automatically retries a temporary reconnect failure", async ({ page }) => 
   expect(requests).toBeGreaterThanOrEqual(3);
 });
 
+test("shows internal and whole-bar unassigned chord gaps without extending chords", async ({ page }) => {
+  const gapScore = {
+    ...score,
+    beats: [0, 2, 4, 6].map((time, index) => ({ time, beat: 1, measure: index + 1, confidence: 1 })),
+    chords: [
+      { ...score.chords[0], start: 0, end: 0.5 },
+      { ...score.chords[0], id: "c2", symbol: "G", start: 1.5, end: 3 },
+    ],
+  };
+  await page.route("**/api/v1/jobs/gap-job", (route) => route.fulfill({ json: {
+    id: "gap-job", status: "completed", progress: 100, message: "Analysis complete",
+    source_type: "youtube", melody_mode: "vocal", chord_complexity: "standard",
+    created_at: "2026-01-01T00:00:00Z", updated_at: "2026-01-01T00:00:00Z",
+    error: null, artifacts: [], score: gapScore,
+  } }));
+  await page.goto("/?job=gap-job");
+  const sheet = page.locator(".chord-sheet");
+  await expect(sheet.locator(".chord-symbol")).toHaveText(["C", "N.C.", "G", "G", "N.C.", "N.C.", "N.C."]);
+  await expect(sheet.getByText("Continues", { exact: true })).toHaveCount(2);
+  await expect(sheet.getByRole("button", { name: "No chord assigned from 4.0 to 6.0 seconds", exact: true })).toBeVisible();
+  await expect(sheet.getByRole("button", { name: "No chord assigned from 6.0 to 8.0 seconds", exact: true })).toBeVisible();
+  await sheet.getByRole("button", { name: "No chord assigned from 0.5 to 1.5 seconds", exact: true }).click();
+  await expect(page.getByRole("slider", { name: "Playback position", exact: true })).toHaveValue("0.5");
+  await expect(sheet.locator(".chord-block-active")).toHaveCount(0);
+  await sheet.locator(".chord-block", { hasText: "Continues" }).last().click();
+  await expect(page.getByRole("slider", { name: "Playback position", exact: true })).toHaveValue("2");
+  await expect(sheet.getByText("No chord change")).toHaveCount(0);
+});
+
 test("renders an analyzed score workspace", async ({ page }) => {
   let musicXmlRequests = 0;
   await page.route("**/api/v1/jobs/demo-job", (route) => route.fulfill({ json: { id: "demo-job", status: "completed", progress: 100, message: "Analysis complete", source_type: "youtube", melody_mode: "vocal", chord_complexity: "standard", created_at: "2026-01-01T00:00:00Z", updated_at: "2026-01-01T00:00:00Z", error: null, artifacts: ["source", "vocal-stem", "raw-melody", "final-melody"], score } }));
