@@ -98,7 +98,7 @@ def test_quality_report_cli_writes_versioned_report(tmp_path):
 
     assert result.exit_code == 0, result.output
     report = json.loads(output_path.read_text())
-    assert report["schema_version"] == "1.2"
+    assert report["schema_version"] == "1.3"
     assert report["recording_id"] == "legal-easy-01"
     assert set(report["sonifications"]) == {
         "reference_timing", "estimated_timing", "reference_chords",

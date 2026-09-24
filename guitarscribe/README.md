@@ -114,6 +114,15 @@ playback events. Candidate scores are heuristic evidence, not calibrated
 probabilities; the `N` score is derived from the configured evidence threshold.
 Adjacent regions may have the same selected label but different alternatives.
 
+Quality report 1.3 fills estimated gaps (including interior gaps and empty
+output) with N.C. over the annotated excerpt. Event counts and fragmentation
+include these N.C. regions; boundary metrics include entering and leaving a
+rest. It reports correct rest, false chords during rest, and missed chord
+durations separately. Recompute both baseline and candidate reports with 1.3
+when comparing runs. References must cover the excerpt explicitly, using `N`
+for rests; incomplete or overlapping ground truth is rejected. Acoustic
+top-k metrics are omitted when SongScore gaps lack candidate evidence.
+
 To compare three or more chord-decoder configurations, place each complete run
 in a named subdirectory (for example `runs/default/*.json` and
 `runs/conservative/*.json`). Every score filename must match an annotation's

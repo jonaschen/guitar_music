@@ -161,6 +161,8 @@ Recovery 執行紀錄：
 
 退出條件：G2 Chord Draft Playable 通過；Easy set 事件數不超過人工參考 1.25 倍，至少 80% 片段可在不超過 5 次編輯下作為伴奏草稿。
 
+QR3 評估修正（2026-09-24）：quality report 1.3 將估計頭尾／內部空白與全空輸出補為 N.C.，邊界與 fragmentation 包含 N.C. 區段；分列正確休止、休止誤報與漏抓和弦秒數。參考必須完整覆蓋 excerpt；跨版本比較須重算兩組 report。SongScore 空白未帶候選證據時省略 acoustic top-k，避免將缺失證據當成零召回。
+
 ### QR4：主旋律重新研究與重建
 
 **狀態：未開始；現有 Final Melody 已確認不可辨認，停止 threshold／smoothing 疊加。依賴 QR2。**

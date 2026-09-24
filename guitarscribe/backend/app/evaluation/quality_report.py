@@ -82,6 +82,53 @@ def _note_contour(notes: list[MelodyNote] | list[Any], start: float, end: float,
     return times, frequencies
 
 
+def _chord_timeline(regions, start: float, end: float, *, reference: bool = False):
+    """Clip to the excerpt; estimated gaps mean N, reference gaps are unknown."""
+    intervals, labels = [], []
+    cursor = start
+    for region in sorted(regions, key=lambda region: region.start):
+        left, right = max(start, region.start), min(end, region.end)
+        if right <= left:
+            continue
+        if left < cursor - 1e-9:
+            raise ValueError("Overlapping chord intervals cannot be scored")
+        if left > cursor + 1e-9:
+            if reference:
+                raise ValueError("Reference chords must cover the excerpt; annotate silence as N")
+            intervals.append([cursor, left])
+            labels.append("N")
+        intervals.append([left, right])
+        labels.append(_mir_eval_chord_label(region.label if reference else region.symbol))
+        cursor = right
+    if cursor < end - 1e-9:
+        if reference:
+            raise ValueError("Reference chords must cover the excerpt; annotate silence as N")
+        intervals.append([cursor, end])
+        labels.append("N")
+    return np.asarray(intervals, dtype=float), labels
+
+
+def _silence_metrics(reference_intervals, reference_labels, estimated_intervals, estimated_labels):
+    correct = missed = false_chord = 0.0
+    for (start, end), label in zip(reference_intervals, reference_labels):
+        for (est_start, est_end), est_label in zip(estimated_intervals, estimated_labels):
+            duration = max(0.0, min(end, est_end) - max(start, est_start))
+            if label == "N":
+                if est_label == "N":
+                    correct += duration
+                else:
+                    false_chord += duration
+            elif est_label == "N":
+                missed += duration
+    return {
+        "correct_no_chord_seconds": float(correct),
+        "false_chord_during_no_chord_seconds": float(false_chord),
+        "missed_chord_seconds": float(missed),
+        "reference_no_chord_seconds": float(correct + false_chord),
+        "estimated_no_chord_seconds": float(correct + missed),
+    }
+
+
 def _acceptable_chord_accuracy(
     reference_regions: list[Any],
     estimated_intervals: np.ndarray,
@@ -157,73 +204,63 @@ def evaluate_quality_layers(score: SongScore, annotation: QualityAnnotation) -> 
 
     chord: dict[str, float | str] = {"status": "not_annotated"}
     if annotation.chords:
-        reference_intervals = np.asarray([[region.start, region.end] for region in annotation.chords], dtype=float)
-        reference_labels = [_mir_eval_chord_label(region.label) for region in annotation.chords]
+        reference_regions = [region.model_copy(update={
+            "start": max(region.start, annotation.excerpt_start),
+            "end": min(region.end, annotation.excerpt_end),
+        }) for region in annotation.chords if region.start < annotation.excerpt_end and region.end > annotation.excerpt_start]
+        reference_intervals, reference_labels = _chord_timeline(
+            reference_regions, annotation.excerpt_start, annotation.excerpt_end, reference=True
+        )
         estimated_regions = [event for event in score.chords if event.start < annotation.excerpt_end and event.end > annotation.excerpt_start]
-        estimated_intervals = np.asarray([[event.start, event.end] for event in estimated_regions], dtype=float)
-        estimated_labels = [_mir_eval_chord_label(event.symbol) for event in estimated_regions]
+        estimated_intervals, estimated_labels = _chord_timeline(
+            estimated_regions, annotation.excerpt_start, annotation.excerpt_end
+        )
         if len(estimated_intervals):
-            estimated_intervals, estimated_labels = mir_eval.util.adjust_intervals(
-                estimated_intervals,
-                estimated_labels,
-                t_min=float(reference_intervals[0, 0]),
-                t_max=float(reference_intervals[-1, 1]),
-                start_label="N",
-                end_label="N",
-            )
             mir_scores = mir_eval.chord.evaluate(reference_intervals, reference_labels, estimated_intervals, estimated_labels)
             boundaries = _boundary_scores(
-                [region.start for region in annotation.chords[1:]],
-                [event.start for event in estimated_regions[1:]],
+                reference_intervals[1:, 0].tolist(),
+                estimated_intervals[1:, 0].tolist(),
             )
-            fragmentation_ratio = len(estimated_regions) / len(annotation.chords)
+            fragmentation_ratio = len(estimated_intervals) / len(reference_intervals)
             review_count = sum(event.needs_review for event in estimated_regions)
             excerpt_minutes = max(annotation.excerpt_end - annotation.excerpt_start, 1e-6) / 60
             chord = {
                 "majmin_weighted_accuracy": float(mir_scores["majmin"]),
                 "root_weighted_accuracy": float(mir_scores["root"]),
                 "acceptable_majmin_weighted_accuracy": _acceptable_chord_accuracy(
-                    annotation.chords, estimated_intervals, estimated_labels, mir_eval.chord.majmin
+                    reference_regions, estimated_intervals, estimated_labels, mir_eval.chord.majmin
                 ),
                 "acceptable_root_weighted_accuracy": _acceptable_chord_accuracy(
-                    annotation.chords, estimated_intervals, estimated_labels, mir_eval.chord.root
+                    reference_regions, estimated_intervals, estimated_labels, mir_eval.chord.root
                 ),
                 "boundary_precision": boundaries["precision"],
                 "boundary_recall": boundaries["recall"],
                 "boundary_f_measure": boundaries["f_measure"],
-                "reference_event_count": len(annotation.chords),
-                "estimated_event_count": len(estimated_regions),
-                "excess_event_count": max(0, len(estimated_regions) - len(annotation.chords)),
-                "estimated_events_per_minute": len(estimated_regions) / excerpt_minutes,
+                "reference_event_count": len(reference_intervals),
+                "estimated_event_count": len(estimated_intervals),
+                "excess_event_count": max(0, len(estimated_intervals) - len(reference_intervals)),
+                "estimated_events_per_minute": len(estimated_intervals) / excerpt_minutes,
                 "fragmentation_ratio": fragmentation_ratio,
                 "over_fragmented": fragmentation_ratio > 1.25,
                 "review_event_count": review_count,
-                "review_event_ratio": review_count / len(estimated_regions),
+                "review_event_ratio": review_count / len(estimated_regions) if estimated_regions else 0.0,
             }
-            if all(event.label_candidates for event in estimated_regions):
+            chord.update(_silence_metrics(reference_intervals, reference_labels, estimated_intervals, estimated_labels))
+            # SongScore gaps have no acoustic evidence. Do not invent candidate
+            # recall for the discarded N regions; those live in the artifact.
+            if estimated_regions and len(estimated_intervals) == len(estimated_regions) and all(event.label_candidates for event in estimated_regions):
                 chord.update({
                     "acoustic_top1_acceptable_majmin_coverage": _candidate_lattice_accuracy(
-                        annotation.chords, estimated_regions, 1
+                        reference_regions, estimated_regions, 1
                     ),
                     "acoustic_top3_acceptable_majmin_coverage": _candidate_lattice_accuracy(
-                        annotation.chords, estimated_regions, 3
+                        reference_regions, estimated_regions, 3
                     ),
                     "decoder_override_event_ratio": sum(
                         any(candidate.decoder_selected and candidate.acoustic_rank > 1 for candidate in event.label_candidates)
                         for event in estimated_regions
                     ) / len(estimated_regions),
                 })
-        else:
-            chord = {
-                "status": "no_estimated_chords",
-                "reference_event_count": len(annotation.chords),
-                "estimated_event_count": 0,
-                "fragmentation_ratio": 0.0,
-                "over_fragmented": False,
-                "review_event_count": 0,
-                "review_event_ratio": 0.0,
-            }
-
     melody: dict[str, float | str] = {"status": "not_annotated"}
     if annotation.melody:
         ref_time, ref_frequency = _note_contour(annotation.melody, annotation.excerpt_start, annotation.excerpt_end)
@@ -238,7 +275,7 @@ def evaluate_quality_layers(score: SongScore, annotation: QualityAnnotation) -> 
         }
 
     return {
-        "schema_version": "1.2",
+        "schema_version": "1.3",
         "recording_id": annotation.recording_id,
         "timing": timing,
         "chord": chord,
