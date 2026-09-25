@@ -31,7 +31,7 @@ test("whole-song pluck playback resumes string age and cancels pending preparati
   let heldRoute: import("@playwright/test").Route | undefined;
   let hold = false;
   const manifest = { revision: "test", duration_seconds: 8, bpm: 120, time_signature: "4/4",
-    events: [{ id: "g", track: "guitar", start: 0, end: 6, pitches: [48], pitch_offsets: [0], pitch_velocities: [98], velocity: 98 }] };
+    events: [{ id: "g", track: "guitar", start: 0, end: 0.625, sustain_end: 6, pitches: [48], pitch_offsets: [0], pitch_velocities: [98], velocity: 98 }] };
   await page.route("**/scores/playback/manifest", (route) => {
     if (hold) { heldRoute = route; return; }
     return route.fulfill({ json: manifest });

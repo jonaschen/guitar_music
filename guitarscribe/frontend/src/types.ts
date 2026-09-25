@@ -154,6 +154,7 @@ export type PlaybackManifest = {
     track: PlaybackTrack;
     start: number;
     end: number;
+    sustain_end?: number | null;
     pitches: number[];
     pitch_offsets: number[];
     pitch_velocities: number[];

@@ -62,7 +62,7 @@ export function PlaybackReference({ onStart, stopRef }: {
         }
         event.pitches.forEach((pitch, index) => {
           const start = origin + event.start + (event.pitch_offsets[index] ?? 0);
-          const end = Math.max(start + 0.02, origin + event.end);
+          const end = Math.max(start + 0.02, origin + (tone === "pluck" ? event.sustain_end ?? event.end : event.end));
           const velocity = event.pitch_velocities[index] ?? event.velocity;
           const peak = event.track === "guitar" ? 0.24 * velocity / 127 / Math.sqrt(event.pitches.length) : 0.018;
           if (tone === "pluck") {

@@ -953,16 +953,18 @@ export function App() {
         }, countInBeats * beatSeconds * 1000);
       }
       const initialContextStart = countInStart + countInBeats * beatSeconds;
+      const acousticEnd = (event: PlaybackManifest["events"][number]) =>
+        event.track === "guitar" && guitarTone === "pluck" ? event.sustain_end ?? event.end : event.end;
       const scheduleSegment = (segmentStart: number, contextStart: number) => {
         const segmentEnd = requestedLoop?.[1] ?? manifest.duration_seconds;
         synthClockRef.current = { contextStart, scoreStart: segmentStart };
         const segmentEvents = manifest.events
-          .filter((event) => synthTracks[event.track] && synthVolumes[event.track] > 0 && (synthSoloTrack === null || event.track === synthSoloTrack) && event.end > segmentStart && event.start < segmentEnd)
+          .filter((event) => synthTracks[event.track] && synthVolumes[event.track] > 0 && (synthSoloTrack === null || event.track === synthSoloTrack) && acousticEnd(event) > segmentStart && event.start < segmentEnd)
           .sort((left, right) => left.start - right.start);
         let nextEventIndex = 0;
         const scheduleEvent = (event: PlaybackManifest["events"][number], resumeScoreTime: number) => {
           const eventStart = Math.max(event.start, segmentStart, resumeScoreTime);
-          const eventEnd = Math.min(event.end, segmentEnd);
+          const eventEnd = Math.min(acousticEnd(event), segmentEnd);
           if (eventEnd <= eventStart) return;
           if (event.track === "metronome") {
             const source = createMetronomeVoice(context,

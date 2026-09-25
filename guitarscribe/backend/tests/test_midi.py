@@ -249,6 +249,7 @@ def test_sustain_never_bridges_explicit_no_chord_or_unassigned_gap():
             score.chords.insert(1, ChordEvent(id="silence", start=1.0, end=1.25, symbol="N"))
         guitar = [e for e in compile_playback_manifest(score).events if e.track == "guitar"]
         assert guitar[2].end == 1.0
+        assert all(e.sustain_end == 1.0 for e in guitar[:3])
         assert guitar[3].start == 1.5625
 
 
@@ -279,3 +280,22 @@ def test_three_chord_reference_uses_two_one_one_and_keeps_four_beat_hierarchy():
     downbeat = next(e for e in events if e.start == 7.5)
     assert previous.pitches == downbeat.pitches
     assert (previous.velocity, downbeat.velocity) == (27, 98)
+
+
+def test_repeated_strokes_keep_resonance_until_harmony_changes():
+    from app.services.playback_reference import reference_score
+    for within_bar, boundary in ((False, 2.5), (True, 1.25)):
+        score = reference_score(within_bar=within_bar)
+        before = score.model_dump_json()
+        events = [e for e in compile_playback_manifest(score).events if e.track == "guitar"]
+        first_chord = [e for e in events if e.start < boundary]
+        assert all(e.sustain_end == boundary for e in first_chord)
+        assert first_chord[0].end == 0.625  # MIDI duration stays unchanged.
+        assert first_chord[0].sustain_end > first_chord[1].start
+        assert score.model_dump_json() == before
+
+
+def test_all_old_chord_resonances_bridge_to_next_syncopated_attack():
+    from app.services.playback_reference import reference_score
+    events = [e for e in compile_playback_manifest(reference_score(True, "syncopated")).events if e.track == "guitar"]
+    assert all(e.sustain_end == 1.5625 for e in events[:3])

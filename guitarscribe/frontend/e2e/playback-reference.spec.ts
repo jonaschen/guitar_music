@@ -61,3 +61,31 @@ test("metronome volume and downbeat produce measurable differences", async ({ pa
   expect(measured.loud).toBeGreaterThan(measured.quiet * 1.8);
   expect(measured.loud).toBeGreaterThan(measured.weak * 1.4);
 });
+
+test("weak strokes retain earlier resonance without clipping and harmony change damps it", async ({ page }) => {
+  await page.goto("/");
+  const measured = await page.evaluate(async () => {
+    const modulePath = "/src/pluckedTone.ts";
+    const { preparePluckedBuffers, createPluckedVoice } = await import(modulePath);
+    async function render(ringEnd: number) {
+      const context = new OfflineAudioContext(1, 44100 * 3, 44100);
+      const buffers = await preparePluckedBuffers(context, [48, 52, 55]);
+      for (const [time, velocity] of [[0, 98], [0.625, 27], [0.9375, 15], [1.25, 54], [1.5625, 15], [1.875, 27], [2.1875, 15]]) {
+        if (time >= ringEnd) continue;
+        [48, 52, 55].forEach((pitch, index) => createPluckedVoice(context, buffers.get(pitch)!, time + index * 0.012, ringEnd, 0.24 * velocity / 127 / Math.sqrt(3)));
+      }
+      return (await context.startRendering()).getChannelData(0);
+    }
+    const data = await render(2.5);
+    const damped = await render(0.625);
+    const rms = (samples: Float32Array, start: number, end: number) => {
+      const slice = samples.slice(start * 44100, end * 44100);
+      return Math.sqrt(slice.reduce((sum, value) => sum + value * value, 0) / slice.length);
+    };
+    return { retained: rms(data, 0.95, 1.05), damped: rms(damped, 0.95, 1.05), peak: data.reduce((peak, v) => Math.max(peak, Math.abs(v)), 0), tail: rms(data, 2.85, 2.95) };
+  });
+  expect(measured.retained).toBeGreaterThan(0.005);
+  expect(measured.damped).toBe(0);
+  expect(measured.peak).toBeLessThan(1);
+  expect(measured.tail).toBe(0);
+});

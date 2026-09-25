@@ -21,6 +21,8 @@ class PlaybackEvent(BaseModel):
     track: Literal["guitar", "melody", "metronome"]
     start: float = Field(ge=0)
     end: float = Field(ge=0)
+    # Acoustic resonance is independent of MIDI/notated stroke duration.
+    sustain_end: float | None = Field(default=None, ge=0)
     pitches: tuple[int, ...] = ()
     # Per-pitch offsets and velocities make a guitar event an explicit strum,
     # rather than leaving each consumer to invent its own ordering.
@@ -85,6 +87,14 @@ def compile_playback_manifest(score: SongScore) -> PlaybackManifest:
             if pitches and following_pitches and abs(chord.end - following.start) < 1e-9:
                 ring_limits[index] = ring_limits[index + 1]
         for span_index, (chord, pitches) in enumerate(spans):
+            # Repeated strokes excite the strings without damping earlier
+            # resonance. All voices in this harmony damp at its next change.
+            sustain_end = next(
+                (start for phase, start, _ in slots
+                 if start >= chord.end - 1e-9 and start < ring_limits[span_index] - 1e-9
+                 and pattern[phase % len(pattern)]),
+                ring_limits[span_index],
+            )
             attacks = [(slot, start, end) for slot, start, end in slots
                        if chord.start - 1e-9 <= start < chord.end - 1e-9
                        and pattern[slot % len(pattern)]]
@@ -94,12 +104,7 @@ def compile_playback_manifest(score: SongScore) -> PlaybackManifest:
                     # Empty pattern slots mean no new stroke, not a mute.
                     # The next chord takes effect at its next scheduled stroke;
                     # do not add an off-grid attack or prematurely cut the old one.
-                    end_time = attacks[index + 1][1] if index + 1 < len(attacks) else next(
-                        (start for phase, start, _ in slots
-                         if start >= chord.end - 1e-9 and start < ring_limits[span_index] - 1e-9
-                         and pattern[phase % len(pattern)]),
-                        ring_limits[span_index],
-                    )
+                    end_time = attacks[index + 1][1] if index + 1 < len(attacks) else sustain_end
                     duration = min(end_time, next_time) - event_time
                     ordered_pitches = pitches if stroke != "U" else tuple(reversed(pitches))
                     offsets, velocities = _strum_profile(stroke, len(ordered_pitches), duration * 0.65)
@@ -107,14 +112,14 @@ def compile_playback_manifest(score: SongScore) -> PlaybackManifest:
                     velocities = tuple(max(1, min(127, round(value * accent))) for value in velocities)
                     events.append(PlaybackEvent(
                         id=f"guitar:{chord.id}:{event_time:.9f}", track="guitar",
-                        start=event_time, end=end_time,
+                        start=event_time, end=end_time, sustain_end=sustain_end,
                         pitches=ordered_pitches, pitch_offsets=offsets, pitch_velocities=velocities,
                         velocity=velocities[0], stroke=stroke, source_id=chord.id,
                     ))
 
     events.sort(key=lambda event: (event.start, event.track, event.id))
     revision_payload = {
-        "compiler_version": "6-continuous-strum-sustain",
+        "compiler_version": "7-independent-string-resonance",
         "beats": [(beat.time, beat.beat, beat.measure) for beat in score.beats],
         "duration_seconds": score.song.duration_seconds,
         "bpm": score.analysis.bpm, "meter": score.analysis.time_signature,
