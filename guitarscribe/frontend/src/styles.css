@@ -437,7 +437,7 @@ h2 {
 
 .chord-sheet {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
   align-items: start;
   gap: 0.5rem;
 }
@@ -457,9 +457,16 @@ h2 {
 
 .measure-chords {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(5.25rem, 1fr));
-  gap: 0.35rem;
+  grid-template-columns: repeat(1000, minmax(0, 1fr));
+  gap: 0;
 }
+
+.measure-beat-ruler { position: relative; height: 1.5rem; border-bottom: 1px solid var(--border); font-size: 0.75rem; color: var(--text-muted); }
+.measure-beat-ruler > span { position: absolute; border-left: 1px solid var(--border); padding-left: 0.25rem; }
+.measure-beat-ruler > .measure-beat-active { color: var(--accent-2); border-color: var(--accent-2); font-weight: 700; }
+.measure-chords > .chord-block { grid-row: 1; min-width: 0; overflow: hidden; padding: 0.4rem 0.3rem; border-radius: 4px; }
+.measure-chords > .chord-block > span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chord-beat-length { font-size: 0.8rem; color: var(--accent-2); }
 
 .chord-block {
   text-align: left;
@@ -848,7 +855,6 @@ h2 {
   .rhythm-step { width: 2.15rem; height: 2.15rem; }
   .export-actions, .lyrics-actions { flex-wrap: wrap; justify-content: flex-start; }
   .lyric-timing-editor { grid-template-columns: 1fr; }
-  .measure-chords { grid-template-columns: repeat(auto-fit, minmax(5rem, 1fr)); }
   .timing-fields { grid-template-columns: 1fr; }
 }
 

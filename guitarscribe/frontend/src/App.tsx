@@ -8,6 +8,7 @@ import { PlaybackReference } from "./PlaybackReference";
 import { preparePluckedBuffers, createPluckedVoice } from "./pluckedTone";
 import { createMetronomeVoice } from "./metronomeVoice";
 import { mergeChordSpans, type ChordSpan } from "./chordSpans";
+import { measureLayout } from "./measureLayout";
 
 const AlphaTabScore = lazy(() => import("./AlphaTabScore"));
 
@@ -497,7 +498,7 @@ export function App() {
         cursor = Math.max(cursor, chord.end);
       }
       if (cursor < range.end - 0.001) spans.push({ chord: null, start: cursor, end: range.end, continues: false, members: [] });
-      return { ...range, chords, spans: showRawChordSegments ? spans : mergeChordSpans(spans) };
+      return { ...range, chords, layout: measureLayout(score.beats, range.start, range.end, score.analysis.bpm), spans: showRawChordSegments ? spans : mergeChordSpans(spans) };
     });
   })() : [];
 
@@ -1782,22 +1783,28 @@ export function App() {
                 </details> : <section className="melody-empty" aria-live="polite"><h3>Melody not detected</h3><p>This analysis returned no confident melody notes, so Tab and melody exports are not ready. Try a clearer lead-vocal or single-guitar recording. A future retry may produce a different result.</p></section>}
 
                 <label><input type="checkbox" checked={showRawChordSegments} onChange={(event) => setShowRawChordSegments(event.target.checked)} />顯示原始分析區段（逐段編輯）</label>
-                <p>相鄰同和弦／指型合併顯示，長度不變；重複區段不代表換和弦。刷奏型不會自動校正小節線。</p>
+                <p>和弦寬度依拍長排列：兩和弦不一定各半小節。相鄰同和弦／指型合併顯示；刷奏型不會自動校正小節線。</p>
                 {score.analysis.warnings.filter((warning) => /downbeat|first detected pulse/i.test(warning)).length ? <p role="note">小節起點尚未確認：分析以第一個偵測拍點作為第 1 拍，Bar 可能未對準原曲。</p> : null}
                 <div className="chord-sheet">
                   {measureGroups.map((group) => (
-                    <div key={"measure-" + group.measure} className="measure-card">
+                    <div key={"measure-" + group.measure} className="measure-card" data-measure={group.measure}>
                       <div className="measure-header">Bar {group.measure}</div>
+                      <div className="measure-beat-ruler" aria-label={"Bar " + group.measure + " beat positions"}>
+                        {group.layout.ticks.map((tick) => <span key={tick.beat} className={score.beats[activeBeatIndex]?.measure === group.measure && score.beats[activeBeatIndex]?.beat === tick.beat ? "measure-beat-active" : undefined} style={{ left: `${tick.fraction * 100}%` }}>{tick.beat}</span>)}
+                        {!group.layout.ticks.length ? <small>時間比例（無拍點）</small> : null}
+                      </div>
                       <div className="measure-chords">
                         {group.spans.map(({ chord, start, end, continues, members }) => chord ? (
                           <button
                             key={chord.id + "-" + group.measure}
                             type="button"
-                            title={members.length > 1 ? "連續和弦：點選編輯第一段；修改其他段請勾選顯示原始分析區段。" : undefined}
+                            style={{ gridColumn: `${1 + Math.round(group.layout.fraction(start) * 1000)} / ${1 + Math.max(Math.round(group.layout.fraction(start) * 1000) + 1, Math.round(group.layout.fraction(end) * 1000))}` }}
+                            title={`${chord.symbol} · ${group.layout.length(start, end)} · ${start.toFixed(2)}–${end.toFixed(2)}s${members.length > 1 ? " · 連續和弦：點選編輯第一段；修改其他段請勾選顯示原始分析區段。" : ""}`}
                             className={"chord-block" + (members.some((item) => item.id === selectedChordId) ? " chord-block-selected" : "") + (playbackTime >= start && playbackTime < end ? " chord-block-active" : "")}
                             onClick={() => selectChord(chord, start)}
                           >
                             <span className="chord-symbol">{chord.symbol}</span>
+                            <span className="chord-beat-length">{group.layout.length(start, end)}</span>
                             <span className="chord-meta">{start.toFixed(1)}s - {end.toFixed(1)}s</span>
                             {members.length > 1 ? <span className="shape-meta">延續 · {members.length} 個分析區段</span> : null}
                             {chord.roman_numeral ? <span className="shape-meta">{chord.roman_numeral} · {chord.harmonic_function?.replace(/_/g, " ")}</span> : null}
@@ -1808,10 +1815,12 @@ export function App() {
                           </button>
                         ) : (
                           <button key={"gap-" + start} type="button" className="chord-block chord-gap"
+                            style={{ gridColumn: `${1 + Math.round(group.layout.fraction(start) * 1000)} / ${1 + Math.max(Math.round(group.layout.fraction(start) * 1000) + 1, Math.round(group.layout.fraction(end) * 1000))}` }}
                             aria-label={"No chord assigned from " + start.toFixed(1) + " to " + end.toFixed(1) + " seconds"}
                             title="No chord assigned here. Click to listen and check whether a chord is missing."
                             onClick={() => seekTo(start)}>
                             <span className="chord-symbol">N.C.</span>
+                            <span className="chord-beat-length">{group.layout.length(start, end)}</span>
                             <span className="chord-meta">{start.toFixed(1)}s - {end.toFixed(1)}s</span>
                             <span className="shape-meta">No chord assigned</span>
                           </button>

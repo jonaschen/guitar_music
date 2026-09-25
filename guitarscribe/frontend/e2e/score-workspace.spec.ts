@@ -124,6 +124,17 @@ test("bar 12 readout follows compiled G to C timing rather than the selected edi
       { id: "c", source_id: "c12", track: "guitar", start: 26.273, end: 30, pitches: [48], pitch_offsets: [0], pitch_velocities: [27], velocity: 27 }],
   } }));
   await page.goto("/?job=bar12");
+  const bar = page.locator('[data-measure="12"]');
+  await expect(bar.locator(".chord-beat-length")).toHaveText(["3 拍", "1 拍"]);
+  await expect(bar.locator(".measure-beat-ruler > span")).toHaveText(["1", "2", "3", "4"]);
+  for (const width of [1100, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    const sizes = await bar.locator(".chord-block").evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().width));
+    expect(sizes[0] / sizes[1]).toBeCloseTo(3, 1);
+    const overflow = await bar.evaluate((node) => node.scrollWidth > node.clientWidth);
+    expect(overflow).toBe(false);
+  }
+  await page.setViewportSize({ width: 1100, height: 900 });
   await page.getByText("Compiled score playback", { exact: true }).click();
   await page.getByLabel("Playback position", { exact: true }).fill("25.8");
   await page.getByRole("button", { name: "Play score", exact: true }).click();
