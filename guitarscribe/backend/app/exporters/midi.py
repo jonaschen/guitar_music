@@ -75,7 +75,16 @@ def compile_playback_manifest(score: SongScore) -> PlaybackManifest:
                 spans[-1] = (previous.model_copy(update={"end": chord.end}), pitches)
             else:
                 spans.append((chord, pitches))
-        for chord, pitches in spans:
+        # A label boundary is not a mute instruction. Continuous playable
+        # harmony can ring through a no-stroke slot until the next strum.
+        # Stop at actual gaps or unplayable/no-chord spans instead.
+        ring_limits = [chord.end for chord, _ in spans]
+        for index in range(len(spans) - 2, -1, -1):
+            chord, pitches = spans[index]
+            following, following_pitches = spans[index + 1]
+            if pitches and following_pitches and abs(chord.end - following.start) < 1e-9:
+                ring_limits[index] = ring_limits[index + 1]
+        for span_index, (chord, pitches) in enumerate(spans):
             attacks = [(slot, start, end) for slot, start, end in slots
                        if chord.start - 1e-9 <= start < chord.end - 1e-9
                        and pattern[slot % len(pattern)]]
@@ -83,9 +92,15 @@ def compile_playback_manifest(score: SongScore) -> PlaybackManifest:
                 stroke = pattern[slot % len(pattern)]
                 if stroke and pitches:
                     # Empty pattern slots mean no new stroke, not a mute.
-                    # Let strings ring until the next attack or harmonic boundary.
-                    end_time = attacks[index + 1][1] if index + 1 < len(attacks) else chord.end
-                    duration = min(chord.end, next_time) - event_time
+                    # The next chord takes effect at its next scheduled stroke;
+                    # do not add an off-grid attack or prematurely cut the old one.
+                    end_time = attacks[index + 1][1] if index + 1 < len(attacks) else next(
+                        (start for phase, start, _ in slots
+                         if start >= chord.end - 1e-9 and start < ring_limits[span_index] - 1e-9
+                         and pattern[phase % len(pattern)]),
+                        ring_limits[span_index],
+                    )
+                    duration = min(end_time, next_time) - event_time
                     ordered_pitches = pitches if stroke != "U" else tuple(reversed(pitches))
                     offsets, velocities = _strum_profile(stroke, len(ordered_pitches), duration * 0.65)
                     accent = _rhythm_accent(score, slot)
@@ -99,7 +114,7 @@ def compile_playback_manifest(score: SongScore) -> PlaybackManifest:
 
     events.sort(key=lambda event: (event.start, event.track, event.id))
     revision_payload = {
-        "compiler_version": "5-measure-phase",
+        "compiler_version": "6-continuous-strum-sustain",
         "beats": [(beat.time, beat.beat, beat.measure) for beat in score.beats],
         "duration_seconds": score.song.duration_seconds,
         "bpm": score.analysis.bpm, "meter": score.analysis.time_signature,

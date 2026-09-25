@@ -53,6 +53,8 @@ Checkpoint 斷續播放修正：原編譯器在每個 chord region 重置刷奏�
 
 ### Recovery Quality Gates（取代功能百分比作為出貨判斷）
 
+換和弦斷裂修正：使用者確認每小節一次換和弦自然、兩次會斷，定位到控制組 0.9375s 的刷奏原本在 1.25s 和弦邊界收音，但下一刷在 1.5625s，形成 0.3125s 的 note-off／next-attack 間隙。Compiler v6 對連續可演奏和弦延音至下一刷奏，不再把 label boundary 當 mute；聲部的新和弦在下一刷奏生效，原始 chord label／時間不變。真正 N.C.、未配置空隙、不支援指型仍截斷延音。兩控制模式現在 start/end/stroke/velocity 完全一致，只改音高；新增 score 不可變及 N.C. 回歸測試。仍待使用者確認銜接聽感。
+
 整曲回報 follow-up：使用者仍感覺力度隨和弦而非小節。檢查最新已保存 job，quarter template 的每小節 velocity 為 98/59/78/59，未在換和弦時重設強拍；但整曲採每拍下刷，與已驗收的八分刷奏控制組不同。另發現 rhythm suggester 將相鄰同名 raw regions 重複算成 harmonic changes，現修正選型密度計數，不改 raw score。舊 job 不自動更換使用者 rhythm，需手動選 Basic Pop 8th Note Strum 比較。控制組新增每小節兩次換和弦；回歸測試確認換和弦前後的 attack 時間、方向、velocity 不變。和弦邊界仍會影響音符截止，這個聽感尚未解決，不宣稱整曲自然性通過。
 
 整曲播放 checkpoint：使用者已確認四小節控制組有小節感、可辨識固定刷奏型，逐泛音衰減音色較自然。現將同一個 plucked voice 接入整曲 `Play score` 並設為預設，保留舊音色選項；預設不混入 Experimental melody。新增每個 AudioContext 的有界音色快取、非阻塞準備與取消 token；Stop／seek／切音色取消尚未完成的播放請求，seek 中途從弦音已衰減的位置接續，不重新觸發 attack。維持既有 look-ahead 排程與小節相位。控制組節拍器新增獨立音量，控制組與整曲共用高／低音第一拍提示；整曲保留 metronome track 音量。此 checkpoint 只待整曲連續性與小節對齊試聽，不代表實際和弦或 downbeat 品質通過。

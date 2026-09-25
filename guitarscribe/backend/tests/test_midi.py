@@ -131,7 +131,7 @@ def test_rhythm_follows_local_beats_instead_of_restarting_at_regions():
     assert [e.start for e in guitar] == [0, 0.55, 1.15, 1.7]
     assert [e.stroke for e in guitar] == ["D", "U", "D", "U"]
     assert guitar[1].end > 0.6  # Same chord's raw region boundary does not cut sound.
-    assert guitar[2].end <= 1.2  # Actual harmonic change still cuts the old chord.
+    assert guitar[2].end == 1.7  # No mute at the label boundary before the next stroke.
     assert score.model_dump_json() == before
 
 
@@ -225,5 +225,28 @@ def test_reference_repeats_identical_rhythm_each_bar():
 def test_mid_bar_chord_changes_do_not_reset_stroke_or_accent():
     from app.services.playback_reference import reference_score
     def attacks(within_bar):
-        return [(e.start, e.stroke, e.velocity) for e in compile_playback_manifest(reference_score(within_bar)).events if e.track == "guitar"]
+        return [(e.start, e.end, e.stroke, e.velocity) for e in compile_playback_manifest(reference_score(within_bar)).events if e.track == "guitar"]
     assert attacks(True) == attacks(False)
+
+
+def test_mid_bar_sustain_preserves_analysis_and_reaches_next_strum():
+    from app.services.playback_reference import reference_score
+    score = reference_score(within_bar=True)
+    before = score.model_dump_json()
+    guitar = [e for e in compile_playback_manifest(score).events if e.track == "guitar"]
+    assert (guitar[2].start, guitar[2].end, guitar[3].start) == (0.9375, 1.5625, 1.5625)
+    assert guitar[2].source_id != guitar[3].source_id
+    assert all(left.end == right.start for left, right in zip(guitar, guitar[1:]))
+    assert score.model_dump_json() == before
+
+
+def test_sustain_never_bridges_explicit_no_chord_or_unassigned_gap():
+    from app.services.playback_reference import reference_score
+    for explicit in (False, True):
+        score = reference_score(within_bar=True)
+        score.chords[0].end = 1.0
+        if explicit:
+            score.chords.insert(1, ChordEvent(id="silence", start=1.0, end=1.25, symbol="N"))
+        guitar = [e for e in compile_playback_manifest(score).events if e.track == "guitar"]
+        assert guitar[2].end == 1.0
+        assert guitar[3].start == 1.5625
