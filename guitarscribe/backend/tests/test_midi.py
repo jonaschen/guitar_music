@@ -3,6 +3,25 @@ from app.models.analysis import BeatInfo, ChordEvent, ChordVoicing, MelodyNote, 
 from app.models.score import AnalysisSummary, SongInfo, SongScore
 
 
+def test_missing_voicings_produce_guitar_without_mutating_saved_score():
+    score = SongScore(
+        song=SongInfo(duration_seconds=3),
+        analysis=AnalysisSummary(bpm=120, capo=2),
+        chords=[ChordEvent(id="c", start=0, end=1, symbol="C"),
+                ChordEvent(id="n", start=1, end=2, symbol="N"),
+                ChordEvent(id="g", start=2, end=3, symbol="G")],
+        rhythm=RhythmSuggestion(subdivision=8, display=["D"]),
+    )
+    original = score.model_dump_json()
+    manifest = compile_playback_manifest(score)
+    guitar = [event for event in manifest.events if event.track == "guitar"]
+    assert {event.source_id for event in guitar} == {"c", "g"}
+    assert guitar[0].pitches == (50, 54, 57, 62, 66)
+    assert all(event.end <= 1 or event.start >= 2 for event in guitar)
+    assert bytes([0x91, 50, 98]) in export_midi(score)
+    assert score.model_dump_json() == original
+
+
 def test_midi_export_has_standard_header_and_note_events():
     score = SongScore(
         song=SongInfo(duration_seconds=2),

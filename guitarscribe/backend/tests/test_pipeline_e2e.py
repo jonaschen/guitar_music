@@ -29,6 +29,7 @@ async def test_pipeline_e2e(sample_wav, tmp_path):
     assert score.provenance.parameters["melody_mode"] == "vocal"
     assert score.provenance.parameters["decoder_change_threshold"] == 0.12
     assert len(score.chords) > 0
+    assert all(chord.available_voicings and chord.voicing_id for chord in score.chords)
     assert len(score.beats) > 0
     assert 60 <= score.analysis.bpm <= 200
     assert (artifacts / "timing-candidates.json").is_file()

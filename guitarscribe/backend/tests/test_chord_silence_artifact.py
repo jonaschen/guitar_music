@@ -8,7 +8,6 @@ from app.models.candidates import AnalyzerRun, ChordResult, TimingCandidate, Tim
 from app.models.score import SongScore
 from app.exporters.midi import compile_playback_manifest
 from app.postprocess.chords import ChordPostProcessor
-from app.services.voicings import ChordVoicingProvider
 
 
 @pytest.mark.asyncio
@@ -43,9 +42,7 @@ async def test_silence_survives_artifact_round_trip_but_does_not_play(use_beats)
     projected = adapter.project(restored)
     chords = ChordPostProcessor().process(projected.chords, beats, ChordComplexity.FULL)
     assert [(event.start, event.end) for event in chords] == [(0, 0.5), (1, 1.5)]
-    for event in chords:
-        event.available_voicings = ChordVoicingProvider().get(event.symbol)
-        event.voicing_id = event.available_voicings[0].id
+    # Canonical projection has no voicings; playback must resolve them itself.
     playback = compile_playback_manifest(SongScore(chords=chords, rhythm=RhythmSuggestion(display=["D"])))
     guitar = [event for event in playback.events if event.track == "guitar"]
     assert guitar

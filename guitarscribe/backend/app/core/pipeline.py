@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import shutil
+from ..services.playable_chords import with_default_voicings
 from pathlib import Path
 from typing import Awaitable, Callable, Dict, Any
 from ..models.audio import SourceRequest
@@ -190,7 +191,7 @@ class AnalysisPipeline:
                     artifact_path / "final-melody.wav",
                 )
         
-        return SongScore(
+        return with_default_voicings(SongScore(
             song=SongInfo(
                 title=asset.title,
                 source_type=asset.source_type.value,
@@ -230,7 +231,7 @@ class AnalysisPipeline:
                     "chord_postprocess_version": "2-preserve-decoder-events",
                 },
             )
-        )
+        ))
 
 def create_pipeline(settings: Settings) -> AnalysisPipeline:
     preprocessor = FFmpegPreprocessor(ffmpeg_binary=settings.ffmpeg_binary)

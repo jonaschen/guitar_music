@@ -47,6 +47,8 @@
 
 2026-09-25 和弦試聽 checkpoint：已保全 decoder 事件、N.C. 與區段候選，修正完整 excerpt 的休止評估；UI 現在明示小節內與整小節的未配置和弦空隙，跨小節和弦點擊定位到當地起點。下一步需要人工比較原曲的換和弦時間、漏抓區段與 downbeat，詳見 [測試清單](docs/Chord_Checkpoint_Test_2026-09-25.md)。此 checkpoint 不代表 G1／G2 通過，主旋律仍未解決。
 
+Checkpoint 回報修正：使用者發現 guitar-only 無聲；最近兩筆真實 job 有和弦但無指型，manifest 因而沒有 guitar events。新分析補上預設指型，播放／MIDI 編譯也對舊 job 與手動新增和弦補缺，不覆寫既有指型或原始 score。N.C. 與時間邊界保持不變；此為播放完整性修復，不是和弦辨識改善。
+
 ### Recovery Quality Gates（取代功能百分比作為出貨判斷）
 
 | Gate | 驗收目標 | 狀態 |

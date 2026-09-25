@@ -10,6 +10,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from ..models.score import SongScore
+from ..services.playable_chords import with_default_voicings
 
 
 class PlaybackEvent(BaseModel):
@@ -40,6 +41,9 @@ class PlaybackManifest(BaseModel):
 
 
 def compile_playback_manifest(score: SongScore) -> PlaybackManifest:
+    # Older jobs and manually inserted chords may have no guitar shapes yet.
+    # Resolve them on a copy so playback and MIDI work without rewriting edits.
+    score = with_default_voicings(score)
     events: list[PlaybackEvent] = []
     bpm = max(score.analysis.bpm, 1)
 
