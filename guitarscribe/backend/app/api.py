@@ -230,8 +230,8 @@ async def list_rhythm_patterns(time_signature: str = "4/4") -> list[RhythmSugges
 
 
 @app.get("/scores/playback/reference", response_model=PlaybackManifest, tags=["Scores"])
-async def playback_reference():
-    return compile_playback_manifest(reference_score())
+async def playback_reference(within_bar: bool = False):
+    return compile_playback_manifest(reference_score(within_bar=within_bar))
 
 
 @app.post(

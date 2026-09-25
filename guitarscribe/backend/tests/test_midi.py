@@ -220,3 +220,10 @@ def test_reference_repeats_identical_rhythm_each_bar():
         events = [e for e in guitar if bar * 2.5 <= e.start < (bar + 1) * 2.5]
         assert [round(e.start - bar * 2.5, 5) for e in events] == [0, 0.625, 0.9375, 1.5625, 1.875, 2.1875]
         assert events[0].velocity > max(e.velocity for e in events[1:])
+
+
+def test_mid_bar_chord_changes_do_not_reset_stroke_or_accent():
+    from app.services.playback_reference import reference_score
+    def attacks(within_bar):
+        return [(e.start, e.stroke, e.velocity) for e in compile_playback_manifest(reference_score(within_bar)).events if e.track == "guitar"]
+    assert attacks(True) == attacks(False)

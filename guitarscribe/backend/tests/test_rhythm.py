@@ -36,3 +36,12 @@ def test_template_accents_survive_selection_and_listing(tmp_path):
     suggester = RhythmSuggester(tmp_path)
     assert suggester.available_patterns("4/4")[0].accents == [1, 0.5, 0.8, 0.5]
     assert suggester.suggest(make_beats(), ChordAnalysis()).accents == [1, 0.5, 0.8, 0.5]
+
+
+def test_duplicate_analysis_regions_do_not_change_rhythm_selection(tmp_path):
+    (tmp_path / "quarter.json").write_text('{"id":"quarter","time_signature":"4/4","subdivision":4,"events":["D","D","D","D"]}')
+    (tmp_path / "flowing.json").write_text('{"id":"flowing","time_signature":"4/4","subdivision":8,"events":["D",null,"D","U",null,"U","D","U"]}')
+    suggester = RhythmSuggester(tmp_path)
+    merged = ChordAnalysis(chords=[ChordEvent(id="c", start=0, end=4, symbol="C")])
+    regions = ChordAnalysis(chords=[ChordEvent(id=str(i), start=i * 0.5, end=(i + 1) * 0.5, symbol="C") for i in range(8)])
+    assert suggester.suggest(make_beats(), regions).pattern_id == suggester.suggest(make_beats(), merged).pattern_id == "flowing"

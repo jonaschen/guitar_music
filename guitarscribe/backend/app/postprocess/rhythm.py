@@ -87,7 +87,15 @@ class RhythmSuggester:
             return self._fallback()
 
         measure_count = max((beat.measure for beat in beats.beats), default=1)
-        changes_per_measure = len(chords.chords) / measure_count
+        # Canonical analysis preserves raw regions, including adjacent identical
+        # labels. Those boundaries are evidence, not additional harmonic changes.
+        ordered = sorted(chords.chords, key=lambda chord: chord.start)
+        changes = sum(
+            index == 0 or chord.symbol != ordered[index - 1].symbol
+            or chord.start > ordered[index - 1].end + 1e-9
+            for index, chord in enumerate(ordered)
+        )
+        changes_per_measure = changes / measure_count
         # Dense harmonic changes leave fewer safe places for a flowing pattern;
         # sparse harmony benefits from a fuller eighth-note accompaniment.
         target_strokes = 4 if changes_per_measure >= 1.5 else 6 if changes_per_measure <= 0.75 else 5

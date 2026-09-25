@@ -518,8 +518,11 @@ async def test_playback_manifest_endpoint_returns_revision_and_tracks():
 async def test_listening_control_does_not_require_an_analysis_job():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
         response = await client.get("/scores/playback/reference")
+        within = await client.get("/scores/playback/reference?within_bar=true")
     assert response.status_code == 200
     body = response.json()
     assert body["duration_seconds"] == 10
     assert body["bpm"] == 96
     assert len([e for e in body["events"] if e["track"] == "guitar"]) == 24
+    assert within.status_code == 200
+    assert len({e["source_id"] for e in within.json()["events"] if e["track"] == "guitar"}) == 8

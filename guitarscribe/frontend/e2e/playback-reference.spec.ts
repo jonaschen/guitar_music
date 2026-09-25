@@ -15,7 +15,7 @@ test("additive pluck starts smoothly, decays, and remains bounded", () => {
 });
 
 test("reference can play, switch tone, and stop without loading or replacing a song", async ({ page }) => {
-  await page.route("**/scores/playback/reference", (route) => route.fulfill({ json: {
+  await page.route("**/scores/playback/reference*", (route) => route.fulfill({ json: {
     revision: "reference", duration_seconds: 10, bpm: 96, time_signature: "4/4",
     events: [{ id: "c", track: "guitar", start: 0, end: 1, pitches: [48, 52, 55], pitch_offsets: [0, 0.012, 0.024], pitch_velocities: [98, 96, 94], velocity: 98 }],
   } }));
@@ -25,8 +25,12 @@ test("reference can play, switch tone, and stop without loading or replacing a s
   await expect(control.getByRole("status")).toContainText("Bar 1");
   await control.getByRole("button", { name: "停止試聽" }).click();
   await expect(control.getByRole("status")).toContainText("Ready");
+  await control.getByLabel("Reference chord changes").selectOption("within");
+  await expect(control).toContainText("C/Am → F/G");
+  const requested = page.waitForRequest("**/scores/playback/reference?within_bar=true");
   await control.getByLabel("Reference tone").selectOption("simple");
   await control.getByRole("button", { name: "播放四小節" }).click();
+  await requested;
   await expect(control.getByRole("status")).toContainText("Bar 1");
   await control.getByRole("button", { name: "停止試聽" }).click();
   await expect(page.getByRole("button", { name: "Start analysis" })).toBeEnabled();
