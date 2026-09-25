@@ -91,7 +91,7 @@ def compile_playback_manifest(score: SongScore) -> PlaybackManifest:
                     accent = _rhythm_accent(score, slot)
                     velocities = tuple(max(1, min(127, round(value * accent))) for value in velocities)
                     events.append(PlaybackEvent(
-                        id=f"guitar:{chord.id}:{slot}", track="guitar",
+                        id=f"guitar:{chord.id}:{event_time:.9f}", track="guitar",
                         start=event_time, end=end_time,
                         pitches=ordered_pitches, pitch_offsets=offsets, pitch_velocities=velocities,
                         velocity=velocities[0], stroke=stroke, source_id=chord.id,
@@ -99,7 +99,7 @@ def compile_playback_manifest(score: SongScore) -> PlaybackManifest:
 
     events.sort(key=lambda event: (event.start, event.track, event.id))
     revision_payload = {
-        "compiler_version": "4-accented-rhythm",
+        "compiler_version": "5-measure-phase",
         "beats": [(beat.time, beat.beat, beat.measure) for beat in score.beats],
         "duration_seconds": score.song.duration_seconds,
         "bpm": score.analysis.bpm, "meter": score.analysis.time_signature,
@@ -152,7 +152,8 @@ def _rhythm_slots(score: SongScore):
     Chords shorter than a rhythm slot may receive no stroke; never invent a
     new off-grid attack solely because the detector created another region.
     """
-    beats = sorted({beat.time for beat in score.beats})
+    beat_info = sorted({beat.time: beat for beat in score.beats}.values(), key=lambda beat: beat.time)
+    beats = [beat.time for beat in beat_info]
     beat_seconds = 60 / max(score.analysis.bpm, 1)
     step = 4 / max(score.rhythm.subdivision, 1)
     origin = beats[0] if beats else 0.0
@@ -168,7 +169,12 @@ def _rhythm_slots(score: SongScore):
 
     slot = math.ceil(-origin / beat_seconds / step)
     while (start := at(slot * step)) < limit - 1e-9:
-        yield slot, max(0.0, start), at((slot + 1) * step)
+        position = slot * step
+        index = min(max(math.floor(position), 0), len(beat_info) - 1)
+        # Reset pattern phase from the annotated beat within its measure.
+        # A pickup starting on beat 4 is not a new bar's downbeat.
+        phase = round((beat_info[index].beat - 1 + position - index) / step) if beat_info else slot
+        yield phase, max(0.0, start), at((slot + 1) * step)
         slot += 1
 
 

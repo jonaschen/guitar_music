@@ -53,6 +53,19 @@ Checkpoint 斷續播放修正：原編譯器在每個 chord region 重置刷奏�
 
 ### Recovery Quality Gates（取代功能百分比作為出貨判斷）
 
+**最新人工回報：伴奏播放尚未驗收。** 已有強弱與較長尾音，但使用者仍聽不到穩定小節感，起音仍像突跳。先前事件間隔／envelope 測試僅證明局部程式行為，不能宣稱伴奏自然。
+
+下一輪播放重整順序：
+
+1. 建立不依賴歌曲分析的固定 BPM、已知第一拍、四小節和弦控制組；先驗證伴奏本身。
+2. Rhythm compiler 保留 beat／measure 語義，依小節相位編排刷奏；目前 `_rhythm_slots` 只保留拍點 time，必須修復。節奏型需明確表示細分、上／下刷、低音／高音弦、延音與悶音，不將所有空格都當同一種事件。
+3. 重新評估逐弦發聲／共鳴模型或合法採樣；目前每次 oscillator 重觸發＋pick noise＋固定 release 不足以代表自然吉他。不得只延長 release 或加入殘響就宣告解決。
+4. 控制組能辨認小節與固定節奏後，再套回實際分析，另外核對 downbeat。Slow Soul／Slow Rock／Folk Rock 名稱需有明確示範或來源對應，不隨意為任意 D/U 陣列貼上曲風名稱。
+
+此輪先記錄診斷與重整順序，尚未實作以上控制組與新聲學模型；使用者不需重測相同版本。
+
+後續實作 checkpoint：頁首新增不依賴分析的四小節試聽控制組（96 BPM、C–Am–F–G、已知拍位、可關節拍器），不取代現有歌曲／job。reference endpoint 使用相同 manifest compiler；compiler 已保留 annotated beat 的小節內相位，新增弱起、相位重設與 event ID 唯一性測試。控制組提供簡單振盪器與逐泛音獨立衰減的實驗音色比較，尚非物理弦模型／真實採樣，也未套用整曲播放。新音色不加額外 pick noise；聲音包絡與泛音能量隨時間衰減，逐音尾音可重疊。弦群／悶音及具名曲風模板仍待實作與核對。下一個人工 gate：控制組本身是否能聽出小節、固定刷奏節奏，以及新音色是否比簡單振盪器自然。
+
 延音／動態 follow-up：模板 accents 原先被 loader 丟棄，現保留於 rhythm schema 並套用至 manifest／MIDI velocity；舊 job 缺 accents 時提供簡單拍位強弱 fallback。Web Audio 音符 note-off 後加入 120ms 指數 release，允許相鄰 voice 重疊；N.C. 不產生新 attack，但可能聽見短尾音。Stop／seek 保持立即停止；這不是 convolution reverb，也不代表原曲力度辨識已完成。
 
 最新播放回報澄清：使用者指的是時值／延音不足，而非起奏亂跳。編譯器 v3 移除固定 80% gate，模板空格解讀為無新刷奏、保留前音至下一次 attack 或和弦邊界；Web Audio 延音保持可聽能量，尾端才 release。新增完整拍長、空格延音、N.C. 截止與音量 envelope 回歸測試；待人工確認聽感，不提升任何音樂品質 gate。

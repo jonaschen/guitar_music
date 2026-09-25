@@ -4,6 +4,7 @@ import { ChordDiagram } from "./ChordDiagram";
 import { createAudioContextTransportClock, createMediaTransportClock } from "./transportClock";
 import { DiagnosticTimeline } from "./DiagnosticTimeline";
 import { guitarEnvelope } from "./guitarEnvelope";
+import { PlaybackReference } from "./PlaybackReference";
 
 const AlphaTabScore = lazy(() => import("./AlphaTabScore"));
 
@@ -200,6 +201,7 @@ export function App() {
   const pendingAudioTrackSeekRef = useRef<number | null>(null);
   const metronomeContextRef = useRef<AudioContext | null>(null);
   const synthContextRef = useRef<AudioContext | null>(null);
+  const referenceStopRef = useRef<() => void>(() => {});
   const synthSourcesRef = useRef<AudioScheduledSourceNode[]>([]);
   const synthAnimationRef = useRef<number | null>(null);
   const synthSchedulerRef = useRef<number | null>(null);
@@ -905,6 +907,7 @@ export function App() {
   }
 
   async function toggleSynthPlayback() {
+    referenceStopRef.current();
     if (!score) return;
     if (isSynthPlaying) { stopSynth(false); return; }
     try {
@@ -1043,6 +1046,7 @@ export function App() {
   }
 
   async function togglePlayback() {
+    referenceStopRef.current();
     const audio = audioRef.current;
     if (!audio) return;
     if (isPlaying) { audio.pause(); return; }
@@ -1350,6 +1354,7 @@ export function App() {
       <div className="aurora aurora-left" />
       <div className="aurora aurora-right" />
       <main className="layout">
+        <PlaybackReference stopRef={referenceStopRef} onStart={() => { stopSynth(false); audioRef.current?.pause(); }} />
         <section className="hero-card">
           <div className="hero-copy">
             <p className="eyebrow">GuitarScribe / September 4, 2026 handoff build</p>
@@ -1577,7 +1582,7 @@ export function App() {
                         }
                       }}
                       onTimeUpdate={(event) => handlePlaybackTime(event.currentTarget.currentTime)}
-                      onPlay={() => setIsPlaying(true)}
+                      onPlay={() => { referenceStopRef.current(); setIsPlaying(true); }}
                       onPause={() => setIsPlaying(false)}
                       onEnded={() => setIsPlaying(false)}
                     />

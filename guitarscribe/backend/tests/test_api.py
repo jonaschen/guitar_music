@@ -512,3 +512,14 @@ async def test_playback_manifest_endpoint_returns_revision_and_tracks():
     body = response.json()
     assert len(body["revision"]) == 16
     assert {event["track"] for event in body["events"]} >= {"melody", "metronome"}
+
+
+@pytest.mark.asyncio
+async def test_listening_control_does_not_require_an_analysis_job():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        response = await client.get("/scores/playback/reference")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["duration_seconds"] == 10
+    assert body["bpm"] == 96
+    assert len([e for e in body["events"] if e["track"] == "guitar"]) == 24

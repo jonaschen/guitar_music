@@ -29,6 +29,7 @@ from .services.transposition import TranspositionService
 from .sources.youtube import YouTubeAudioDownloader, validate_youtube_url
 from .services.rate_limit import SubmissionRateLimiter
 from .postprocess.rhythm import RhythmSuggester
+from .services.playback_reference import reference_score
 from .fretboard.mapper import SimpleFretboardMapper
 from .postprocess.melody import MelodyPostProcessor
 
@@ -226,6 +227,11 @@ async def simplify_melody(request: SimplifyMelodyRequest) -> SongScore:
 async def list_rhythm_patterns(time_signature: str = "4/4") -> list[RhythmSuggestion]:
     """Expose data-only local templates for manual score accompaniment edits."""
     return RhythmSuggester(Settings.from_env().rhythm_patterns_dir).available_patterns(time_signature)
+
+
+@app.get("/scores/playback/reference", response_model=PlaybackManifest, tags=["Scores"])
+async def playback_reference():
+    return compile_playback_manifest(reference_score())
 
 
 @app.post(

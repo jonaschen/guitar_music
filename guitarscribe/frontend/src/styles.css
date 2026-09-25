@@ -68,6 +68,10 @@ select {
   padding: 2rem 0 3rem;
 }
 
+.playback-reference { margin-bottom: 1.25rem; }
+.playback-reference .synth-controls { flex-wrap: wrap; gap: 0.75rem; }
+.playback-reference [role="status"] { color: var(--accent, #a7d6bb); font-variant-numeric: tabular-nums; }
+
 .hero-card,
 .panel,
 .intake-card {

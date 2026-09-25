@@ -195,3 +195,28 @@ def test_explicit_rhythm_accents_reach_manifest_and_midi():
     assert bytes([0x91, 48, 49]) in export_midi(score)
     score.rhythm.accents = [1] * 4
     assert compile_playback_manifest(score).revision != manifest.revision
+
+
+def test_pickup_and_measure_reset_control_pattern_phase():
+    score = SongScore(
+        song=SongInfo(duration_seconds=1.5), analysis=AnalysisSummary(bpm=120),
+        beats=[BeatInfo(time=0, beat=4, measure=1), BeatInfo(time=0.5, beat=1, measure=2),
+               BeatInfo(time=1, beat=2, measure=2)],
+        chords=[ChordEvent(id="c", start=0, end=1.5, symbol="C")],
+        rhythm=RhythmSuggestion(subdivision=4, display=["D"] * 4, accents=[1, 0.5, 0.8, 0.5]),
+    )
+    guitar = [e for e in compile_playback_manifest(score).events if e.track == "guitar"]
+    assert [e.velocity for e in guitar] == [49, 98, 49]
+    assert len({e.id for e in guitar}) == len(guitar)
+
+
+def test_reference_repeats_identical_rhythm_each_bar():
+    from app.services.playback_reference import reference_score
+    manifest = compile_playback_manifest(reference_score())
+    guitar = [e for e in manifest.events if e.track == "guitar"]
+    assert len(guitar) == 24
+    assert len({e.id for e in guitar}) == 24
+    for bar in range(4):
+        events = [e for e in guitar if bar * 2.5 <= e.start < (bar + 1) * 2.5]
+        assert [round(e.start - bar * 2.5, 5) for e in events] == [0, 0.625, 0.9375, 1.5625, 1.875, 2.1875]
+        assert events[0].velocity > max(e.velocity for e in events[1:])
