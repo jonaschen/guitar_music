@@ -109,6 +109,7 @@ class RhythmSuggestion(BaseModel):
     subdivision: int = 8
     pattern_id: str = ""
     display: list[Optional[str]] = Field(default_factory=list)
+    accents: list[float] = Field(default_factory=list)
     confidence: float = 0.0
     label: str = "建議刷奏"
 

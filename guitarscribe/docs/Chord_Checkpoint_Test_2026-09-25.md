@@ -1,5 +1,17 @@
 # 和弦試聽 checkpoint · 2026-09-25
 
+## 最新補測：尾音重疊與輕重拍
+
+重新整理、Stop score、只開 guitar，以較低音量播放原本那段，無須重新分析。
+
+- 聽相鄰刷奏之間是否有漸弱尾音銜接，而非在拍尾切斷。
+- 聽一小節是否開始有強弱層次；四拍模板預期第一拍強、第三拍次強、其他較輕。
+- 按 Stop score 應立即停下；N.C. 不會有新刷奏，但允許約 120ms 尾音。
+
+此版保留模板 accents 至播放與 MIDI；舊 job 沒有 accents 時用拍位 fallback，不必重跑分析。尾音只在 Web Audio 音色層實現，MIDI note-off 仍是樂譜時值，實際尾音取決於播放器音色。
+
+合成參考：[Web Audio 指數參數曲線](https://developer.mozilla.org/en-US/docs/Web/API/AudioParam/exponentialRampToValueAtTime)。目前用指數 release 疊加 voice，尚未實作 convolution／房間殘響；拍位力度是建議編曲，不是從原曲辨識出的演奏力度。以下為較早測試紀錄，嚴格拍尾無聲的舊條件由本節短尾音條件取代。
+
 ## 最新補測：拍長與延音
 
 使用者澄清並非「亂跳」，而是每個音過短、缺乏延續。本次移除強制 80% 拍長；無新刷奏的模板空格讓前音持續到下一次刷奏或和弦邊界。合成器改為保留可聽見的 sustain，最後才短暫收音。真正 N.C. 不延長，沒有用殘響遮蓋空白。

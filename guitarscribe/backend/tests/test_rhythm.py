@@ -29,3 +29,10 @@ def test_rhythm_suggester_falls_back_when_templates_are_missing(tmp_path):
 
     assert suggestion.pattern_id == "basic_8th"
     assert suggestion.display[0] == "D"
+
+
+def test_template_accents_survive_selection_and_listing(tmp_path):
+    (tmp_path / "steady.json").write_text('{"id":"steady","time_signature":"4/4","subdivision":4,"events":["D","D","D","D"],"accents":[1,0.5,0.8,0.5]}')
+    suggester = RhythmSuggester(tmp_path)
+    assert suggester.available_patterns("4/4")[0].accents == [1, 0.5, 0.8, 0.5]
+    assert suggester.suggest(make_beats(), ChordAnalysis()).accents == [1, 0.5, 0.8, 0.5]

@@ -51,7 +51,7 @@ def test_playback_manifest_compiles_voicing_capo_melody_and_metronome():
             )],
         )],
         melody=[MelodyNote(id="n1", start=0.0, end=0.5, midi=60, note="C4")],
-        rhythm=RhythmSuggestion(subdivision=8, display=["D", "U"]),
+        rhythm=RhythmSuggestion(subdivision=8, display=["D", "U"], accents=[1, 1]),
     )
 
     manifest = compile_playback_manifest(score)
@@ -180,3 +180,18 @@ def test_quarter_note_strums_keep_full_beat_length():
     )
     guitar = [e for e in compile_playback_manifest(score).events if e.track == "guitar"]
     assert [(e.start, e.end) for e in guitar] == [(0, 0.5), (0.5, 1), (1, 1.5), (1.5, 2)]
+    assert [e.velocity for e in guitar] == [98, 59, 78, 59]
+
+
+def test_explicit_rhythm_accents_reach_manifest_and_midi():
+    score = SongScore(
+        song=SongInfo(duration_seconds=2), analysis=AnalysisSummary(bpm=120),
+        chords=[ChordEvent(id="c", start=0, end=2, symbol="C")],
+        rhythm=RhythmSuggestion(subdivision=4, display=["D"] * 4, accents=[1, 0.5, 0.8, 0.5]),
+    )
+    manifest = compile_playback_manifest(score)
+    guitar = [e for e in manifest.events if e.track == "guitar"]
+    assert [e.velocity for e in guitar] == [98, 49, 78, 49]
+    assert bytes([0x91, 48, 49]) in export_midi(score)
+    score.rhythm.accents = [1] * 4
+    assert compile_playback_manifest(score).revision != manifest.revision

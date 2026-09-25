@@ -81,6 +81,7 @@ export type SongScore = {
   }>;
   guitar: { tuning: number[]; tuning_name: string; capo: number; max_capo: number; max_fret: number; handedness: string; difficulty: string; tab_preference: string; };
   rhythm: {
+    accents?: number[];
     subdivision: number;
     pattern_id: string;
     display: Array<string | null>;

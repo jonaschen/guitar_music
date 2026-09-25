@@ -28,6 +28,7 @@ class RhythmSuggester:
                 candidate = json.loads(path.read_text(encoding="utf-8"))
                 subdivision = int(candidate["subdivision"])
                 display = candidate.get("display", candidate.get("events"))
+                accents = [float(value) for value in candidate.get("accents", [])]
                 supported = candidate.get("time_signatures", [candidate.get("time_signature", "4/4")])
                 expected_steps = beats_per_bar * subdivision // 4
                 pattern_id = candidate.get("pattern_id") or candidate.get("id")
@@ -39,6 +40,8 @@ class RhythmSuggester:
                     or subdivision <= 0
                     or len(display) != expected_steps
                     or any(stroke not in {"D", "U", "A", None} for stroke in display)
+                    or (accents and len(accents) != len(display))
+                    or any(not 0 <= value <= 1 for value in accents)
                 ):
                     continue
                 patterns.append({
@@ -46,6 +49,7 @@ class RhythmSuggester:
                     "label": str(candidate.get("label") or candidate.get("name") or pattern_id),
                     "subdivision": subdivision,
                     "display": display,
+                    "accents": accents,
                     "confidence": float(candidate.get("confidence", 0.7)),
                 })
             except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError):
@@ -70,6 +74,7 @@ class RhythmSuggester:
                 subdivision=pattern["subdivision"],
                 pattern_id=pattern["pattern_id"],
                 display=pattern["display"],
+                accents=pattern["accents"],
                 confidence=pattern["confidence"],
                 label=pattern["label"],
             )
@@ -95,6 +100,7 @@ class RhythmSuggester:
             subdivision=selected["subdivision"],
             pattern_id=selected["pattern_id"],
             display=selected["display"],
+            accents=selected["accents"],
             confidence=round(min(1.0, selected["confidence"] * (0.5 + beat_confidence * 0.5)), 3),
             label=selected["label"],
         )

@@ -958,8 +958,10 @@ export function App() {
             oscillator.frequency.setValueAtTime(440 * 2 ** ((pitch - 69) / 12), startAt);
             const pitchVelocity = event.pitch_velocities[pitchIndex] ?? event.velocity;
             const peak = Math.max(0.001, synthVolumes[event.track] * pitchVelocity / 127 / Math.max(event.pitches.length, 1));
+            let releaseEnd = endAt;
             if (isGuitar) {
               const envelope = guitarEnvelope(startAt, endAt, peak);
+              releaseEnd = envelope[envelope.length - 1].time;
               gain.gain.setValueAtTime(envelope[0].value, envelope[0].time);
               gain.gain.linearRampToValueAtTime(envelope[1].value, envelope[1].time);
               for (const point of envelope.slice(2)) {
@@ -981,7 +983,7 @@ export function App() {
               oscillator.connect(gain).connect(context.destination);
             }
             oscillator.start(startAt);
-            oscillator.stop(endAt + 0.01);
+            oscillator.stop(releaseEnd + 0.01);
             trackSynthSource(oscillator);
           });
         };

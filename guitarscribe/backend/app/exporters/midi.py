@@ -88,6 +88,8 @@ def compile_playback_manifest(score: SongScore) -> PlaybackManifest:
                     duration = min(chord.end, next_time) - event_time
                     ordered_pitches = pitches if stroke != "U" else tuple(reversed(pitches))
                     offsets, velocities = _strum_profile(stroke, len(ordered_pitches), duration * 0.65)
+                    accent = _rhythm_accent(score, slot)
+                    velocities = tuple(max(1, min(127, round(value * accent))) for value in velocities)
                     events.append(PlaybackEvent(
                         id=f"guitar:{chord.id}:{slot}", track="guitar",
                         start=event_time, end=end_time,
@@ -97,7 +99,7 @@ def compile_playback_manifest(score: SongScore) -> PlaybackManifest:
 
     events.sort(key=lambda event: (event.start, event.track, event.id))
     revision_payload = {
-        "compiler_version": "3-let-ring-rhythm",
+        "compiler_version": "4-accented-rhythm",
         "beats": [(beat.time, beat.beat, beat.measure) for beat in score.beats],
         "duration_seconds": score.song.duration_seconds,
         "bpm": score.analysis.bpm, "meter": score.analysis.time_signature,
@@ -121,6 +123,25 @@ def compile_playback_manifest(score: SongScore) -> PlaybackManifest:
         revision=revision, duration_seconds=score.song.duration_seconds, bpm=bpm,
         time_signature=score.analysis.time_signature, events=tuple(events),
     )
+
+
+def _rhythm_accent(score: SongScore, slot: int) -> float:
+    accents = score.rhythm.accents
+    if len(accents) == len(score.rhythm.display) and accents:
+        value = accents[slot % len(accents)]
+        if math.isfinite(value) and 0 <= value <= 1:
+            return value
+    # Older saved jobs have no accent data: supply a conservative metrical pulse.
+    try:
+        beats_per_bar = max(1, int(score.analysis.time_signature.split("/")[0]))
+    except ValueError:
+        beats_per_bar = 4
+    position = (slot * 4 / max(score.rhythm.subdivision, 1)) % beats_per_bar
+    if abs(position) < 1e-9:
+        return 1.0
+    if abs(position - round(position)) > 1e-9:
+        return 0.55
+    return 0.8 if beats_per_bar == 4 and round(position) == 2 else 0.6
 
 
 def _rhythm_slots(score: SongScore):

@@ -5,7 +5,7 @@ test("guitar sustain stays audible until the final release within each note", ()
   for (const duration of [0.01, 0.25, 0.5, 2]) {
     const points = guitarEnvelope(1, 1 + duration, 0.1);
     expect(points[0].time).toBe(1);
-    expect(points.at(-1)?.time).toBe(1 + duration);
+    expect(points.at(-1)?.time).toBe(1 + duration + 0.12);
     expect(points[3].value).toBeCloseTo(0.035);
     expect(points[3].time).toBeGreaterThanOrEqual(1 + duration * 0.8);
     for (let index = 1; index < points.length; index++) {
@@ -28,14 +28,16 @@ test("rendered guitar tone retains energy late in a note and releases at its end
     points.slice(2).forEach((point) => gain.gain.exponentialRampToValueAtTime(point.value, point.time));
     oscillator.connect(gain).connect(context.destination);
     oscillator.start(0);
-    oscillator.stop(0.5);
+    oscillator.stop(points[points.length - 1].time);
     const data = (await context.startRendering()).getChannelData(0);
     const rms = (start: number, end: number) => {
       const samples = data.slice(Math.floor(start * 44100), Math.floor(end * 44100));
       return Math.sqrt(samples.reduce((sum, value) => sum + value * value, 0) / samples.length);
     };
-    return { early: rms(0.02, 0.08), late: rms(0.38, 0.44), after: rms(0.55, 0.65) };
+    return { early: rms(0.02, 0.08), late: rms(0.38, 0.44), tail: rms(0.51, 0.54), after: rms(0.7, 0.8) };
   }, guitarEnvelope(0, 0.5, 0.1));
   expect(result.late).toBeGreaterThan(result.early * 0.25);
+  expect(result.tail).toBeGreaterThan(0.001);
+  expect(result.tail).toBeLessThan(result.late);
   expect(result.after).toBe(0);
 });

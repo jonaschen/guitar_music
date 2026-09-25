@@ -53,6 +53,8 @@ Checkpoint 斷續播放修正：原編譯器在每個 chord region 重置刷奏�
 
 ### Recovery Quality Gates（取代功能百分比作為出貨判斷）
 
+延音／動態 follow-up：模板 accents 原先被 loader 丟棄，現保留於 rhythm schema 並套用至 manifest／MIDI velocity；舊 job 缺 accents 時提供簡單拍位強弱 fallback。Web Audio 音符 note-off 後加入 120ms 指數 release，允許相鄰 voice 重疊；N.C. 不產生新 attack，但可能聽見短尾音。Stop／seek 保持立即停止；這不是 convolution reverb，也不代表原曲力度辨識已完成。
+
 最新播放回報澄清：使用者指的是時值／延音不足，而非起奏亂跳。編譯器 v3 移除固定 80% gate，模板空格解讀為無新刷奏、保留前音至下一次 attack 或和弦邊界；Web Audio 延音保持可聽能量，尾端才 release。新增完整拍長、空格延音、N.C. 截止與音量 envelope 回歸測試；待人工確認聽感，不提升任何音樂品質 gate。
 
 | Gate | 驗收目標 | 狀態 |
