@@ -13,6 +13,29 @@ const score = {
   provenance: { beat_engine: "test", chord_engine: "test", melody_engine: "test" },
 };
 
+test("chord chart merges repeated regions reversibly and offers the reference groove", async ({ page }) => {
+  const repeatedScore = { ...score,
+    analysis: { ...score.analysis, warnings: ["Librosa detects beat pulses but not downbeats; the legacy score currently assumes the first detected pulse is beat 1."] },
+    beats: [0, 0.5, 1, 1.5].map((time, index) => ({ time, beat: index + 1, measure: 1, confidence: 0.25 })),
+    chords: ["G", "Am", "Am", "Am"].map((symbol, index) => ({ ...score.chords[0], id: `repeat-${index}`, symbol, start: index * 0.5, end: (index + 1) * 0.5 })),
+  };
+  await page.route("**/api/v1/jobs/repeated-job", (route) => route.fulfill({ json: {
+    id: "repeated-job", status: "completed", progress: 100, message: "Analysis complete", score: repeatedScore, artifacts: [],
+  } }));
+  await page.route("**/rhythm-patterns?*", (route) => route.fulfill({ json: [{ ...score.rhythm, pattern_id: "metered_4_4_8th", label: "4/4 Strong-weak-secondary-weak" }] }));
+  await page.goto("/?job=repeated-job");
+  const symbols = page.locator(".chord-sheet .chord-block:not(.chord-gap) .chord-symbol");
+  await expect(symbols).toHaveText(["G", "Am"]);
+  await expect(page.getByText("延續 · 3 個分析區段")).toBeVisible();
+  await expect(page.getByText(/小節起點尚未確認/)).toBeVisible();
+  await page.getByLabel("顯示原始分析區段（逐段編輯）").check();
+  await expect(symbols).toHaveText(["G", "Am", "Am", "Am"]);
+  await page.getByLabel("顯示原始分析區段（逐段編輯）").uncheck();
+  await expect(symbols).toHaveText(["G", "Am"]);
+  await page.getByRole("button", { name: "套用四小節試聽的 4/4 刷奏" }).click();
+  await expect(page.getByLabel("Rhythm pattern", { exact: true })).toHaveValue("metered_4_4_8th");
+});
+
 const musicXml = `<?xml version="1.0" encoding="UTF-8"?>
 <score-partwise version="3.1"><part-list><score-part id="P1"><part-name>Guitar</part-name></score-part></part-list><part id="P1"><measure number="1"><attributes><divisions>480</divisions><time><beats>4</beats><beat-type>4</beat-type></time><clef><sign>TAB</sign><line>5</line></clef></attributes><note><pitch><step>C</step><octave>4</octave></pitch><duration>480</duration><type>quarter</type><notations><technical><string>2</string><fret>1</fret></technical></notations></note><note><rest/><duration>1440</duration><type>half</type></note></measure></part></score-partwise>`;
 

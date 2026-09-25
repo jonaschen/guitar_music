@@ -7,6 +7,7 @@ import { guitarEnvelope } from "./guitarEnvelope";
 import { PlaybackReference } from "./PlaybackReference";
 import { preparePluckedBuffers, createPluckedVoice } from "./pluckedTone";
 import { createMetronomeVoice } from "./metronomeVoice";
+import { mergeChordSpans, type ChordSpan } from "./chordSpans";
 
 const AlphaTabScore = lazy(() => import("./AlphaTabScore"));
 
@@ -195,6 +196,7 @@ export function App() {
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [melodyMode, setMelodyMode] = useState("vocal");
   const [separateVocals, setSeparateVocals] = useState(false);
+  const [showRawChordSegments, setShowRawChordSegments] = useState(false);
   const [chordComplexity, setChordComplexity] = useState("standard");
   const [score, setScore] = useState<SongScore | null>(EMPTY_SCORE);
   const [rhythmOptions, setRhythmOptions] = useState<SongScore["rhythm"][]>([]);
@@ -480,16 +482,17 @@ export function App() {
         start: Math.max(chord.start, range.start),
         end: Math.min(chord.end, range.end),
         continues: chord.start < range.start || chord.end > range.end,
+        members: [chord],
       })).sort((left, right) => left.start - right.start);
-      const spans: Array<{ chord: ScoreChord | null; start: number; end: number; continues: boolean }> = [];
+      const spans: ChordSpan[] = [];
       let cursor = range.start;
       for (const chord of chords) {
-        if (chord.start > cursor + 0.001) spans.push({ chord: null, start: cursor, end: chord.start, continues: false });
+        if (chord.start > cursor + 0.001) spans.push({ chord: null, start: cursor, end: chord.start, continues: false, members: [] });
         spans.push(chord);
         cursor = Math.max(cursor, chord.end);
       }
-      if (cursor < range.end - 0.001) spans.push({ chord: null, start: cursor, end: range.end, continues: false });
-      return { ...range, chords, spans };
+      if (cursor < range.end - 0.001) spans.push({ chord: null, start: cursor, end: range.end, continues: false, members: [] });
+      return { ...range, chords, spans: showRawChordSegments ? spans : mergeChordSpans(spans) };
     });
   })() : [];
 
@@ -1726,6 +1729,8 @@ export function App() {
                 </div>
 
                 <section className="rhythm-panel">
+                  {score.analysis.time_signature === "4/4" ? <button type="button" className="ghost-button" disabled={!rhythmOptions.some((pattern) => pattern.pattern_id === "metered_4_4_8th")}
+                    onClick={() => { const pattern = rhythmOptions.find((item) => item.pattern_id === "metered_4_4_8th"); if (pattern) recordScoreChange({ ...score, rhythm: pattern }); }}>套用四小節試聽的 4/4 刷奏</button> : null}
                   <div><h3>Rhythm suggestion</h3><p>{score.rhythm.label || "Suggested strumming pattern"} · {score.rhythm.subdivision}th-note grid</p></div>
                   <label className="rhythm-selector">Pattern<select aria-label="Rhythm pattern" value={score.rhythm.pattern_id} onChange={(event) => { const selected = [...rhythmOptions, score.rhythm].find((pattern) => pattern.pattern_id === event.target.value); if (selected && selected.pattern_id !== score.rhythm.pattern_id) recordScoreChange({ ...score, rhythm: selected }); }}><option value={score.rhythm.pattern_id}>{score.rhythm.label || score.rhythm.pattern_id || "Current pattern"}</option>{rhythmOptions.filter((pattern) => pattern.pattern_id !== score.rhythm.pattern_id).map((pattern) => <option key={pattern.pattern_id} value={pattern.pattern_id}>{pattern.label}</option>)}</select></label>
                   <div className="rhythm-steps">{score.rhythm.display.map((stroke, index) => <span key={index} title={stroke === "A" ? "Arpeggio" : undefined} className={stroke ? "rhythm-step rhythm-step-active" : "rhythm-step"}>{stroke === "A" ? "⌁" : stroke ?? "·"}</span>)}</div>
@@ -1765,25 +1770,30 @@ export function App() {
                 </section>
                 </details> : <section className="melody-empty" aria-live="polite"><h3>Melody not detected</h3><p>This analysis returned no confident melody notes, so Tab and melody exports are not ready. Try a clearer lead-vocal or single-guitar recording. A future retry may produce a different result.</p></section>}
 
+                <label><input type="checkbox" checked={showRawChordSegments} onChange={(event) => setShowRawChordSegments(event.target.checked)} />顯示原始分析區段（逐段編輯）</label>
+                <p>相鄰同和弦／指型合併顯示，長度不變；重複區段不代表換和弦。刷奏型不會自動校正小節線。</p>
+                {score.analysis.warnings.filter((warning) => /downbeat|first detected pulse/i.test(warning)).length ? <p role="note">小節起點尚未確認：分析以第一個偵測拍點作為第 1 拍，Bar 可能未對準原曲。</p> : null}
                 <div className="chord-sheet">
                   {measureGroups.map((group) => (
                     <div key={"measure-" + group.measure} className="measure-card">
                       <div className="measure-header">Bar {group.measure}</div>
                       <div className="measure-chords">
-                        {group.spans.map(({ chord, start, end, continues }) => chord ? (
+                        {group.spans.map(({ chord, start, end, continues, members }) => chord ? (
                           <button
                             key={chord.id + "-" + group.measure}
                             type="button"
-                            className={"chord-block" + (selectedChordId === chord.id ? " chord-block-selected" : "") + (activeChordId === chord.id ? " chord-block-active" : "")}
+                            title={members.length > 1 ? "連續和弦：點選編輯第一段；修改其他段請勾選顯示原始分析區段。" : undefined}
+                            className={"chord-block" + (members.some((item) => item.id === selectedChordId) ? " chord-block-selected" : "") + (playbackTime >= start && playbackTime < end ? " chord-block-active" : "")}
                             onClick={() => selectChord(chord, start)}
                           >
                             <span className="chord-symbol">{chord.symbol}</span>
                             <span className="chord-meta">{start.toFixed(1)}s - {end.toFixed(1)}s</span>
+                            {members.length > 1 ? <span className="shape-meta">延續 · {members.length} 個分析區段</span> : null}
                             {chord.roman_numeral ? <span className="shape-meta">{chord.roman_numeral} · {chord.harmonic_function?.replace(/_/g, " ")}</span> : null}
                             <span className="shape-meta">Shape: {chord.shape_symbol ?? chord.symbol}</span>
                             {continues ? <span className="continuation-badge">Continues</span> : null}
-                            {chord.needs_review ? <span className="review-badge" title={(chord.review_reasons ?? []).join(", ")}>Review</span> : null}
-                            {chord.edited ? <span className="edit-badge">Edited</span> : null}
+                            {members.some((item) => item.needs_review) ? <span className="review-badge" title={members.flatMap((item) => item.review_reasons ?? []).join(", ")}>Review</span> : null}
+                            {members.some((item) => item.edited) ? <span className="edit-badge">Edited</span> : null}
                           </button>
                         ) : (
                           <button key={"gap-" + start} type="button" className="chord-block chord-gap"
