@@ -1610,6 +1610,7 @@ export function App() {
                 <details className="synth-panel workspace-disclosure">
                   <summary>Compiled score playback</summary>
                   <p>Web Audio uses the current key, capo, selected voicings, rhythm, and estimated melody.</p>
+                  <p>Guitar plays a suggested strumming pattern on the detected beat grid, not the original recording's arrangement. To compare, click the same bar's chord before using Original / Play and Play score. Short chords between strums may not sound; inspect the chord sheet for all detected changes.</p>
                   <div className="synth-controls">
                     <button type="button" className="ghost-button" onClick={() => void toggleSynthPlayback()}>{isSynthPlaying ? "Pause score" : "Play score"}</button>
                     <button type="button" className="ghost-button" onClick={() => stopSynth(true)}>Stop score</button>

@@ -49,6 +49,8 @@
 
 Checkpoint 回報修正：使用者發現 guitar-only 無聲；最近兩筆真實 job 有和弦但無指型，manifest 因而沒有 guitar events。新分析補上預設指型，播放／MIDI 編譯也對舊 job 與手動新增和弦補缺，不覆寫既有指型或原始 score。N.C. 與時間邊界保持不變；此為播放完整性修復，不是和弦辨識改善。
 
+Checkpoint 斷續播放修正：原編譯器在每個 chord region 重置刷奏，以固定 BPM 外推，最新 job 出現 118 個間距小於 100ms 的重複短促 attack。現在共用 beat grid、局部拍距內插與跨和弦 pattern phase；僅在播放層連接同名、同指型且無空隙的區段，不修改分析證據。該 job 的短促 attack 降為 0；Web Audio／MIDI 共用修正。仍是建議伴奏模板，不是原曲編曲；未落在刷奏點的短和弦可能不發聲。QR2 TempoMap／pickup 語義與音樂品質驗收仍未完成。
+
 ### Recovery Quality Gates（取代功能百分比作為出貨判斷）
 
 | Gate | 驗收目標 | 狀態 |

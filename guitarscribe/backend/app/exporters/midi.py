@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import struct
 from typing import Literal
 
@@ -63,27 +64,38 @@ def compile_playback_manifest(score: SongScore) -> PlaybackManifest:
 
     pattern = score.rhythm.display
     if pattern:
-        step_seconds = 60.0 / bpm * (4.0 / max(score.rhythm.subdivision, 1))
-        for chord in score.chords:
+        slots = list(_rhythm_slots(score))
+        spans = []
+        for chord in sorted(score.chords, key=lambda item: item.start):
             pitches = _selected_voicing_pitches(score, chord)
-            slot = 0
-            event_time = max(0, chord.start)
-            while event_time < chord.end - 0.001:
+            if (spans and chord.symbol == spans[-1][0].symbol
+                    and pitches == spans[-1][1]
+                    and abs(chord.start - spans[-1][0].end) < 1e-9):
+                previous, _ = spans[-1]
+                spans[-1] = (previous.model_copy(update={"end": chord.end}), pitches)
+            else:
+                spans.append((chord, pitches))
+        for chord, pitches in spans:
+            for slot, event_time, next_time in slots:
+                if event_time < chord.start - 1e-9 or event_time >= chord.end - 1e-9:
+                    continue
                 stroke = pattern[slot % len(pattern)]
                 if stroke and pitches:
+                    duration = min(chord.end, next_time) - event_time
                     ordered_pitches = pitches if stroke != "U" else tuple(reversed(pitches))
-                    offsets, velocities = _strum_profile(stroke, len(ordered_pitches), step_seconds * 0.65)
+                    offsets, velocities = _strum_profile(stroke, len(ordered_pitches), duration * 0.65)
                     events.append(PlaybackEvent(
                         id=f"guitar:{chord.id}:{slot}", track="guitar",
-                        start=event_time, end=min(chord.end, event_time + step_seconds * 0.8),
+                        start=event_time, end=event_time + duration * 0.8,
                         pitches=ordered_pitches, pitch_offsets=offsets, pitch_velocities=velocities,
                         velocity=velocities[0], stroke=stroke, source_id=chord.id,
                     ))
-                slot += 1
-                event_time = chord.start + slot * step_seconds
 
     events.sort(key=lambda event: (event.start, event.track, event.id))
     revision_payload = {
+        "compiler_version": "2-beat-anchored-rhythm",
+        "beats": [(beat.time, beat.beat, beat.measure) for beat in score.beats],
+        "duration_seconds": score.song.duration_seconds,
         "bpm": score.analysis.bpm, "meter": score.analysis.time_signature,
         "key_context": score.key_context.model_dump(mode="json"),
         "notation_capo": score.analysis.capo,
@@ -105,6 +117,34 @@ def compile_playback_manifest(score: SongScore) -> PlaybackManifest:
         revision=revision, duration_seconds=score.song.duration_seconds, bpm=bpm,
         time_signature=score.analysis.time_signature, events=tuple(events),
     )
+
+
+def _rhythm_slots(score: SongScore):
+    """One shared pattern phase, interpolated on the existing quarter-note grid.
+
+    Before/after available beats (or without beats), extrapolate using BPM.
+    This is accompaniment scheduling, not a correction to the detected grid.
+    Chords shorter than a rhythm slot may receive no stroke; never invent a
+    new off-grid attack solely because the detector created another region.
+    """
+    beats = sorted({beat.time for beat in score.beats})
+    beat_seconds = 60 / max(score.analysis.bpm, 1)
+    step = 4 / max(score.rhythm.subdivision, 1)
+    origin = beats[0] if beats else 0.0
+    limit = max([score.song.duration_seconds, *(chord.end for chord in score.chords)])
+
+    def at(position: float) -> float:
+        index = math.floor(position)
+        if not beats or position < 0:
+            return origin + position * beat_seconds
+        if index >= len(beats) - 1:
+            return beats[-1] + (position - len(beats) + 1) * beat_seconds
+        return beats[index] + (position - index) * (beats[index + 1] - beats[index])
+
+    slot = math.ceil(-origin / beat_seconds / step)
+    while (start := at(slot * step)) < limit - 1e-9:
+        yield slot, max(0.0, start), at((slot + 1) * step)
+        slot += 1
 
 
 def _selected_voicing_pitches(score: SongScore, chord) -> tuple[int, ...]:

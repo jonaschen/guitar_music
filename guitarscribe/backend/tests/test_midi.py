@@ -114,3 +114,48 @@ def test_playback_manifest_revision_changes_with_capo():
     transposed = compile_playback_manifest(score.model_copy(update={"analysis": score.analysis.model_copy(update={"capo": 1})}))
 
     assert original.revision != transposed.revision
+
+
+def test_rhythm_follows_local_beats_instead_of_restarting_at_regions():
+    score = SongScore(
+        song=SongInfo(duration_seconds=2), analysis=AnalysisSummary(bpm=120),
+        beats=[BeatInfo(time=time, beat=index + 1, measure=1)
+               for index, time in enumerate([0, 0.55, 1.15, 1.7])],
+        chords=[ChordEvent(id="c1", start=0, end=0.6, symbol="C"),
+                ChordEvent(id="c2", start=0.6, end=1.2, symbol="C"),
+                ChordEvent(id="g", start=1.2, end=2, symbol="G")],
+        rhythm=RhythmSuggestion(subdivision=4, display=["D", "U"]),
+    )
+    before = score.model_dump_json()
+    guitar = [e for e in compile_playback_manifest(score).events if e.track == "guitar"]
+    assert [e.start for e in guitar] == [0, 0.55, 1.15, 1.7]
+    assert [e.stroke for e in guitar] == ["D", "U", "D", "U"]
+    assert guitar[1].end > 0.6  # Same chord's raw region boundary does not cut sound.
+    assert guitar[2].end <= 1.2  # Actual harmonic change still cuts the old chord.
+    assert score.model_dump_json() == before
+
+
+def test_no_chord_gap_keeps_pattern_phase_and_short_strums_fit_boundary():
+    score = SongScore(
+        song=SongInfo(duration_seconds=1), analysis=AnalysisSummary(bpm=120),
+        chords=[ChordEvent(id="c", start=0, end=0.01, symbol="C"),
+                ChordEvent(id="g", start=0.75, end=1, symbol="G")],
+        rhythm=RhythmSuggestion(subdivision=8, display=["D", None, "D", "U"]),
+    )
+    guitar = [e for e in compile_playback_manifest(score).events if e.track == "guitar"]
+    assert [e.start for e in guitar] == [0, 0.75]
+    assert [e.stroke for e in guitar] == ["D", "U"]
+    assert all(e.start + max(e.pitch_offsets) < e.end for e in guitar)
+
+
+def test_subdivision_interpolates_beats_and_revision_tracks_timing():
+    score = SongScore(
+        song=SongInfo(duration_seconds=1), analysis=AnalysisSummary(bpm=120),
+        beats=[BeatInfo(time=0, beat=1, measure=1), BeatInfo(time=0.6, beat=2, measure=1)],
+        chords=[ChordEvent(id="c", start=0, end=1, symbol="C")],
+        rhythm=RhythmSuggestion(subdivision=8, display=["D"]),
+    )
+    original = compile_playback_manifest(score)
+    assert [round(e.start, 3) for e in original.events if e.track == "guitar"] == [0, 0.3, 0.6, 0.85]
+    score.beats[1].time = 0.5
+    assert compile_playback_manifest(score).revision != original.revision
