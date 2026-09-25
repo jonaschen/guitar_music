@@ -1,0 +1,10 @@
+{
+  "id": "metered_4_4_8th",
+  "name": "4/4 Strong-weak-secondary-weak",
+  "time_signature": "4/4",
+  "subdivision": 8,
+  "auto_suggest": false,
+  "events": ["D", null, "D", "U", "D", "U", "D", "U"],
+  "accents": [1.0, 0.0, 0.28, 0.18, 0.55, 0.18, 0.28, 0.18],
+  "description": "Listening-control groove with a clearly subordinate third beat. Manual choice; does not alter harmonic timing."
+}

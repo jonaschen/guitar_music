@@ -69,6 +69,11 @@ select {
 }
 
 .playback-reference { margin-bottom: 1.25rem; }
+.reference-beat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.35rem; }
+.reference-beat-grid > div { padding: 0.5rem; border: 1px solid var(--border); border-radius: 8px; }
+.reference-beat-grid span { display: block; font-size: 0.8rem; }
+.reference-beat-grid strong { display: block; margin-top: 0.25rem; }
+.reference-beat-active { background: rgba(255, 196, 115, 0.15); }
 .playback-reference .synth-controls { flex-wrap: wrap; gap: 0.75rem; }
 .playback-reference [role="status"] { color: var(--accent, #a7d6bb); font-variant-numeric: tabular-nums; }
 

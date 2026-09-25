@@ -50,6 +50,7 @@ class RhythmSuggester:
                     "subdivision": subdivision,
                     "display": display,
                     "accents": accents,
+                    "auto_suggest": candidate.get("auto_suggest", True) is True,
                     "confidence": float(candidate.get("confidence", 0.7)),
                 })
             except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError):
@@ -82,7 +83,7 @@ class RhythmSuggester:
         ]
 
     def suggest(self, beats: BeatAnalysis, chords: ChordAnalysis, features: AudioFeatures | None = None) -> RhythmSuggestion:
-        patterns = self._load_patterns(beats.time_signature)
+        patterns = [pattern for pattern in self._load_patterns(beats.time_signature) if pattern["auto_suggest"]]
         if not patterns:
             return self._fallback()
 

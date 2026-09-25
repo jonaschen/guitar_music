@@ -231,8 +231,8 @@ async def list_rhythm_patterns(time_signature: str = "4/4") -> list[RhythmSugges
 
 
 @app.get("/scores/playback/reference", response_model=PlaybackManifest, tags=["Scores"])
-async def playback_reference(within_bar: bool = False, groove: Literal["balanced", "syncopated"] = "balanced"):
-    return compile_playback_manifest(reference_score(within_bar=within_bar, groove=groove))
+async def playback_reference(within_bar: bool = False, groove: Literal["balanced", "syncopated"] = "balanced", chords_per_bar: Literal["1", "2", "3"] | None = None):
+    return compile_playback_manifest(reference_score(within_bar=within_bar, groove=groove, chords_per_bar=int(chords_per_bar) if chords_per_bar else None))
 
 
 @app.post(

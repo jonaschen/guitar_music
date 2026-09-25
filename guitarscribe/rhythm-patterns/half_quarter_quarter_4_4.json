@@ -1,0 +1,10 @@
+{
+  "id": "half_quarter_quarter_4_4",
+  "name": "4/4 two-one-one accompaniment",
+  "time_signature": "4/4",
+  "subdivision": 8,
+  "auto_suggest": false,
+  "events": ["D", null, "D", "U", "D", null, "D", null],
+  "accents": [1.0, 0.0, 0.28, 0.18, 0.55, 0.0, 0.28, 0.0],
+  "description": "Sparse strokes on beats 3 and 4 for two-one-one phrasing. Does not move chord boundaries or infer their duration."
+}

@@ -33,6 +33,13 @@ test("reference can play, switch tone, and stop without loading or replacing a s
   await requested;
   await expect(control.getByRole("status")).toContainText("Bar 1");
   await control.getByRole("button", { name: "停止試聽" }).click();
+  await control.getByLabel("Reference chord changes").selectOption("three");
+  await expect(control.getByLabel("小節內四拍").locator("strong")).toHaveText(["C", "C", "Am", "G"]);
+  const threeRequested = page.waitForRequest("**/scores/playback/reference?chords_per_bar=3");
+  await control.getByRole("button", { name: "播放四小節" }).click();
+  await threeRequested;
+  await expect(control.getByRole("status")).toContainText("Bar 1");
+  await control.getByRole("button", { name: "停止試聽" }).click();
   await expect(page.getByRole("button", { name: "Start analysis" })).toBeEnabled();
   await expect.poll(() => page.evaluate(() => localStorage.getItem("guitarscribe.activeJobId"))).toBeNull();
 });

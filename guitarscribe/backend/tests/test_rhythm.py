@@ -45,3 +45,10 @@ def test_duplicate_analysis_regions_do_not_change_rhythm_selection(tmp_path):
     merged = ChordAnalysis(chords=[ChordEvent(id="c", start=0, end=4, symbol="C")])
     regions = ChordAnalysis(chords=[ChordEvent(id=str(i), start=i * 0.5, end=(i + 1) * 0.5, symbol="C") for i in range(8)])
     assert suggester.suggest(make_beats(), regions).pattern_id == suggester.suggest(make_beats(), merged).pattern_id == "flowing"
+
+
+def test_duration_specific_template_is_manual_only(tmp_path):
+    (tmp_path / "manual.json").write_text('{"id":"manual","time_signature":"4/4","subdivision":4,"events":["D","D","D","D"],"auto_suggest":false}')
+    suggester = RhythmSuggester(tmp_path)
+    assert suggester.available_patterns("4/4")[0].pattern_id == "manual"
+    assert suggester.suggest(make_beats(), ChordAnalysis()).pattern_id == "basic_8th"

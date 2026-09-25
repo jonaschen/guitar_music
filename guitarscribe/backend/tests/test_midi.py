@@ -261,3 +261,21 @@ def test_balanced_control_second_chord_starts_on_secondary_accent():
         assert second[0].start == bar * 2.5 + 1.25
         assert second[0].stroke == "D"
         assert events[0].velocity > second[0].velocity > max(e.velocity for e in second[1:])
+
+
+def test_three_chord_reference_uses_two_one_one_and_keeps_four_beat_hierarchy():
+    from app.services.playback_reference import reference_score
+    score = reference_score(chords_per_bar=3)
+    assert [(c.start, c.end) for c in score.chords[:3]] == [(0, 1.25), (1.25, 1.875), (1.875, 2.5)]
+    events = [e for e in compile_playback_manifest(score).events if e.track == "guitar"]
+    assert len(events) == 20
+    for bar in range(4):
+        group = [e for e in events if bar * 2.5 <= e.start < (bar + 1) * 2.5]
+        assert [e.start - bar * 2.5 for e in group] == [0, 0.625, 0.9375, 1.25, 1.875]
+        assert [e.velocity for e in group] == [98, 27, 15, 54, 27]
+        assert group[-1].source_id != group[-2].source_id
+    assert all(left.end == right.start for left, right in zip(events, events[1:]))
+    previous = next(e for e in events if e.start == 6.875)
+    downbeat = next(e for e in events if e.start == 7.5)
+    assert previous.pitches == downbeat.pitches
+    assert (previous.velocity, downbeat.velocity) == (27, 98)

@@ -519,6 +519,7 @@ async def test_listening_control_does_not_require_an_analysis_job():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
         response = await client.get("/scores/playback/reference")
         within = await client.get("/scores/playback/reference?within_bar=true")
+        three = await client.get("/scores/playback/reference?chords_per_bar=3")
     assert response.status_code == 200
     body = response.json()
     assert body["duration_seconds"] == 10
@@ -526,3 +527,7 @@ async def test_listening_control_does_not_require_an_analysis_job():
     assert len([e for e in body["events"] if e["track"] == "guitar"]) == 28
     assert within.status_code == 200
     assert len({e["source_id"] for e in within.json()["events"] if e["track"] == "guitar"}) == 8
+    assert three.status_code == 200
+    # G continues across bars 3/4; playback can share a source span without
+    # removing the new bar's attack or resetting its beat numbering.
+    assert len([e for e in three.json()["events"] if e["track"] == "guitar"]) == 20
