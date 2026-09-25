@@ -82,6 +82,57 @@ test("whole-song pluck playback resumes string age and cancels pending preparati
   await expect(page.getByRole("button", { name: "Pause score", exact: true })).toHaveCount(0);
 });
 
+test("score edits stop active and pending audio instead of leaving stale harmony playing", async ({ page }) => {
+  await page.route("**/api/v1/jobs/edit-playback", (route) => route.fulfill({ json: {
+    id: "edit-playback", status: "completed", progress: 100, artifacts: [], score,
+  } }));
+  await page.route("**/rhythm-patterns?*", (route) => route.fulfill({ json: [{ ...score.rhythm, pattern_id: "metered_4_4_8th", label: "Reference groove" }] }));
+  const manifest = { revision: "edit-test", duration_seconds: 8, bpm: 120, time_signature: "4/4",
+    events: [{ id: "g", source_id: "c1", track: "guitar", start: 0, end: 8, pitches: [48], pitch_offsets: [0], pitch_velocities: [98], velocity: 98 }] };
+  let heldRoute: import("@playwright/test").Route | undefined;
+  let hold = false;
+  await page.route("**/scores/playback/manifest", (route) => {
+    if (hold) { heldRoute = route; return; }
+    return route.fulfill({ json: manifest });
+  });
+  await page.goto("/?job=edit-playback");
+  await page.getByText("Compiled score playback", { exact: true }).click();
+  await page.getByRole("button", { name: "Play score", exact: true }).click();
+  await expect(page.getByLabel("Playback chord comparison")).toContainText("演奏事件：C");
+  await page.getByRole("button", { name: "套用四小節試聽的 4/4 刷奏" }).click();
+  await expect(page.getByRole("button", { name: "Play score", exact: true })).toBeEnabled();
+  await expect(page.getByLabel("Playback chord comparison")).toContainText("演奏事件：—");
+  hold = true;
+  await page.getByRole("button", { name: "Play score", exact: true }).click();
+  await expect.poll(() => !!heldRoute).toBe(true);
+  await page.getByRole("button", { name: "套用四小節試聽的 4/4 刷奏" }).click();
+  await heldRoute!.fulfill({ json: manifest });
+  await expect(page.getByRole("button", { name: "Play score", exact: true })).toBeEnabled();
+  await expect(page.getByRole("button", { name: "Pause score", exact: true })).toHaveCount(0);
+  await expect(page.getByLabel("Playback chord comparison")).toContainText("演奏事件：—");
+});
+
+test("bar 12 readout follows compiled G to C timing rather than the selected editor chord", async ({ page }) => {
+  const barScore = { ...score, song: { ...score.song, duration_seconds: 30 },
+    beats: [24.59, 25.147, 25.704, 26.273, 26.842].map((time, index) => ({ time, beat: index % 4 + 1, measure: index < 4 ? 12 : 13, confidence: 0.25 })),
+    chords: [{ ...score.chords[0], id: "g12", symbol: "G", start: 24.59, end: 26.273 }, { ...score.chords[0], id: "c12", start: 26.273, end: 30 }],
+  };
+  await page.route("**/api/v1/jobs/bar12", (route) => route.fulfill({ json: { id: "bar12", status: "completed", progress: 100, artifacts: [], score: barScore } }));
+  await page.route("**/scores/playback/manifest", (route) => route.fulfill({ json: {
+    revision: "bar12", duration_seconds: 30, bpm: 107, time_signature: "4/4",
+    events: [{ id: "g", source_id: "g12", track: "guitar", start: 25.704, end: 26.273, pitches: [43], pitch_offsets: [0], pitch_velocities: [54], velocity: 54 },
+      { id: "c", source_id: "c12", track: "guitar", start: 26.273, end: 30, pitches: [48], pitch_offsets: [0], pitch_velocities: [27], velocity: 27 }],
+  } }));
+  await page.goto("/?job=bar12");
+  await page.getByText("Compiled score playback", { exact: true }).click();
+  await page.getByLabel("Playback position", { exact: true }).fill("25.8");
+  await page.getByRole("button", { name: "Play score", exact: true }).click();
+  await expect(page.getByLabel("Playback chord comparison")).toHaveText("譜面當前：G · 演奏事件：G");
+  await expect(page.getByLabel("Playback chord comparison")).toHaveText("譜面當前：C · 演奏事件：C");
+  await expect(page.locator(".chord-block-active .chord-symbol")).toHaveText("C");
+  await page.getByRole("button", { name: "Stop score", exact: true }).click();
+});
+
 test("clears an expired saved job instead of trapping refresh in a 404 loop", async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem("guitarscribe.activeJobId", "expired-job"));
   await page.route("**/api/v1/jobs/expired-job", (route) => route.fulfill({

@@ -219,6 +219,7 @@ export function App() {
   const [playbackTime, setPlaybackTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isSynthPlaying, setIsSynthPlaying] = useState(false);
+  const [synthSnapshot, setSynthSnapshot] = useState<{ manifest: PlaybackManifest; chords: ScoreChord[] } | null>(null);
   const [isSynthPreparing, setIsSynthPreparing] = useState(false);
   const [guitarTone, setGuitarTone] = useState("pluck");
   const [synthTracks, setSynthTracks] = useState<Record<PlaybackTrack, boolean>>({ guitar: true, melody: false, metronome: false });
@@ -415,6 +416,10 @@ export function App() {
     return () => { disposed = true; };
   }, [score?.analysis.time_signature]);
 
+  // A compiled sequence belongs to one immutable score snapshot. Never let
+  // newly edited notation run alongside old audio (including pending fetches).
+  useEffect(() => { stopSynth(false); }, [score]);
+
   useEffect(() => {
     if (!score || score.chords.length === 0) {
       setSelectedChordId(null);
@@ -514,6 +519,9 @@ export function App() {
     };
   })();
   const activeChordId = score?.chords.find((chord) => playbackTime >= chord.start && playbackTime < chord.end)?.id ?? null;
+  const soundingEvent = synthSnapshot?.manifest.events.filter((event) => event.track === "guitar"
+    && event.start <= playbackTime && (guitarTone === "pluck" ? event.sustain_end ?? event.end : event.end) > playbackTime).at(-1);
+  const soundingChord = synthSnapshot?.chords.find((chord) => chord.id === soundingEvent?.source_id);
   const activeBeatIndex = score?.beats.findIndex((beat, index) => playbackTime >= beat.time && playbackTime < (score.beats[index + 1]?.time ?? Infinity)) ?? -1;
   const activeBeatTimingBounds = (() => {
     if (!score || activeBeatIndex < 0) return null;
@@ -869,6 +877,7 @@ export function App() {
 
   function stopSynth(reset = false) {
     synthGenerationRef.current++;
+    setSynthSnapshot(null);
     setIsSynthPreparing(false);
     synthSourcesRef.current.forEach((source) => { try { source.stop(); } catch { } });
     synthSourcesRef.current = [];
@@ -935,6 +944,7 @@ export function App() {
         : new Map<number, AudioBuffer>();
       if (generation !== synthGenerationRef.current) return;
       setIsSynthPreparing(false);
+      setSynthSnapshot({ manifest, chords: score.chords });
       const requestedLoop = loopStart !== null && loopEnd !== null && loopEnd > loopStart
         ? [loopStart, loopEnd] as [number, number]
         : loopRange;
@@ -1655,7 +1665,8 @@ export function App() {
 
                 <details className="synth-panel workspace-disclosure">
                   <summary>Compiled score playback</summary>
-                  <p>Web Audio uses the current key, capo, selected voicings, rhythm, and estimated melody.</p>
+                  <p>Web Audio uses the current key, capo, selected voicings, rhythm, and estimated melody. 修改樂譜或刷奏後會停止舊播放，請重新按 Play score。</p>
+                  <p aria-label="Playback chord comparison">譜面當前：{score.chords.find((chord) => chord.id === activeChordId)?.symbol ?? "—"} · 演奏事件：{isSynthPlaying && !isCountingIn && synthTracks.guitar && synthVolumes.guitar > 0 && (synthSoloTrack === null || synthSoloTrack === "guitar") ? soundingChord?.symbol ?? "—" : "—"}</p>
                   <p>Guitar plays a suggested strumming pattern on the detected beat grid, not the original recording's arrangement. To compare, click the same bar's chord before using Original / Play and Play score. Short chords between strums may not sound; inspect the chord sheet for all detected changes.</p>
                   <div className="synth-controls">
                     <label>Guitar tone <select aria-label="Score guitar tone" value={guitarTone} onChange={(event) => { stopSynth(false); setGuitarTone(event.target.value); }}><option value="pluck">新：逐泛音衰減</option><option value="simple">舊：簡單振盪器</option></select></label>
