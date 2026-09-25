@@ -53,6 +53,8 @@ Checkpoint 斷續播放修正：原編譯器在每個 chord region 重置刷奏�
 
 ### Recovery Quality Gates（取代功能百分比作為出貨判斷）
 
+最新播放回報澄清：使用者指的是時值／延音不足，而非起奏亂跳。編譯器 v3 移除固定 80% gate，模板空格解讀為無新刷奏、保留前音至下一次 attack 或和弦邊界；Web Audio 延音保持可聽能量，尾端才 release。新增完整拍長、空格延音、N.C. 截止與音量 envelope 回歸測試；待人工確認聽感，不提升任何音樂品質 gate。
+
 | Gate | 驗收目標 | 狀態 |
 |---|---|---|
 | **G0 Baseline Ready** | 合法 golden set、版本化標註、baseline artifacts | 🔧 進行中：標註 schema 與 analysis manifest 已建立；仍缺 12–20 首合法標註片段 |

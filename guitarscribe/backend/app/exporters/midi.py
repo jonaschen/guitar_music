@@ -76,24 +76,28 @@ def compile_playback_manifest(score: SongScore) -> PlaybackManifest:
             else:
                 spans.append((chord, pitches))
         for chord, pitches in spans:
-            for slot, event_time, next_time in slots:
-                if event_time < chord.start - 1e-9 or event_time >= chord.end - 1e-9:
-                    continue
+            attacks = [(slot, start, end) for slot, start, end in slots
+                       if chord.start - 1e-9 <= start < chord.end - 1e-9
+                       and pattern[slot % len(pattern)]]
+            for index, (slot, event_time, next_time) in enumerate(attacks):
                 stroke = pattern[slot % len(pattern)]
                 if stroke and pitches:
+                    # Empty pattern slots mean no new stroke, not a mute.
+                    # Let strings ring until the next attack or harmonic boundary.
+                    end_time = attacks[index + 1][1] if index + 1 < len(attacks) else chord.end
                     duration = min(chord.end, next_time) - event_time
                     ordered_pitches = pitches if stroke != "U" else tuple(reversed(pitches))
                     offsets, velocities = _strum_profile(stroke, len(ordered_pitches), duration * 0.65)
                     events.append(PlaybackEvent(
                         id=f"guitar:{chord.id}:{slot}", track="guitar",
-                        start=event_time, end=event_time + duration * 0.8,
+                        start=event_time, end=end_time,
                         pitches=ordered_pitches, pitch_offsets=offsets, pitch_velocities=velocities,
                         velocity=velocities[0], stroke=stroke, source_id=chord.id,
                     ))
 
     events.sort(key=lambda event: (event.start, event.track, event.id))
     revision_payload = {
-        "compiler_version": "2-beat-anchored-rhythm",
+        "compiler_version": "3-let-ring-rhythm",
         "beats": [(beat.time, beat.beat, beat.measure) for beat in score.beats],
         "duration_seconds": score.song.duration_seconds,
         "bpm": score.analysis.bpm, "meter": score.analysis.time_signature,

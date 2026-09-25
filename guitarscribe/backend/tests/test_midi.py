@@ -159,3 +159,24 @@ def test_subdivision_interpolates_beats_and_revision_tracks_timing():
     assert [round(e.start, 3) for e in original.events if e.track == "guitar"] == [0, 0.3, 0.6, 0.85]
     score.beats[1].time = 0.5
     assert compile_playback_manifest(score).revision != original.revision
+
+
+def test_guitar_rings_across_empty_stroke_slots_but_not_no_chord_gap():
+    score = SongScore(
+        song=SongInfo(duration_seconds=3), analysis=AnalysisSummary(bpm=120),
+        chords=[ChordEvent(id="c", start=0, end=1.5, symbol="C"),
+                ChordEvent(id="g", start=2, end=3, symbol="G")],
+        rhythm=RhythmSuggestion(subdivision=4, display=["D", None]),
+    )
+    guitar = [e for e in compile_playback_manifest(score).events if e.track == "guitar"]
+    assert [(e.start, e.end) for e in guitar] == [(0, 1), (1, 1.5), (2, 3)]
+
+
+def test_quarter_note_strums_keep_full_beat_length():
+    score = SongScore(
+        song=SongInfo(duration_seconds=2), analysis=AnalysisSummary(bpm=120),
+        chords=[ChordEvent(id="c", start=0, end=2, symbol="C")],
+        rhythm=RhythmSuggestion(subdivision=4, display=["D"]),
+    )
+    guitar = [e for e in compile_playback_manifest(score).events if e.track == "guitar"]
+    assert [(e.start, e.end) for e in guitar] == [(0, 0.5), (0.5, 1), (1, 1.5), (1.5, 2)]

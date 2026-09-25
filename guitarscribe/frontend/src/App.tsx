@@ -3,6 +3,7 @@ import type { AccidentalPreference, AnalysisJob, PlaybackManifest, PlaybackTrack
 import { ChordDiagram } from "./ChordDiagram";
 import { createAudioContextTransportClock, createMediaTransportClock } from "./transportClock";
 import { DiagnosticTimeline } from "./DiagnosticTimeline";
+import { guitarEnvelope } from "./guitarEnvelope";
 
 const AlphaTabScore = lazy(() => import("./AlphaTabScore"));
 
@@ -957,15 +958,18 @@ export function App() {
             oscillator.frequency.setValueAtTime(440 * 2 ** ((pitch - 69) / 12), startAt);
             const pitchVelocity = event.pitch_velocities[pitchIndex] ?? event.velocity;
             const peak = Math.max(0.001, synthVolumes[event.track] * pitchVelocity / 127 / Math.max(event.pitches.length, 1));
-            gain.gain.setValueAtTime(0.0001, startAt);
-            gain.gain.linearRampToValueAtTime(peak, startAt + (isGuitar ? 0.003 : 0.008));
             if (isGuitar) {
-              const decayAt = Math.min(endAt - 0.004, startAt + 0.18);
-              if (decayAt > startAt + 0.003) {
-                gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, peak * 0.28), decayAt);
+              const envelope = guitarEnvelope(startAt, endAt, peak);
+              gain.gain.setValueAtTime(envelope[0].value, envelope[0].time);
+              gain.gain.linearRampToValueAtTime(envelope[1].value, envelope[1].time);
+              for (const point of envelope.slice(2)) {
+                gain.gain.exponentialRampToValueAtTime(point.value, point.time);
               }
+            } else {
+              gain.gain.setValueAtTime(0.0001, startAt);
+              gain.gain.linearRampToValueAtTime(peak, startAt + 0.008);
+              gain.gain.exponentialRampToValueAtTime(0.0001, endAt);
             }
-            gain.gain.exponentialRampToValueAtTime(0.0001, endAt);
             if (isGuitar) {
               const filter = context.createBiquadFilter();
               filter.type = "lowpass";
