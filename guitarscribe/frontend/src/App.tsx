@@ -5,6 +5,8 @@ import { createAudioContextTransportClock, createMediaTransportClock } from "./t
 import { DiagnosticTimeline } from "./DiagnosticTimeline";
 import { guitarEnvelope } from "./guitarEnvelope";
 import { PlaybackReference } from "./PlaybackReference";
+import { preparePluckedBuffers, createPluckedVoice } from "./pluckedTone";
+import { createMetronomeVoice } from "./metronomeVoice";
 
 const AlphaTabScore = lazy(() => import("./AlphaTabScore"));
 
@@ -201,6 +203,7 @@ export function App() {
   const pendingAudioTrackSeekRef = useRef<number | null>(null);
   const metronomeContextRef = useRef<AudioContext | null>(null);
   const synthContextRef = useRef<AudioContext | null>(null);
+  const synthGenerationRef = useRef(0);
   const referenceStopRef = useRef<() => void>(() => {});
   const synthSourcesRef = useRef<AudioScheduledSourceNode[]>([]);
   const synthAnimationRef = useRef<number | null>(null);
@@ -214,8 +217,10 @@ export function App() {
   const [playbackTime, setPlaybackTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isSynthPlaying, setIsSynthPlaying] = useState(false);
-  const [synthTracks, setSynthTracks] = useState<Record<PlaybackTrack, boolean>>({ guitar: true, melody: true, metronome: false });
-  const [synthVolumes, setSynthVolumes] = useState<Record<PlaybackTrack, number>>({ guitar: 0.35, melody: 0.3, metronome: 0.18 });
+  const [isSynthPreparing, setIsSynthPreparing] = useState(false);
+  const [guitarTone, setGuitarTone] = useState("pluck");
+  const [synthTracks, setSynthTracks] = useState<Record<PlaybackTrack, boolean>>({ guitar: true, melody: false, metronome: false });
+  const [synthVolumes, setSynthVolumes] = useState<Record<PlaybackTrack, number>>({ guitar: 0.24, melody: 0.3, metronome: 0.18 });
   const [synthSoloTrack, setSynthSoloTrack] = useState<PlaybackTrack | null>(null);
   const [metronomeEnabled, setMetronomeEnabled] = useState(false);
   const [countInMeasures, setCountInMeasures] = useState(0);
@@ -860,6 +865,8 @@ export function App() {
   }
 
   function stopSynth(reset = false) {
+    synthGenerationRef.current++;
+    setIsSynthPreparing(false);
     synthSourcesRef.current.forEach((source) => { try { source.stop(); } catch { } });
     synthSourcesRef.current = [];
     if (synthAnimationRef.current !== null) window.cancelAnimationFrame(synthAnimationRef.current);
@@ -910,13 +917,21 @@ export function App() {
     referenceStopRef.current();
     if (!score) return;
     if (isSynthPlaying) { stopSynth(false); return; }
+    stopSynth(false);
+    const generation = synthGenerationRef.current;
+    setIsSynthPreparing(true);
     try {
       audioRef.current?.pause();
-      const manifest = await compilePlayback(score);
       const context = synthContextRef.current ?? new AudioContext();
       synthContextRef.current = context;
       await context.resume();
-      stopSynth(false);
+      const manifest = await compilePlayback(score);
+      if (generation !== synthGenerationRef.current) return;
+      const buffers = guitarTone === "pluck" && synthTracks.guitar && (synthSoloTrack === null || synthSoloTrack === "guitar")
+        ? await preparePluckedBuffers(context, manifest.events.filter((event) => event.track === "guitar").flatMap((event) => event.pitches), () => generation !== synthGenerationRef.current)
+        : new Map<number, AudioBuffer>();
+      if (generation !== synthGenerationRef.current) return;
+      setIsSynthPreparing(false);
       const requestedLoop = loopStart !== null && loopEnd !== null && loopEnd > loopStart
         ? [loopStart, loopEnd] as [number, number]
         : loopRange;
@@ -942,15 +957,35 @@ export function App() {
         const segmentEnd = requestedLoop?.[1] ?? manifest.duration_seconds;
         synthClockRef.current = { contextStart, scoreStart: segmentStart };
         const segmentEvents = manifest.events
-          .filter((event) => synthTracks[event.track] && (synthSoloTrack === null || event.track === synthSoloTrack) && event.end > segmentStart && event.start < segmentEnd)
+          .filter((event) => synthTracks[event.track] && synthVolumes[event.track] > 0 && (synthSoloTrack === null || event.track === synthSoloTrack) && event.end > segmentStart && event.start < segmentEnd)
           .sort((left, right) => left.start - right.start);
         let nextEventIndex = 0;
         const scheduleEvent = (event: PlaybackManifest["events"][number], resumeScoreTime: number) => {
           const eventStart = Math.max(event.start, segmentStart, resumeScoreTime);
           const eventEnd = Math.min(event.end, segmentEnd);
           if (eventEnd <= eventStart) return;
+          if (event.track === "metronome") {
+            const source = createMetronomeVoice(context,
+              Math.max(context.currentTime + 0.005, contextStart + (eventStart - segmentStart) / playbackRate),
+              event.velocity > 100, synthVolumes.metronome);
+            if (source) trackSynthSource(source);
+            return;
+          }
           event.pitches.forEach((pitch, pitchIndex) => {
             const compiledOffset = event.pitch_offsets[pitchIndex];
+            if (event.track === "guitar" && guitarTone === "pluck") {
+              const onset = event.start + (compiledOffset ?? pitchIndex * 0.012);
+              const startAt = Math.max(context.currentTime + 0.005, contextStart + (onset - segmentStart) / playbackRate);
+              const endAt = contextStart + (eventEnd - segmentStart) / playbackRate;
+              const age = Math.max(0, (Math.max(segmentStart, resumeScoreTime) - onset) / playbackRate);
+              const buffer = buffers.get(pitch);
+              if (buffer) {
+                const source = createPluckedVoice(context, buffer, startAt, endAt,
+                  synthVolumes.guitar * (event.pitch_velocities[pitchIndex] ?? event.velocity) / 127 / Math.sqrt(event.pitches.length), age);
+                if (source) trackSynthSource(source);
+              }
+              return;
+            }
             const strumDelay = event.track === "guitar" ? (compiledOffset ?? pitchIndex * 0.012) / playbackRate : 0;
             const startAt = Math.max(context.currentTime + 0.005, contextStart + (eventStart - segmentStart) / playbackRate + strumDelay);
             const endAt = Math.max(startAt + 0.025, contextStart + (eventEnd - segmentStart) / playbackRate);
@@ -1023,20 +1058,15 @@ export function App() {
       setIsSynthPlaying(true);
       scheduleSegment(scoreStart, initialContextStart);
     } catch (synthError) {
+      if (generation !== synthGenerationRef.current) return;
       stopSynth(false);
       setError(synthError instanceof Error ? synthError.message : "Could not play compiled score.");
     }
   }
 
   function scheduleMetronomeClick(context: AudioContext, startAt: number, accented: boolean) {
-    const oscillator = context.createOscillator();
-    const gain = context.createGain();
-    oscillator.frequency.setValueAtTime(accented ? 1320 : 880, startAt);
-    gain.gain.setValueAtTime(0.08, startAt);
-    gain.gain.exponentialRampToValueAtTime(0.001, startAt + 0.045);
-    oscillator.connect(gain).connect(context.destination);
-    oscillator.start(startAt);
-    oscillator.stop(startAt + 0.05);
+    const source = createMetronomeVoice(context, startAt, accented, synthVolumes.metronome);
+    if (source) trackSynthSource(source);
   }
 
   function playMetronomeClick(accented: boolean) {
@@ -1076,7 +1106,7 @@ export function App() {
   }
 
   function seekTo(time: number) {
-    if (isSynthPlaying) stopSynth(false);
+    if (isSynthPlaying || isSynthPreparing) stopSynth(false);
     setPlaybackTime(time);
     if (audioRef.current) {
       createMediaTransportClock(audioRef.current).seek?.(time);
@@ -1204,7 +1234,7 @@ export function App() {
   }
 
   function setSpeed(nextRate: number) {
-    if (isSynthPlaying) stopSynth(false);
+    if (isSynthPlaying || isSynthPreparing) stopSynth(false);
     setPlaybackRate(nextRate);
     if (audioRef.current) audioRef.current.playbackRate = nextRate;
   }
@@ -1582,7 +1612,7 @@ export function App() {
                         }
                       }}
                       onTimeUpdate={(event) => handlePlaybackTime(event.currentTarget.currentTime)}
-                      onPlay={() => { referenceStopRef.current(); setIsPlaying(true); }}
+                      onPlay={() => { referenceStopRef.current(); stopSynth(false); setIsPlaying(true); }}
                       onPause={() => setIsPlaying(false)}
                       onEnded={() => setIsPlaying(false)}
                     />
@@ -1623,9 +1653,11 @@ export function App() {
                   <p>Web Audio uses the current key, capo, selected voicings, rhythm, and estimated melody.</p>
                   <p>Guitar plays a suggested strumming pattern on the detected beat grid, not the original recording's arrangement. To compare, click the same bar's chord before using Original / Play and Play score. Short chords between strums may not sound; inspect the chord sheet for all detected changes.</p>
                   <div className="synth-controls">
-                    <button type="button" className="ghost-button" onClick={() => void toggleSynthPlayback()}>{isSynthPlaying ? "Pause score" : "Play score"}</button>
+                    <label>Guitar tone <select aria-label="Score guitar tone" value={guitarTone} onChange={(event) => { stopSynth(false); setGuitarTone(event.target.value); }}><option value="pluck">新：逐泛音衰減</option><option value="simple">舊：簡單振盪器</option></select></label>
+                    <button type="button" className="ghost-button" disabled={isSynthPreparing} onClick={() => void toggleSynthPlayback()}>{isSynthPreparing ? "Preparing score…" : isSynthPlaying ? "Pause score" : "Play score"}</button>
                     <button type="button" className="ghost-button" onClick={() => stopSynth(true)}>Stop score</button>
-                    {(["guitar", "melody", "metronome"] as PlaybackTrack[]).map((track) => <label className="synth-track" key={track}><input type="checkbox" checked={synthTracks[track]} onChange={() => { if (isSynthPlaying) stopSynth(false); setSynthTracks((tracks) => ({ ...tracks, [track]: !tracks[track] })); }} /><span>{track}</span><input type="range" min="0" max="1" step="0.05" value={synthVolumes[track]} onChange={(event) => { if (isSynthPlaying) stopSynth(false); setSynthVolumes((volumes) => ({ ...volumes, [track]: Number(event.target.value) })); }} aria-label={track + " volume"} /><button type="button" className={synthSoloTrack === track ? "synth-solo synth-solo-active" : "synth-solo"} onClick={() => { if (isSynthPlaying) stopSynth(false); setSynthSoloTrack((current) => current === track ? null : track); }}>{synthSoloTrack === track ? "Soloed" : "Solo"}</button></label>)}
+                    {(["guitar", "melody", "metronome"] as PlaybackTrack[]).map((track) => <label className="synth-track" key={track}><input type="checkbox" aria-label={track + " track"} checked={synthTracks[track]} onChange={() => { stopSynth(false); setSynthTracks((tracks) => ({ ...tracks, [track]: !tracks[track] })); }} /><span>{track}</span><input type="range" min="0" max="1" step="0.05" value={synthVolumes[track]} onChange={(event) => { stopSynth(false); setSynthVolumes((volumes) => ({ ...volumes, [track]: Number(event.target.value) })); }} aria-label={track + " volume"} /><button type="button" className={synthSoloTrack === track ? "synth-solo synth-solo-active" : "synth-solo"} onClick={() => { stopSynth(false); setSynthSoloTrack((current) => current === track ? null : track); }}>{synthSoloTrack === track ? "Soloed" : "Solo"}</button></label>)}
+                    <span role="status">{activeBeatIndex >= 0 ? `Bar ${score.beats[activeBeatIndex].measure} · Beat ${score.beats[activeBeatIndex].beat}` : "Beat —"}</span>
                   </div>
                 </details>
 

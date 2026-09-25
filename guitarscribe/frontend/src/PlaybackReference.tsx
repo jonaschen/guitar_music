@@ -1,7 +1,8 @@
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 import type { PlaybackManifest } from "./types";
 import { guitarEnvelope } from "./guitarEnvelope";
-import { pluckedSamples } from "./pluckedTone";
+import { preparePluckedBuffers, createPluckedVoice } from "./pluckedTone";
+import { createMetronomeVoice } from "./metronomeVoice";
 
 export function PlaybackReference({ onStart, stopRef }: {
   onStart: () => void; stopRef: MutableRefObject<() => void>;
@@ -15,6 +16,7 @@ export function PlaybackReference({ onStart, stopRef }: {
   const [error, setError] = useState("");
   const [tone, setTone] = useState("pluck");
   const [click, setClick] = useState(true);
+  const [clickVolume, setClickVolume] = useState(0.3);
   const [busy, setBusy] = useState(false);
 
   function stop() {
@@ -42,34 +44,32 @@ export function PlaybackReference({ onStart, stopRef }: {
       if (!response.ok) throw new Error("Could not load the listening control. Check the backend.");
       const manifest: PlaybackManifest = await response.json();
       if (token !== generation.current) return;
-      const buffers = new Map<number, AudioBuffer>();
-      if (tone === "pluck") {
-        for (const pitch of new Set(manifest.events.filter((event) => event.track === "guitar").flatMap((event) => event.pitches))) {
-          const data = pluckedSamples(pitch, context.sampleRate);
-          const buffer = context.createBuffer(1, data.length, context.sampleRate);
-          buffer.getChannelData(0).set(data); buffers.set(pitch, buffer);
-        }
-      }
+      const buffers = tone === "pluck" ? await preparePluckedBuffers(context,
+        manifest.events.filter((event) => event.track === "guitar").flatMap((event) => event.pitches),
+        () => token !== generation.current) : new Map<number, AudioBuffer>();
+      if (token !== generation.current) return;
       const origin = context.currentTime + 0.08;
       for (const event of manifest.events) {
         if (event.track !== "guitar" && !(click && event.track === "metronome")) continue;
+        if (event.track === "metronome") {
+          const source = createMetronomeVoice(context, origin + event.start, event.velocity > 100, clickVolume);
+          if (source) sources.current.push(source);
+          continue;
+        }
         event.pitches.forEach((pitch, index) => {
           const start = origin + event.start + (event.pitch_offsets[index] ?? 0);
           const end = Math.max(start + 0.02, origin + event.end);
-          const gain = context.createGain();
           const velocity = event.pitch_velocities[index] ?? event.velocity;
           const peak = event.track === "guitar" ? 0.24 * velocity / 127 / Math.sqrt(event.pitches.length) : 0.018;
+          if (tone === "pluck") {
+            const source = createPluckedVoice(context, buffers.get(pitch)!, start, end, peak);
+            if (source) sources.current.push(source);
+            return;
+          }
+          const gain = context.createGain();
           let source: AudioScheduledSourceNode;
           let releaseEnd: number;
-          if (event.track === "guitar" && tone === "pluck") {
-            const bufferSource = context.createBufferSource();
-            bufferSource.buffer = buffers.get(pitch)!;
-            source = bufferSource;
-            gain.gain.setValueAtTime(peak, start);
-            gain.gain.setValueAtTime(peak, end);
-            releaseEnd = end + 0.28;
-            gain.gain.exponentialRampToValueAtTime(0.00001, releaseEnd);
-          } else {
+          {
             const oscillator = context.createOscillator();
             oscillator.frequency.value = 440 * 2 ** ((pitch - 69) / 12);
             oscillator.type = event.track === "guitar" ? "triangle" : "sine";
@@ -105,6 +105,7 @@ export function PlaybackReference({ onStart, stopRef }: {
     <div className="synth-controls">
       <label>音色 <select aria-label="Reference tone" value={tone} onChange={(event) => { stop(); setTone(event.target.value); }}><option value="pluck">新：逐泛音衰減</option><option value="simple">對照：簡單振盪器</option></select></label>
       <label><input type="checkbox" checked={click} onChange={(event) => { stop(); setClick(event.target.checked); }} />輕聲節拍器</label>
+      <label>節拍器音量 <input aria-label="Reference metronome volume" type="range" min="0" max="1" step="0.05" value={clickVolume} onChange={(event) => { stop(); setClickVolume(Number(event.target.value)); }} /></label>
       <button type="button" onClick={() => void play()} disabled={busy || playing}>{busy ? "Preparing…" : "播放四小節"}</button>
       <button type="button" onClick={stop}>停止試聽</button>
     </div>

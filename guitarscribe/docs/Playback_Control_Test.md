@@ -1,5 +1,7 @@
 # 四小節伴奏控制組測試
 
+目前進度：此控制組已由使用者確認有小節感、固定刷奏型，新音色較自然。新音色現已接入整曲播放，下一步請使用[整曲測試清單](Whole_Song_Playback_Test.md)。以下保留控制組操作供 A/B 比較。
+
 ## 操作（約兩分鐘）
 
 1. 重新整理 http://localhost:5173。頁首有「四小節伴奏試聽 / Playback control」。不用上傳、不用重跑分析，不會覆寫已載入歌曲。
@@ -15,5 +17,5 @@
 - 此段完全排除音訊辨識，所以若仍不自然，優先修播放與編曲，不應回頭調和弦 detector。
 - 控制型是直拍八分音符 D–DU–UDU，沒有宣稱是 Slow Soul、Slow Rock 或 Folk Rock 的標準定義。
 - 新音色是自行產生的泛音相加與個別衰減；不是外部採樣、物理弦模擬或 convolution reverb。參考 [Web Audio 的泛音表示](https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/createPeriodicWave)，此實作用時間域 buffer 實作不同泛音的衰減。
-- 新音色暫未套用整曲 `Play score`。先確認這個已知音樂結構的短段落，再決定是否推廣，避免把合成與分析誤差混在一起。
+- 新音色已套用整曲 `Play score` 並保留舊音色選項。控制組仍可用來區分合成問題與歌曲分析問題。
 - 自動測試只能檢查拍位、波形與播放控制，不能取代聽感驗收。

@@ -53,6 +53,8 @@ Checkpoint 斷續播放修正：原編譯器在每個 chord region 重置刷奏�
 
 ### Recovery Quality Gates（取代功能百分比作為出貨判斷）
 
+整曲播放 checkpoint：使用者已確認四小節控制組有小節感、可辨識固定刷奏型，逐泛音衰減音色較自然。現將同一個 plucked voice 接入整曲 `Play score` 並設為預設，保留舊音色選項；預設不混入 Experimental melody。新增每個 AudioContext 的有界音色快取、非阻塞準備與取消 token；Stop／seek／切音色取消尚未完成的播放請求，seek 中途從弦音已衰減的位置接續，不重新觸發 attack。維持既有 look-ahead 排程與小節相位。控制組節拍器新增獨立音量，控制組與整曲共用高／低音第一拍提示；整曲保留 metronome track 音量。此 checkpoint 只待整曲連續性與小節對齊試聽，不代表實際和弦或 downbeat 品質通過。
+
 **最新人工回報：伴奏播放尚未驗收。** 已有強弱與較長尾音，但使用者仍聽不到穩定小節感，起音仍像突跳。先前事件間隔／envelope 測試僅證明局部程式行為，不能宣稱伴奏自然。
 
 下一輪播放重整順序：

@@ -16,6 +16,49 @@ const score = {
 const musicXml = `<?xml version="1.0" encoding="UTF-8"?>
 <score-partwise version="3.1"><part-list><score-part id="P1"><part-name>Guitar</part-name></score-part></part-list><part id="P1"><measure number="1"><attributes><divisions>480</divisions><time><beats>4</beats><beat-type>4</beat-type></time><clef><sign>TAB</sign><line>5</line></clef></attributes><note><pitch><step>C</step><octave>4</octave></pitch><duration>480</duration><type>quarter</type><notations><technical><string>2</string><fret>1</fret></technical></notations></note><note><rest/><duration>1440</duration><type>half</type></note></measure></part></score-partwise>`;
 
+test("whole-song pluck playback resumes string age and cancels pending preparation", async ({ page }) => {
+  await page.addInitScript(() => {
+    (window as any).__pluckOffsets = [];
+    const start = AudioBufferSourceNode.prototype.start;
+    AudioBufferSourceNode.prototype.start = function (when = 0, offset = 0) {
+      (window as any).__pluckOffsets.push(offset);
+      return start.call(this, when, offset);
+    };
+  });
+  await page.route("**/api/v1/jobs/synth-job", (route) => route.fulfill({ json: {
+    id: "synth-job", status: "completed", progress: 100, artifacts: [], score,
+  } }));
+  let heldRoute: import("@playwright/test").Route | undefined;
+  let hold = false;
+  const manifest = { revision: "test", duration_seconds: 8, bpm: 120, time_signature: "4/4",
+    events: [{ id: "g", track: "guitar", start: 0, end: 6, pitches: [48], pitch_offsets: [0], pitch_velocities: [98], velocity: 98 }] };
+  await page.route("**/scores/playback/manifest", (route) => {
+    if (hold) { heldRoute = route; return; }
+    return route.fulfill({ json: manifest });
+  });
+  await page.goto("/?job=synth-job");
+  await page.getByText("Compiled score playback", { exact: true }).click();
+  await expect(page.getByLabel("Score guitar tone")).toHaveValue("pluck");
+  await expect(page.getByLabel("melody track", { exact: true })).not.toBeChecked();
+  await page.getByLabel("Playback position", { exact: true }).fill("2");
+  await page.getByRole("button", { name: "Play score", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Pause score", exact: true })).toBeVisible();
+  await expect.poll(() => page.evaluate(() => (window as any).__pluckOffsets.some((offset: number) => offset >= 2))).toBe(true);
+  await page.getByRole("button", { name: "Stop score", exact: true }).click();
+  await page.getByLabel("Score guitar tone").selectOption("simple");
+  await page.getByRole("button", { name: "Play score", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Pause score", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Stop score", exact: true }).click();
+  hold = true;
+  await page.getByRole("button", { name: "Play score", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Preparing score…", exact: true })).toBeDisabled();
+  await expect.poll(() => !!heldRoute).toBe(true);
+  await page.getByRole("button", { name: "Stop score", exact: true }).click();
+  await heldRoute!.fulfill({ json: manifest });
+  await expect(page.getByRole("button", { name: "Play score", exact: true })).toBeEnabled();
+  await expect(page.getByRole("button", { name: "Pause score", exact: true })).toHaveCount(0);
+});
+
 test("clears an expired saved job instead of trapping refresh in a 404 loop", async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem("guitarscribe.activeJobId", "expired-job"));
   await page.route("**/api/v1/jobs/expired-job", (route) => route.fulfill({

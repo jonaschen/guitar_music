@@ -32,3 +32,21 @@ test("reference can play, switch tone, and stop without loading or replacing a s
   await expect(page.getByRole("button", { name: "Start analysis" })).toBeEnabled();
   await expect.poll(() => page.evaluate(() => localStorage.getItem("guitarscribe.activeJobId"))).toBeNull();
 });
+
+test("metronome volume and downbeat produce measurable differences", async ({ page }) => {
+  await page.goto("/");
+  const measured = await page.evaluate(async () => {
+    const modulePath = "/src/metronomeVoice.ts";
+    const { createMetronomeVoice } = await import(modulePath);
+    async function render(volume: number, strong: boolean) {
+      const context = new OfflineAudioContext(1, 4410, 44100);
+      createMetronomeVoice(context, 0, strong, volume);
+      const data = (await context.startRendering()).getChannelData(0);
+      return Math.sqrt(data.reduce((sum, sample) => sum + sample * sample, 0) / data.length);
+    }
+    return { silent: await render(0, true), quiet: await render(0.2, true), loud: await render(0.4, true), weak: await render(0.4, false) };
+  });
+  expect(measured.silent).toBe(0);
+  expect(measured.loud).toBeGreaterThan(measured.quiet * 1.8);
+  expect(measured.loud).toBeGreaterThan(measured.weak * 1.4);
+});

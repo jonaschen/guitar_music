@@ -19,3 +19,43 @@ export function pluckedSamples(midi: number, sampleRate: number, seconds = 4): F
   for (let index = 0; index < fade; index++) samples[samples.length - fade + index] *= 1 - index / fade;
   return samples;
 }
+
+const cache = new WeakMap<BaseAudioContext, Map<number, AudioBuffer>>();
+
+export async function preparePluckedBuffers(context: BaseAudioContext, pitches: number[], cancelled: () => boolean = () => false) {
+  const buffers = cache.get(context) ?? new Map<number, AudioBuffer>();
+  cache.set(context, buffers);
+  const prepared = new Map<number, AudioBuffer>();
+  for (const pitch of new Set(pitches)) {
+    if (cancelled()) break;
+    let buffer = buffers.get(pitch);
+    if (!buffer) {
+      const data = pluckedSamples(pitch, context.sampleRate);
+      buffer = context.createBuffer(1, data.length, context.sampleRate);
+      buffer.getChannelData(0).set(data);
+      if (buffers.size >= 64) buffers.delete(buffers.keys().next().value!);
+      buffers.set(pitch, buffer);
+      // Let Stop and other UI actions run while preparing a whole song.
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    }
+    prepared.set(pitch, buffer);
+  }
+  return prepared;
+}
+
+export function createPluckedVoice(context: BaseAudioContext, buffer: AudioBuffer, start: number, end: number, level: number, offset = 0) {
+  if (offset >= buffer.duration || end <= start || level <= 0) return null;
+  const source = context.createBufferSource();
+  source.buffer = buffer;
+  const gain = context.createGain();
+  // Resume a decayed string at its age, not a fresh attack when seeking.
+  gain.gain.setValueAtTime(offset > 0 ? 0 : level, start);
+  if (offset > 0) gain.gain.linearRampToValueAtTime(level, Math.min(end, start + 0.008));
+  gain.gain.setValueAtTime(level, end);
+  gain.gain.exponentialRampToValueAtTime(0.00001, end + 0.28);
+  source.connect(gain).connect(context.destination);
+  source.addEventListener("ended", () => { source.disconnect(); gain.disconnect(); });
+  source.start(start, offset);
+  source.stop(end + 0.29);
+  return source;
+}
