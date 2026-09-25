@@ -3,7 +3,7 @@ from ..models.analysis import BeatInfo, ChordEvent, RhythmSuggestion
 from ..models.score import SongScore, SongInfo, AnalysisSummary
 
 
-def reference_score(within_bar: bool = False) -> SongScore:
+def reference_score(within_bar: bool = False, groove: str = "balanced") -> SongScore:
     symbols = ["C", "Am", "F", "G", "Am", "F", "G", "C"] if within_bar else ["C", "Am", "F", "G"]
     span = 1.25 if within_bar else 2.5
     return SongScore(
@@ -14,8 +14,8 @@ def reference_score(within_bar: bool = False) -> SongScore:
         chords=[ChordEvent(id=f"reference-{index}", start=index * span, end=(index + 1) * span, symbol=symbol)
                 for index, symbol in enumerate(symbols)],
         rhythm=RhythmSuggestion(
-            subdivision=8, pattern_id="reference-straight-4-4", label="Straight 4/4 control",
-            display=["D", None, "D", "U", None, "U", "D", "U"],
-            accents=[1, 0, 0.65, 0.4, 0, 0.4, 0.75, 0.4],
+            subdivision=8, pattern_id=f"reference-{groove}-4-4", label="4/4 listening control",
+            display=["D", None, "D", "U", None if groove == "syncopated" else "D", "U", "D", "U"],
+            accents=[1, 0, 0.65, 0.4, 0, 0.4, 0.75, 0.4] if groove == "syncopated" else [1, 0, 0.55, 0.35, 0.75, 0.35, 0.55, 0.35],
         ),
     )

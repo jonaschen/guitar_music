@@ -15,7 +15,7 @@
 ## 已知界線
 
 - 此段完全排除音訊辨識，所以若仍不自然，優先修播放與編曲，不應回頭調和弦 detector。
-- 控制型是直拍八分音符 D–DU–UDU，沒有宣稱是 Slow Soul、Slow Rock 或 Folk Rock 的標準定義。
+- 預設控制型為 D–DUDUDU，第 1 拍最強、第 3 拍次強；可切回原 D–DU–UDU 對照。兩者都未宣稱是 Slow Soul、Slow Rock 或 Folk Rock 的標準定義。
 - 新音色是自行產生的泛音相加與個別衰減；不是外部採樣、物理弦模擬或 convolution reverb。參考 [Web Audio 的泛音表示](https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/createPeriodicWave)，此實作用時間域 buffer 實作不同泛音的衰減。
 - 新音色已套用整曲 `Play score` 並保留舊音色選項。控制組仍可用來區分合成問題與歌曲分析問題。
 - 自動測試只能檢查拍位、波形與播放控制，不能取代聽感驗收。

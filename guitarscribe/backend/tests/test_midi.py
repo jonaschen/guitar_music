@@ -214,11 +214,11 @@ def test_reference_repeats_identical_rhythm_each_bar():
     from app.services.playback_reference import reference_score
     manifest = compile_playback_manifest(reference_score())
     guitar = [e for e in manifest.events if e.track == "guitar"]
-    assert len(guitar) == 24
-    assert len({e.id for e in guitar}) == 24
+    assert len(guitar) == 28
+    assert len({e.id for e in guitar}) == 28
     for bar in range(4):
         events = [e for e in guitar if bar * 2.5 <= e.start < (bar + 1) * 2.5]
-        assert [round(e.start - bar * 2.5, 5) for e in events] == [0, 0.625, 0.9375, 1.5625, 1.875, 2.1875]
+        assert [round(e.start - bar * 2.5, 5) for e in events] == [0, 0.625, 0.9375, 1.25, 1.5625, 1.875, 2.1875]
         assert events[0].velocity > max(e.velocity for e in events[1:])
 
 
@@ -231,7 +231,7 @@ def test_mid_bar_chord_changes_do_not_reset_stroke_or_accent():
 
 def test_mid_bar_sustain_preserves_analysis_and_reaches_next_strum():
     from app.services.playback_reference import reference_score
-    score = reference_score(within_bar=True)
+    score = reference_score(within_bar=True, groove="syncopated")
     before = score.model_dump_json()
     guitar = [e for e in compile_playback_manifest(score).events if e.track == "guitar"]
     assert (guitar[2].start, guitar[2].end, guitar[3].start) == (0.9375, 1.5625, 1.5625)
@@ -243,10 +243,21 @@ def test_mid_bar_sustain_preserves_analysis_and_reaches_next_strum():
 def test_sustain_never_bridges_explicit_no_chord_or_unassigned_gap():
     from app.services.playback_reference import reference_score
     for explicit in (False, True):
-        score = reference_score(within_bar=True)
+        score = reference_score(within_bar=True, groove="syncopated")
         score.chords[0].end = 1.0
         if explicit:
             score.chords.insert(1, ChordEvent(id="silence", start=1.0, end=1.25, symbol="N"))
         guitar = [e for e in compile_playback_manifest(score).events if e.track == "guitar"]
         assert guitar[2].end == 1.0
         assert guitar[3].start == 1.5625
+
+
+def test_balanced_control_second_chord_starts_on_secondary_accent():
+    from app.services.playback_reference import reference_score
+    guitar = [e for e in compile_playback_manifest(reference_score(True)).events if e.track == "guitar"]
+    for bar in range(4):
+        events = [e for e in guitar if bar * 2.5 <= e.start < (bar + 1) * 2.5]
+        second = events[3:]
+        assert second[0].start == bar * 2.5 + 1.25
+        assert second[0].stroke == "D"
+        assert events[0].velocity > second[0].velocity > max(e.velocity for e in second[1:])

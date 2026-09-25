@@ -523,6 +523,6 @@ async def test_listening_control_does_not_require_an_analysis_job():
     body = response.json()
     assert body["duration_seconds"] == 10
     assert body["bpm"] == 96
-    assert len([e for e in body["events"] if e["track"] == "guitar"]) == 24
+    assert len([e for e in body["events"] if e["track"] == "guitar"]) == 28
     assert within.status_code == 200
     assert len({e["source_id"] for e in within.json()["events"] if e["track"] == "guitar"}) == 8

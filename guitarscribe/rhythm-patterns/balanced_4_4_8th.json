@@ -1,0 +1,9 @@
+{
+  "id": "balanced_4_4_8th",
+  "name": "Balanced 4/4 (beats 1 and 3)",
+  "time_signature": "4/4",
+  "subdivision": 8,
+  "events": ["D", null, "D", "U", "D", "U", "D", "U"],
+  "accents": [1.0, 0.0, 0.55, 0.35, 0.75, 0.35, 0.55, 0.35],
+  "description": "Explicit first-beat and third-beat downstrokes; generic accompaniment, not a named genre standard."
+}
