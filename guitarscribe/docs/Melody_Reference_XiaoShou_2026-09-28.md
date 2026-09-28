@@ -31,6 +31,15 @@
 
 ### 人工試聽 checkpoint（現在需要）
 
+#### 2026-09-29：連續 F0 較接近，測試新的離散音符解碼
+
+- 使用者回報 `continuous-f0.wav` 較像歌曲。這支持先檢查音符轉換，並不證明 F0 每一幀皆正確。
+- 新增實驗性 `decode_contour_notes`：以未取整的浮點音高及原始 confidence 計算整段音高誤差，使用最短音長與轉音成本做分段搜尋；無調性／參考譜先驗、無拍點吸附、無人工改音。無聲間隙保留，不提高輸出 confidence。
+- 固定讀取 `contour-review/frames-and-notes.json`，不重新分離或推論。`contour-decoder-v1/decoded-notes.wav` 是原曲 38–44 秒的六秒試聽，JSON 記錄來源 SHA-256、參數及所有事件。約 40.994–41.296 秒由舊轉換的 C#4 變成 C4，這只是演算法輸出差異，正確性尚待聽驗。
+- 重現：容器內執行 `python -m app.evaluation.contour_review /app/output/melody-review-83e087-26-38-v1/contour-review/frames-and-notes.json /app/output/melody-review-83e087-26-38-v1/NEW_REVIEW_DIRECTORY`。拒絕覆寫已有目錄；限制最多 60 秒／3000 幀，避免將平方時間搜尋直接套到整曲。
+- 限制：整數音符仍無法完整表現滑音；F0 本身不足以分辨同音重複起音。原始連續音高保留，尚未接入 production、MIDI 或 UI，也沒有修改既有 job。
+- 下一聽驗：新音符版相較舊 `same-f0-notes.wav` 是否更像？集中短檔 2.5–4 秒；若仍只有連續 F0 像歌曲，需保留表情音高作播放，並繼續分開研究記譜與起音，不靠繼續調參宣稱改善。
+
 #### 人聲清楚：固定來源，區分 F0 與音符轉換
 
 - 使用者確認分離後仍清楚保留原唱該句。此回饋僅涵蓋本段，不宣稱整曲分離完美；本輪不再變更分離設定或音訊。
