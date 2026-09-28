@@ -235,6 +235,8 @@ QR3 評估修正（2026-09-24）：quality report 1.3 將估計頭尾／內部�
 
 2026-09-28：使用者確認《小手拉大手》274 秒 job 與提供的參考簡譜相對應。完成保存結果的音符結構盤點：419 個事件、25.710 秒重疊、最多同時 3 個；新增非破壞性的片段結構診斷與測試。A 段實際起唱秒數／參考抄譜仍待確認，不能當作正式 ground truth 或宣稱旋律已改善。詳見 `docs/Melody_Reference_XiaoShou_2026-09-28.md`。
 
+同日定位更新：使用者提供約 28 秒起唱；已建立 26–38 秒原曲／估計旋律對照窗與不覆寫 job 的 excerpt renderer。參考開頭五音的初讀音型與目前長 G4 輸出有待對照，精確 onset、八度、拍長尚未核准。此為診斷 checkpoint，尚未改善引擎。
+
 - [ ] Basic Pitch 僅接受單一 vocal／lead stem；full mix 僅可作 diagnostic candidate。
 - [ ] Omnizart vocal note／contour 作第二意見，不直接寫正式 SongScore。
 - [ ] 先分類 Vocal／Instrumental Lead／No Melody，再依區段選擇來源。
