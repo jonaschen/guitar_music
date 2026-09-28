@@ -114,7 +114,7 @@ def render_note_sonification(
     output_path: Path,
     sample_rate: int = 16000,
 ) -> None:
-    """Render a monophonic note layer without confidence-dependent loudness."""
+    """Render note events without confidence-dependent loudness or overlap removal."""
     frame_count = max(1, int((excerpt_end - excerpt_start) * sample_rate))
     audio = np.zeros(frame_count, dtype=np.float32)
     for note in notes:

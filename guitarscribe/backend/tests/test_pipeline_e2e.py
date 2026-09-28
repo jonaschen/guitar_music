@@ -161,7 +161,10 @@ async def test_pipeline_reports_successful_vocal_separation(tmp_path):
     class MelodyAnalyzer:
         async def analyze(self, audio, beats, mode):
             assert audio is vocals
-            return MelodyAnalysis(mode=MelodyMode.VOCAL, notes=[MelodyNote(id="n", start=0.0, end=0.5, midi=60, note="C4", confidence=0.9)])
+            return MelodyAnalysis(mode=MelodyMode.VOCAL, notes=[
+                MelodyNote(id="n", start=0.0, end=0.25, midi=60, note="C4", confidence=0.9),
+                MelodyNote(id="n2", start=0.25, end=0.5, midi=60, note="C4", confidence=0.9),
+            ])
     class Mapper:
         def map_notes(self, melody): return melody
     class Rhythm:
@@ -182,6 +185,15 @@ async def test_pipeline_reports_successful_vocal_separation(tmp_path):
     assert (artifacts / "vocal-stem.wav").read_bytes() == b"vocal-stem"
     assert (artifacts / "raw-melody.wav").is_file()
     assert (artifacts / "final-melody.wav").is_file()
+    import json
+    raw_candidates = json.loads((artifacts / "melody-candidates.json").read_text())
+    assert raw_candidates["schema_version"] == "1.0"
+    assert raw_candidates["source_separated"] is True
+    assert raw_candidates["analysis"]["notes"][0]["id"] == "n"
+    assert raw_candidates["analysis"]["notes"][0]["end"] == 0.25
+    assert len(raw_candidates["analysis"]["notes"]) == 2
+    assert len(score.melody) == 1
+    assert score.melody[0].end == 0.5
     timing_artifact = artifacts / "timing-candidates.json"
     assert timing_artifact.is_file()
     assert '"raw_artifact": "timing-candidates.json"' in timing_artifact.read_text()

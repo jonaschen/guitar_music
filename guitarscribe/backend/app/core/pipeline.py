@@ -1,4 +1,5 @@
 import asyncio
+import json
 import logging
 import shutil
 from ..services.playable_chords import with_default_voicings
@@ -151,6 +152,14 @@ class AnalysisPipeline:
                 separation_warnings.append("Vocal pitch tracing failed; used Basic Pitch on the isolated vocal stem.")
                 melody = await self.melody_analyzer.analyze(melody_audio, beats, melody_mode)
             raw_detector_notes = [note.model_copy(deep=True) for note in melody.notes]
+            # Preserve machine-readable evidence before quantization/selection.
+            # A rendered raw WAV alone cannot explain which notes were removed.
+            if options.get("_artifact_directory"):
+                (Path(options["_artifact_directory"]) / "melody-candidates.json").write_text(
+                    json.dumps({"schema_version": "1.0", "source_separated": source_separated,
+                                "analysis": melody.model_dump(mode="json")}, ensure_ascii=False, indent=2),
+                    encoding="utf-8",
+                )
             melody.notes = self.melody_post.process(melody.notes, beats.beats, melody_mode)
             if source_separated and analyzer is not self.melody_analyzer:
                 try:

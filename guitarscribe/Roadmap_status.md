@@ -237,6 +237,8 @@ QR3 評估修正（2026-09-24）：quality report 1.3 將估計頭尾／內部�
 
 同日定位更新：使用者提供約 28 秒起唱；已建立 26–38 秒原曲／估計旋律對照窗與不覆寫 job 的 excerpt renderer。參考開頭五音的初讀音型與目前長 G4 輸出有待對照，精確 onset、八度、拍長尚未核准。此為診斷 checkpoint，尚未改善引擎。
 
+同日候選實驗：12 秒混音重跑重現 157→49→18 的候選選取／合併路徑及連續 G4；完成 Demucs 短片段分離，取得 pYIN（28 個未量化音符）與 Basic Pitch＋舊後處理（29 個音符）的獨立試聽候選。新增逐階段 trace、未來 pipeline 原始候選 JSON 保存及非污染測試。現在需要人工比較 A/B 是否可辨認；不以無重疊、少音符當作 QR4 通過，尚未套用至正式歌曲。
+
 - [ ] Basic Pitch 僅接受單一 vocal／lead stem；full mix 僅可作 diagnostic candidate。
 - [ ] Omnizart vocal note／contour 作第二意見，不直接寫正式 SongScore。
 - [ ] 先分類 Vocal／Instrumental Lead／No Melody，再依區段選擇來源。
