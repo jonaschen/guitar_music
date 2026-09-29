@@ -128,7 +128,8 @@ async def test_pipeline_falls_back_to_full_mix_when_vocal_separation_fails(tmp_p
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("with_contour", [False, True])
-async def test_pipeline_reports_successful_vocal_separation(tmp_path, with_contour):
+@pytest.mark.parametrize("accompaniment", ["absent", "present", "missing_file"])
+async def test_pipeline_reports_successful_vocal_separation(tmp_path, with_contour, accompaniment):
     from app.core.pipeline import AnalysisPipeline
     from app.models.analysis import BeatAnalysis, ChordAnalysis, MelodyAnalysis, MelodyMode, MelodyNote, RhythmSuggestion
     from app.models.audio import AudioAsset, NormalizedAudio
@@ -139,6 +140,10 @@ async def test_pipeline_reports_successful_vocal_separation(tmp_path, with_conto
     normalized = NormalizedAudio(path=tmp_path / "mix.wav", duration_seconds=8.0)
     vocals = NormalizedAudio(path=tmp_path / "vocals.wav", duration_seconds=8.0)
     vocals.path.write_bytes(b"vocal-stem")
+    if accompaniment != "absent":
+        vocals.accompaniment_path = tmp_path / "no_vocals.wav"
+        if accompaniment == "present":
+            vocals.accompaniment_path.write_bytes(b"accompaniment")
     artifacts = tmp_path / "artifacts"
     artifacts.mkdir()
 
@@ -189,6 +194,9 @@ async def test_pipeline_reports_successful_vocal_separation(tmp_path, with_conto
     assert score.analysis.confidence > 0
     assert not any("without source separation" in warning for warning in score.analysis.warnings)
     assert (artifacts / "vocal-stem.wav").read_bytes() == b"vocal-stem"
+    assert (artifacts / "accompaniment-stem.wav").is_file() is (accompaniment == "present")
+    if accompaniment == "present":
+        assert (artifacts / "accompaniment-stem.wav").read_bytes() == b"accompaniment"
     assert (artifacts / "raw-melody.wav").is_file()
     assert (artifacts / "final-melody.wav").is_file()
     assert (artifacts / "melody-contour.wav").is_file() is with_contour

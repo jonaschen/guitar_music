@@ -68,7 +68,7 @@
 | **M1：後端 MVP** | FastAPI、job、SQLite、OpenAPI | ⚠️ 保留；CPU worker／stage retry 未完成 | QR6 |
 | **M2：Web UI MVP** | 上傳、播放、和弦格、匯出 | ⚠️ 保留；預設流程需重整 | QR5 |
 | **M3：可編輯樂譜** | 和弦編輯、移調、Capo、指型、revision | ⚠️ 保留；仍依 legacy beat grid | QR2–QR5 |
-| **M4：簡化主旋律與 Tab** | 候選音高、Tab、alphaTab、匯出 | 🧪 Experimental；人工辨識驗收失敗 | QR4 |
+| **M4：簡化主旋律與 Tab** | 候選音高、Tab、alphaTab、匯出 | 🧪 輪廓播放局部獲肯定；整曲／記譜未通過 | QR4 |
 | **M5：品質與部署** | 自動測試、初步 metrics、Docker | 🔧 重新開啟；缺合法 golden set 與標準 MIR gate | QR0／QR6 |
 | **M6：歌詞與按譜演奏** | 手動歌詞、逐行 timing、同步播放 | ⏸ 核心資產保留；自動歌詞／karaoke 暫緩 | QR5 之後 |
 
@@ -231,7 +231,7 @@ QR3 評估修正（2026-09-24）：quality report 1.3 將估計頭尾／內部�
 
 ### QR4：主旋律重新研究與重建
 
-**狀態：參考片段與診斷啟動；主旋律重建尚未通過。現有 Final Melody 已確認不可辨認，停止 threshold／smoothing 疊加。依賴 QR2。**
+**狀態：逐幀輪廓的 20 秒片段與副歌聽感獲局部肯定；主歌及間奏／尾奏仍待修正，整曲未通過。現有 Final Melody 記譜音符仍未通過，不以 threshold／smoothing 疊加代替來源與音高驗證。記譜拍長仍依賴 QR2。**
 
 2026-09-28：使用者確認《小手拉大手》274 秒 job 與提供的參考簡譜相對應。完成保存結果的音符結構盤點：419 個事件、25.710 秒重疊、最多同時 3 個；新增非破壞性的片段結構診斷與測試。A 段實際起唱秒數／參考抄譜仍待確認，不能當作正式 ground truth 或宣稱旋律已改善。詳見 `docs/Melody_Reference_XiaoShou_2026-09-28.md`。
 
@@ -259,6 +259,10 @@ QR3 評估修正（2026-09-24）：quality report 1.3 將估計頭尾／內部�
 
 2026-09-30：使用者確認 26–46 秒輪廓 WAV 大致準確，作為局部聽感回歸對照。已把原始輪廓保存／有界記憶體 WAV 渲染／artifact API／Compare audio 實驗入口串接；新 pYIN 分析統一 22.05 kHz 單聲道以符合已試聽設定。既有 job 不改寫，缺少輪廓時停用按鈕，不用舊音符冒充。下一門檻為新分析的原曲 0:26–0:46 與副歌聽驗；整曲、器樂 lead、Play score 混音及記譜仍未通過，QR4 不標完成。
 
+2026-09-30 整曲回饋：副歌很接近，主歌及副歌間／尾奏仍不佳。最新 job 確認成功分離並使用 pYIN；需使用者提供失敗段落秒數，先分開查主歌的來源／F0 與器樂接手問題。補上未來分析的 accompaniment stem 保存及對照入口（需後台載入新程式）；它是多樂器伴奏，不是 lead，不能直接取代旋律。目前結果不修改、不要求為此重跑整首，優先保留已接近的副歌。Formal quality gate 尚未通過。
+
+- [ ] 主歌問題定位：取得具體秒數，對照 Original／Vocal stem／Contour melody，再決定來源或 F0 修正。
+- [ ] 器樂接手：保留 accompaniment 作來源證據，另驗證 lead 候選與區段切換；禁止將伴奏直接當主旋律。
 - [x] 輪廓播放的實驗入口：保存浮點音高及來源時間，Compare audio 可選獨立音軌，不依賴整數音符解碼。
 - [ ] 整曲輪廓聽驗與伴奏整合：先通過新分析的已知片段及副歌，再考慮接入 Play score；目前仍 Experimental。
 - [ ] 記譜／Tab：另行驗證音符、起音與拍長，不得回寫並破壞已驗證的播放輪廓。

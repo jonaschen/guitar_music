@@ -70,12 +70,13 @@ async def test_job_service_advertises_only_completed_contour_audio(tmp_path):
         async def run(self, source_request, options, progress_callback=None):
             directory = Path(options["_artifact_directory"])
             (directory / "melody-contour.wav").write_bytes(b"completed")
+            (directory / "accompaniment-stem.wav").write_bytes(b"accompaniment")
             (directory / "raw-melody.pending.wav").write_bytes(b"incomplete")
             return await super().run(source_request, options, progress_callback)
     service = AnalysisJobService(JobStore(tmp_path / "jobs"), pipeline_factory=ContourPipeline)
     created = await service.submit("test.wav", b"RIFFfake", "vocal", "standard", separate_vocals=True)
     completed = await wait_for_terminal(service, created.id)
-    assert completed.artifacts == ["source", "melody-contour"]
+    assert completed.artifacts == ["source", "accompaniment-stem", "melody-contour"]
 
 
 @pytest.mark.asyncio

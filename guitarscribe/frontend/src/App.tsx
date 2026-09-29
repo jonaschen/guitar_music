@@ -56,7 +56,7 @@ const SYNTH_SCHEDULER_INTERVAL_MS = 50;
 
 type AnalyzeState = "idle" | "queued" | "ready" | "error";
 type ScoreChord = SongScore["chords"][number];
-type DiagnosticAudioTrack = "source" | "vocal-stem" | "raw-melody" | "final-melody" | "melody-contour";
+type DiagnosticAudioTrack = "source" | "vocal-stem" | "accompaniment-stem" | "raw-melody" | "final-melody" | "melody-contour";
 
 const EMPTY_SCORE: SongScore | null = null;
 
@@ -1635,11 +1635,13 @@ export function App() {
                     {analysisJob?.status === "completed" ? <div className="diagnostic-track-switcher" aria-label="Diagnostic audio source"><span>Compare audio</span>{([
                       ["source", "Original"],
                       ["vocal-stem", "Vocal stem"],
+                      ["accompaniment-stem", "Accompaniment stem"],
                       ["melody-contour", "Contour melody (Experimental)"],
                       ["raw-melody", "Raw detector"],
                       ["final-melody", "Final melody"],
                     ] as Array<[DiagnosticAudioTrack, string]>).map(([track, label]) => <button key={track} type="button" title={track === "melody-contour" ? "Requires saved pitch data from a new vocal-isolated pYIN analysis. This does not change Play score, MIDI or Tab." : undefined} className={diagnosticAudioTrack === track ? "ghost-button diagnostic-track-active" : "ghost-button"} disabled={track !== "source" && !analysisJob.artifacts?.includes(track)} onClick={() => selectDiagnosticAudioTrack(track)}>{label}</button>)}</div> : null}
-                    {diagnosticAudioTrack === "melody-contour" ? <p role="status">Experimental source-pitch playback, separate from score notes. Key/capo edits, MIDI and Tab do not change this audio. Whole-song melody accuracy is not yet verified.</p> : null}
+                    {diagnosticAudioTrack === "melody-contour" ? <p role="status">Experimental source-pitch playback, separate from score notes. Vocal-source only: instrumental interludes and outros are not recovered. Key/capo edits, MIDI and Tab do not change this audio. Whole-song melody accuracy is not yet verified.</p> : null}
+                    {diagnosticAudioTrack === "accompaniment-stem" ? <p role="status">Separated accompaniment for comparison: includes rhythm, bass and other instruments, not an extracted instrumental melody.</p> : null}
                     <button type="button" className="ghost-button" onClick={() => seekMeasure(-1)}>Previous bar</button>
                     <button type="button" className="ghost-button" disabled={isCountingIn} onClick={() => void togglePlayback()}>
                       {isCountingIn ? "Counting in..." : isPlaying ? "Pause" : "Play"}

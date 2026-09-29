@@ -120,8 +120,10 @@ class DemucsMelodySeparator:
             shutil.rmtree(output_dir, ignore_errors=True)
             raise RuntimeError("Demucs did not produce exactly one vocals.wav stem")
         info = sf.info(str(stems[0]))
+        accompaniment = stems[0].with_name("no_vocals.wav")
         return NormalizedAudio(
             path=stems[0], sample_rate=info.samplerate, channels=info.channels,
             duration_seconds=info.duration, bit_depth=audio.bit_depth,
             temporary_directory=output_dir,
+            accompaniment_path=accompaniment if accompaniment.is_file() else None,
         ), True

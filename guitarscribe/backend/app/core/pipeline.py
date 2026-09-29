@@ -137,6 +137,17 @@ class AnalysisPipeline:
                         if artifact_directory:
                             artifact_path = Path(artifact_directory) / "vocal-stem.wav"
                             shutil.copy2(melody_audio.path, artifact_path)
+                            if melody_audio.accompaniment_path is not None:
+                                # Preserve the separator's existing output for
+                                # source review; never treat it as a lead line.
+                                try:
+                                    target = Path(artifact_directory) / "accompaniment-stem.wav"
+                                    pending = target.with_name("accompaniment-stem.pending.wav")
+                                    shutil.copy2(melody_audio.accompaniment_path, pending)
+                                    pending.replace(target)
+                                except OSError as accompaniment_error:
+                                    logger.warning("Accompaniment diagnostic unavailable: %s", accompaniment_error)
+                                    separation_warnings.append("Accompaniment comparison audio could not be saved; vocal extraction is unchanged.")
                         separation_warnings.append("Vocal isolation was applied before melody extraction.")
                 except Exception as separation_error:
                     logger.warning("Vocal separation failed; using full mix: %s", separation_error)

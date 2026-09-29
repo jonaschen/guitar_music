@@ -337,7 +337,7 @@ async def get_job_audio_artifact(job_id: str, artifact_name: str, job_service: A
         raise HTTPException(status_code=404, detail="Analysis job not found") from exc
     if job.status != JobStatus.COMPLETED:
         raise HTTPException(status_code=409, detail="Diagnostic audio is available after analysis completes")
-    allowed = {"vocal-stem", "raw-melody", "final-melody", "melody-contour"}
+    allowed = {"vocal-stem", "accompaniment-stem", "raw-melody", "final-melody", "melody-contour"}
     if artifact_name not in allowed:
         raise HTTPException(status_code=404, detail="Unknown diagnostic artifact")
     artifact = job_service.store.job_dir(job_id) / f"{artifact_name}.wav"

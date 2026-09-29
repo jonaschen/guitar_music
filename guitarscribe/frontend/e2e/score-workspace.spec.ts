@@ -25,6 +25,7 @@ test("chord chart merges repeated regions reversibly and offers the reference gr
   await page.route("**/rhythm-patterns?*", (route) => route.fulfill({ json: [{ ...score.rhythm, pattern_id: "metered_4_4_8th", label: "4/4 Strong-weak-secondary-weak" }] }));
   await page.goto("/?job=repeated-job");
   await expect(page.getByRole("button", { name: "Contour melody (Experimental)", exact: true })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Accompaniment stem", exact: true })).toBeDisabled();
   const symbols = page.locator(".chord-sheet .chord-block:not(.chord-gap) .chord-symbol");
   await expect(symbols).toHaveText(["G", "Am"]);
   await expect(page.getByText("延續 · 3 個分析區段")).toBeVisible();
@@ -39,6 +40,18 @@ test("chord chart merges repeated regions reversibly and offers the reference gr
 
 const musicXml = `<?xml version="1.0" encoding="UTF-8"?>
 <score-partwise version="3.1"><part-list><score-part id="P1"><part-name>Guitar</part-name></score-part></part-list><part id="P1"><measure number="1"><attributes><divisions>480</divisions><time><beats>4</beats><beat-type>4</beat-type></time><clef><sign>TAB</sign><line>5</line></clef></attributes><note><pitch><step>C</step><octave>4</octave></pitch><duration>480</duration><type>quarter</type><notations><technical><string>2</string><fret>1</fret></technical></notations></note><note><rest/><duration>1440</duration><type>half</type></note></measure></part></score-partwise>`;
+
+test("accompaniment comparison is not labeled as instrumental lead", async ({ page }) => {
+  await page.route("**/api/v1/jobs/accompaniment-job", (route) => route.fulfill({ json: {
+    id: "accompaniment-job", status: "completed", progress: 100,
+    artifacts: ["source", "accompaniment-stem"], score,
+  } }));
+  await page.route("**/api/v1/jobs/accompaniment-job/artifacts/accompaniment-stem", (route) => route.fulfill({ contentType: "audio/wav", body: "test-audio" }));
+  await page.goto("/?job=accompaniment-job");
+  await page.getByRole("button", { name: "Accompaniment stem", exact: true }).click();
+  await expect(page.locator("audio")).toHaveAttribute("src", /artifacts\/accompaniment-stem$/);
+  await expect(page.getByText(/not an extracted instrumental melody/)).toBeVisible();
+});
 
 test("whole-song pluck playback resumes string age and cancels pending preparation", async ({ page }) => {
   await page.addInitScript(() => {
@@ -239,6 +252,7 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await page.getByRole("button", { name: "Contour melody (Experimental)", exact: true }).click();
   await expect(page.locator("audio")).toHaveAttribute("src", /artifacts\/melody-contour$/);
   await expect(page.getByText(/Experimental source-pitch playback, separate from score notes/)).toBeVisible();
+  await expect(page.getByText(/Vocal-source only: instrumental interludes and outros are not recovered/)).toBeVisible();
   await expect(page.getByRole("button", { name: "Vocal stem" })).toBeEnabled();
   await page.getByRole("button", { name: "Vocal stem" }).click();
   await expect(page.getByRole("button", { name: "Vocal stem" })).toHaveClass(/diagnostic-track-active/);

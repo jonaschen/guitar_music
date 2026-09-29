@@ -29,3 +29,5 @@ class NormalizedAudio(BaseModel):
     # When supplied, this directory was created solely for this analysis and
     # can be removed after every consumer has finished reading the audio.
     temporary_directory: Optional[Path] = None
+    # Optional separator output: accompaniment mixture, NOT an extracted lead.
+    accompaniment_path: Optional[Path] = None

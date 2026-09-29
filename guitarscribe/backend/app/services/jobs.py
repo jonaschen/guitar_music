@@ -241,7 +241,7 @@ class AnalysisJobService:
             job.message = "Analysis complete"
             job.score = score
             job.artifacts = ["source"]
-            for artifact_name in ("vocal-stem", "raw-melody", "final-melody", "melody-contour"):
+            for artifact_name in ("vocal-stem", "accompaniment-stem", "raw-melody", "final-melody", "melody-contour"):
                 if (directory / f"{artifact_name}.wav").is_file():
                     job.artifacts.append(artifact_name)
             job.updated_at = _now()

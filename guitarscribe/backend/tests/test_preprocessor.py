@@ -28,7 +28,8 @@ async def test_normalize_missing_file(tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_demucs_separator_uses_generated_vocal_stem(sample_wav, monkeypatch):
+@pytest.mark.parametrize("with_accompaniment", [False, True])
+async def test_demucs_separator_uses_generated_vocal_stem(sample_wav, monkeypatch, with_accompaniment):
     class FakeProcess:
         returncode = 0
 
@@ -40,6 +41,8 @@ async def test_demucs_separator_uses_generated_vocal_stem(sample_wav, monkeypatc
         stem = output_dir / "htdemucs" / "test" / "vocals.wav"
         stem.parent.mkdir(parents=True)
         shutil.copyfile(sample_wav, stem)
+        if with_accompaniment:
+            shutil.copyfile(sample_wav, stem.with_name("no_vocals.wav"))
         return FakeProcess()
 
     monkeypatch.setattr("app.analyzers.preprocessor.asyncio.create_subprocess_exec", fake_create_subprocess_exec)
@@ -51,6 +54,10 @@ async def test_demucs_separator_uses_generated_vocal_stem(sample_wav, monkeypatc
     assert did_separate is True
     assert separated.path.name == "vocals.wav"
     assert separated.duration_seconds == pytest.approx(8.0, abs=0.1)
+    assert (separated.accompaniment_path is not None) is with_accompaniment
+    if with_accompaniment:
+        assert separated.accompaniment_path.name == "no_vocals.wav"
+        assert separated.accompaniment_path.is_file()
 
 
 @pytest.mark.asyncio
