@@ -64,6 +64,21 @@ async def test_job_service_persists_completed_score_and_progress(tmp_path):
 
 
 @pytest.mark.asyncio
+async def test_job_service_advertises_only_completed_contour_audio(tmp_path):
+    from pathlib import Path
+    class ContourPipeline(StubPipeline):
+        async def run(self, source_request, options, progress_callback=None):
+            directory = Path(options["_artifact_directory"])
+            (directory / "melody-contour.wav").write_bytes(b"completed")
+            (directory / "raw-melody.pending.wav").write_bytes(b"incomplete")
+            return await super().run(source_request, options, progress_callback)
+    service = AnalysisJobService(JobStore(tmp_path / "jobs"), pipeline_factory=ContourPipeline)
+    created = await service.submit("test.wav", b"RIFFfake", "vocal", "standard", separate_vocals=True)
+    completed = await wait_for_terminal(service, created.id)
+    assert completed.artifacts == ["source", "melody-contour"]
+
+
+@pytest.mark.asyncio
 async def test_job_service_safely_handles_untrusted_upload_filenames(tmp_path):
     service = AnalysisJobService(JobStore(tmp_path / "jobs"), pipeline_factory=StubPipeline)
 

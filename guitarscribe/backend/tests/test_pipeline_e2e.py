@@ -127,12 +127,14 @@ async def test_pipeline_falls_back_to_full_mix_when_vocal_separation_fails(tmp_p
 
 
 @pytest.mark.asyncio
-async def test_pipeline_reports_successful_vocal_separation(tmp_path):
+@pytest.mark.parametrize("with_contour", [False, True])
+async def test_pipeline_reports_successful_vocal_separation(tmp_path, with_contour):
     from app.core.pipeline import AnalysisPipeline
     from app.models.analysis import BeatAnalysis, ChordAnalysis, MelodyAnalysis, MelodyMode, MelodyNote, RhythmSuggestion
     from app.models.audio import AudioAsset, NormalizedAudio
     from app.models.candidates import AnalyzerRun, TimingCandidate, TimingResult
     from app.postprocess.melody import MelodyPostProcessor
+    from app.models.melody_contour import MelodyContour
 
     normalized = NormalizedAudio(path=tmp_path / "mix.wav", duration_seconds=8.0)
     vocals = NormalizedAudio(path=tmp_path / "vocals.wav", duration_seconds=8.0)
@@ -161,7 +163,11 @@ async def test_pipeline_reports_successful_vocal_separation(tmp_path):
     class MelodyAnalyzer:
         async def analyze(self, audio, beats, mode):
             assert audio is vocals
-            return MelodyAnalysis(mode=MelodyMode.VOCAL, notes=[
+            return MelodyAnalysis(mode=MelodyMode.VOCAL, contour=MelodyContour(
+                source_artifact_sha256="0" * 64, source_start=0, source_end=8,
+                hop_seconds=0.5, frequencies_hz=(450.1,) * 16,
+                voiced_probabilities=(0.1,) * 16,
+            ) if with_contour else None, notes=[
                 MelodyNote(id="n", start=0.0, end=0.25, midi=60, note="C4", confidence=0.9),
                 MelodyNote(id="n2", start=0.25, end=0.5, midi=60, note="C4", confidence=0.9),
             ])
@@ -185,6 +191,12 @@ async def test_pipeline_reports_successful_vocal_separation(tmp_path):
     assert (artifacts / "vocal-stem.wav").read_bytes() == b"vocal-stem"
     assert (artifacts / "raw-melody.wav").is_file()
     assert (artifacts / "final-melody.wav").is_file()
+    assert (artifacts / "melody-contour.wav").is_file() is with_contour
+    assert (artifacts / "melody-contour.json").is_file() is with_contour
+    if with_contour:
+        saved = MelodyContour.model_validate_json((artifacts / "melody-contour.json").read_text())
+        assert saved.frequencies_hz == (450.1,) * 16
+        assert saved.voiced_probabilities == (0.1,) * 16
     import json
     raw_candidates = json.loads((artifacts / "melody-candidates.json").read_text())
     assert raw_candidates["schema_version"] == "1.0"

@@ -347,6 +347,13 @@ async def test_job_endpoints_queue_poll_and_return_completed_score(tmp_path):
             stem_response = await artifact_client.get(f"/api/v1/jobs/{job_id}/artifacts/vocal-stem")
             assert stem_response.status_code == 200
             assert stem_response.content == b"vocal"
+            missing = await artifact_client.get(f"/api/v1/jobs/{job_id}/artifacts/melody-contour")
+            assert missing.status_code == 404
+            (service.store.job_dir(job_id) / "melody-contour.wav").write_bytes(b"contour")
+            contour_response = await artifact_client.get(f"/api/v1/jobs/{job_id}/artifacts/melody-contour")
+            assert contour_response.status_code == 200
+            assert contour_response.content == b"contour"
+            assert contour_response.headers["content-type"] == "audio/wav"
     finally:
         app.dependency_overrides.clear()
 

@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 import soundfile as sf
 
-from app.analyzers.melody.pyin_adapter import PYIN_HOP_LENGTH, PYIN_RESOLUTION, PYIN_THRESHOLDS, PyinVocalMelodyAnalyzer, frames_to_notes
+from app.analyzers.melody.pyin_adapter import PYIN_HOP_LENGTH, PYIN_RESOLUTION, PYIN_THRESHOLDS, PYIN_SAMPLE_RATE, PyinVocalMelodyAnalyzer, frames_to_notes
 from app.models.analysis import BeatAnalysis, MelodyMode
 from app.models.audio import NormalizedAudio
 
@@ -11,6 +11,7 @@ def test_pyin_cpu_profile_matches_the_semitone_score_resolution():
     assert PYIN_HOP_LENGTH == 512
     assert PYIN_RESOLUTION == 0.5
     assert PYIN_THRESHOLDS == 32
+    assert PYIN_SAMPLE_RATE == 22050
 
 
 def test_pyin_frames_merge_vibrato_but_split_a_real_pitch_change():
@@ -41,8 +42,8 @@ def test_pyin_frames_preserve_low_voiced_probability_for_downstream_filtering():
 
 
 @pytest.mark.asyncio
-async def test_pyin_analyzes_a_short_monophonic_voice_like_fixture(tmp_path):
-    sample_rate = 22050
+@pytest.mark.parametrize("sample_rate", [22050, 44100])
+async def test_pyin_analyzes_a_short_monophonic_voice_like_fixture(tmp_path, sample_rate):
     time = np.arange(sample_rate * 2) / sample_rate
     path = tmp_path / "voice.wav"
     sf.write(path, 0.5 * np.sin(2 * np.pi * 440 * time), sample_rate)
@@ -53,3 +54,9 @@ async def test_pyin_analyzes_a_short_monophonic_voice_like_fixture(tmp_path):
     assert analysis.engine == "pyin_vocal"
     assert analysis.mode == MelodyMode.VOCAL
     assert analysis.notes
+    assert analysis.contour is not None
+    assert analysis.contour.source_artifact_kind == "audio"
+    assert analysis.contour.source_end == 2
+    assert analysis.contour.hop_seconds == PYIN_HOP_LENGTH / PYIN_SAMPLE_RATE
+    assert any(hz is not None for hz in analysis.contour.frequencies_hz)
+    assert "contour" not in analysis.model_dump()

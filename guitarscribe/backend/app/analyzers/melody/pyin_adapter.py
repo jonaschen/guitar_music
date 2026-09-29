@@ -4,14 +4,17 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from statistics import median
+import hashlib
 
 import numpy as np
 
 from ...models.analysis import BeatAnalysis, MelodyAnalysis, MelodyMode, MelodyNote
 from ...models.audio import NormalizedAudio
+from ...models.melody_contour import MelodyContour
 from .basic_pitch_adapter import MODE_PROFILES, midi_to_note_name
 
 PYIN_HOP_LENGTH = 512
+PYIN_SAMPLE_RATE = 22050
 PYIN_RESOLUTION = 0.5
 PYIN_THRESHOLDS = 32
 
@@ -81,11 +84,11 @@ class PyinVocalMelodyAnalyzer:
         import librosa
 
         profile = MODE_PROFILES[MelodyMode.VOCAL]
-        samples, sample_rate = librosa.load(str(audio.path), sr=None, mono=True)
-        # The downstream score is quantized to musical grid points and MIDI
-        # semitones, so pYIN's 0.1-cent-like default resolution is wasted work
-        # on multi-minute songs. These values keep vocal contours while making
-        # optional source-separated analysis practical on CPU.
+        # Demucs stems may be 44.1 kHz stereo. Match the validated audition's
+        # time window/hop in seconds instead of silently halving them.
+        samples, sample_rate = librosa.load(str(audio.path), sr=PYIN_SAMPLE_RATE, mono=True)
+        # Keep the tested CPU profile unchanged. Preserve floating-point F0
+        # separately; notation conversion must not become the playback source.
         hop_length = PYIN_HOP_LENGTH
         frequencies, _voiced, probabilities = librosa.pyin(
             samples,
@@ -98,9 +101,20 @@ class PyinVocalMelodyAnalyzer:
             n_thresholds=PYIN_THRESHOLDS,
         )
         midi = librosa.hz_to_midi(frequencies)
+        digest = hashlib.sha256()
+        with audio.path.open("rb") as source:
+            for chunk in iter(lambda: source.read(65536), b""):
+                digest.update(chunk)
+        contour = MelodyContour(
+            source_artifact_sha256=digest.hexdigest(), source_artifact_kind="audio",
+            source_start=0, source_end=len(samples) / sample_rate,
+            hop_seconds=hop_length / sample_rate,
+            frequencies_hz=tuple(float(hz) if np.isfinite(hz) else None for hz in frequencies),
+            voiced_probabilities=tuple(float(p) if np.isfinite(p) else None for p in probabilities),
+        )
         notes = frames_to_notes(midi, probabilities, hop_seconds=hop_length / sample_rate)
         warnings = [] if notes else ["pYIN found no stable voiced melody in the isolated vocal stem."]
         return MelodyAnalysis(
-            notes=notes, mode=mode, confidence=0.75, engine="pyin_vocal",
+            notes=notes, contour=contour, mode=mode, confidence=0.75, engine="pyin_vocal",
             engine_version=getattr(librosa, "__version__", "unknown"), warnings=warnings,
         )

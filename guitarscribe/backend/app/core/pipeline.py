@@ -23,6 +23,7 @@ from ..postprocess.rhythm import RhythmSuggester
 from ..fretboard.mapper import SimpleFretboardMapper
 from ..sources.local import LocalAudioSource
 from ..evaluation.diagnostic_audio import render_melody_diagnostic
+from ..evaluation.contour_track import save_contour_artifacts
 
 logger = logging.getLogger(__name__)
 
@@ -121,6 +122,7 @@ class AnalysisPipeline:
         separate_vocals = bool(options.get("separate_vocals", False))
         source_separated = False
         raw_detector_notes = []
+        raw_contour = None
         try:
             melody_audio = normalized
             separation_warnings: list[str] = []
@@ -152,6 +154,7 @@ class AnalysisPipeline:
                 separation_warnings.append("Vocal pitch tracing failed; used Basic Pitch on the isolated vocal stem.")
                 melody = await self.melody_analyzer.analyze(melody_audio, beats, melody_mode)
             raw_detector_notes = [note.model_copy(deep=True) for note in melody.notes]
+            raw_contour = melody.contour
             # Preserve machine-readable evidence before quantization/selection.
             # A rendered raw WAV alone cannot explain which notes were removed.
             if options.get("_artifact_directory"):
@@ -185,6 +188,12 @@ class AnalysisPipeline:
         artifact_directory = options.get("_artifact_directory")
         if artifact_directory:
             artifact_path = Path(artifact_directory)
+            if raw_contour is not None:
+                try:
+                    await asyncio.to_thread(save_contour_artifacts, raw_contour, artifact_path)
+                except Exception as contour_error:
+                    logger.warning("Experimental contour artifact unavailable: %s", contour_error)
+                    melody.warnings.append("Experimental contour audio could not be saved; notation results are unchanged.")
             if raw_detector_notes:
                 await asyncio.to_thread(
                     render_melody_diagnostic,

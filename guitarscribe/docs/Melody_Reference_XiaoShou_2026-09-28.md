@@ -31,7 +31,17 @@
 
 ### 人工試聽 checkpoint（現在需要）
 
-#### B 可接受、C 明顯不行：保留播放音高，延長驗證（目前 checkpoint）
+#### 2026-09-30：20 秒大致準確，接入獨立實驗音軌（目前 checkpoint）
+
+- 使用者確認 `contour-playback-26-46-v1/melody-contour.wav`「大致上是準的」。將原曲 26–46 秒保存為局部聽感回歸對照；不是逐音標註，也不等於整曲、器樂主旋律、MIDI 或 Tab 驗收。
+- pYIN 現在同時回傳獨立 `MelodyContour` 與既有記譜音符，pipeline 在音符量化／交叉檢查／指板處理前保留輪廓。新分析保存 `melody-contour.json`，含音訊來源 SHA-256；成功渲染後才發布 `melody-contour.wav`。不由舊音符反推假輪廓，全無聲輪廓不宣告可播放。
+- 分離音軌可能為 44.1 kHz；pYIN 載入固定為試聽採用的 22.05 kHz 單聲道，維持 hop 512、frame 2048、resolution 0.5、thresholds 32、98–1047 Hz 範圍。這會影響新分析中的 pYIN 取樣時間設定，既有 job 不重寫。整曲分離上下文仍與短片段不同，不能保證整首複製相同辨識品質。
+- 長音軌渲染每次最多寫入 4096 samples，保留逐幀頻率、原曲絕對時間、連續相位與有聲區段邊界淡入淡出；不按音符重啟、不取整數音高、不補無聲段。失敗的暫存 WAV 不會出現在 job artifacts，診斷輸出失敗也不使分析失敗。
+- 介面 `Compare audio → Contour melody (Experimental)` 使用原本的音訊播放器，可與 Original／Vocal stem 在同一時間切換。無保存輪廓的舊 job 按鈕停用；提示需要新的 vocal-isolated pYIN 分析。此音軌不隨 key/capo 改變，尚未接入 `Play score` 混音、MIDI 或 Tab。
+- 下次人工測試：重新整理介面，用《小手拉大手》建立**新分析**，選 Vocal melody 並開啟 Vocal isolation。完成後在 Compare audio 選新音軌，先核對原曲 0:26–0:46，再聽副歌一小段；與 Vocal stem 切換，回報實際歌曲秒數。若按鈕停用，先看是否分離／pYIN 失敗而 fallback，不要求反覆盲目重跑。
+- 驗證：pipeline/API/MIDI/輪廓回歸組 72 項通過；補充 jobs/輪廓組 38 項通過；取樣率調整後 pYIN/jobs/pipeline 19 項通過（各組有重疊，不加總為獨立案例）。TypeScript 檢查及 2 項瀏覽器工作區測試通過。確認無進行中 job 後已重新建置、啟動後台，`/health` 回報 OK，執行中的 pYIN 取樣率確認為 22050；前端使用現有 source bind mount，重新整理即可。整曲人耳聽驗仍待使用者執行。
+
+#### B 可接受、C 明顯不行：保留播放音高，延長驗證（20 秒已取得回饋）
 
 - 使用者回報 `B-frame-f0-connected.wav` 聽起來 OK，而 `C-note-pitches-connected.wav` 明顯不行。B/C 的發聲方式與有聲遮罩一致，支持優先保留逐幀音高，暫停把此片段的離散音符當成播放來源。這是 38–44 秒的局部聽感回饋，不是整曲或逐音 ground truth 驗收。
 - 新增獨立、不可變的 `MelodyContour` sidecar：保存小數 Hz／null 休止、原始 voiced probability、絕對來源時間、hop、來源檔案雜湊及版本。與記譜用 `MelodyNote` 分開，避免為產生譜面而先改寫播放音高。

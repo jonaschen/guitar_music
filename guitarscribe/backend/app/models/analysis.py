@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional
 from enum import Enum
+from .melody_contour import MelodyContour
 
 class MelodyMode(str, Enum):
     VOCAL = "vocal"
@@ -98,6 +99,8 @@ class ChordVoicing(BaseModel):
     tags: list[str] = Field(default_factory=list)
 
 class MelodyAnalysis(BaseModel):
+    # Separate evidence/playback representation, not part of notation payloads.
+    contour: Optional[MelodyContour] = Field(default=None, exclude=True)
     notes: list[MelodyNote] = Field(default_factory=list)
     mode: MelodyMode = MelodyMode.VOCAL
     confidence: float = 0.0

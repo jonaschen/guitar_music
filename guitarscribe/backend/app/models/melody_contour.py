@@ -16,6 +16,7 @@ class MelodyContour(BaseModel):
     playback_kind: Literal["frame_hold_continuous_phase"] = "frame_hold_continuous_phase"
     status: Literal["experimental"] = "experimental"
     source_artifact_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    source_artifact_kind: Literal["saved_frames", "audio"] = "saved_frames"
     source_start: float = Field(ge=0)
     source_end: float = Field(gt=0)
     hop_seconds: float = Field(gt=0)

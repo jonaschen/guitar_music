@@ -24,6 +24,7 @@ test("chord chart merges repeated regions reversibly and offers the reference gr
   } }));
   await page.route("**/rhythm-patterns?*", (route) => route.fulfill({ json: [{ ...score.rhythm, pattern_id: "metered_4_4_8th", label: "4/4 Strong-weak-secondary-weak" }] }));
   await page.goto("/?job=repeated-job");
+  await expect(page.getByRole("button", { name: "Contour melody (Experimental)", exact: true })).toBeDisabled();
   const symbols = page.locator(".chord-sheet .chord-block:not(.chord-gap) .chord-symbol");
   await expect(symbols).toHaveText(["G", "Am"]);
   await expect(page.getByText("延續 · 3 個分析區段")).toBeVisible();
@@ -209,7 +210,8 @@ test("shows internal and whole-bar unassigned chord gaps without extending chord
 
 test("renders an analyzed score workspace", async ({ page }) => {
   let musicXmlRequests = 0;
-  await page.route("**/api/v1/jobs/demo-job", (route) => route.fulfill({ json: { id: "demo-job", status: "completed", progress: 100, message: "Analysis complete", source_type: "youtube", melody_mode: "vocal", chord_complexity: "standard", created_at: "2026-01-01T00:00:00Z", updated_at: "2026-01-01T00:00:00Z", error: null, artifacts: ["source", "vocal-stem", "raw-melody", "final-melody"], score } }));
+  await page.route("**/api/v1/jobs/demo-job", (route) => route.fulfill({ json: { id: "demo-job", status: "completed", progress: 100, message: "Analysis complete", source_type: "youtube", melody_mode: "vocal", chord_complexity: "standard", created_at: "2026-01-01T00:00:00Z", updated_at: "2026-01-01T00:00:00Z", error: null, artifacts: ["source", "vocal-stem", "raw-melody", "final-melody", "melody-contour"], score } }));
+  await page.route("**/api/v1/jobs/demo-job/artifacts/melody-contour", (route) => route.fulfill({ contentType: "audio/wav", body: "not-a-real-contour" }));
   await page.route("**/api/v1/jobs/demo-job/artifacts/vocal-stem", (route) => route.fulfill({ contentType: "audio/wav", body: "not-a-real-vocal-stem" }));
   await page.route("**/api/v1/jobs/demo-job/artifacts/raw-melody", (route) => route.fulfill({ contentType: "audio/wav", body: "not-a-real-raw-melody" }));
   await page.route("**/api/v1/jobs/demo-job/artifacts/final-melody", (route) => route.fulfill({ contentType: "audio/wav", body: "not-a-real-final-melody" }));
@@ -234,6 +236,9 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await page.goto("/?job=demo-job");
 
   await expect(page.getByRole("heading", { name: "Browser test song" })).toBeVisible();
+  await page.getByRole("button", { name: "Contour melody (Experimental)", exact: true }).click();
+  await expect(page.locator("audio")).toHaveAttribute("src", /artifacts\/melody-contour$/);
+  await expect(page.getByText(/Experimental source-pitch playback, separate from score notes/)).toBeVisible();
   await expect(page.getByRole("button", { name: "Vocal stem" })).toBeEnabled();
   await page.getByRole("button", { name: "Vocal stem" }).click();
   await expect(page.getByRole("button", { name: "Vocal stem" })).toHaveClass(/diagnostic-track-active/);
