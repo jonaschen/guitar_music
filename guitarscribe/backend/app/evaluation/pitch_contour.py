@@ -8,12 +8,15 @@ import soundfile as sf
 
 def render_pitch_contour(frequencies: list[float | None], hop_seconds: float,
                          source_offset: float, start: float, end: float,
-                         output: Path, sample_rate: int = 16000) -> None:
+                         output: Path, sample_rate: int = 16000, *,
+                         interpolate_frames: bool = True) -> None:
     """Preserve frame-level pitch, including bends, without inventing gap pitches.
 
     Frames denote left boundaries. Only interpolate to an adjacent voiced
     frame; an unvoiced frame is silence. A short fade bounds each voiced run.
     This is an F0 diagnostic, not a score or an accuracy claim.
+    Disable interpolation for controlled step-pitch auditions; phase and
+    amplitude remain continuous across adjacent voiced frames either way.
     """
     if not all(np.isfinite(v) for v in (hop_seconds, source_offset, start, end)) or hop_seconds <= 0 or start < 0 or end <= start or sample_rate <= 0:
         raise ValueError("Invalid contour timing")
@@ -30,7 +33,7 @@ def render_pitch_contour(frequencies: list[float | None], hop_seconds: float,
         voiced = valid & np.isfinite(values[safe])
         hz[voiced] = values[safe[voiced]]
         following = np.minimum(safe + 1, len(values) - 1)
-        interpolate = voiced & (safe + 1 < len(values)) & np.isfinite(values[following])
+        interpolate = voiced & (safe + 1 < len(values)) & np.isfinite(values[following]) & interpolate_frames
         fraction = np.clip(positions - indices, 0, 1)
         hz[interpolate] += fraction[interpolate] * (values[following[interpolate]] - values[safe[interpolate]])
     else:
