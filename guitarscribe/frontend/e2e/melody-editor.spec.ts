@@ -1,4 +1,6 @@
 import { expect, test, type Page, type Route } from "@playwright/test";
+import { notationBars, notationClock } from "../src/melodyNotation";
+import type { SongScore } from "../src/types";
 
 const score = {
   schema_version: "1.0", song: { title: "Editor test", source_type: "local", duration_seconds: 8 },
@@ -18,6 +20,7 @@ async function setup(page: Page, empty = false) {
   await page.route("**/rhythm-patterns?*", (route) => route.fulfill({ json: [] }));
   await page.goto("/?job=editor");
   await page.getByText("旋律人工編輯 · Melody editor", { exact: true }).click();
+  await page.getByText("進階：秒數、音高與音符清單", { exact: true }).click();
 }
 
 function answer(route: Route) {
@@ -30,7 +33,7 @@ function answer(route: Route) {
   const name: Record<number, string> = { 60: "C4", 62: "D4", 64: "E4", 65: "F4", 67: "G4" };
   const note = { id: body.operation === "add" ? "new-note" : body.note_id,
     midi: body.midi, note: name[body.midi], start: body.start, end: body.end,
-    confidence: 0.4, origin: "user", edited: true, string: 1, fret: 0 };
+    confidence: 0.4, origin: "user", edited: true, string: body.string ?? 1, fret: body.fret ?? 0 };
   result.melody = body.operation === "add" ? [...result.melody, note] : result.melody.map((n: any) => n.id === note.id ? note : n);
   return { score: result, selected_note_id: note.id };
 }
@@ -73,6 +76,7 @@ test("edit pitch and duration, audition, undo, save and reload without a selecte
   await expect(page.getByRole("button", { name: "E4 · 0.00–0.75s · Edited", exact: true })).toBeVisible();
   await page.reload();
   await page.getByText("旋律人工編輯 · Melody editor", { exact: true }).click();
+  await page.getByText("進階：秒數、音高與音符清單", { exact: true }).click();
   await expect(page.getByLabel("Melody revision ID")).toHaveValue("saved-edit");
   await page.getByRole("button", { name: "Load melody revision", exact: true }).click();
   await expect(page.getByRole("button", { name: "E4 · 0.00–0.75s · Edited", exact: true })).toBeVisible();
@@ -119,4 +123,115 @@ test("late edit response cannot overwrite Undo", async ({ page }) => {
   await held!.fulfill({ json: answer(held!) });
   await expect(page.getByText(/本次較舊的回應未套用/)).toBeVisible();
   await expect(page.getByRole("button", { name: "C4 · 0.00–0.50s", exact: true })).toBeVisible();
+});
+
+test("notation clock preserves rubato, pickup and compound meter without mutating notes", () => {
+  const fixture = { ...score, beats: [.25, .75, 1.5, 2, 2.5].map((time, i) => ({ time, beat: i % 4 + 1, measure: Math.floor(i / 4) + 1, confidence: 1 })) } as SongScore;
+  const before = JSON.stringify(fixture);
+  const clock = notationClock(fixture);
+  expect(clock.endAfter(.75, 1)).toBe(1.5);
+  expect(clock.endAfter(.5, 1)).toBe(1.125);
+  for (const time of [0, .5, 1.7, 3]) expect(clock.timeAtQuarter(clock.quarterAt(time))).toBeCloseTo(time);
+  expect(notationBars(fixture)[0]).toEqual({ number: 0, start: 0, end: .25 });
+  expect(JSON.stringify(fixture)).toBe(before);
+  const compound = { ...fixture, analysis: { ...fixture.analysis, time_signature: "6/8" } };
+  expect(notationClock(compound).endAfter(.25, .5)).toBe(.75);
+  expect(notationClock(compound).endAfter(.25, 1)).toBe(1.5);
+  expect(notationBars({ ...fixture, beats: [] })[0]).toEqual({ number: 1, start: 0, end: 2 });
+});
+
+test("tab workflow pauses in place, changes fret and duration, auditions and undoes", async ({ page }) => {
+  let request: any;
+  await page.route("**/scores/melody/edit", (route) => { request = route.request().postDataJSON(); return route.fulfill({ json: answer(route) }); });
+  await setup(page);
+  await page.getByText("進階：秒數、音高與音符清單", { exact: true }).click();
+  await page.getByRole("button", { name: "重播所選小節", exact: true }).click();
+  const position = () => page.getByLabel("Tab transport position").innerText().then((s) => Number(s.match(/位置 ([\d.]+)s/)![1]));
+  await expect.poll(position).toBeGreaterThan(.1);
+  await page.getByRole("button", { name: "暫停，保留位置", exact: true }).click();
+  const paused = await position();
+  await page.getByRole("button", { name: "Tab n1 C4 2弦1格", exact: true }).click();
+  expect(await position()).toBeCloseTo(paused, 1);
+  await page.getByLabel("Tab fret", { exact: true }).fill("3");
+  await page.getByLabel("Tab note length").selectOption("0.5");
+  await page.getByRole("button", { name: "Apply note", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Tab n1 D4 2弦3格", exact: true })).toBeVisible();
+  expect(request).toMatchObject({ midi: 62, string: 2, fret: 3, start: 0, end: .25 });
+  expect(await position()).toBeCloseTo(paused, 1);
+  await page.getByRole("button", { name: "從暫停位置續播", exact: true }).click();
+  await expect.poll(position).toBeGreaterThan(paused + .08);
+  await page.getByRole("button", { name: "Undo melody edit", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Tab n1 C4 2弦1格", exact: true })).toBeVisible();
+  await expect(page.getByLabel("Melody note end")).not.toBeVisible();
+});
+
+test("tab can insert on an empty string and stay inside mobile viewport", async ({ page }) => {
+  let request: any;
+  await page.route("**/scores/melody/edit", (route) => { request = route.request().postDataJSON(); return route.fulfill({ json: answer(route) }); });
+  await setup(page, true);
+  await page.getByText("進階：秒數、音高與音符清單", { exact: true }).click();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole("button", { name: "Bar 1 第 1 弦新增音符", exact: true }).click({ position: { x: 70, y: 12 } });
+  await page.getByLabel("Tab fret", { exact: true }).fill("3");
+  await page.getByRole("button", { name: "Add note", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Tab new-note G4 1弦3格", exact: true })).toBeVisible();
+  expect(request).toMatchObject({ midi: 67, string: 1, fret: 3, operation: "add" });
+  expect(request.end - request.start).toBeCloseTo(.5);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+});
+
+test("range loop restarts, pause cancels it, and cross-bar notes remain one editable event", async ({ page }) => {
+  await page.route("**/api/v1/jobs/editor", (route) => route.fulfill({ json: {
+    id: "editor", status: "completed", progress: 100, artifacts: [], score: { ...score, song: { ...score.song, duration_seconds: 1.6 },
+      beats: Array.from({ length: 8 }, (_, i) => ({ time: i * .2, beat: i % 4 + 1, measure: Math.floor(i / 4) + 1, confidence: 1 })),
+      melody: [{ ...score.melody[0], start: .4, end: 1.2 }] },
+  } }));
+  await page.route("**/rhythm-patterns?*", (route) => route.fulfill({ json: [] }));
+  await page.goto("/?job=editor");
+  await page.getByText("旋律人工編輯 · Melody editor", { exact: true }).click();
+  await expect(page.getByRole("button", { name: "Tab n1 C4 2弦1格", exact: true })).toHaveCount(2);
+  await page.getByRole("button", { name: "Tab n1 C4 2弦1格", exact: true }).last().click();
+  await expect(page.getByLabel("Tab fret", { exact: true })).toHaveValue("1");
+  await page.getByLabel("Tab bar count").selectOption("1");
+  await page.getByLabel("Loop edited bars").check();
+  await page.getByRole("button", { name: "重播所選小節", exact: true }).click();
+  const position = () => page.getByLabel("Tab transport position").innerText().then((s) => Number(s.match(/位置 ([\d.]+)s/)![1]));
+  await expect.poll(position, { intervals: [20] }).toBeGreaterThan(.5);
+  await expect.poll(position, { intervals: [20] }).toBeLessThan(.3);
+  await page.getByRole("button", { name: "暫停，保留位置", exact: true }).click();
+  const paused = await position();
+  await page.waitForTimeout(950);
+  expect(await position()).toBeCloseTo(paused, 1);
+});
+
+test("source segment plays through media onPlay and stops at its selected bar boundary", async ({ page }) => {
+  const wav = Buffer.alloc(44 + 8000 * 2 * 2);
+  wav.write("RIFF", 0); wav.writeUInt32LE(wav.length - 8, 4); wav.write("WAVEfmt ", 8);
+  wav.writeUInt32LE(16, 16); wav.writeUInt16LE(1, 20); wav.writeUInt16LE(1, 22);
+  wav.writeUInt32LE(8000, 24); wav.writeUInt32LE(16000, 28); wav.writeUInt16LE(2, 32); wav.writeUInt16LE(16, 34);
+  wav.write("data", 36); wav.writeUInt32LE(wav.length - 44, 40);
+  await page.route("**/api/v1/jobs/editor/audio", (route) => {
+    const range = route.request().headers().range?.match(/bytes=(\d+)-(\d*)/);
+    if (!range) return route.fulfill({ body: wav, contentType: "audio/wav", headers: { "Accept-Ranges": "bytes" } });
+    const start = Number(range[1]), end = range[2] ? Number(range[2]) : wav.length - 1;
+    return route.fulfill({ status: 206, body: wav.subarray(start, end + 1), contentType: "audio/wav",
+      headers: { "Accept-Ranges": "bytes", "Content-Range": `bytes ${start}-${end}/${wav.length}` } });
+  });
+  await page.route("**/api/v1/jobs/editor", (route) => route.fulfill({ json: {
+    id: "editor", status: "completed", progress: 100, artifacts: [], score: { ...score, song: { ...score.song, duration_seconds: 2 },
+      beats: Array.from({ length: 10 }, (_, i) => ({ time: i * .2, beat: i % 4 + 1, measure: Math.floor(i / 4) + 1, confidence: 1 })) },
+  } }));
+  await page.route("**/rhythm-patterns?*", (route) => route.fulfill({ json: [] }));
+  await page.goto("/?job=editor");
+  await page.getByText("旋律人工編輯 · Melody editor", { exact: true }).click();
+  await page.getByLabel("Tab bar count").selectOption("1");
+  await page.getByRole("button", { name: "對照來源片段", exact: true }).click();
+  const audio = page.locator("audio").first();
+  await expect.poll(() => audio.evaluate((a: HTMLAudioElement) => a.currentTime)).toBeGreaterThan(.1);
+  await expect.poll(() => audio.evaluate((a: HTMLAudioElement) => a.paused)).toBe(true);
+  expect(await audio.evaluate((a: HTMLAudioElement) => a.currentTime)).toBeCloseTo(.8, 1);
+  await page.getByRole("button", { name: "對照來源片段", exact: true }).click();
+  await expect.poll(() => audio.evaluate((a: HTMLAudioElement) => a.paused)).toBe(false);
+  await page.getByRole("button", { name: "暫停，保留位置", exact: true }).click();
+  expect(await audio.evaluate((a: HTMLAudioElement) => a.paused)).toBe(true);
 });

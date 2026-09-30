@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { SongScore } from "./types";
+import { EditableTab } from "./EditableTab";
+import { notationBars, notationClock, noteLengths, lengthLabel } from "./melodyNotation";
 
 const pitches = Array.from({ length: 128 }, (_, midi) => ({ midi,
   label: `${["C", "C♯", "D", "E♭", "E", "F", "F♯", "G", "A♭", "A", "B♭", "B"][midi % 12]}${Math.floor(midi / 12) - 1}` }));
@@ -9,7 +11,8 @@ type Props = {
   onCommit: (base: SongScore, next: SongScore) => boolean;
   onSeek: (time: number) => void;
   onPitch: (midi: number) => void;
-  onAudition: (start: number, end: number) => void;
+  onAudition: (start: number, end: number, loop?: boolean) => void;
+  onOriginal: (start: number, end: number) => void;
   onStop: () => void;
   onUndo: () => void; onRedo: () => void; canUndo: boolean; canRedo: boolean;
   revisionId: string; onRevisionId: (id: string) => void;
@@ -25,17 +28,46 @@ export function MelodyEditor(props: Props) {
   const [end, setEnd] = useState("0.5");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [tabString, setTabString] = useState(2);
+  const [tabFret, setTabFret] = useState(1);
+  const [explicitTab, setExplicitTab] = useState(false);
+  const [barCount, setBarCount] = useState(2);
+  const [loop, setLoop] = useState(false);
   const inFlight = useRef(false);
   const selected = score.melody.find((n) => n.id === selectedId);
   const left = Math.max(0, Math.min(windowStart, Math.max(0, score.song.duration_seconds - 0.01)));
   const right = Math.min(score.song.duration_seconds, left + 8);
   const visible = score.melody.filter((n) => n.end > left && n.start < right).sort((a, b) => a.start - b.start);
+  const bars = notationBars(score);
+  const barIndex = Math.max(0, bars.findIndex((bar) => left >= bar.start && left < bar.end));
+  const shownBars = bars.slice(barIndex, barIndex + barCount);
+  const rangeStart = shownBars[0]?.start ?? left;
+  const rangeEnd = shownBars.at(-1)?.end ?? right;
+  const clock = notationClock(score);
   useEffect(() => {
-    if (selected) { setMidi(selected.midi); setStart(String(selected.start)); setEnd(String(selected.end)); }
+    if (selected) { setMidi(selected.midi); setStart(String(selected.start)); setEnd(String(selected.end)); setTabString(selected.string ?? 1); setTabFret(selected.fret ?? 0); setExplicitTab(false); }
     else setSelectedId(null);
   }, [selected]);
 
+  function selectNote(id: string) {
+    props.onStop(); setSelectedId(id); setMessage("");
+    // Selecting a note does not move the paused transport or restart playback.
+  }
+
+  function setPosition(string: number, fret: number) {
+    props.onStop(); setTabString(string); setTabFret(fret); setExplicitTab(true);
+    setMidi(score.guitar.tuning[6 - string] + score.analysis.capo + fret);
+  }
+
+  function insertOnTab(time: number, string: number) {
+    props.onStop(); setSelectedId(null); props.onSeek(time);
+    setStart(String(time)); setEnd(String(Math.min(score.song.duration_seconds, clock.endAfter(time, 1))));
+    setPosition(string, 0);
+    setMessage("已選新增位置；設定品格與音長後按 Add note。空白不自動視為休止。");
+  }
+
   function newNote() {
+    setExplicitTab(false);
     setSelectedId(null);
     setStart(String(props.playhead));
     const next = score.melody.filter((n) => n.start > props.playhead).sort((a, b) => a.start - b.start)[0];
@@ -45,6 +77,7 @@ export function MelodyEditor(props: Props) {
 
   async function edit(operation: "add" | "update" | "delete" | "split" | "merge_next") {
     if (inFlight.current) return;
+    props.onStop();
     if (["add", "update"].includes(operation) && (!start.trim() || !end.trim() || !Number.isFinite(Number(start)) || !Number.isFinite(Number(end)))) {
       setMessage("請填入有效起點與終點。"); return;
     }
@@ -55,6 +88,7 @@ export function MelodyEditor(props: Props) {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ score: base, operation, note_id: selected?.id ?? null,
           ...(operation === "add" || operation === "update" ? { midi, start: Number(start), end: Number(end) } : {}),
+          ...(explicitTab && (operation === "add" || operation === "update") ? { string: tabString, fret: tabFret } : {}),
           ...(operation === "split" ? { split_time: props.playhead } : {}), source_job_id: props.jobId ?? null }),
       });
       const body = await response.json();
@@ -63,14 +97,48 @@ export function MelodyEditor(props: Props) {
         setMessage("樂譜已在其他操作中改變，本次較舊的回應未套用。請重新操作。"); return;
       }
       setSelectedId(body.selected_note_id);
-      setMessage("已修改工作樂譜，尚未保存。原曲與 Contour 不變；用「試聽修訂片段」聽修改結果。");
+      setMessage("已修改工作樂譜，尚未保存。原曲與 Contour 不變；用「重播所選小節」聽修改結果。");
     } catch (error) { setMessage(error instanceof Error ? error.message : "Edit failed"); }
     finally { inFlight.current = false; setBusy(false); }
   }
 
   return <details className="melody-editor workspace-disclosure">
     <summary>旋律人工編輯 · Melody editor</summary>
-    <p>編輯的是音符樂譜，不是人聲輪廓。空白可能是休止或漏抓；可手動補入。先保存版本再離開頁面。</p>
+    <p>聽一段 → 暫停 → 點六線譜數字修改 → 重播所選小節。上方為第 1 弦，品格相對 Capo {score.analysis.capo}；橫線尾巴表示持續時間，⌒ 表示跨小節延續。</p>
+    <div className="editor-actions">
+      <label>起始小節<select aria-label="Tab start bar" value={barIndex} onChange={(e) => { props.onStop(); setWindowStart(bars[Number(e.target.value)].start); }}>{bars.map((bar, i) => <option key={bar.start} value={i}>Bar {bar.number}</option>)}</select></label>
+      <label>段落長度<select aria-label="Tab bar count" value={barCount} onChange={(e) => { props.onStop(); setBarCount(Number(e.target.value)); }}>{[1, 2, 4, 8].map((n) => <option key={n} value={n}>{n} 小節</option>)}</select></label>
+      <button type="button" onClick={() => setWindowStart(props.playhead)}>顯示暫停位置</button>
+      <label><input type="checkbox" aria-label="Loop edited bars" checked={loop} onChange={(e) => { props.onStop(); setLoop(e.target.checked); }} />循環修訂段落</label>
+    </div>
+    <div className="editor-actions">
+      <button type="button" onClick={() => props.onAudition(rangeStart, rangeEnd, loop)}>重播所選小節</button>
+      <button type="button" onClick={props.onStop}>暫停，保留位置</button>
+      <button type="button" onClick={() => props.onAudition(props.playhead >= rangeStart && props.playhead < rangeEnd ? props.playhead : rangeStart, rangeEnd)}>從暫停位置續播</button>
+      <button type="button" onClick={() => props.onOriginal(rangeStart, rangeEnd)}>對照來源片段</button>
+    </div>
+    <p aria-label="Tab transport position">位置 {props.playhead.toFixed(2)}s · 所選 {rangeStart.toFixed(2)}–{rangeEnd.toFixed(2)}s。修訂播放只有旋律；來源使用上方選定的音軌。小節／音長依推定拍點顯示，未自動量化。</p>
+    <EditableTab score={score} bars={shownBars} selectedId={selectedId} playhead={props.playhead} onSelect={selectNote} onInsert={insertOnTab} />
+    <fieldset disabled={busy}>
+      <legend>{selected ? `譜上選音：${selected.note}` : "點譜上數字修改，或點空白弦線補音"}</legend>
+      <div className="melody-edit-fields">
+        <label>弦<select aria-label="Tab string" value={tabString} onChange={(e) => setPosition(Number(e.target.value), tabFret)}>{[1,2,3,4,5,6].map((n) => <option key={n} value={n}>第 {n} 弦</option>)}</select></label>
+        <label>品格<input aria-label="Tab fret" type="number" min="0" max={score.guitar.max_fret} step="1" value={tabFret} onChange={(e) => setPosition(tabString, Number(e.target.value))} /></label>
+        <label>音長<select aria-label="Tab note length" value="" onChange={(e) => { props.onStop(); setEnd(String(clock.endAfter(Number(start), Number(e.target.value)))); }}><option value="">保留目前音長</option>{noteLengths.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}</select></label>
+      </div>
+      <p>修改草稿：{pitches[midi]?.label ?? "超出音域"} · {lengthLabel(score, Number(start), Number(end))}（套用前譜面不變）</p>
+      <div className="editor-actions">
+        <button type="button" onClick={() => props.onPitch(midi)}>預聽音高</button>
+        <button type="button" onClick={() => void edit(selected ? "update" : "add")}>{selected ? "Apply note" : "Add note"}</button>
+        <button type="button" disabled={!selected} onClick={() => void edit("delete")}>Delete note</button>
+      </div>
+    </fieldset>
+    <div className="editor-actions">
+      <button type="button" disabled={!props.canUndo} onClick={() => { props.onStop(); props.onUndo(); }}>Undo melody edit</button>
+      <button type="button" disabled={!props.canRedo} onClick={() => { props.onStop(); props.onRedo(); }}>Redo melody edit</button>
+    </div>
+    <p role="status">{message}</p>
+    <details><summary>進階：秒數、音高與音符清單</summary>
     <div className="editor-actions">
       <label>片段起點（秒）<input aria-label="Melody window start" type="number" min="0" max={score.song.duration_seconds} step="0.1" value={windowStart} onChange={(e) => setWindowStart(Number(e.target.value))} /></label>
       <button type="button" onClick={() => setWindowStart(Math.max(0, left - 8))}>前 8 秒</button>
@@ -89,33 +157,28 @@ export function MelodyEditor(props: Props) {
     <fieldset disabled={busy}>
       <legend>{selected ? `編輯 ${selected.note}` : "新增音符"}</legend>
       <div className="melody-edit-fields">
-        <label>音高<select aria-label="Melody pitch" value={midi} onChange={(e) => setMidi(Number(e.target.value))}>{pitches.map((p) => <option key={p.midi} value={p.midi}>{p.label} · {p.midi}</option>)}</select></label>
+        <label>音高<select aria-label="Melody pitch" value={midi} onChange={(e) => { setMidi(Number(e.target.value)); setExplicitTab(false); }}>{pitches.map((p) => <option key={p.midi} value={p.midi}>{p.label} · {p.midi}</option>)}</select></label>
         <label>起點（秒）<input aria-label="Melody note start" type="number" min="0" step="0.01" value={start} onChange={(e) => setStart(e.target.value)} /></label>
         <label>終點（秒）<input aria-label="Melody note end" type="number" min="0" step="0.01" value={end} onChange={(e) => setEnd(e.target.value)} /></label>
       </div>
       <p>長度：{Number.isFinite(Number(end) - Number(start)) ? (Number(end) - Number(start)).toFixed(3) : "—"} 秒{selected && (selected.string == null || selected.fret == null) ? " · 目前吉他設定無可用指型；音符仍保留，可修改音高／調弦／把位。" : ""}</p>
       <div className="editor-actions">
-        <button type="button" onClick={() => props.onPitch(midi)}>預聽音高</button>
         <button type="button" onClick={newNote}>New at playhead</button>
-        <button type="button" onClick={() => void edit(selected ? "update" : "add")}>{selected ? "Apply note" : "Add note"}</button>
-        <button type="button" disabled={!selected} onClick={() => void edit("delete")}>Delete note</button>
         <button type="button" disabled={!selected || props.playhead <= selected.start || props.playhead >= selected.end} onClick={() => void edit("split")}>Split at playhead</button>
         <button type="button" disabled={!selected} onClick={() => void edit("merge_next")}>Merge next same pitch</button>
       </div>
     </fieldset>
     <div className="editor-actions">
-      <button type="button" disabled={!props.canUndo} onClick={props.onUndo}>Undo melody edit</button>
-      <button type="button" disabled={!props.canRedo} onClick={props.onRedo}>Redo melody edit</button>
       <button type="button" onClick={() => props.onAudition(left, right)}>試聽修訂片段</button>
       <button type="button" onClick={props.onStop}>停止修訂試聽</button>
     </div>
     <p>片段試聽只播放目前工作樂譜的旋律、原速、不加吉他。Undo／Redo 共用整份樂譜的歷史。</p>
+    </details>
     <div className="editor-actions">
       <label>版本 ID<input aria-label="Melody revision ID" value={props.revisionId} onChange={(e) => props.onRevisionId(e.target.value)} /></label>
       <button type="button" disabled={busy || props.saving} onClick={props.onSave}>Save new revision</button>
       <button type="button" disabled={busy || props.saving || !props.revisionId.trim()} onClick={props.onLoad}>Load melody revision</button>
     </div>
     <p>{props.saveStatus}</p>
-    <p role="status">{message}</p>
   </details>;
 }

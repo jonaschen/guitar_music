@@ -208,6 +208,7 @@ export function App() {
   const [rhythmOptions, setRhythmOptions] = useState<SongScore["rhythm"][]>([]);
   const [analysisJob, setAnalysisJob] = useState<AnalysisJob | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const sourceSegmentRef = useRef(false);
   const pendingAudioTrackSeekRef = useRef<number | null>(null);
   const metronomeContextRef = useRef<AudioContext | null>(null);
   const synthContextRef = useRef<AudioContext | null>(null);
@@ -891,6 +892,8 @@ export function App() {
   }
 
   function stopSynth(reset = false) {
+    if (sourceSegmentRef.current) audioRef.current?.pause();
+    sourceSegmentRef.current = false;
     synthGenerationRef.current++;
     setSynthSnapshot(null);
     setIsSynthPreparing(false);
@@ -919,7 +922,7 @@ export function App() {
     synthSourcesRef.current.push(source);
   }
 
-  async function auditionEditedNotes(notes: Array<{ midi: number; start: number; end: number }>) {
+  async function auditionEditedNotes(notes: Array<{ midi: number; start: number; end: number }>, range?: { start: number; end: number; loop?: boolean }) {
     referenceStopRef.current(); audioRef.current?.pause(); stopSynth(false);
     if (notes.length > 256) { setError("此片段音符過密，請先刪除誤音或縮短片段。"); return; }
     const generation = synthGenerationRef.current;
@@ -944,7 +947,43 @@ export function App() {
         source.connect(gain).connect(context.destination);
         source.start(start); source.stop(end + 0.01); trackSynthSource(source);
       }
+      if (range) {
+        setIsSynthPlaying(true); setPlaybackTime(range.start);
+        const update = () => {
+          if (generation !== synthGenerationRef.current) return;
+          const time = range.start + Math.max(0, context.currentTime - origin);
+          if (time >= range.end) {
+            setPlaybackTime(range.end);
+            if (range.loop) void auditionEditedNotes(notes, range);
+            else stopSynth(false);
+            return;
+          }
+          setPlaybackTime(time);
+          synthAnimationRef.current = window.requestAnimationFrame(update);
+        };
+        synthAnimationRef.current = window.requestAnimationFrame(update);
+      }
     } catch (error) { setError(error instanceof Error ? error.message : "Audio preview unavailable"); }
+  }
+
+  async function auditionSourceSegment(start: number, end: number) {
+    referenceStopRef.current(); stopSynth(false);
+    setLoopRange(null); setLoopStart(null); setLoopEnd(null);
+    const audio = audioRef.current;
+    if (!audio) { setError("沒有可用來源音訊。"); return; }
+    audio.pause(); audio.currentTime = start; setPlaybackTime(start);
+    const generation = synthGenerationRef.current;
+    sourceSegmentRef.current = true;
+    try {
+      await audio.play();
+      if (generation !== synthGenerationRef.current) return;
+      const update = () => {
+        if (generation !== synthGenerationRef.current) return;
+        if (audio.currentTime >= end || audio.ended) { audio.pause(); audio.currentTime = end; setPlaybackTime(end); stopSynth(false); return; }
+        synthAnimationRef.current = window.requestAnimationFrame(update);
+      };
+      synthAnimationRef.current = window.requestAnimationFrame(update);
+    } catch (error) { if (generation === synthGenerationRef.current) { stopSynth(false); setError(error instanceof Error ? error.message : "Source playback unavailable"); } }
   }
 
   function scheduleGuitarPick(context: AudioContext, startAt: number, peak: number) {
@@ -1676,7 +1715,7 @@ export function App() {
                         }
                       }}
                       onTimeUpdate={(event) => handlePlaybackTime(event.currentTarget.currentTime)}
-                      onPlay={() => { referenceStopRef.current(); stopSynth(false); setIsPlaying(true); }}
+                      onPlay={() => { referenceStopRef.current(); if (!sourceSegmentRef.current) stopSynth(false); setIsPlaying(true); }}
                       onPause={() => setIsPlaying(false)}
                       onEnded={() => setIsPlaying(false)}
                     />
@@ -1803,8 +1842,9 @@ export function App() {
                 <MelodyEditor score={score} jobId={workingJobId} playhead={playbackTime} apiBase={API_BASE}
                   onCommit={(base, next) => { if (scoreRef.current !== base) return false; recordScoreChange(next); return true; }}
                   onSeek={seekTo} onPitch={(midi) => void auditionEditedNotes([{ midi, start: 0, end: 0.6 }])}
-                  onAudition={(start, end) => void auditionEditedNotes(score.melody.filter((note) => note.end > start && note.start < end).map((note) => ({ midi: note.midi, start: Math.max(0, note.start - start), end: Math.min(end, note.end) - start })))}
-                  onStop={() => stopSynth(false)} onUndo={undoScoreChange} onRedo={redoScoreChange}
+                  onAudition={(start, end, loop) => void auditionEditedNotes(score.melody.filter((note) => note.end > start && note.start < end).map((note) => ({ midi: note.midi, start: Math.max(0, note.start - start), end: Math.min(end, note.end) - start })), { start, end, loop })}
+                  onOriginal={(start, end) => void auditionSourceSegment(start, end)}
+                  onStop={() => { audioRef.current?.pause(); stopSynth(false); }} onUndo={undoScoreChange} onRedo={redoScoreChange}
                   canUndo={undoHistory.length > 0} canRedo={redoHistory.length > 0}
                   revisionId={revisionId} onRevisionId={setRevisionId} onSave={() => void saveRevision(true)} onLoad={() => void loadRevision()}
                   saving={isSavingRevision || isLoadingRevision} saveStatus={saveStatus} />

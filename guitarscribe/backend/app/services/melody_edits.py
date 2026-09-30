@@ -23,6 +23,8 @@ class MelodyEditRequest(BaseModel):
     end: float | None = Field(default=None, ge=0)
     split_time: float | None = Field(default=None, ge=0)
     source_job_id: str | None = Field(default=None, max_length=128)
+    string: int | None = Field(default=None, ge=1, le=6, strict=True)
+    fret: int | None = Field(default=None, ge=0, strict=True)
 
 
 class MelodyEditResponse(BaseModel):
@@ -95,6 +97,24 @@ def edit_melody(request: MelodyEditRequest) -> MelodyEditResponse:
     changed_ids = {n.id for n in changed}
     mapped_by_id = {n.id: n for n in mapped}
     result.melody = [mapped_by_id[n.id] if n.id in changed_ids else n for n in result.melody]
+    # Time-only edits and splits must not relocate a fingering the user chose.
+    if selected and selected.string is not None and selected.fret is not None:
+        if (1 <= selected.string <= 6 and 0 <= selected.fret <= result.guitar.max_fret
+                and result.guitar.tuning[6 - selected.string] + result.analysis.capo + selected.fret == selected.midi):
+            for note in result.melody:
+                if note.id in changed_ids and note.midi == selected.midi:
+                    note.string, note.fret = selected.string, selected.fret
+    if request.string is not None or request.fret is not None:
+        if request.operation not in {"add", "update"} or request.string is None or request.fret is None:
+            raise ValueError("Supply both string and fret for an add or update")
+        if request.fret > result.guitar.max_fret:
+            raise ValueError("Fret exceeds the configured maximum")
+        sounding = result.guitar.tuning[6 - request.string] + result.analysis.capo + request.fret
+        if sounding != request.midi:
+            raise ValueError("String and fret do not match the sounding pitch with this tuning and capo")
+        for note in result.melody:
+            if note.id in changed_ids:
+                note.string, note.fret = request.string, request.fret
     result.melody_edits.append(MelodyEditRecord(
         id=uuid4().hex, operation=request.operation, created_at=datetime.now(timezone.utc).isoformat(),
         source_job_id=request.source_job_id, transpose_semitones=result.key_context.transpose_semitones,

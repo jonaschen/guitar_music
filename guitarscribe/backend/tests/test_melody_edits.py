@@ -50,6 +50,30 @@ def test_edit_in_transposed_key_survives_return_to_source_key():
     assert TranspositionService().transpose_score(back, 2).melody[0].midi == 65
 
 
+def test_explicit_tab_position_preserved_and_logged_with_capo_and_tuning():
+    original = score()
+    original.guitar.tuning = [38, 45, 50, 55, 59, 64]
+    original.analysis.capo = 2
+    result = apply(original, "update", note_id="one", midi=64, start=0, end=.5,
+                   string=3, fret=7).score
+    assert (result.melody[0].string, result.melody[0].fret) == (3, 7)
+    assert result.melody_edits[-1].after[0] == result.melody[0]
+    assert original.melody[0].midi == 60
+    xml = export_musicxml(result)
+    assert "<string>3</string>" in xml and "<fret>7</fret>" in xml
+    timed = apply(result, "update", note_id="one", midi=64, start=0, end=.75).score
+    assert (timed.melody[0].string, timed.melody[0].fret) == (3, 7)
+    split = apply(timed, "split", note_id="one", split_time=.25).score
+    assert all((n.string, n.fret) == (3, 7) for n in split.melody if n.start < .75)
+
+
+@pytest.mark.parametrize("fields", [{"string": 2}, {"fret": 1}, {"string": 2, "fret": 2},
+                                      {"string": 6, "fret": 20}, {"string": 7, "fret": 0}])
+def test_invalid_explicit_tab_is_rejected(fields):
+    with pytest.raises(ValueError):
+        apply(score(), "update", note_id="one", midi=60, start=0, end=.5, **fields)
+
+
 def test_add_to_empty_score_delete_split_and_merge_preserve_history():
     empty = SongScore(song=SongInfo(duration_seconds=4))
     added = apply(empty, "add", midi=61, start=0.3, end=1.3).score
