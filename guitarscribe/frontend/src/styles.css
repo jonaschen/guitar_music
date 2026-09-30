@@ -14,6 +14,21 @@
   --danger: #ff8570;
 }
 
+.melody-editor { padding: 1rem; border: 1px solid var(--border); border-radius: 1rem; }
+.melody-editor p { font-size: 0.85rem; color: var(--text-muted); }
+.melody-edit-list { display: flex; flex-wrap: wrap; gap: 0.4rem; max-height: 12rem; overflow: auto; margin: 0.8rem 0; }
+.melody-edit-list button[aria-pressed="true"] { outline: 2px solid var(--accent); }
+.melody-edit-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 0.7rem; }
+.melody-edit-fields label, .melody-editor .editor-actions label { display: grid; gap: 0.25rem; }
+.melody-editor input, .melody-editor select { min-width: 0; max-width: 100%; width: 100%; }
+.melody-editor fieldset { min-width: 0; border: 1px solid var(--border); border-radius: 0.7rem; }
+.melody-editor .editor-actions { display: flex; flex-wrap: wrap; align-items: end; gap: 0.45rem; margin-top: 0.6rem; }
+.melody-editor .editor-actions label { flex: 1 1 10rem; min-width: 0; }
+.melody-editor button { padding: 0.45rem 0.65rem; border: 1px solid var(--border); border-radius: 0.6rem; background: rgba(255,255,255,0.06); color: inherit; cursor: pointer; }
+.melody-editor button:hover:not(:disabled), .melody-editor button[aria-pressed="true"] { background: rgba(241,143,59,0.16); border-color: var(--accent); }
+.melody-editor button:disabled { opacity: 0.4; cursor: default; }
+.melody-editor input, .melody-editor select { padding: 0.4rem; border: 1px solid var(--border); border-radius: 0.4rem; color: inherit; background: #202329; }
+
 * {
   box-sizing: border-box;
 }

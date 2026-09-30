@@ -35,15 +35,21 @@ def _rest(measure: Element, duration: int) -> None:
     SubElement(node, "type").text = _type(duration)
 
 
-def _tab_note(measure: Element, note: MelodyNote, duration: int) -> None:
+def _tab_note(measure: Element, note: MelodyNote, duration: int, *, tie_start: bool = False, tie_stop: bool = False) -> None:
     node = SubElement(measure, "note")
     _pitch(node, note.midi)
     SubElement(node, "duration").text = str(duration)
+    ties = (["stop"] if tie_stop else []) + (["start"] if tie_start else [])
+    for kind in ties:
+        SubElement(node, "tie", type=kind)
     SubElement(node, "type").text = _type(duration)
+    notations = SubElement(node, "notations") if ties or (note.string is not None and note.fret is not None) else None
     if note.string is not None and note.fret is not None:
-        technical = SubElement(SubElement(node, "notations"), "technical")
+        technical = SubElement(notations, "technical")
         SubElement(technical, "string").text = str(note.string)
         SubElement(technical, "fret").text = str(note.fret)
+    for kind in ties:
+        SubElement(notations, "tied", type=kind)
 
 
 def export_musicxml(score: SongScore) -> str:
@@ -57,14 +63,18 @@ def export_musicxml(score: SongScore) -> str:
     measure_seconds = 60 / bpm * beats * 4 / beat_type
     starts = {beat.measure: beat.time for beat in score.beats if beat.beat == 1}
     measures = sorted(starts.items(), key=lambda item: item[1]) or [(1, 0.0)]
+    if measures[0][1] > 0:
+        measures.insert(0, (measures[0][0] - 1, 0.0))
     last_content = max([score.song.duration_seconds, *(note.end for note in score.melody), *(chord.end for chord in score.chords)], default=measure_seconds)
     while measures[-1][1] + measure_seconds < last_content:
         measures.append((measures[-1][0] + 1, measures[-1][1] + measure_seconds))
     notes_by_measure: dict[int, list[MelodyNote]] = defaultdict(list)
     chords_by_measure: dict[int, list[str]] = defaultdict(list)
     for note in score.melody:
-        index = max(index for index, (_, start) in enumerate(measures) if start <= note.start)
-        notes_by_measure[index].append(note)
+        for index, (_, start) in enumerate(measures):
+            end = measures[index + 1][1] if index + 1 < len(measures) else start + measure_seconds
+            if note.start < end and note.end > start:
+                notes_by_measure[index].append(note)
     for chord in score.chords:
         index = max(index for index, (_, start) in enumerate(measures) if start <= chord.start)
         chords_by_measure[index].append(chord.symbol)
@@ -107,7 +117,8 @@ def export_musicxml(score: SongScore) -> str:
                 _rest(measure, _units(note_start - cursor, bpm))
             note_end = min(end, max(note.end, note_start))
             if note_end > note_start:
-                _tab_note(measure, note, _units(note_end - note_start, bpm))
+                _tab_note(measure, note, _units(note_end - note_start, bpm),
+                          tie_start=note.end > end, tie_stop=note.start < start)
             cursor = max(cursor, note_end)
         if cursor < end:
             _rest(measure, _units(end - cursor, bpm))

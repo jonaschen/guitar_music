@@ -73,6 +73,8 @@ export type SongScore = {
     end: number;
     midi: number;
     note: string;
+    source_midi?: number | null;
+    source_note?: string | null;
     confidence: number;
     string?: number | null;
     fret?: number | null;
@@ -80,6 +82,8 @@ export type SongScore = {
     edited: boolean;
   }>;
   guitar: { tuning: number[]; tuning_name: string; capo: number; max_capo: number; max_fret: number; handedness: string; difficulty: string; tab_preference: string; };
+  melody_edits?: Array<{ id: string; operation: string; created_at: string; source_job_id?: string | null;
+    intent: "unclassified"; transpose_semitones: number; before: SongScore["melody"]; after: SongScore["melody"] }>;
   rhythm: {
     accents?: number[];
     subdivision: number;

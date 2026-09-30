@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, Literal
 from .analysis import AccidentalPreference, BeatInfo, ChordEvent, MelodyNote, RhythmSuggestion
 from .lyrics import LyricsTrack
 
@@ -51,6 +51,17 @@ class Provenance(BaseModel):
     tempo_map_version: str = "legacy-beat-grid-v1"
     parameters: dict[str, str | int | float | bool] = Field(default_factory=dict)
 
+class MelodyEditRecord(BaseModel):
+    id: str
+    operation: str
+    created_at: str
+    source_job_id: str | None = None
+    intent: Literal["unclassified"] = "unclassified"
+    transpose_semitones: int = 0
+    before: list[MelodyNote] = Field(default_factory=list)
+    after: list[MelodyNote] = Field(default_factory=list)
+
+
 class SongScore(BaseModel):
     schema_version: str = "1.0"
     song: SongInfo = Field(default_factory=SongInfo)
@@ -59,6 +70,7 @@ class SongScore(BaseModel):
     beats: list[BeatInfo] = Field(default_factory=list)
     chords: list[ChordEvent] = Field(default_factory=list)
     melody: list[MelodyNote] = Field(default_factory=list)
+    melody_edits: list[MelodyEditRecord] = Field(default_factory=list)
     rhythm: RhythmSuggestion = Field(default_factory=RhythmSuggestion)
     guitar: GuitarSettings = Field(default_factory=GuitarSettings)
     provenance: Provenance = Field(default_factory=Provenance)

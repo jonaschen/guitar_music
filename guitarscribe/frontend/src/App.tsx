@@ -9,6 +9,7 @@ import { preparePluckedBuffers, createPluckedVoice } from "./pluckedTone";
 import { createMetronomeVoice } from "./metronomeVoice";
 import { mergeChordSpans, type ChordSpan } from "./chordSpans";
 import { measureLayout } from "./measureLayout";
+import { MelodyEditor } from "./MelodyEditor";
 
 const AlphaTabScore = lazy(() => import("./AlphaTabScore"));
 
@@ -158,13 +159,14 @@ async function postTranspose(
   return response.json();
 }
 
-async function postSaveRevision(score: SongScore, revisionId: string | null): Promise<{ revision_id: string }> {
+async function postSaveRevision(score: SongScore, revisionId: string | null, createNew = false): Promise<{ revision_id: string }> {
   const response = await fetch(`${API_BASE}/revisions`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       score,
       revision_id: revisionId,
+      create_new: createNew,
     }),
   });
 
@@ -200,6 +202,9 @@ export function App() {
   const [showRawChordSegments, setShowRawChordSegments] = useState(false);
   const [chordComplexity, setChordComplexity] = useState("standard");
   const [score, setScore] = useState<SongScore | null>(EMPTY_SCORE);
+  const scoreRef = useRef(score);
+  scoreRef.current = score;
+  const [workingJobId, setWorkingJobId] = useState<string | undefined>();
   const [rhythmOptions, setRhythmOptions] = useState<SongScore["rhythm"][]>([]);
   const [analysisJob, setAnalysisJob] = useState<AnalysisJob | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -266,6 +271,13 @@ export function App() {
     setRedoHistory([]);
   }
 
+  function restoreWorkingJob(id: string) {
+    setWorkingJobId(id);
+    const saved = window.localStorage.getItem(`guitarscribe.melodyRevision.${id}`) ?? "";
+    setRevisionId(saved);
+    setSaveStatus(saved ? `Saved draft ${saved} found. Use Load melody revision to open it; the original analysis is currently shown.` : "No saved revision yet.");
+  }
+
   function recordScoreChange(nextScore: SongScore) {
     if (score) setUndoHistory((history) => [...history, score].slice(-50));
     setRedoHistory([]);
@@ -304,6 +316,7 @@ export function App() {
         setError("");
         if (job.status === "completed" && job.score) {
           replaceScore(job.score);
+          restoreWorkingJob(job.id);
           setAudioUrl(`${API_BASE}/api/v1/jobs/${job.id}/audio`);
           setStatus("ready");
         } else if (job.status === "completed") {
@@ -362,6 +375,7 @@ export function App() {
         setError("");
         if (nextJob.status === "completed" && nextJob.score) {
           replaceScore(nextJob.score);
+          restoreWorkingJob(nextJob.id);
           setAudioUrl(`${API_BASE}/api/v1/jobs/${nextJob.id}/audio`);
           setRevisionId("");
           setSaveStatus("Analysis loaded. Save to create a revision.");
@@ -905,6 +919,34 @@ export function App() {
     synthSourcesRef.current.push(source);
   }
 
+  async function auditionEditedNotes(notes: Array<{ midi: number; start: number; end: number }>) {
+    referenceStopRef.current(); audioRef.current?.pause(); stopSynth(false);
+    if (notes.length > 256) { setError("此片段音符過密，請先刪除誤音或縮短片段。"); return; }
+    const generation = synthGenerationRef.current;
+    try {
+      const context = synthContextRef.current ?? new AudioContext();
+      synthContextRef.current = context;
+      await context.resume();
+      if (generation !== synthGenerationRef.current) return;
+      const origin = context.currentTime + 0.03;
+      for (const note of notes) {
+        if (note.end <= note.start) continue;
+        const source = context.createOscillator();
+        const gain = context.createGain();
+        const start = origin + note.start, end = origin + note.end;
+        const edge = Math.min(0.005, (end - start) / 4);
+        const concurrent = notes.filter((other) => other.start < note.end && other.end > note.start).length;
+        source.frequency.setValueAtTime(440 * 2 ** ((note.midi - 69) / 12), start);
+        gain.gain.setValueAtTime(0, start);
+        gain.gain.linearRampToValueAtTime(0.16 / Math.sqrt(Math.max(1, concurrent)), start + edge);
+        gain.gain.setValueAtTime(0.16 / Math.sqrt(Math.max(1, concurrent)), end - edge);
+        gain.gain.linearRampToValueAtTime(0, end);
+        source.connect(gain).connect(context.destination);
+        source.start(start); source.stop(end + 0.01); trackSynthSource(source);
+      }
+    } catch (error) { setError(error instanceof Error ? error.message : "Audio preview unavailable"); }
+  }
+
   function scheduleGuitarPick(context: AudioContext, startAt: number, peak: number) {
     const length = Math.max(1, Math.floor(context.sampleRate * 0.018));
     const buffer = context.createBuffer(1, length, context.sampleRate);
@@ -1364,13 +1406,18 @@ export function App() {
     setChordDraft("");
   }
 
-  async function saveRevision() {
+  async function saveRevision(createNew = false) {
     if (!score) return;
     setIsSavingRevision(true);
     setError("");
     try {
-      const response = await postSaveRevision(score, revisionId || null);
+      const response = await postSaveRevision(score, revisionId || null, createNew);
+      if (scoreRef.current !== score) {
+        setSaveStatus(`Saved snapshot ${response.revision_id}; subsequent changes are not saved.`);
+        return;
+      }
       setRevisionId(response.revision_id);
+      if (createNew && workingJobId) window.localStorage.setItem(`guitarscribe.melodyRevision.${workingJobId}`, response.revision_id);
       setSaveStatus(`Saved revision ${response.revision_id}.`);
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Revision save failed.");
@@ -1386,6 +1433,7 @@ export function App() {
     try {
       const loadedScore = await getRevision(revisionId.trim());
       replaceScore(loadedScore);
+      setWorkingJobId(loadedScore.melody_edits?.find((edit) => edit.source_job_id)?.source_job_id ?? undefined);
       setStatus("ready");
       setSaveStatus(`Loaded revision ${revisionId.trim()}.`);
     } catch (loadError) {
@@ -1752,6 +1800,15 @@ export function App() {
                   <div className="rhythm-steps">{score.rhythm.display.map((stroke, index) => <span key={index} title={stroke === "A" ? "Arpeggio" : undefined} className={stroke ? "rhythm-step rhythm-step-active" : "rhythm-step"}>{stroke === "A" ? "⌁" : stroke ?? "·"}</span>)}</div>
                 </section>
 
+                <MelodyEditor score={score} jobId={workingJobId} playhead={playbackTime} apiBase={API_BASE}
+                  onCommit={(base, next) => { if (scoreRef.current !== base) return false; recordScoreChange(next); return true; }}
+                  onSeek={seekTo} onPitch={(midi) => void auditionEditedNotes([{ midi, start: 0, end: 0.6 }])}
+                  onAudition={(start, end) => void auditionEditedNotes(score.melody.filter((note) => note.end > start && note.start < end).map((note) => ({ midi: note.midi, start: Math.max(0, note.start - start), end: Math.min(end, note.end) - start })))}
+                  onStop={() => stopSynth(false)} onUndo={undoScoreChange} onRedo={redoScoreChange}
+                  canUndo={undoHistory.length > 0} canRedo={redoHistory.length > 0}
+                  revisionId={revisionId} onRevisionId={setRevisionId} onSave={() => void saveRevision(true)} onLoad={() => void loadRevision()}
+                  saving={isSavingRevision || isLoadingRevision} saveStatus={saveStatus} />
+
                 {score.melody.length > 0 ? <details className="melody-workspace workspace-disclosure">
                 <summary>Melody &amp; Tab previews · Experimental</summary>
                 <section className="melody-panel">
@@ -1784,7 +1841,7 @@ export function App() {
                   </div> : null}
                   {activeMeasureGroup && !activeMeasureNotes.length ? <p className="tab-empty">No playable melody note is mapped in this bar.</p> : null}
                 </section>
-                </details> : <section className="melody-empty" aria-live="polite"><h3>Melody not detected</h3><p>This analysis returned no confident melody notes, so Tab and melody exports are not ready. Try a clearer lead-vocal or single-guitar recording. A future retry may produce a different result.</p></section>}
+                </details> : <section className="melody-empty" aria-live="polite"><h3>No melody notes in working score</h3><p>Use Melody editor to add missing notes. The original analysis and contour audio remain separate; adding notes enables melody notation and exports without rerunning analysis.</p></section>}
 
                 <label><input type="checkbox" checked={showRawChordSegments} onChange={(event) => setShowRawChordSegments(event.target.checked)} />顯示原始分析區段（逐段編輯）</label>
                 <p>和弦寬度依拍長排列：兩和弦不一定各半小節。相鄰同和弦／指型合併顯示；刷奏型不會自動校正小節線。</p>
@@ -1857,7 +1914,7 @@ export function App() {
                     <input value={revisionId} onChange={(event) => setRevisionId(event.target.value)} />
                   </label>
                   <div className="editor-actions">
-                    <button type="button" className="ghost-button" onClick={saveRevision} disabled={isSavingRevision}>
+                    <button type="button" className="ghost-button" onClick={() => void saveRevision()} disabled={isSavingRevision}>
                       {isSavingRevision ? "Saving..." : "Save revision"}
                     </button>
                     <button type="button" className="ghost-button" onClick={loadRevision} disabled={isLoadingRevision}>

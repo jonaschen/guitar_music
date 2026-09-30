@@ -33,6 +33,7 @@ from .postprocess.rhythm import RhythmSuggester
 from .services.playback_reference import reference_score
 from .fretboard.mapper import SimpleFretboardMapper
 from .postprocess.melody import MelodyPostProcessor
+from .services.melody_edits import MelodyEditRequest, MelodyEditResponse, edit_melody
 
 
 class TransposeScoreRequest(BaseModel):
@@ -49,6 +50,7 @@ class HealthResponse(BaseModel):
 class SaveRevisionRequest(BaseModel):
     score: SongScore
     revision_id: str | None = None
+    create_new: bool = False
 
 
 class SaveRevisionResponse(BaseModel):
@@ -186,6 +188,14 @@ async def remap_tab(score: SongScore) -> SongScore:
         preference=result.guitar.tab_preference,
     ).notes
     return result
+
+
+@app.post("/scores/melody/edit", response_model=MelodyEditResponse, tags=["Scores"])
+async def edit_score_melody(request: MelodyEditRequest) -> MelodyEditResponse:
+    try:
+        return edit_melody(request)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 class SimplifyMelodyRequest(BaseModel):
@@ -397,7 +407,12 @@ async def save_revision(
     request: SaveRevisionRequest,
     revision_store: RevisionStore = Depends(get_revision_store),
 ) -> SaveRevisionResponse:
-    revision_id = revision_store.save(request.score, request.revision_id)
+    try:
+        revision_id = (revision_store.fork(request.revision_id, request.score)
+                       if request.create_new and request.revision_id
+                       else revision_store.save(request.score, request.revision_id))
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
     return SaveRevisionResponse(revision_id=revision_id)
 
 
