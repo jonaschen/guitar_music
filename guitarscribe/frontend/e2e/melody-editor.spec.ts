@@ -426,3 +426,78 @@ test("saved revision can be recovered without a surviving analysis job", async (
   await expect(page.getByLabel("Melody revision ID")).toHaveValue("recovered");
   await expect(page.locator("audio")).toHaveCount(0);
 });
+
+test("song range bounds original audio and permits previewing a replacement start outside the range", async ({ page }) => {
+  const wav = Buffer.alloc(44 + 8000 * 2 * 8);
+  wav.write("RIFF", 0); wav.writeUInt32LE(wav.length - 8, 4); wav.write("WAVEfmt ", 8);
+  wav.writeUInt32LE(16, 16); wav.writeUInt16LE(1, 20); wav.writeUInt16LE(1, 22);
+  wav.writeUInt32LE(8000, 24); wav.writeUInt32LE(16000, 28); wav.writeUInt16LE(2, 32); wav.writeUInt16LE(16, 34);
+  wav.write("data", 36); wav.writeUInt32LE(wav.length - 44, 40);
+  await page.route("**/api/v1/jobs/editor/audio", (route) => {
+    const range = route.request().headers().range?.match(/bytes=(\d+)-(\d*)/);
+    if (!range) return route.fulfill({ body: wav, contentType: "audio/wav" });
+    const start = Number(range[1]), end = range[2] ? Number(range[2]) : wav.length - 1;
+    return route.fulfill({ status: 206, body: wav.subarray(start, end + 1), contentType: "audio/wav",
+      headers: { "Accept-Ranges": "bytes", "Content-Range": `bytes ${start}-${end}/${wav.length}` } });
+  });
+  await page.route("**/api/v1/jobs/editor", (route) => route.fulfill({ json: { id: "editor", status: "completed", progress: 100, artifacts: [], score } }));
+  await page.route("**/rhythm-patterns?*", (route) => route.fulfill({ json: [] }));
+  await page.goto("/?job=editor");
+  await page.locator(".song-range-editor > summary").click();
+  await page.getByLabel("Song range start").fill("2");
+  await page.getByLabel("Song range end").fill("3");
+  await page.getByRole("button", { name: "套用歌曲範圍", exact: true }).click();
+  const audio = page.locator("audio").first();
+  await page.getByRole("button", { name: "Play", exact: true }).click();
+  await expect.poll(() => audio.evaluate((a: HTMLAudioElement) => a.currentTime)).toBeGreaterThan(2);
+  await expect.poll(() => audio.evaluate((a: HTMLAudioElement) => a.paused)).toBe(true);
+  expect(await audio.evaluate((a: HTMLAudioElement) => a.currentTime)).toBeCloseTo(3, 1);
+  await page.getByLabel("Song range start").fill("0");
+  await page.getByLabel("Song range end").fill("1");
+  await page.getByRole("button", { name: "試聽起點後 5 秒（來源）", exact: true }).click();
+  await expect.poll(() => audio.evaluate((a: HTMLAudioElement) => !a.paused && a.currentTime > 0 && a.currentTime < 1)).toBe(true);
+  await expect.poll(() => audio.evaluate((a: HTMLAudioElement) => a.paused)).toBe(true);
+  await expect(page.getByLabel("Playback position", { exact: true })).toHaveAttribute("min", "2");
+});
+
+test("song range preserves timestamps, filters notation, bounds score playback and persists in revisions", async ({ page }) => {
+  const fullScore = { ...score,
+    beats: Array.from({ length: 16 }, (_, i) => ({ time: i * .5, beat: i % 4 + 1, measure: Math.floor(i / 4) + 1, confidence: 1 })),
+    melody: [...score.melody, { ...score.melody[0], id: "song", start: 2, end: 2.5 }],
+  };
+  let saved: any;
+  await page.route("**/api/v1/jobs/editor", (route) => route.fulfill({ json: { id: "editor", status: "completed", progress: 100, artifacts: [], score: fullScore } }));
+  await page.route("**/rhythm-patterns?*", (route) => route.fulfill({ json: [] }));
+  await page.route("**/scores/playback/manifest", (route) => route.fulfill({ json: { revision: "test", duration_seconds: 8, bpm: 120, time_signature: "4/4", events: [] } }));
+  await page.route("**/revisions", (route) => { saved = route.request().postDataJSON().score; return route.fulfill({ json: { revision_id: "range" } }); });
+  await page.route("**/revisions/range", (route) => route.fulfill({ json: saved }));
+  await page.goto("/?job=editor");
+  await page.locator(".song-range-editor > summary").click();
+  await page.getByLabel("Song range start").fill("2");
+  await page.getByLabel("Song range end").fill("3");
+  await page.getByRole("button", { name: "套用歌曲範圍", exact: true }).click();
+  await expect(page.getByLabel("Playback position", { exact: true })).toHaveAttribute("min", "2");
+  await expect(page.getByLabel("Playback position", { exact: true })).toHaveAttribute("max", "3");
+  await page.getByText("旋律人工編輯 · Melody editor", { exact: true }).click();
+  await expect(page.getByRole("button", { name: "Tab n1 C4 2弦1格", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Tab song C4 2弦1格", exact: true })).toBeVisible();
+  await expect(page.locator(".editable-tab-bar")).toHaveCount(1);
+  await page.getByRole("button", { name: "Save new revision", exact: true }).click();
+  await expect(page.getByLabel("Melody revision ID")).toHaveValue("range");
+  expect(saved.song_range).toEqual({ start: 2, end: 3 });
+  expect(saved.melody).toEqual(fullScore.melody);
+  expect(saved.beats).toEqual(fullScore.beats);
+  await page.getByText("Compiled score playback", { exact: true }).click();
+  await page.getByRole("button", { name: "Play score", exact: true }).click();
+  await expect.poll(async () => Number(await page.getByLabel("Playback position", { exact: true }).inputValue())).toBeGreaterThan(2);
+  await expect(page.getByRole("button", { name: "Play score", exact: true })).toBeVisible();
+  await expect(page.getByLabel("Playback position", { exact: true })).toHaveValue("3");
+  await page.getByRole("button", { name: "Stop score", exact: true }).click();
+  await expect(page.getByLabel("Playback position", { exact: true })).toHaveValue("2");
+  await page.getByRole("button", { name: "取消範圍，顯示全曲", exact: true }).click();
+  await expect(page.getByLabel("Playback position", { exact: true })).toHaveAttribute("min", "0");
+  await page.getByRole("button", { name: "Load melody revision", exact: true }).click();
+  await expect(page.getByLabel("Playback position", { exact: true })).toHaveAttribute("min", "2");
+  await page.getByLabel("Song range start").fill("4");
+  await expect(page.getByRole("button", { name: "套用歌曲範圍", exact: true })).toBeDisabled();
+});

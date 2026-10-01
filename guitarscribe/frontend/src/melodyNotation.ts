@@ -1,4 +1,5 @@
 import type { SongScore } from "./types";
+import { songBounds } from "./songRange";
 
 // A reversible coordinate map over the detected pulse grid. Reading the map
 // never quantizes the score. Explicit position/duration edits opt into it.
@@ -35,7 +36,10 @@ export function notationBars(score: SongScore) {
     const seconds = 60 / Math.max(1, score.analysis.bpm) * (beats || 4) * 4 / (unit || 4);
     for (let start = 0; start < score.song.duration_seconds; start += seconds) ordered.push({ number: ordered.length + 1, start });
   } else if (ordered[0].start > 0) ordered.unshift({ number: ordered[0].number - 1, start: 0 });
-  return ordered.map((bar, i) => ({ ...bar, end: ordered[i + 1]?.start ?? score.song.duration_seconds }));
+  const bounds = songBounds(score);
+  return ordered.map((bar, i) => ({ ...bar, end: ordered[i + 1]?.start ?? score.song.duration_seconds }))
+    .filter((bar) => bar.start < bounds.end && bar.end > bounds.start)
+    .map((bar) => ({ ...bar, start: Math.max(bounds.start, bar.start), end: Math.min(bounds.end, bar.end) }));
 }
 
 export const noteLengths = [

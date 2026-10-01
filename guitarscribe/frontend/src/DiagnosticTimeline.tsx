@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { SongScore } from "./types";
+import { songBounds } from "./songRange";
 
 type Props = {
   audioUrl: string;
@@ -11,6 +12,7 @@ type Props = {
 const WAVEFORM_BUCKETS = 900;
 
 export function DiagnosticTimeline({ audioUrl, score, playbackTime, onSeek }: Props) {
+  const range = songBounds(score);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [waveform, setWaveform] = useState<number[]>([]);
 
@@ -57,7 +59,7 @@ export function DiagnosticTimeline({ audioUrl, score, playbackTime, onSeek }: Pr
       context.scale(ratio, ratio);
       const width = bounds.width;
       const height = bounds.height;
-      const duration = Math.max(score.song.duration_seconds, 0.01);
+      const duration = Math.max(range.end - range.start, 0.01);
       context.clearRect(0, 0, width, height);
       context.fillStyle = "rgba(255,255,255,0.025)";
       context.fillRect(0, 0, width, height);
@@ -65,7 +67,9 @@ export function DiagnosticTimeline({ audioUrl, score, playbackTime, onSeek }: Pr
       context.strokeStyle = "rgba(230,235,245,0.32)";
       context.lineWidth = 1;
       waveform.forEach((peak, index) => {
-        const x = index / Math.max(1, waveform.length - 1) * width;
+        const time = index / Math.max(1, waveform.length - 1) * score.song.duration_seconds;
+        const x = (time - range.start) / duration * width;
+        if (time < range.start || time > range.end) return;
         const amplitude = peak * height * 0.42;
         context.beginPath();
         context.moveTo(x, height / 2 - amplitude);
@@ -74,7 +78,7 @@ export function DiagnosticTimeline({ audioUrl, score, playbackTime, onSeek }: Pr
       });
 
       score.beats.forEach((beat) => {
-        const x = beat.time / duration * width;
+        const x = (beat.time - range.start) / duration * width;
         context.strokeStyle = beat.beat === 1 ? "rgba(255,190,105,0.8)" : "rgba(139,211,181,0.28)";
         context.lineWidth = beat.beat === 1 ? 1.8 : 1;
         context.beginPath();
@@ -89,13 +93,13 @@ export function DiagnosticTimeline({ audioUrl, score, playbackTime, onSeek }: Pr
       });
 
       score.chords.forEach((chord) => {
-        const x = chord.start / duration * width;
+        const x = (chord.start - range.start) / duration * width;
         context.fillStyle = "rgba(126,170,255,0.95)";
         context.fillRect(x, height - 22, 2, 22);
       });
       score.melody.forEach((note) => {
-        const start = note.start / duration * width;
-        const end = note.end / duration * width;
+        const start = (note.start - range.start) / duration * width;
+        const end = (note.end - range.start) / duration * width;
         const pitchY = height - 27 - Math.max(0, Math.min(30, (note.midi - 48) * 0.7));
         context.strokeStyle = "rgba(245,139,172,0.9)";
         context.lineWidth = 2;
@@ -105,7 +109,7 @@ export function DiagnosticTimeline({ audioUrl, score, playbackTime, onSeek }: Pr
         context.stroke();
       });
 
-      const playheadX = playbackTime / duration * width;
+      const playheadX = (playbackTime - range.start) / duration * width;
       context.fillStyle = "rgba(255,255,255,0.95)";
       context.fillRect(playheadX, 0, 2, height);
     };
@@ -119,7 +123,7 @@ export function DiagnosticTimeline({ audioUrl, score, playbackTime, onSeek }: Pr
     const bounds = canvasRef.current?.getBoundingClientRect();
     if (!bounds) return;
     const fraction = Math.max(0, Math.min(1, (clientX - bounds.left) / Math.max(1, bounds.width)));
-    onSeek(fraction * score.song.duration_seconds);
+    onSeek(range.start + fraction * (range.end - range.start));
   };
 
   return <div className="diagnostic-timeline-panel">
@@ -130,13 +134,13 @@ export function DiagnosticTimeline({ audioUrl, score, playbackTime, onSeek }: Pr
       role="slider"
       tabIndex={0}
       aria-label="Diagnostic waveform and analysis overlay"
-      aria-valuemin={0}
-      aria-valuemax={score.song.duration_seconds}
+      aria-valuemin={range.start}
+      aria-valuemax={range.end}
       aria-valuenow={playbackTime}
       onClick={(event) => seekFromPointer(event.clientX)}
       onKeyDown={(event) => {
-        if (event.key === "ArrowLeft") onSeek(Math.max(0, playbackTime - 1));
-        if (event.key === "ArrowRight") onSeek(Math.min(score.song.duration_seconds, playbackTime + 1));
+        if (event.key === "ArrowLeft") onSeek(Math.max(range.start, playbackTime - 1));
+        if (event.key === "ArrowRight") onSeek(Math.min(range.end, playbackTime + 1));
       }}
     />
     <div className="diagnostic-legend"><span className="legend-downbeat">Downbeat / bar</span><span className="legend-beat">Beat</span><span className="legend-chord">Chord boundary</span><span className="legend-melody">Final melody</span><span className="legend-playhead">Playhead</span></div>

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from typing import Optional, Literal
 from .analysis import AccidentalPreference, BeatInfo, ChordEvent, MelodyNote, RhythmSuggestion
 from .lyrics import LyricsTrack
@@ -62,6 +62,11 @@ class MelodyEditRecord(BaseModel):
     after: list[MelodyNote] = Field(default_factory=list)
 
 
+class SongRange(BaseModel):
+    start: float = Field(ge=0, allow_inf_nan=False)
+    end: float = Field(gt=0, allow_inf_nan=False)
+
+
 class SongScore(BaseModel):
     schema_version: str = "1.0"
     song: SongInfo = Field(default_factory=SongInfo)
@@ -75,3 +80,10 @@ class SongScore(BaseModel):
     guitar: GuitarSettings = Field(default_factory=GuitarSettings)
     provenance: Provenance = Field(default_factory=Provenance)
     lyrics: LyricsTrack | None = None
+    song_range: SongRange | None = None
+
+    @model_validator(mode="after")
+    def validate_song_range(self):
+        if self.song_range and not 0 <= self.song_range.start < self.song_range.end <= self.song.duration_seconds:
+            raise ValueError("Song range must stay within the source duration and have positive length")
+        return self

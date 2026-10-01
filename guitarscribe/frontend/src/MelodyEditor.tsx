@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { SongScore } from "./types";
 import { EditableTab } from "./EditableTab";
+import { songBounds } from "./songRange";
 import { notationBars, notationClock, noteLengths, lengthLabel, noteGrid } from "./melodyNotation";
 
 const pitches = Array.from({ length: 128 }, (_, midi) => ({ midi,
@@ -39,8 +40,9 @@ export function MelodyEditor(props: Props) {
   const selected = score.melody.find((n) => n.id === selectedId);
   const conflict = score.melody.filter((n) => n.id !== selected?.id && Number(start) < n.end - 1e-8 && n.start < Number(end) - 1e-8).sort((a, b) => a.start - b.start)[0];
   const conflictMessage = conflict ? `與 ${conflict.note}（${conflict.start.toFixed(3)}–${conflict.end.toFixed(3)} 秒）重疊。此編輯器目前是單旋律，即使在不同弦也不能同時新增；可選取該音修改，或調整新增位置／音長。` : "";
-  const left = Math.max(0, Math.min(windowStart, Math.max(0, score.song.duration_seconds - 0.01)));
-  const right = Math.min(score.song.duration_seconds, left + 8);
+  const songRange = songBounds(score);
+  const left = Math.max(songRange.start, Math.min(windowStart, Math.max(songRange.start, songRange.end - 0.01)));
+  const right = Math.min(songRange.end, left + 8);
   const visible = score.melody.filter((n) => n.end > left && n.start < right).sort((a, b) => a.start - b.start);
   const bars = useMemo(() => notationBars(score), [score]);
   const barNoteCounts = useMemo(() => bars.map((bar) => score.melody.filter((n) => n.start < bar.end && n.end > bar.start).length), [score, bars]);

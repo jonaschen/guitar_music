@@ -10,6 +10,9 @@ import { createMetronomeVoice } from "./metronomeVoice";
 import { mergeChordSpans, type ChordSpan } from "./chordSpans";
 import { measureLayout } from "./measureLayout";
 import { MelodyEditor } from "./MelodyEditor";
+import { SongRangeEditor } from "./SongRangeEditor";
+import { songBounds, clipRange } from "./songRange";
+import { notationBars } from "./melodyNotation";
 
 const AlphaTabScore = lazy(() => import("./AlphaTabScore"));
 
@@ -208,6 +211,7 @@ export function App() {
   const scoreRef = useRef(score);
   scoreRef.current = score;
   const [workingJobId, setWorkingJobId] = useState<string | undefined>();
+  const bounds = songBounds(score);
   const [rhythmOptions, setRhythmOptions] = useState<SongScore["rhythm"][]>([]);
   const [analysisJob, setAnalysisJob] = useState<AnalysisJob | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -438,6 +442,12 @@ export function App() {
   // A compiled sequence belongs to one immutable score snapshot. Never let
   // newly edited notation run alongside old audio (including pending fetches).
   useEffect(() => { stopSynth(false); }, [score]);
+  useEffect(() => {
+    audioRef.current?.pause(); stopSynth(false);
+    setLoopRange(null); setLoopStart(null); setLoopEnd(null);
+    setPlaybackTime((time) => time < bounds.start || time >= bounds.end ? bounds.start : time);
+    if (audioRef.current && (audioRef.current.currentTime < bounds.start || audioRef.current.currentTime >= bounds.end)) audioRef.current.currentTime = bounds.start;
+  }, [bounds.start, bounds.end]);
 
   useEffect(() => {
     if (!score || score.chords.length === 0) {
@@ -482,7 +492,7 @@ export function App() {
     if (!isPlaying) return;
     const syncMediaPlayhead = () => {
       const audio = audioRef.current;
-      if (audio && !audio.paused) setPlaybackTime(createMediaTransportClock(audio).now());
+      if (audio && !audio.paused) handlePlaybackTime(createMediaTransportClock(audio).now());
       mediaAnimationRef.current = window.requestAnimationFrame(syncMediaPlayhead);
     };
     mediaAnimationRef.current = window.requestAnimationFrame(syncMediaPlayhead);
@@ -490,16 +500,10 @@ export function App() {
       if (mediaAnimationRef.current !== null) window.cancelAnimationFrame(mediaAnimationRef.current);
       mediaAnimationRef.current = null;
     };
-  }, [isPlaying]);
+  }, [isPlaying, bounds.start, bounds.end, loopStart, loopEnd, loopRange, metronomeEnabled, score]);
 
   const measureGroups = score ? (() => {
-    const starts = new Map<number, number>();
-    score.beats.forEach((beat) => {
-      const previous = starts.get(beat.measure);
-      if (previous === undefined || beat.time < previous) starts.set(beat.measure, beat.time);
-    });
-    const measures = Array.from(starts.entries()).sort(([left], [right]) => left - right);
-    const ranges = measures.length ? measures.map(([measure, start], index) => ({ measure, start, end: measures[index + 1]?.[1] ?? score.song.duration_seconds })) : [{ measure: 1, start: 0, end: score.song.duration_seconds }];
+    const ranges = notationBars(score).map((bar) => ({ measure: bar.number, start: bar.start, end: bar.end }));
     return ranges.map((range) => {
       const chords = score.chords.filter((chord) => chord.start < range.end && chord.end > range.start).map((chord) => ({
         chord,
@@ -551,7 +555,7 @@ export function App() {
       value: beatTimingDraft?.index === activeBeatIndex ? beatTimingDraft.time : current.time,
     };
   })();
-  const scoreMeasures = Array.from(new Set(score?.beats.map((beat) => beat.measure) ?? [1]));
+  const scoreMeasures = measureGroups.map((group) => group.measure);
   const activeMeasureGroup = measureGroups.find((group) => playbackTime >= group.start && playbackTime < group.end) ?? measureGroups[0];
   const activeMeasureNotes = score && activeMeasureGroup ? score.melody.filter((note) => note.start >= activeMeasureGroup.start && note.start < activeMeasureGroup.end && note.string !== null && note.string !== undefined && note.fret !== null && note.fret !== undefined) : [];
   const activeMelodyNoteId = score?.melody.find((note) => playbackTime >= note.start && playbackTime < note.end)?.id ?? null;
@@ -571,7 +575,7 @@ export function App() {
     if (!followPlayhead || !activeChordId) return;
     // The open melody editor owns its own scrolling viewport. Chord follow
     // must not pull the page away during audition, source playback or seek.
-    if (document.querySelector(".melody-editor[open]")) return;
+    if (document.querySelector(".melody-editor[open], .song-range-editor[open]")) return;
     document.querySelector<HTMLElement>(".chord-block-active")?.scrollIntoView({
       behavior: "smooth",
       block: "nearest",
@@ -894,7 +898,7 @@ export function App() {
     if (!currentBeat) return null;
     const start = score.beats.find((beat) => beat.measure === currentBeat.measure)?.time ?? currentBeat.time;
     const next = score.beats.find((beat) => beat.measure === currentBeat.measure + 1)?.time ?? score.song.duration_seconds;
-    return [start, next];
+    return [Math.max(bounds.start, start), Math.min(bounds.end, next)];
   }
 
   function stopSynth(reset = false) {
@@ -916,8 +920,8 @@ export function App() {
     setIsSynthPlaying(false);
     if (reset) {
       audioRef.current?.pause();
-      if (audioRef.current) audioRef.current.currentTime = 0;
-      setPlaybackTime(0);
+      if (audioRef.current) audioRef.current.currentTime = bounds.start;
+      setPlaybackTime(bounds.start);
     }
   }
 
@@ -972,7 +976,9 @@ export function App() {
     } catch (error) { setError(error instanceof Error ? error.message : "Audio preview unavailable"); }
   }
 
-  async function auditionSourceSegment(start: number, end: number) {
+  async function auditionSourceSegment(start: number, end: number, previewOutsideRange = false) {
+    if (!previewOutsideRange) { start = Math.max(bounds.start, start); end = Math.min(bounds.end, end); }
+    if (end <= start) return;
     referenceStopRef.current(); stopSynth(false);
     setLoopRange(null); setLoopStart(null); setLoopEnd(null);
     const audio = audioRef.current;
@@ -1033,10 +1039,12 @@ export function App() {
       if (generation !== synthGenerationRef.current) return;
       setIsSynthPreparing(false);
       setSynthSnapshot({ manifest, chords: score.chords });
-      const requestedLoop = loopStart !== null && loopEnd !== null && loopEnd > loopStart
+      const rawLoop = loopStart !== null && loopEnd !== null && loopEnd > loopStart
         ? [loopStart, loopEnd] as [number, number]
         : loopRange;
-      const playhead = playbackTime >= manifest.duration_seconds ? 0 : playbackTime;
+      const clippedLoop = rawLoop ? [Math.max(bounds.start, rawLoop[0]), Math.min(bounds.end, rawLoop[1])] : null;
+      const requestedLoop = clippedLoop && clippedLoop[1] > clippedLoop[0] ? clippedLoop : null;
+      const playhead = playbackTime >= bounds.end || playbackTime < bounds.start ? bounds.start : playbackTime;
       const scoreStart = requestedLoop && (playhead < requestedLoop[0] || playhead >= requestedLoop[1])
         ? requestedLoop[0]
         : playhead;
@@ -1057,7 +1065,7 @@ export function App() {
       const acousticEnd = (event: PlaybackManifest["events"][number]) =>
         event.track === "guitar" && guitarTone === "pluck" ? event.sustain_end ?? event.end : event.end;
       const scheduleSegment = (segmentStart: number, contextStart: number) => {
-        const segmentEnd = requestedLoop?.[1] ?? manifest.duration_seconds;
+        const segmentEnd = requestedLoop?.[1] ?? bounds.end;
         synthClockRef.current = { contextStart, scoreStart: segmentStart };
         const segmentEvents = manifest.events
           .filter((event) => synthTracks[event.track] && synthVolumes[event.track] > 0 && (synthSoloTrack === null || event.track === synthSoloTrack) && acousticEnd(event) > segmentStart && event.start < segmentEnd)
@@ -1149,7 +1157,7 @@ export function App() {
               scheduleSegment(requestedLoop[0], context.currentTime + 0.015);
               return;
             }
-            setPlaybackTime(manifest.duration_seconds);
+            setPlaybackTime(segmentEnd);
             stopSynth(false);
             return;
           }
@@ -1184,18 +1192,35 @@ export function App() {
     if (!audio) return;
     if (isPlaying) { audio.pause(); return; }
     stopSynth(false);
+    if (audio.currentTime < bounds.start || audio.currentTime >= bounds.end) audio.currentTime = bounds.start;
     if (!score || countInMeasures === 0) { await audio.play(); return; }
     const beatsPerMeasure = Number(score.analysis.time_signature.charAt(0)) || 4;
     const beatSeconds = 60 / Math.max(score.analysis.bpm, 1) / playbackRate;
     const clickCount = beatsPerMeasure * countInMeasures;
+    const generation = synthGenerationRef.current;
     setIsCountingIn(true);
     for (let beat = 0; beat < clickCount; beat += 1) {
-      window.setTimeout(() => playMetronomeClick(beat % beatsPerMeasure === 0), beat * beatSeconds * 1000);
+      window.setTimeout(() => { if (generation === synthGenerationRef.current) playMetronomeClick(beat % beatsPerMeasure === 0); }, beat * beatSeconds * 1000);
     }
-    window.setTimeout(() => { setIsCountingIn(false); void audio.play(); }, clickCount * beatSeconds * 1000);
+    synthCountInTimerRef.current = window.setTimeout(() => {
+      synthCountInTimerRef.current = null;
+      if (generation !== synthGenerationRef.current) return;
+      setIsCountingIn(false); void audio.play();
+    }, clickCount * beatSeconds * 1000);
   }
 
   function handlePlaybackTime(time: number) {
+    // Explicit source previews own their own boundary, including before a
+    // previously saved song start while the user auditions a replacement.
+    if (!sourceSegmentRef.current && score?.song_range) {
+      if (time >= bounds.end) {
+        const loop = loopStart !== null && loopEnd !== null && loopEnd > loopStart ? [loopStart, loopEnd] : loopRange;
+        if (loop && loop[1] > bounds.start && loop[0] < bounds.end) { seekTo(Math.max(bounds.start, loop[0])); return; }
+        audioRef.current?.pause();
+        setPlaybackTime(bounds.end); return;
+      }
+      if (time < bounds.start) { if (audioRef.current) audioRef.current.currentTime = bounds.start; setPlaybackTime(bounds.start); return; }
+    }
     setPlaybackTime(time);
     if (metronomeEnabled && score) {
       const beatIndex = score.beats.findIndex((beat, index) => time >= beat.time && time < (score.beats[index + 1]?.time ?? Infinity));
@@ -1209,6 +1234,7 @@ export function App() {
   }
 
   function seekTo(time: number) {
+    time = Math.max(bounds.start, Math.min(bounds.end, time));
     if (isSynthPlaying || isSynthPreparing) stopSynth(false);
     setPlaybackTime(time);
     if (audioRef.current) {
@@ -1588,6 +1614,9 @@ export function App() {
 
             {score ? (
               <>
+                <SongRangeEditor score={score} playhead={playbackTime}
+                  onPreview={(start, end) => void auditionSourceSegment(start, end, true)}
+                  onApply={(range) => { audioRef.current?.pause(); stopSynth(false); recordScoreChange({ ...score, song_range: range ?? null }); }} />
                 <div className="toolbar">
                   <div className="toolbar-block">
                     <span className="toolbar-label">Source</span>
@@ -1763,7 +1792,7 @@ export function App() {
                     <label className="transport-speed">Count-in <select value={countInMeasures} onChange={(event) => setCountInMeasures(Number(event.target.value))}><option value={0}>Off</option><option value={1}>1 bar</option><option value={2}>2 bars</option></select></label>
                     <button type="button" className="ghost-button" onClick={() => stopSynth(true)}>Stop</button>
                     <label className="transport-speed">Speed <select value={playbackRate} onChange={(event) => setSpeed(Number(event.target.value))}>{[0.5, 0.6, 0.75, 0.9, 1, 1.1, 1.25, 1.5].map((rate) => <option key={rate} value={rate}>{Math.round(rate * 100)}%</option>)}</select></label>
-                    <input className="transport-timeline" type="range" min="0" max={score.song.duration_seconds || 0} step="0.01" value={Math.min(playbackTime, score.song.duration_seconds)} onChange={(event) => seekTo(Number(event.target.value))} aria-label="Playback position" />
+                    <input className="transport-timeline" type="range" min={bounds.start} max={bounds.end} step="0.01" value={Math.max(bounds.start, Math.min(playbackTime, bounds.end))} onChange={(event) => seekTo(Number(event.target.value))} aria-label="Playback position" />
                     <span>{playbackTime.toFixed(1)}s / {score.song.duration_seconds.toFixed(1)}s</span>
                     {analysisJob?.status === "completed" ? <DiagnosticTimeline audioUrl={`${API_BASE}/api/v1/jobs/${analysisJob.id}/audio`} score={score} playbackTime={playbackTime} onSeek={seekTo} /> : null}
                   </section>
@@ -1856,7 +1885,7 @@ export function App() {
                 <MelodyEditor score={score} jobId={workingJobId} playhead={playbackTime} apiBase={API_BASE}
                   onCommit={(base, next) => { if (scoreRef.current !== base) return false; recordScoreChange(next); return true; }}
                   onSeek={seekTo} onPitch={(midi) => void auditionEditedNotes([{ midi, start: 0, end: 0.6 }])}
-                  onAudition={(start, end, loop) => void auditionEditedNotes(score.melody.filter((note) => note.end > start && note.start < end).map((note) => ({ midi: note.midi, start: Math.max(0, note.start - start), end: Math.min(end, note.end) - start })), { start, end, loop })}
+                  onAudition={(start, end, loop) => { const range = clipRange(start, end, score); if (range.end <= range.start) return; void auditionEditedNotes(score.melody.filter((note) => note.end > range.start && note.start < range.end).map((note) => ({ midi: note.midi, start: Math.max(0, note.start - range.start), end: Math.min(range.end, note.end) - range.start })), { ...range, loop }); }}
                   onOriginal={(start, end) => void auditionSourceSegment(start, end)}
                   onStop={() => { audioRef.current?.pause(); stopSynth(false); }} onUndo={undoScoreChange} onRedo={redoScoreChange}
                   canUndo={undoHistory.length > 0} canRedo={redoHistory.length > 0}
@@ -1867,24 +1896,24 @@ export function App() {
                 <summary>Melody &amp; Tab previews · Experimental</summary>
                 <section className="melody-panel">
                   <div><h3>Estimated melody timeline</h3><p>Click a note to seek. Check Analysis notes above for transcription limitations.</p></div><button type="button" className="ghost-button melody-simplify" onClick={() => void simplifyMelody()}>Simplify melody</button>
-                  <div className="melody-timeline" aria-label="Detected melody notes">{score.melody.map((note) => { const showLabel = melodyTimelineLabelIds.has(note.id); return <button key={note.id} type="button" aria-label={`${note.note} at ${note.start.toFixed(2)} seconds`} className={`melody-note ${showLabel ? "melody-note-label" : "melody-note-dot"}${activeMelodyNoteId === note.id ? " melody-note-active" : ""}`} title={note.note + " · " + note.start.toFixed(2) + "s"} onClick={() => seekTo(note.start)} style={{ left: String((note.start / Math.max(score.song.duration_seconds, 1)) * 100) + "%", bottom: String(Math.max(0, Math.min(85, (note.midi - 40) * 1.8))) + "%" }}>{showLabel ? note.note : "•"}</button>; })}</div>
+                  <div className="melody-timeline" aria-label="Detected melody notes">{score.melody.filter((note) => note.end > bounds.start && note.start < bounds.end).map((note) => { const showLabel = melodyTimelineLabelIds.has(note.id); return <button key={note.id} type="button" aria-label={`${note.note} at ${note.start.toFixed(2)} seconds`} className={`melody-note ${showLabel ? "melody-note-label" : "melody-note-dot"}${activeMelodyNoteId === note.id ? " melody-note-active" : ""}`} title={note.note + " · " + note.start.toFixed(2) + "s"} onClick={() => seekTo(note.start)} style={{ left: String((Math.max(0, note.start - bounds.start) / Math.max(bounds.end - bounds.start, .01)) * 100) + "%", bottom: String(Math.max(0, Math.min(85, (note.midi - 40) * 1.8))) + "%" }}>{showLabel ? note.note : "•"}</button>; })}</div>
                 </section>
 
                 <section className="score-preview-panel">
                   <div><h3>Estimated score preview</h3><p>A simplified pitch view, not a verified transcription. Click a note to seek.</p></div>
                   <div className="score-measures" aria-label="Melody score preview">
                     {(scoreMeasures.length ? scoreMeasures : [1]).map((measure) => {
-                      const measureStart = score.beats.find((beat) => beat.measure === measure)?.time ?? 0;
-                      const measureEnd = score.beats.find((beat) => beat.measure === measure + 1)?.time ?? score.song.duration_seconds;
+                      const measureStart = measureGroups.find((group) => group.measure === measure)?.start ?? bounds.start;
+                      const measureEnd = measureGroups.find((group) => group.measure === measure)?.end ?? bounds.end;
                       const measureDuration = Math.max(measureEnd - measureStart, 0.01);
-                      const measureNotes = score.melody.filter((note) => note.start >= measureStart && note.start < measureEnd);
+                      const measureNotes = score.melody.filter((note) => note.end > measureStart && note.start < measureEnd);
                       const labelStride = Math.max(1, Math.ceil(measureNotes.length / 8));
                       return <div className="score-measure" key={measure}><span className="score-measure-label">Bar {measure}</span><div className="score-staff">{measureNotes.map((note, index) => <button key={note.id} type="button" className="score-note" aria-label={note.note + " in bar " + measure} title={note.note + " · " + (note.end - note.start).toFixed(2) + "s"} onClick={() => seekTo(note.start)} style={{ left: String(Math.min(96, Math.max(2, ((note.start - measureStart) / measureDuration) * 100))) + "%", bottom: String(Math.min(94, Math.max(2, ((note.midi - 52) / 24) * 100))) + "%" }}><span>●</span>{index % labelStride === 0 || note.id === activeMelodyNoteId ? <small>{note.note}</small> : null}</button>)}</div></div>;
                     })}
                   </div>
                 </section>
 
-                <Suspense fallback={<section className="alphatab-panel"><p>Loading notation preview…</p></section>}><AlphaTabScore score={score} /></Suspense>
+                {score.song_range ? <p>完整 MusicXML 預覽未裁切；取消歌曲範圍可查看。有效範圍請使用旋律編輯器。</p> : <Suspense fallback={<section className="alphatab-panel"><p>Loading notation preview…</p></section>}><AlphaTabScore score={score} /></Suspense>}
 
                 <section className="tab-panel">
                   <div><h3>Playable Tab {activeMeasureGroup ? "· Bar " + activeMeasureGroup.measure : ""}</h3><p>Read left to right. Each horizontal line is a string; a number tells you which fret to press. The amber number is playing now.</p></div>

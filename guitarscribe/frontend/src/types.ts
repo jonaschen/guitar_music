@@ -1,6 +1,7 @@
 export type AccidentalPreference = "auto" | "sharps" | "flats";
 
 export type SongScore = {
+  song_range?: { start: number; end: number } | null;
   schema_version: string;
   song: {
     title: string;
