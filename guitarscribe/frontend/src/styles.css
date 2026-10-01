@@ -41,6 +41,7 @@
 .melody-editor .editable-tab-note.sounding { color: #101010; background: #89c2a7; }
 .editable-tab-duration { position: absolute; height: 5px; transform: translateY(-50%); background: rgba(137,194,167,0.6); pointer-events: none; }
 .editable-tab-beat { position: absolute; top: 20px; bottom: 50px; border-left: 1px dashed #555; pointer-events: none; }
+.editable-tab-grid { position: absolute; top: 28px; bottom: 50px; border-left: 1px dotted rgba(137,194,167,0.22); pointer-events: none; }
 .editable-tab-beat small { position: absolute; top: -18px; }
 .editable-tab-cursor { position: absolute; top: 22px; bottom: 40px; width: 2px; background: var(--accent); pointer-events: none; z-index: 3; }
 .melody-coverage { padding: 0.6rem; margin-top: 0.6rem; border: 1px solid var(--border); border-radius: 0.6rem; overflow-wrap: anywhere; }

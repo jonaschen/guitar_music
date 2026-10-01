@@ -1,7 +1,7 @@
 import type { SongScore } from "./types";
 
 // A reversible coordinate map over the detected pulse grid. Reading the map
-// never quantizes the score. Duration edits alone opt into these coordinates.
+// never quantizes the score. Explicit position/duration edits opt into it.
 export function notationClock(score: SongScore) {
   const denominator = Number(score.analysis.time_signature.split("/")[1]) || 4;
   const quarterPerPulse = 4 / denominator;
@@ -44,6 +44,19 @@ export const noteLengths = [
   { value: 1, label: "四分音符" }, { value: .75, label: "附點八分" },
   { value: .5, label: "八分音符" }, { value: .25, label: "十六分音符" },
 ];
+
+export function noteGrid(score: SongScore, start: number, end: number, quarters: number) {
+  if (quarters <= 0) return [];
+  const clock = notationClock(score), origin = clock.quarterAt(start);
+  const count = Math.min(512, Math.max(0, Math.ceil((clock.quarterAt(end) - origin) / quarters - 1e-8)));
+  return Array.from({ length: count }, (_, i) => clock.timeAtQuarter(origin + i * quarters))
+    .filter((time) => time >= start - 1e-8 && time <= end - .01);
+}
+
+export function snapNoteTime(score: SongScore, time: number, start: number, end: number, quarters: number) {
+  const grid = noteGrid(score, start, end, quarters);
+  return grid.length ? grid.reduce((best, point) => Math.abs(point - time) < Math.abs(best - time) ? point : best, grid[0]) : time;
+}
 
 export function lengthLabel(score: SongScore, start: number, end: number, compact = false) {
   const clock = notationClock(score);

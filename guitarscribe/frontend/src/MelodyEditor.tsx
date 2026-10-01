@@ -33,6 +33,7 @@ export function MelodyEditor(props: Props) {
   const [explicitTab, setExplicitTab] = useState(false);
   const [barCount, setBarCount] = useState(4);
   const [loop, setLoop] = useState(false);
+  const [gridQuarters, setGridQuarters] = useState(.5);
   const inFlight = useRef(false);
   const selected = score.melody.find((n) => n.id === selectedId);
   const conflict = score.melody.filter((n) => n.id !== selected?.id && Number(start) < n.end - 1e-8 && n.start < Number(end) - 1e-8).sort((a, b) => a.start - b.start)[0];
@@ -73,9 +74,19 @@ export function MelodyEditor(props: Props) {
 
   function insertOnTab(time: number, string: number) {
     props.onStop(); setSelectedId(null); props.onSeek(time);
-    setStart(String(time)); setEnd(String(Math.min(score.song.duration_seconds, clock.endAfter(time, 1))));
+    setStart(String(time)); setEnd(String(Math.min(score.song.duration_seconds, clock.endAfter(time, gridQuarters || 1))));
     setPosition(string, 0);
-    setMessage("已選新增位置；設定品格與音長後按 Add note。空白不自動視為休止。");
+    setMessage(gridQuarters ? "新增起點已吸附格線，預設音長一格；可再修改音長後按 Add note。既有音符不變。" : "自由定位：設定品格與音長後按 Add note。空白不自動視為休止。");
+  }
+
+  function moveDraft(direction: number) {
+    props.onStop();
+    const nextStart = clock.endAfter(Number(start), direction * gridQuarters);
+    const nextEnd = clock.endAfter(Number(end), direction * gridQuarters);
+    if (nextStart < 0 || nextEnd > score.song.duration_seconds) { setMessage("移動後超出歌曲範圍，草稿未變更。"); return; }
+    setStart(String(nextStart)); setEnd(String(nextEnd));
+    props.onSeek(nextStart);
+    setMessage("已移動草稿一格，尚未套用；確認後按 Add note 或 Apply note。");
   }
 
   function newNote() {
@@ -136,6 +147,7 @@ export function MelodyEditor(props: Props) {
     <div className="editor-actions">
       <label>起始小節<select aria-label="Tab start bar" value={barIndex} onChange={(e) => { props.onStop(); setWindowStart(bars[Number(e.target.value)].start); }}>{bars.map((bar, i) => <option key={bar.start} value={i}>Bar {bar.number} · {barNoteCounts[i]} 音符</option>)}</select></label>
       <label>段落長度<select aria-label="Tab bar count" value={barCount} onChange={(e) => { props.onStop(); setBarCount(Number(e.target.value)); }}>{[1, 2, 4, 8].map((n) => <option key={n} value={n}>{n} 小節</option>)}</select></label>
+      <label>滑鼠定位格線<select aria-label="Tab snap grid" value={gridQuarters} onChange={(e) => setGridQuarters(Number(e.target.value))}><option value="1">四分音符</option><option value="0.5">八分音符（預設）</option><option value="0.25">十六分音符</option><option value="0">自由定位（不吸附）</option></select></label>
       <button type="button" onClick={() => setWindowStart(props.playhead)}>顯示暫停位置</button>
       <label><input type="checkbox" aria-label="Loop edited bars" checked={loop} onChange={(e) => { props.onStop(); setLoop(e.target.checked); }} />循環修訂段落</label>
     </div>
@@ -154,7 +166,8 @@ export function MelodyEditor(props: Props) {
       <button type="button" onClick={() => props.onOriginal(rangeStart, rangeEnd)}>對照來源片段</button>
     </div>
     <p aria-label="Tab transport position">位置 {props.playhead.toFixed(2)}s · 所選 {rangeStart.toFixed(2)}–{rangeEnd.toFixed(2)}s。修訂播放只有旋律；來源使用上方選定的音軌。小節／音長依推定拍點顯示，未自動量化。譜面區內跟隨播放，不跳到和弦區；可選 4 或 8 小節。</p>
-    <EditableTab score={score} bars={shownBars} selectedId={selectedId} playhead={props.playhead} onSelect={selectNote} onInsert={insertOnTab} />
+    <p>格線只吸附「點空白弦線新增」的位置，不移動既有音符；依目前拍點換算，不是固定毫秒。選錯位置可用下方前／後移一格。音長若碰到原音尾端仍需確認，不自動截短或覆蓋。</p>
+    <EditableTab score={score} bars={shownBars} selectedId={selectedId} playhead={props.playhead} onSelect={selectNote} onInsert={insertOnTab} gridQuarters={gridQuarters} />
     <fieldset disabled={busy}>
       <legend>{selected ? `譜上選音：${selected.note}` : "點譜上數字修改，或點空白弦線補音"}</legend>
       <div className="melody-edit-fields">
@@ -164,6 +177,7 @@ export function MelodyEditor(props: Props) {
       </div>
       <p>修改草稿：{pitches[midi]?.label ?? "超出音域"} · {lengthLabel(score, Number(start), Number(end))}（套用前譜面不變）</p>
       <p>{selected ? "修改既有音符：按 Apply note" : "新增音符：按 Add note"} · 位置 {Number(start).toFixed(3)}–{Number(end).toFixed(3)} 秒</p>
+      <div className="editor-actions"><button type="button" disabled={!gridQuarters} onClick={() => moveDraft(-1)}>前移一格</button><button type="button" disabled={!gridQuarters} onClick={() => moveDraft(1)}>後移一格</button></div>
       {conflict ? <div className="melody-coverage" aria-label="音符重疊提示">
         <p>{conflictMessage}</p>
         <div className="editor-actions">

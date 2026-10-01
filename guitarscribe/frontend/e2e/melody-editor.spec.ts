@@ -1,5 +1,5 @@
 import { expect, test, type Page, type Route } from "@playwright/test";
-import { notationBars, notationClock } from "../src/melodyNotation";
+import { notationBars, notationClock, noteGrid, snapNoteTime } from "../src/melodyNotation";
 import type { SongScore } from "../src/types";
 
 const score = {
@@ -178,7 +178,7 @@ test("tab can insert on an empty string and stay inside mobile viewport", async 
   await page.getByRole("button", { name: "Add note", exact: true }).click();
   await expect(page.getByRole("button", { name: "Tab new-note G4 1弦3格", exact: true })).toBeVisible();
   expect(request).toMatchObject({ midi: 67, string: 1, fret: 3, operation: "add" });
-  expect(request.end - request.start).toBeCloseTo(.5);
+  expect(request.end - request.start).toBeCloseTo(.25);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
 });
 
@@ -345,4 +345,38 @@ test("missing parent save explains recovery and preserves working score until ex
   await page.getByRole("button", { name: "Save new revision", exact: true }).click();
   await expect(page.getByLabel("Melody revision ID")).toHaveValue("new-independent");
   expect(calls).toBe(2);
+});
+
+test("snap grid respects variable beat times and stays inside the clicked bar", () => {
+  const fixture = { ...score, beats: [.25, .75, 1.5, 2, 2.5].map((time, i) => ({ time, beat: i % 4 + 1, measure: Math.floor(i / 4) + 1, confidence: 1 })) } as SongScore;
+  const before = JSON.stringify(fixture);
+  expect(noteGrid(fixture, .25, 2.5, .5)).toEqual([.25, .5, .75, 1.125, 1.5, 1.75, 2, 2.25]);
+  expect(snapNoteTime(fixture, 1.1, .25, 2.5, .5)).toBe(1.125);
+  expect(snapNoteTime(fixture, 2.499, .25, 2.5, .5)).toBe(2.25);
+  expect(snapNoteTime(fixture, 1.1, .25, 2.5, 0)).toBe(1.1);
+  expect(JSON.stringify(fixture)).toBe(before);
+});
+
+test("nearby clicks select the same eighth grid point, arrows move the draft, free mode remains available", async ({ page }) => {
+  await setup(page, true);
+  await expect(page.getByLabel("Tab snap grid")).toHaveValue("0.5");
+  const string = page.getByRole("button", { name: "Bar 1 第 1 弦新增音符", exact: true });
+  await string.click({ position: { x: 65, y: 12 } });
+  await expect(page.getByLabel("Melody note start")).toHaveValue("0.75");
+  await expect(page.getByLabel("Melody note end")).toHaveValue("1");
+  await string.click({ position: { x: 67, y: 12 } });
+  await expect(page.getByLabel("Melody note start")).toHaveValue("0.75");
+  await page.getByRole("button", { name: "後移一格", exact: true }).click();
+  await expect(page.getByLabel("Melody note start")).toHaveValue("1");
+  await expect(page.getByLabel("Melody note end")).toHaveValue("1.25");
+  await page.getByRole("button", { name: "前移一格", exact: true }).click();
+  await expect(page.getByLabel("Melody note start")).toHaveValue("0.75");
+  await page.getByLabel("Tab snap grid").selectOption("0");
+  await expect(page.getByLabel("Melody note start")).toHaveValue("0.75");
+  await string.click({ position: { x: 80, y: 12 } });
+  const freeTime = Number(await page.getByLabel("Melody note start").inputValue());
+  expect(freeTime).toBeGreaterThan(1.1);
+  expect(freeTime).toBeLessThan(1.3);
+  expect(Math.abs(freeTime - 1.25)).toBeGreaterThan(.01);
+  await expect(page.getByRole("button", { name: "後移一格", exact: true })).toBeDisabled();
 });
