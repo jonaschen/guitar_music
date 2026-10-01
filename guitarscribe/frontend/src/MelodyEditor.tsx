@@ -35,6 +35,8 @@ export function MelodyEditor(props: Props) {
   const [loop, setLoop] = useState(false);
   const inFlight = useRef(false);
   const selected = score.melody.find((n) => n.id === selectedId);
+  const conflict = score.melody.filter((n) => n.id !== selected?.id && Number(start) < n.end - 1e-8 && n.start < Number(end) - 1e-8).sort((a, b) => a.start - b.start)[0];
+  const conflictMessage = conflict ? `與 ${conflict.note}（${conflict.start.toFixed(3)}–${conflict.end.toFixed(3)} 秒）重疊。此編輯器目前是單旋律，即使在不同弦也不能同時新增；可選取該音修改，或調整新增位置／音長。` : "";
   const left = Math.max(0, Math.min(windowStart, Math.max(0, score.song.duration_seconds - 0.01)));
   const right = Math.min(score.song.duration_seconds, left + 8);
   const visible = score.melody.filter((n) => n.end > left && n.start < right).sort((a, b) => a.start - b.start);
@@ -91,6 +93,9 @@ export function MelodyEditor(props: Props) {
     if (["add", "update"].includes(operation) && (!start.trim() || !end.trim() || !Number.isFinite(Number(start)) || !Number.isFinite(Number(end)))) {
       setMessage("請填入有效起點與終點。"); return;
     }
+    if ((operation === "add" || operation === "update") && conflict) {
+      setMessage(`尚未套用：${conflictMessage}`); return;
+    }
     inFlight.current = true; setBusy(true); setMessage("");
     const base = score;
     try {
@@ -102,7 +107,9 @@ export function MelodyEditor(props: Props) {
           ...(operation === "split" ? { split_time: props.playhead } : {}), source_job_id: props.jobId ?? null }),
       });
       const body = await response.json();
-      if (!response.ok) throw new Error(typeof body.detail === "string" ? body.detail : "Invalid note edit; check pitch and timing.");
+      if (!response.ok) throw new Error(typeof body.detail === "string" ? body.detail : Array.isArray(body.detail)
+        ? body.detail.map((item: { loc?: Array<string | number>; msg?: string }) => `${item.loc?.slice(1).join(".") ?? "欄位"}: ${item.msg ?? "格式不符"}`).join("；")
+        : `新增／修改失敗（HTTP ${response.status}），請檢查音高與時間。`);
       if (!props.onCommit(base, body.score)) {
         setMessage("樂譜已在其他操作中改變，本次較舊的回應未套用。請重新操作。"); return;
       }
@@ -156,6 +163,14 @@ export function MelodyEditor(props: Props) {
         <label>音長<select aria-label="Tab note length" value="" onChange={(e) => { props.onStop(); setEnd(String(clock.endAfter(Number(start), Number(e.target.value)))); }}><option value="">保留目前音長</option>{noteLengths.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}</select></label>
       </div>
       <p>修改草稿：{pitches[midi]?.label ?? "超出音域"} · {lengthLabel(score, Number(start), Number(end))}（套用前譜面不變）</p>
+      <p>{selected ? "修改既有音符：按 Apply note" : "新增音符：按 Add note"} · 位置 {Number(start).toFixed(3)}–{Number(end).toFixed(3)} 秒</p>
+      {conflict ? <div className="melody-coverage" aria-label="音符重疊提示">
+        <p>{conflictMessage}</p>
+        <div className="editor-actions">
+          <button type="button" onClick={() => selectNote(conflict.id)}>選取衝突音符來修改</button>
+          {!selected && conflict.start - Number(start) >= .01 ? <button type="button" onClick={() => { setEnd(String(conflict.start)); setMessage("已縮短新增草稿到下一音符前，尚未新增；確認後按 Add note。"); }}>將新增音符縮短至下一音符前</button> : null}
+        </div>
+      </div> : null}
       <div className="editor-actions">
         <button type="button" onClick={() => props.onPitch(midi)}>預聽音高</button>
         <button type="button" onClick={() => void edit(selected ? "update" : "add")}>{selected ? "Apply note" : "Add note"}</button>

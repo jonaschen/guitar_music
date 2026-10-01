@@ -13,9 +13,9 @@ const score = {
   provenance: { beat_engine: "test", chord_engine: "test", melody_engine: "test" },
 };
 
-async function setup(page: Page, empty = false) {
+async function setup(page: Page, empty = false, noteStart = 0) {
   await page.route("**/api/v1/jobs/editor", (route) => route.fulfill({ json: {
-    id: "editor", status: "completed", progress: 100, artifacts: [], score: { ...score, melody: empty ? [] : score.melody },
+    id: "editor", status: "completed", progress: 100, artifacts: [], score: { ...score, melody: empty ? [] : score.melody.map((note) => ({ ...note, start: noteStart, end: noteStart + .5 })) },
   } }));
   await page.route("**/rhythm-patterns?*", (route) => route.fulfill({ json: [] }));
   await page.goto("/?job=editor");
@@ -294,4 +294,55 @@ test("four bars default, eight bars follow within the editor without chord page 
   expect(await page.evaluate(() => (window as any).__chordScrolls)).toBe(0);
   expect(Math.abs(await page.evaluate(() => window.scrollY) - scrollY)).toBeLessThan(3);
   await page.getByRole("button", { name: "暫停，保留位置", exact: true }).click();
+});
+
+test("add into a gap explains overlap and offers an explicit shortening without overwriting existing notes", async ({ page }) => {
+  const requests: any[] = [];
+  await page.route("**/scores/melody/edit", (route) => { requests.push(route.request().postDataJSON()); return route.fulfill({ json: answer(route) }); });
+  await setup(page, false, 1);
+  await page.getByLabel("Melody note start").fill("0.75");
+  await page.getByLabel("Melody note end").fill("1.25");
+  await page.getByLabel("Melody pitch").selectOption("64");
+  await page.getByRole("button", { name: "Add note", exact: true }).click();
+  await expect(page.getByLabel("音符重疊提示")).toContainText("C4（1.000–1.500 秒）");
+  expect(requests).toHaveLength(0);
+  await page.getByRole("button", { name: "將新增音符縮短至下一音符前", exact: true }).click();
+  await expect(page.getByLabel("Melody note end")).toHaveValue("1");
+  expect(requests).toHaveLength(0);
+  await page.getByRole("button", { name: "Add note", exact: true }).click();
+  await expect(page.getByRole("button", { name: "E4 · 0.75–1.00s · Edited", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "C4 · 1.00–1.50s", exact: true })).toBeVisible();
+  expect(requests[0]).toMatchObject({ operation: "add", start: .75, end: 1, midi: 64 });
+});
+
+test("an empty string at an occupied melody time offers selecting the existing note", async ({ page }) => {
+  await setup(page);
+  await page.getByRole("button", { name: "Bar 1 第 1 弦新增音符", exact: true }).click({ position: { x: 45, y: 12 } });
+  await page.getByRole("button", { name: "Add note", exact: true }).click();
+  await expect(page.getByLabel("音符重疊提示")).toContainText("即使在不同弦也不能同時新增");
+  await expect(page.getByRole("button", { name: "將新增音符縮短至下一音符前", exact: true })).toHaveCount(0);
+  await page.getByRole("button", { name: "選取衝突音符來修改", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Apply note", exact: true })).toBeVisible();
+  await expect(page.getByLabel("Tab fret", { exact: true })).toHaveValue("1");
+  await expect(page.getByLabel("Melody note start")).toHaveValue("0");
+});
+
+test("missing parent save explains recovery and preserves working score until explicit new save", async ({ page }) => {
+  let calls = 0;
+  await page.route("**/revisions", (route) => {
+    calls++;
+    return route.request().postDataJSON().revision_id
+      ? route.fulfill({ status: 404, json: { detail: "Revision not found" } })
+      : route.fulfill({ json: { revision_id: "new-independent" } });
+  });
+  await setup(page);
+  await page.getByLabel("Melody revision ID").fill("missing");
+  await page.getByRole("button", { name: "Save new revision", exact: true }).click();
+  await expect(page.locator(".melody-editor")).toContainText("保存失敗：找不到原版本 ID");
+  expect(calls).toBe(1);
+  await expect(page.getByRole("button", { name: "C4 · 0.00–0.50s", exact: true })).toBeVisible();
+  await page.getByLabel("Melody revision ID").fill("");
+  await page.getByRole("button", { name: "Save new revision", exact: true }).click();
+  await expect(page.getByLabel("Melody revision ID")).toHaveValue("new-independent");
+  expect(calls).toBe(2);
 });

@@ -171,6 +171,9 @@ async function postSaveRevision(score: SongScore, revisionId: string | null, cre
   });
 
   if (!response.ok) {
+    if (response.status === 404 && createNew && revisionId) {
+      throw new Error("保存失敗：找不到原版本 ID。工作樂譜仍在，請勿重新整理。可先 Download JSON 備份；若要獨立保存新版本，清空版本 ID 欄再按 Save new revision（不連接舊版本）。");
+    }
     throw new Error(await response.text());
   }
 
@@ -1453,7 +1456,7 @@ export function App() {
     setIsSavingRevision(true);
     setError("");
     try {
-      const response = await postSaveRevision(score, revisionId || null, createNew);
+      const response = await postSaveRevision(score, revisionId.trim() || null, createNew);
       if (scoreRef.current !== score) {
         setSaveStatus(`Saved snapshot ${response.revision_id}; subsequent changes are not saved.`);
         return;
@@ -1462,7 +1465,8 @@ export function App() {
       if (createNew && workingJobId) window.localStorage.setItem(`guitarscribe.melodyRevision.${workingJobId}`, response.revision_id);
       setSaveStatus(`Saved revision ${response.revision_id}.`);
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "Revision save failed.");
+      const message = saveError instanceof Error ? saveError.message : "Revision save failed.";
+      setError(message); setSaveStatus(message);
     } finally {
       setIsSavingRevision(false);
     }
