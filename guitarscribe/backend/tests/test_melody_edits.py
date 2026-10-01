@@ -130,6 +130,51 @@ def test_custom_tuning_and_capo_are_used_for_edited_tab():
     assert (result.melody[0].string, result.melody[0].fret) == (6, 0)
 
 
+def test_shift_phrase_preserves_spacing_duration_fingering_and_outside_events(tmp_path):
+    original = score()
+    original.song.duration_seconds = 8
+    original.melody[0].start, original.melody[0].end = .5, 1
+    original.melody[1].start, original.melody[1].end = 1.5, 2.5
+    original.melody.append(MelodyNote(id="outside", start=4, end=5, midi=64, note="E4", confidence=.2))
+    source = original.model_dump_json()
+    result = apply(original, "shift_phrase", range_start=0, range_end=2, target_start=0).score
+    for before, after in zip(original.melody[:2], result.melody[:2]):
+        assert after.start == pytest.approx(before.start - .5)
+        assert after.end - after.start == pytest.approx(before.end - before.start)
+        assert (after.midi, after.string, after.fret, after.confidence, after.source_midi) == (before.midi, before.string, before.fret, before.confidence, before.source_midi)
+    assert result.melody[1].start - result.melody[0].end == .5
+    assert result.melody[2] == original.melody[2]
+    assert original.model_dump_json() == source
+    assert result.beats == original.beats and result.chords == original.chords
+    assert result.melody_edits[-1].operation == "shift_phrase"
+    assert len(result.melody_edits[-1].before) == 2
+    events = {event.source_id: event for event in compile_playback_manifest(result).events}
+    assert events["one"].start == 0 and events["two"].end == 2
+    store = RevisionStore(tmp_path)
+    saved = store.save(result)
+    assert store.load(saved) == result
+
+
+@pytest.mark.parametrize("start,end,target", [(0, 4, 0), (0, 4, 1.5), (2, 1, 0), (1.6, 4, 1.6), (3, 4, 3)])
+def test_shift_phrase_rejects_invalid_empty_carried_or_excessive_moves(start, end, target):
+    original = score()
+    original.analysis.bpm = 240  # one 4/4 bar is one second
+    original.melody = [MelodyNote(id="a", start=1.5, end=2.5, midi=60, note="C4", confidence=.5)]
+    with pytest.raises(ValueError):
+        apply(original, "shift_phrase", range_start=start, range_end=end, target_start=target)
+
+
+def test_shift_phrase_uses_detected_bar_duration_for_strict_less_than_one_bar():
+    from app.models.analysis import BeatInfo
+    original = score()
+    original.melody = [MelodyNote(id="a", start=1, end=1.2, midi=60, note="C4", confidence=.5)]
+    original.beats = [BeatInfo(time=0, beat=1, measure=1, confidence=1), BeatInfo(time=1, beat=1, measure=2, confidence=1), BeatInfo(time=2, beat=1, measure=3, confidence=1)]
+    with pytest.raises(ValueError, match="小於"):
+        apply(original, "shift_phrase", range_start=0, range_end=2, target_start=0)
+    result = apply(original, "shift_phrase", range_start=0, range_end=2, target_start=.1).score
+    assert result.melody[0].start == pytest.approx(.1)
+
+
 def test_playback_midi_musicxml_and_revision_use_edited_notes(tmp_path):
     original = score()
     result = apply(original, "update", note_id="one", midi=64, start=0.1, end=0.75).score

@@ -1579,6 +1579,13 @@ export function App() {
               <div className="status-pill">{status === "ready" ? "Editable draft" : analysisJob ? `${analysisJob.progress}%` : "Waiting for analysis"}</div>
             </div>
 
+            {!score ? <section className="revision-recovery" aria-label="載入已保存修訂">
+              <h3>繼續編輯已保存的樂譜</h3>
+              <p>原分析失效時，仍可用保存的 revision ID 載入樂譜、編輯及試聽。這不會恢復已失效的原曲／Contour 音訊。</p>
+              <label className="field">版本 ID<input aria-label="Saved revision ID" value={revisionId} onChange={(event) => setRevisionId(event.target.value)} /></label>
+              <button type="button" className="ghost-button" disabled={isLoadingRevision || !revisionId.trim()} onClick={() => void loadRevision()}>載入已保存修訂</button>
+            </section> : null}
+
             {score ? (
               <>
                 <div className="toolbar">

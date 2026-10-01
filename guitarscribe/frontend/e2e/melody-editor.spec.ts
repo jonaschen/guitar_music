@@ -380,3 +380,49 @@ test("nearby clicks select the same eighth grid point, arrows move the draft, fr
   expect(Math.abs(freeTime - 1.25)).toBeGreaterThan(.01);
   await expect(page.getByRole("button", { name: "後移一格", exact: true })).toBeDisabled();
 });
+
+test("phrase shift previews the selected range and moves all notes once with undo and save", async ({ page }) => {
+  let saved: any;
+  await page.route("**/api/v1/jobs/editor", (route) => route.fulfill({ json: {
+    id: "editor", status: "completed", progress: 100, artifacts: [], score: { ...score,
+      beats: Array.from({ length: 16 }, (_, i) => ({ time: i * .5, beat: i % 4 + 1, measure: Math.floor(i / 4) + 1, confidence: 1 })),
+      melody: [{ ...score.melody[0], start: .5, end: 1 }, { ...score.melody[0], id: "n2", start: 3.5, end: 4.5 }, { ...score.melody[0], id: "outside", start: 5, end: 6 }],
+    },
+  } }));
+  await page.route("**/rhythm-patterns?*", (route) => route.fulfill({ json: [] }));
+  await page.route("**/scores/melody/edit", (route) => {
+    const body = route.request().postDataJSON();
+    expect(body).toMatchObject({ operation: "shift_phrase", range_start: 0, range_end: 4, target_start: 0 });
+    const result = structuredClone(body.score);
+    result.melody = result.melody.map((n: any) => n.start < 4 ? { ...n, start: n.start - .5, end: n.end - .5, edited: true } : n);
+    return route.fulfill({ json: { score: result, selected_note_id: "n1" } });
+  });
+  await page.route("**/revisions", (route) => { saved = route.request().postDataJSON().score; return route.fulfill({ json: { revision_id: "shifted" } }); });
+  await page.goto("/?job=editor");
+  await page.getByText("旋律人工編輯 · Melody editor", { exact: true }).click();
+  await page.getByLabel("Tab bar count").selectOption("2");
+  await page.getByText("移除段落前方空白（整段前移）", { exact: true }).click();
+  await expect(page.getByLabel("Phrase shift preview")).toContainText("0.500 → 0.000 秒");
+  await page.getByRole("button", { name: "套用整段前移", exact: true }).click();
+  await expect(page.getByText(/已將 2 個音符整段前移 0.500 秒/)).toBeVisible();
+  await expect(page.getByRole("button", { name: "套用整段前移", exact: true })).toBeDisabled();
+  await page.getByRole("button", { name: "Undo melody edit", exact: true }).click();
+  await expect(page.getByLabel("Phrase shift preview")).toContainText("0.500 → 0.000 秒");
+  await page.getByRole("button", { name: "Redo melody edit", exact: true }).click();
+  await page.getByRole("button", { name: "Save new revision", exact: true }).click();
+  await expect(page.getByLabel("Melody revision ID")).toHaveValue("shifted");
+  expect(saved.melody.map((n: any) => [n.id, n.start, n.end])).toEqual([["n1", 0, .5], ["n2", 3, 4], ["outside", 5, 6]]);
+});
+
+test("saved revision can be recovered without a surviving analysis job", async ({ page }) => {
+  await page.route("**/revisions/recovered", (route) => route.fulfill({ json: score }));
+  await page.route("**/rhythm-patterns?*", (route) => route.fulfill({ json: [] }));
+  await page.goto("/");
+  await page.getByLabel("Saved revision ID").fill("recovered");
+  await page.getByRole("button", { name: "載入已保存修訂", exact: true }).click();
+  await expect(page.getByText("旋律人工編輯 · Melody editor", { exact: true })).toBeVisible();
+  await page.getByText("旋律人工編輯 · Melody editor", { exact: true }).click();
+  await expect(page.getByRole("button", { name: "Tab n1 C4 2弦1格", exact: true })).toBeVisible();
+  await expect(page.getByLabel("Melody revision ID")).toHaveValue("recovered");
+  await expect(page.locator("audio")).toHaveCount(0);
+});

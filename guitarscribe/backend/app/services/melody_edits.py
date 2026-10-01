@@ -16,7 +16,7 @@ from .transposition import TranspositionService
 class MelodyEditRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
     score: SongScore
-    operation: Literal["add", "update", "delete", "split", "merge_next"]
+    operation: Literal["add", "update", "delete", "split", "merge_next", "shift_phrase"]
     note_id: str | None = None
     midi: int | None = Field(default=None, ge=0, le=127, strict=True)
     start: float | None = Field(default=None, ge=0)
@@ -25,11 +25,54 @@ class MelodyEditRequest(BaseModel):
     source_job_id: str | None = Field(default=None, max_length=128)
     string: int | None = Field(default=None, ge=1, le=6, strict=True)
     fret: int | None = Field(default=None, ge=0, strict=True)
+    range_start: float | None = Field(default=None, ge=0)
+    range_end: float | None = Field(default=None, ge=0)
+    target_start: float | None = Field(default=None, ge=0)
 
 
 class MelodyEditResponse(BaseModel):
     score: SongScore
     selected_note_id: str | None
+
+
+def shift_phrase(request: MelodyEditRequest, result: SongScore) -> MelodyEditResponse:
+    start, end, target = request.range_start, request.range_end, request.target_start
+    if start is None or end is None or target is None or not 0 <= start < end <= result.song.duration_seconds:
+        raise ValueError("請選擇有效的段落範圍。")
+    if any(n.start < start < n.end for n in result.melody):
+        raise ValueError("段落開頭有跨小節延續音，並非空白；請把選取範圍往前擴大。")
+    before = sorted((n.model_copy(deep=True) for n in result.melody if start <= n.start < end), key=lambda n: (n.start, n.end))
+    if not before:
+        raise ValueError("所選段落沒有旋律音符。")
+    delta = before[0].start - target
+    if target < start or delta <= 1e-8:
+        raise ValueError("目標必須位於所選段落內、第一音之前的空白。")
+    starts = {}
+    for beat in result.beats:
+        starts[beat.measure] = min(starts.get(beat.measure, beat.time), beat.time)
+    boundaries = sorted(set([0.0, *starts.values(), result.song.duration_seconds]))
+    if starts:
+        index = max(i for i, time in enumerate(boundaries[:-1]) if time <= before[0].start)
+        bar_seconds = boundaries[index + 1] - boundaries[index]
+    else:
+        numerator, denominator = map(int, result.analysis.time_signature.split("/"))
+        bar_seconds = 60 / max(1, result.analysis.bpm) * numerator * 4 / denominator
+    if delta >= bar_seconds - 1e-8:
+        raise ValueError("前移量必須小於第一音所在的一個小節；請選更接近第一音的起始小節或目標位置。")
+    ids = {n.id for n in before}
+    after = [n.model_copy(update={"start": n.start - delta, "end": n.end - delta, "origin": "user", "edited": True}) for n in before]
+    if any(not isfinite(n.start) or not isfinite(n.end) or not 0 <= n.start < n.end <= result.song.duration_seconds for n in after):
+        raise ValueError("音符時間無效或超出歌曲範圍，未套用。")
+    remaining = [n for n in result.melody if n.id not in ids]
+    if any(n.start < other.end - 1e-8 and other.start < n.end - 1e-8 for n in after for other in remaining):
+        raise ValueError("前移後會碰到段落外音符，未套用；請調整範圍或減少前移量。")
+    result.melody = sorted(remaining + after, key=lambda n: (n.start, n.end, n.id))
+    result.melody_edits.append(MelodyEditRecord(
+        id=uuid4().hex, operation="shift_phrase", created_at=datetime.now(timezone.utc).isoformat(),
+        source_job_id=request.source_job_id, transpose_semitones=result.key_context.transpose_semitones,
+        before=before, after=[n.model_copy(deep=True) for n in after],
+    ))
+    return MelodyEditResponse(score=result, selected_note_id=after[0].id)
 
 
 def edit_melody(request: MelodyEditRequest) -> MelodyEditResponse:
@@ -38,6 +81,8 @@ def edit_melody(request: MelodyEditRequest) -> MelodyEditResponse:
         raise ValueError("Song duration must be finite and positive")
     if len({n.id for n in result.melody}) != len(result.melody):
         raise ValueError("Duplicate note IDs; cannot safely select an event")
+    if request.operation == "shift_phrase":
+        return shift_phrase(request, result)
     notes = sorted(result.melody, key=lambda n: (n.start, n.end, n.id))
     selected = next((n for n in notes if n.id == request.note_id), None)
     if request.operation != "add" and selected is None:

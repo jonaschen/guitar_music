@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { SongScore } from "./types";
 import { EditableTab } from "./EditableTab";
-import { notationBars, notationClock, noteLengths, lengthLabel } from "./melodyNotation";
+import { notationBars, notationClock, noteLengths, lengthLabel, noteGrid } from "./melodyNotation";
 
 const pitches = Array.from({ length: 128 }, (_, midi) => ({ midi,
   label: `${["C", "C♯", "D", "E♭", "E", "F", "F♯", "G", "A♭", "A", "B♭", "B"][midi % 12]}${Math.floor(midi / 12) - 1}` }));
@@ -34,6 +34,7 @@ export function MelodyEditor(props: Props) {
   const [barCount, setBarCount] = useState(4);
   const [loop, setLoop] = useState(false);
   const [gridQuarters, setGridQuarters] = useState(.5);
+  const [targetSlot, setTargetSlot] = useState(0);
   const inFlight = useRef(false);
   const selected = score.melody.find((n) => n.id === selectedId);
   const conflict = score.melody.filter((n) => n.id !== selected?.id && Number(start) < n.end - 1e-8 && n.start < Number(end) - 1e-8).sort((a, b) => a.start - b.start)[0];
@@ -48,6 +49,14 @@ export function MelodyEditor(props: Props) {
   const rangeStart = shownBars[0]?.start ?? left;
   const rangeEnd = shownBars.at(-1)?.end ?? right;
   const rangeNotes = score.melody.filter((n) => n.start < rangeEnd && n.end > rangeStart);
+  const phraseNotes = rangeNotes.filter((n) => n.start >= rangeStart).sort((a, b) => a.start - b.start);
+  const targetPoints = noteGrid(score, rangeStart, shownBars[0]?.end ?? rangeEnd, gridQuarters || .5);
+  const targetTime = targetPoints[targetSlot] ?? rangeStart;
+  const phraseDelta = (phraseNotes[0]?.start ?? targetTime) - targetTime;
+  const firstNoteBar = bars.find((bar) => phraseNotes[0] && bar.start <= phraseNotes[0].start && phraseNotes[0].start < bar.end);
+  const carriedNote = rangeNotes.some((n) => n.start < rangeStart);
+  const canShift = !!firstNoteBar && !carriedNote && phraseDelta > 1e-8 && phraseDelta < firstNoteBar.end - firstNoteBar.start - 1e-8;
+  useEffect(() => { setTargetSlot(0); }, [rangeStart, rangeEnd, gridQuarters]);
   const firstWithNotes = barNoteCounts.findIndex((count) => count > 0);
   const nextWithNotes = barNoteCounts.findIndex((count, i) => i > barIndex && count > 0);
   function showNotes(index: number) {
@@ -98,7 +107,7 @@ export function MelodyEditor(props: Props) {
     setMessage("設定音高與起迄，再按 Add note。音高是目前譜面 Key 的實際發聲音高；不自動吸附拍點。");
   }
 
-  async function edit(operation: "add" | "update" | "delete" | "split" | "merge_next") {
+  async function edit(operation: "add" | "update" | "delete" | "split" | "merge_next" | "shift_phrase") {
     if (inFlight.current) return;
     props.onStop();
     if (["add", "update"].includes(operation) && (!start.trim() || !end.trim() || !Number.isFinite(Number(start)) || !Number.isFinite(Number(end)))) {
@@ -115,7 +124,8 @@ export function MelodyEditor(props: Props) {
         body: JSON.stringify({ score: base, operation, note_id: selected?.id ?? null,
           ...(operation === "add" || operation === "update" ? { midi, start: Number(start), end: Number(end) } : {}),
           ...(explicitTab && (operation === "add" || operation === "update") ? { string: tabString, fret: tabFret } : {}),
-          ...(operation === "split" ? { split_time: props.playhead } : {}), source_job_id: props.jobId ?? null }),
+          ...(operation === "split" ? { split_time: props.playhead } : {}),
+          ...(operation === "shift_phrase" ? { range_start: rangeStart, range_end: rangeEnd, target_start: targetTime } : {}), source_job_id: props.jobId ?? null }),
       });
       const body = await response.json();
       if (!response.ok) throw new Error(typeof body.detail === "string" ? body.detail : Array.isArray(body.detail)
@@ -125,7 +135,8 @@ export function MelodyEditor(props: Props) {
         setMessage("樂譜已在其他操作中改變，本次較舊的回應未套用。請重新操作。"); return;
       }
       setSelectedId(body.selected_note_id);
-      setMessage("已修改工作樂譜，尚未保存。原曲與 Contour 不變；用「重播所選小節」聽修改結果。");
+      if (operation === "shift_phrase") props.onSeek(targetTime);
+      setMessage(operation === "shift_phrase" ? `已將 ${phraseNotes.length} 個音符整段前移 ${phraseDelta.toFixed(3)} 秒，可一次 Undo；尚未保存。原曲、和弦及小節線未移動。` : "已修改工作樂譜，尚未保存。原曲與 Contour 不變；用「重播所選小節」聽修改結果。");
     } catch (error) { setMessage(error instanceof Error ? error.message : "Edit failed"); }
     finally { inFlight.current = false; setBusy(false); }
   }
@@ -168,6 +179,14 @@ export function MelodyEditor(props: Props) {
     <p aria-label="Tab transport position">位置 {props.playhead.toFixed(2)}s · 所選 {rangeStart.toFixed(2)}–{rangeEnd.toFixed(2)}s。修訂播放只有旋律；來源使用上方選定的音軌。小節／音長依推定拍點顯示，未自動量化。譜面區內跟隨播放，不跳到和弦區；可選 4 或 8 小節。</p>
     <p>格線只吸附「點空白弦線新增」的位置，不移動既有音符；依目前拍點換算，不是固定毫秒。選錯位置可用下方前／後移一格。音長若碰到原音尾端仍需確認，不自動截短或覆蓋。</p>
     <EditableTab score={score} bars={shownBars} selectedId={selectedId} playhead={props.playhead} onSelect={selectNote} onInsert={insertOnTab} gridQuarters={gridQuarters} />
+    <details className="phrase-shift"><summary>移除段落前方空白（整段前移）</summary>
+      <p>範圍使用上方所選小節：{rangeStart.toFixed(3)}–{rangeEnd.toFixed(3)} 秒。只移動起音位於這段的 {phraseNotes.length} 個音符；結尾跨小節的音符也完整移動，不截斷。</p>
+      <label>第一音移到<select aria-label="Phrase target position" value={Math.min(targetSlot, Math.max(0, targetPoints.length - 1))} onChange={(e) => setTargetSlot(Number(e.target.value))}>{targetPoints.map((time, index) => <option key={time} value={index}>Bar {shownBars[0]?.number} · {index === 0 ? "小節起點" : `第 ${index + 1} 格`}（{time.toFixed(3)}s）</option>)}</select></label>
+      <p aria-label="Phrase shift preview">{phraseNotes.length ? `第一音 ${phraseNotes[0].note}：${phraseNotes[0].start.toFixed(3)} → ${targetTime.toFixed(3)} 秒；整段前移 ${Math.max(0, phraseDelta).toFixed(3)} 秒。` : "所選段落沒有音符。"}所有音長、音符間距、音高及弦／格保持不變。</p>
+      {!canShift ? <p>{carriedNote ? "段落開頭有延續音，不是空白；請往前擴大選取。" : "需要有前方空白，且移動量小於第一音所在的一個小節；請調整起始小節或目標格點。"}</p> : null}
+      <p>這會改變旋律相對原曲／和弦的時間；原音訊、小節線、和弦與段落外音符不動。不會把整首歌曲自動提前。</p>
+      <button type="button" disabled={busy || !canShift} onClick={() => void edit("shift_phrase")}>套用整段前移</button>
+    </details>
     <fieldset disabled={busy}>
       <legend>{selected ? `譜上選音：${selected.note}` : "點譜上數字修改，或點空白弦線補音"}</legend>
       <div className="melody-edit-fields">
