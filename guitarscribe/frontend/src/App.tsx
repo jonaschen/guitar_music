@@ -566,6 +566,9 @@ export function App() {
 
   useEffect(() => {
     if (!followPlayhead || !activeChordId) return;
+    // The open melody editor owns its own scrolling viewport. Chord follow
+    // must not pull the page away during audition, source playback or seek.
+    if (document.querySelector(".melody-editor[open]")) return;
     document.querySelector<HTMLElement>(".chord-block-active")?.scrollIntoView({
       behavior: "smooth",
       block: "nearest",

@@ -1,16 +1,28 @@
 import type { SongScore } from "./types";
+import { useEffect, useRef } from "react";
 import { lengthLabel, notationBars } from "./melodyNotation";
 
 export function EditableTab({ score, bars, selectedId, playhead, onSelect, onInsert }: {
   score: SongScore; bars: ReturnType<typeof notationBars>; selectedId: string | null; playhead: number;
   onSelect: (id: string) => void; onInsert: (time: number, string: number) => void;
 }) {
-  return <div className="editable-tab" aria-label="可編輯六線譜">
+  const viewport = useRef<HTMLDivElement>(null);
+  const activeBar = bars.find((bar) => playhead >= bar.start && playhead < bar.end)?.start;
+  useEffect(() => {
+    const container = viewport.current;
+    const bar = container?.querySelector<HTMLElement>(`[data-bar-start="${activeBar}"]`);
+    if (!container || !bar) return;
+    const view = container.getBoundingClientRect(), box = bar.getBoundingClientRect();
+    if (box.top < view.top || box.bottom > view.bottom) {
+      container.scrollTop += box.top - view.top;
+    }
+  }, [activeBar]);
+  return <div ref={viewport} className="editable-tab" aria-label="可編輯六線譜">
     {bars.map((bar) => {
       const notes = score.melody.filter((n) => n.start < bar.end && n.end > bar.start);
       const width = Math.max(350, notes.length * 45);
       const x = (time: number) => 38 + Math.max(0, Math.min(1, (time - bar.start) / (bar.end - bar.start))) * (width - 66);
-      return <section className="editable-tab-bar" key={bar.start} aria-label={`六線譜 Bar ${bar.number}`}>
+      return <section className="editable-tab-bar" data-bar-start={bar.start} key={bar.start} aria-label={`六線譜 Bar ${bar.number}`}>
         <strong>Bar {bar.number} · {bar.start.toFixed(1)}–{bar.end.toFixed(1)}s</strong>
         {!notes.length ? <p className="tab-empty">此小節沒有旋律音符。點弦線可補音。</p> : <p>{notes.length} 音符 · 點品格數字修改{notes.some((n) => n.string == null || n.fret == null) ? "；無指型音符在下方" : ""}</p>}
         <div className="editable-tab-scroll"><div className="editable-tab-staff" style={{ width }}>

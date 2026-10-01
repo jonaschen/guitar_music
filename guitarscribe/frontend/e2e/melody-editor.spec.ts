@@ -249,6 +249,7 @@ test("empty opening explains missing notes and can jump to an editable note with
   await page.route("**/rhythm-patterns?*", (route) => route.fulfill({ json: [] }));
   await page.goto("/?job=editor");
   await page.getByText("旋律人工編輯 · Melody editor", { exact: true }).click();
+  await page.getByLabel("Tab bar count").selectOption("2");
   await expect(page.getByText(/所選小節沒有旋律音符可修改/)).toBeVisible();
   await expect(page.getByLabel("旋律資料狀態")).toContainText("工作樂譜共 1 個旋律音符；所選小節有 0 個");
   await expect(page.getByLabel("Tab start bar").locator("option").filter({ hasText: "Bar 3 · 1 音符" })).toHaveCount(1);
@@ -259,4 +260,38 @@ test("empty opening explains missing notes and can jump to an editable note with
   await expect(page.getByLabel("Tab fret", { exact: true })).toHaveValue("1");
   await expect(page.getByLabel("旋律資料狀態")).toContainText("所選小節有 1 個");
   expect(edits).toBe(0);
+});
+
+test("four bars default, eight bars follow within the editor without chord page scrolling", async ({ page }) => {
+  await page.addInitScript(() => {
+    (window as any).__chordScrolls = 0;
+    const original = Element.prototype.scrollIntoView;
+    Element.prototype.scrollIntoView = function(options) {
+      if (this.classList.contains("chord-block-active")) (window as any).__chordScrolls++;
+      original.call(this, options);
+    };
+  });
+  await page.route("**/api/v1/jobs/editor", (route) => route.fulfill({ json: {
+    id: "editor", status: "completed", progress: 100, artifacts: [], score: { ...score,
+      song: { ...score.song, duration_seconds: 3.2 },
+      beats: Array.from({ length: 32 }, (_, i) => ({ time: i * .1, beat: i % 4 + 1, measure: Math.floor(i / 4) + 1, confidence: 1 })),
+      chords: Array.from({ length: 8 }, (_, i) => ({ id: `c${i}`, start: i * .4, end: (i + 1) * .4, symbol: "C", confidence: .5, origin: "model", edited: false })),
+    },
+  } }));
+  await page.route("**/rhythm-patterns?*", (route) => route.fulfill({ json: [] }));
+  await page.goto("/?job=editor");
+  await page.getByText("旋律人工編輯 · Melody editor", { exact: true }).click();
+  await expect(page.getByLabel("Tab bar count")).toHaveValue("4");
+  await expect(page.locator(".editable-tab-bar")).toHaveCount(4);
+  await page.getByLabel("Tab bar count").selectOption("8");
+  await expect(page.locator(".editable-tab-bar")).toHaveCount(8);
+  await page.getByRole("button", { name: "重播所選小節", exact: true }).scrollIntoViewIfNeeded();
+  await page.waitForTimeout(500);
+  await page.evaluate(() => { (window as any).__chordScrolls = 0; });
+  await page.getByRole("button", { name: "重播所選小節", exact: true }).click();
+  const scrollY = await page.evaluate(() => window.scrollY);
+  await expect.poll(() => page.locator(".editable-tab").evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
+  expect(await page.evaluate(() => (window as any).__chordScrolls)).toBe(0);
+  expect(Math.abs(await page.evaluate(() => window.scrollY) - scrollY)).toBeLessThan(3);
+  await page.getByRole("button", { name: "暫停，保留位置", exact: true }).click();
 });

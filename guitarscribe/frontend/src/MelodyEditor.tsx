@@ -31,7 +31,7 @@ export function MelodyEditor(props: Props) {
   const [tabString, setTabString] = useState(2);
   const [tabFret, setTabFret] = useState(1);
   const [explicitTab, setExplicitTab] = useState(false);
-  const [barCount, setBarCount] = useState(2);
+  const [barCount, setBarCount] = useState(4);
   const [loop, setLoop] = useState(false);
   const inFlight = useRef(false);
   const selected = score.melody.find((n) => n.id === selectedId);
@@ -115,6 +115,17 @@ export function MelodyEditor(props: Props) {
   return <details className="melody-editor workspace-disclosure">
     <summary>旋律人工編輯 · Melody editor</summary>
     <p>聽一段 → 暫停 → 點六線譜數字修改 → 重播所選小節。上方為第 1 弦，品格相對 Capo {score.analysis.capo}；橫線尾巴表示持續時間，⌒ 表示跨小節延續。</p>
+    <p><strong>時間比例六線譜草稿，尚非傳統節奏排版。</strong>弦上的數字是「品格」，不是簡譜音級；例如第 4 弦的 5，就是彈第 4 弦第 5 格。</p>
+    <details className="tab-reading-guide"><summary>怎麼讀這張譜？</summary>
+      <ul>
+        <li>六條橫線由上到下是第 1–6 弦；方框數字 0 表示空弦，其餘是相對 Capo 的品格。</li>
+        <li>上方 1、2、3、4 與垂直虛線是推定拍點，Bar 是一個小節。方框的左右位置表示起音時間。</li>
+        <li>綠色尾線是音符持續時間；橘色直線是播放位置，發聲中的音符會亮起。</li>
+        <li>≈¼、≈⅛、≈½ 分別表示接近四分、八分、二分音符；· 表示附點。這是近似音長標籤，不是品格或拍號。</li>
+        <li>⌒ 表示同一個音跨小節延續，不是重新彈一次；空白不保證是休止，也可能是漏抓。</li>
+      </ul>
+      <p>尚未提供傳統符桿、連桿與完整休止記號，也不是簡譜。這一版先用實際時間保留尚未校正的分析結果。</p>
+    </details>
     <div className="editor-actions">
       <label>起始小節<select aria-label="Tab start bar" value={barIndex} onChange={(e) => { props.onStop(); setWindowStart(bars[Number(e.target.value)].start); }}>{bars.map((bar, i) => <option key={bar.start} value={i}>Bar {bar.number} · {barNoteCounts[i]} 音符</option>)}</select></label>
       <label>段落長度<select aria-label="Tab bar count" value={barCount} onChange={(e) => { props.onStop(); setBarCount(Number(e.target.value)); }}>{[1, 2, 4, 8].map((n) => <option key={n} value={n}>{n} 小節</option>)}</select></label>
@@ -135,7 +146,7 @@ export function MelodyEditor(props: Props) {
       <button type="button" onClick={() => props.onAudition(props.playhead >= rangeStart && props.playhead < rangeEnd ? props.playhead : rangeStart, rangeEnd)}>從暫停位置續播</button>
       <button type="button" onClick={() => props.onOriginal(rangeStart, rangeEnd)}>對照來源片段</button>
     </div>
-    <p aria-label="Tab transport position">位置 {props.playhead.toFixed(2)}s · 所選 {rangeStart.toFixed(2)}–{rangeEnd.toFixed(2)}s。修訂播放只有旋律；來源使用上方選定的音軌。小節／音長依推定拍點顯示，未自動量化。</p>
+    <p aria-label="Tab transport position">位置 {props.playhead.toFixed(2)}s · 所選 {rangeStart.toFixed(2)}–{rangeEnd.toFixed(2)}s。修訂播放只有旋律；來源使用上方選定的音軌。小節／音長依推定拍點顯示，未自動量化。譜面區內跟隨播放，不跳到和弦區；可選 4 或 8 小節。</p>
     <EditableTab score={score} bars={shownBars} selectedId={selectedId} playhead={props.playhead} onSelect={selectNote} onInsert={insertOnTab} />
     <fieldset disabled={busy}>
       <legend>{selected ? `譜上選音：${selected.note}` : "點譜上數字修改，或點空白弦線補音"}</legend>
