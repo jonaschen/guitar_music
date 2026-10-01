@@ -91,6 +91,8 @@ test("empty melody can be filled, deleted and restored; invalid edit preserves n
   });
   await setup(page, true);
   await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.getByText(/目前工作樂譜沒有旋律音符。Contour/)).toBeVisible();
+  await expect(page.getByRole("button", { name: "跳到第一個有音符的小節", exact: true })).toBeDisabled();
   await page.getByRole("button", { name: "New at playhead", exact: true }).click();
   await page.getByLabel("Melody pitch").selectOption("67");
   await page.getByRole("button", { name: "Add note", exact: true }).click();
@@ -234,4 +236,27 @@ test("source segment plays through media onPlay and stops at its selected bar bo
   await expect.poll(() => audio.evaluate((a: HTMLAudioElement) => a.paused)).toBe(false);
   await page.getByRole("button", { name: "暫停，保留位置", exact: true }).click();
   expect(await audio.evaluate((a: HTMLAudioElement) => a.paused)).toBe(true);
+});
+
+test("empty opening explains missing notes and can jump to an editable note without modifying it", async ({ page }) => {
+  let edits = 0;
+  await page.route("**/scores/melody/edit", (route) => { edits++; return route.fulfill({ json: answer(route) }); });
+  await page.route("**/api/v1/jobs/editor", (route) => route.fulfill({ json: {
+    id: "editor", status: "completed", progress: 100, artifacts: [], score: { ...score,
+      beats: Array.from({ length: 16 }, (_, i) => ({ time: i * .5, beat: i % 4 + 1, measure: Math.floor(i / 4) + 1, confidence: 1 })),
+      melody: [{ ...score.melody[0], start: 4, end: 4.5 }] },
+  } }));
+  await page.route("**/rhythm-patterns?*", (route) => route.fulfill({ json: [] }));
+  await page.goto("/?job=editor");
+  await page.getByText("旋律人工編輯 · Melody editor", { exact: true }).click();
+  await expect(page.getByText(/所選小節沒有旋律音符可修改/)).toBeVisible();
+  await expect(page.getByLabel("旋律資料狀態")).toContainText("工作樂譜共 1 個旋律音符；所選小節有 0 個");
+  await expect(page.getByLabel("Tab start bar").locator("option").filter({ hasText: "Bar 3 · 1 音符" })).toHaveCount(1);
+  await page.getByRole("button", { name: "跳到第一個有音符的小節", exact: true }).click();
+  await expect(page.getByLabel("Tab start bar")).toHaveValue("2");
+  await expect(page.getByRole("button", { name: "Tab n1 C4 2弦1格", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: "Apply note", exact: true })).toBeEnabled();
+  await expect(page.getByLabel("Tab fret", { exact: true })).toHaveValue("1");
+  await expect(page.getByLabel("旋律資料狀態")).toContainText("所選小節有 1 個");
+  expect(edits).toBe(0);
 });

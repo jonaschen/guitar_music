@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { SongScore } from "./types";
 import { EditableTab } from "./EditableTab";
 import { notationBars, notationClock, noteLengths, lengthLabel } from "./melodyNotation";
@@ -38,11 +38,21 @@ export function MelodyEditor(props: Props) {
   const left = Math.max(0, Math.min(windowStart, Math.max(0, score.song.duration_seconds - 0.01)));
   const right = Math.min(score.song.duration_seconds, left + 8);
   const visible = score.melody.filter((n) => n.end > left && n.start < right).sort((a, b) => a.start - b.start);
-  const bars = notationBars(score);
+  const bars = useMemo(() => notationBars(score), [score]);
+  const barNoteCounts = useMemo(() => bars.map((bar) => score.melody.filter((n) => n.start < bar.end && n.end > bar.start).length), [score, bars]);
   const barIndex = Math.max(0, bars.findIndex((bar) => left >= bar.start && left < bar.end));
   const shownBars = bars.slice(barIndex, barIndex + barCount);
   const rangeStart = shownBars[0]?.start ?? left;
   const rangeEnd = shownBars.at(-1)?.end ?? right;
+  const rangeNotes = score.melody.filter((n) => n.start < rangeEnd && n.end > rangeStart);
+  const firstWithNotes = barNoteCounts.findIndex((count) => count > 0);
+  const nextWithNotes = barNoteCounts.findIndex((count, i) => i > barIndex && count > 0);
+  function showNotes(index: number) {
+    if (index < 0) return;
+    props.onStop(); setWindowStart(bars[index].start);
+    const note = score.melody.find((n) => n.start < bars[index].end && n.end > bars[index].start);
+    if (note) setSelectedId(note.id);
+  }
   const clock = notationClock(score);
   useEffect(() => {
     if (selected) { setMidi(selected.midi); setStart(String(selected.start)); setEnd(String(selected.end)); setTabString(selected.string ?? 1); setTabFret(selected.fret ?? 0); setExplicitTab(false); }
@@ -106,10 +116,18 @@ export function MelodyEditor(props: Props) {
     <summary>旋律人工編輯 · Melody editor</summary>
     <p>聽一段 → 暫停 → 點六線譜數字修改 → 重播所選小節。上方為第 1 弦，品格相對 Capo {score.analysis.capo}；橫線尾巴表示持續時間，⌒ 表示跨小節延續。</p>
     <div className="editor-actions">
-      <label>起始小節<select aria-label="Tab start bar" value={barIndex} onChange={(e) => { props.onStop(); setWindowStart(bars[Number(e.target.value)].start); }}>{bars.map((bar, i) => <option key={bar.start} value={i}>Bar {bar.number}</option>)}</select></label>
+      <label>起始小節<select aria-label="Tab start bar" value={barIndex} onChange={(e) => { props.onStop(); setWindowStart(bars[Number(e.target.value)].start); }}>{bars.map((bar, i) => <option key={bar.start} value={i}>Bar {bar.number} · {barNoteCounts[i]} 音符</option>)}</select></label>
       <label>段落長度<select aria-label="Tab bar count" value={barCount} onChange={(e) => { props.onStop(); setBarCount(Number(e.target.value)); }}>{[1, 2, 4, 8].map((n) => <option key={n} value={n}>{n} 小節</option>)}</select></label>
       <button type="button" onClick={() => setWindowStart(props.playhead)}>顯示暫停位置</button>
       <label><input type="checkbox" aria-label="Loop edited bars" checked={loop} onChange={(e) => { props.onStop(); setLoop(e.target.checked); }} />循環修訂段落</label>
+    </div>
+    <div className="melody-coverage" aria-label="旋律資料狀態">
+      <p>工作樂譜共 {score.melody.length} 個旋律音符；所選小節有 {rangeNotes.length} 個。{props.jobId ? `來源分析：${props.jobId}` : "目前版本未附來源分析 ID。"}</p>
+      {!rangeNotes.length ? <p role="status">{score.melody.length ? "所選小節沒有旋律音符可修改。空白可能是未抓到旋律，不代表歌曲沒有旋律，也不會從 Contour 自動產生音符。請跳到有音符的小節，或點空白弦線手動補音。" : "目前工作樂譜沒有旋律音符。Contour 有聲音不代表已產生可編輯音符；可載入先前修訂，或點空白弦線、設定品格及音長，再按 Add note 補入。"}</p> : <p>直接點弦上的品格數字，再到下方改弦／品格或音長，按 Apply note；無指型音符會列在弦線下方。</p>}
+      <div className="editor-actions">
+        <button type="button" disabled={firstWithNotes < 0} onClick={() => showNotes(firstWithNotes)}>跳到第一個有音符的小節</button>
+        <button type="button" disabled={nextWithNotes < 0} onClick={() => showNotes(nextWithNotes)}>下一個有音符的小節</button>
+      </div>
     </div>
     <div className="editor-actions">
       <button type="button" onClick={() => props.onAudition(rangeStart, rangeEnd, loop)}>重播所選小節</button>

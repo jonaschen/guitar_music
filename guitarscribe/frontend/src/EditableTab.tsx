@@ -12,6 +12,7 @@ export function EditableTab({ score, bars, selectedId, playhead, onSelect, onIns
       const x = (time: number) => 38 + Math.max(0, Math.min(1, (time - bar.start) / (bar.end - bar.start))) * (width - 66);
       return <section className="editable-tab-bar" key={bar.start} aria-label={`六線譜 Bar ${bar.number}`}>
         <strong>Bar {bar.number} · {bar.start.toFixed(1)}–{bar.end.toFixed(1)}s</strong>
+        {!notes.length ? <p className="tab-empty">此小節沒有旋律音符。點弦線可補音。</p> : <p>{notes.length} 音符 · 點品格數字修改{notes.some((n) => n.string == null || n.fret == null) ? "；無指型音符在下方" : ""}</p>}
         <div className="editable-tab-scroll"><div className="editable-tab-staff" style={{ width }}>
           {score.beats.filter((b) => b.time >= bar.start && b.time < bar.end).map((b) => <span key={b.time} className="editable-tab-beat" style={{ left: x(b.time) }}><small>{b.beat}</small></span>)}
           {[1, 2, 3, 4, 5, 6].map((string) => <button type="button" className="editable-tab-string" key={string} style={{ top: 36 + (string - 1) * 32 }} aria-label={`Bar ${bar.number} 第 ${string} 弦新增音符`}
