@@ -96,6 +96,22 @@ test("whole-song pluck playback resumes string age and cancels pending preparati
   await expect(page.getByRole("button", { name: "Pause score", exact: true })).toHaveCount(0);
 });
 
+test("listening presets enable melody, restore balance and clear solo", async ({ page }) => {
+  await page.route("**/api/v1/jobs/listening", (route) => route.fulfill({ json: { id: "listening", status: "completed", progress: 100, artifacts: [], score } }));
+  await page.route("**/rhythm-patterns?*", (route) => route.fulfill({ json: [] }));
+  await page.goto("/?job=listening");
+  await page.getByText("Compiled score playback", { exact: true }).click();
+  await page.getByRole("button", { name: "只聽旋律", exact: true }).click();
+  await expect(page.getByLabel("melody track", { exact: true })).toBeChecked();
+  await expect(page.getByLabel("melody volume", { exact: true })).toHaveValue("0.45");
+  await expect(page.getByRole("button", { name: "Soloed", exact: true })).toHaveCount(1);
+  await page.getByRole("button", { name: "旋律＋吉他（預設平衡）", exact: true }).click();
+  await expect(page.getByLabel("guitar track", { exact: true })).toBeChecked();
+  await expect(page.getByLabel("melody track", { exact: true })).toBeChecked();
+  await expect(page.getByLabel("guitar volume", { exact: true })).toHaveValue("0.24");
+  await expect(page.getByRole("button", { name: "Soloed", exact: true })).toHaveCount(0);
+});
+
 test("score edits stop active and pending audio instead of leaving stale harmony playing", async ({ page }) => {
   await page.route("**/api/v1/jobs/edit-playback", (route) => route.fulfill({ json: {
     id: "edit-playback", status: "completed", progress: 100, artifacts: [], score,

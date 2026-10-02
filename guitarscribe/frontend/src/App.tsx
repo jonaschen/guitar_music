@@ -4,6 +4,7 @@ import { ChordDiagram } from "./ChordDiagram";
 import { createAudioContextTransportClock, createMediaTransportClock } from "./transportClock";
 import { DiagnosticTimeline } from "./DiagnosticTimeline";
 import { guitarEnvelope } from "./guitarEnvelope";
+import { melodyEnvelope } from "./melodyEnvelope";
 import { PlaybackReference } from "./PlaybackReference";
 import { preparePluckedBuffers, createPluckedVoice } from "./pluckedTone";
 import { createMetronomeVoice } from "./metronomeVoice";
@@ -239,7 +240,7 @@ export function App() {
   const [isSynthPreparing, setIsSynthPreparing] = useState(false);
   const [guitarTone, setGuitarTone] = useState("pluck");
   const [synthTracks, setSynthTracks] = useState<Record<PlaybackTrack, boolean>>({ guitar: true, melody: false, metronome: false });
-  const [synthVolumes, setSynthVolumes] = useState<Record<PlaybackTrack, number>>({ guitar: 0.24, melody: 0.3, metronome: 0.18 });
+  const [synthVolumes, setSynthVolumes] = useState<Record<PlaybackTrack, number>>({ guitar: 0.24, melody: 0.45, metronome: 0.18 });
   const [synthSoloTrack, setSynthSoloTrack] = useState<PlaybackTrack | null>(null);
   const [metronomeEnabled, setMetronomeEnabled] = useState(false);
   const [countInMeasures, setCountInMeasures] = useState(0);
@@ -1095,7 +1096,7 @@ export function App() {
               const buffer = buffers.get(pitch);
               if (buffer) {
                 const source = createPluckedVoice(context, buffer, startAt, endAt,
-                  synthVolumes.guitar * (event.pitch_velocities[pitchIndex] ?? event.velocity) / 127 / Math.sqrt(event.pitches.length), age);
+                  synthVolumes.guitar * (event.pitch_velocities[pitchIndex] ?? event.velocity) / 127 / Math.sqrt(event.pitches.length), age, event.stroke);
                 if (source) trackSynthSource(source);
               }
               return;
@@ -1106,7 +1107,7 @@ export function App() {
             const oscillator = context.createOscillator();
             const gain = context.createGain();
             const isGuitar = event.track === "guitar";
-            oscillator.type = isGuitar ? "triangle" : event.track === "melody" ? "sine" : "square";
+            oscillator.type = isGuitar || event.track === "melody" ? "triangle" : "square";
             oscillator.frequency.setValueAtTime(440 * 2 ** ((pitch - 69) / 12), startAt);
             const pitchVelocity = event.pitch_velocities[pitchIndex] ?? event.velocity;
             const peak = Math.max(0.001, synthVolumes[event.track] * pitchVelocity / 127 / Math.max(event.pitches.length, 1));
@@ -1120,15 +1121,17 @@ export function App() {
                 gain.gain.exponentialRampToValueAtTime(point.value, point.time);
               }
             } else {
-              gain.gain.setValueAtTime(0.0001, startAt);
-              gain.gain.linearRampToValueAtTime(peak, startAt + 0.008);
-              gain.gain.exponentialRampToValueAtTime(0.0001, endAt);
+              const envelope = melodyEnvelope(startAt, endAt, peak);
+              gain.gain.setValueAtTime(envelope[0].value, envelope[0].time);
+              gain.gain.linearRampToValueAtTime(envelope[1].value, envelope[1].time);
+              gain.gain.linearRampToValueAtTime(envelope[2].value, envelope[2].time);
+              gain.gain.exponentialRampToValueAtTime(envelope[3].value, envelope[3].time);
             }
             if (isGuitar) {
               const filter = context.createBiquadFilter();
               filter.type = "lowpass";
-              filter.frequency.setValueAtTime(4200, startAt);
-              filter.frequency.exponentialRampToValueAtTime(900, Math.min(endAt, startAt + 0.3));
+              filter.frequency.setValueAtTime(event.stroke === "U" ? 5600 : 3200, startAt);
+              filter.frequency.exponentialRampToValueAtTime(event.stroke === "U" ? 1500 : 900, Math.min(endAt, startAt + 0.3));
               oscillator.connect(gain).connect(filter).connect(context.destination);
               if (pitchIndex === 0) scheduleGuitarPick(context, startAt, peak);
             } else {
@@ -1809,6 +1812,11 @@ export function App() {
 
                 <details className="synth-panel workspace-disclosure">
                   <summary>Compiled score playback</summary>
+                  <div className="toolbar-actions">
+                    <button type="button" className="ghost-button" onClick={() => { stopSynth(false); setSynthTracks({ guitar: true, melody: true, metronome: false }); setSynthSoloTrack(null); setSynthVolumes({ guitar: 0.24, melody: 0.45, metronome: 0.18 }); }}>旋律＋吉他（預設平衡）</button>
+                    <button type="button" className="ghost-button" onClick={() => { stopSynth(false); setSynthTracks((tracks) => ({ ...tracks, melody: true })); setSynthSoloTrack("melody"); setSynthVolumes((volumes) => ({ ...volumes, melody: 0.45 })); }}>只聽旋律</button>
+                  </div>
+                  <p>旋律音色與上下刷音色調整只影響此處試聽，不改寫音符／拍點，也不改變 MIDI 播放器的音色。套用聆聽配置後請按 Play score。</p>
                   <p>Web Audio uses the current key, capo, selected voicings, rhythm, and estimated melody. 修改樂譜或刷奏後會停止舊播放，請重新按 Play score。</p>
                   <p aria-label="Playback chord comparison">譜面當前：{score.chords.find((chord) => chord.id === activeChordId)?.symbol ?? "—"} · 演奏事件：{isSynthPlaying && !isCountingIn && synthTracks.guitar && synthVolumes.guitar > 0 && (synthSoloTrack === null || synthSoloTrack === "guitar") ? soundingChord?.symbol ?? "—" : "—"}</p>
                   <p>Guitar plays a suggested strumming pattern on the detected beat grid, not the original recording's arrangement. To compare, click the same bar's chord before using Original / Play and Play score. Short chords between strums may not sound; inspect the chord sheet for all detected changes.</p>
@@ -1816,7 +1824,7 @@ export function App() {
                     <label>Guitar tone <select aria-label="Score guitar tone" value={guitarTone} onChange={(event) => { stopSynth(false); setGuitarTone(event.target.value); }}><option value="pluck">新：逐泛音衰減</option><option value="simple">舊：簡單振盪器</option></select></label>
                     <button type="button" className="ghost-button" disabled={isSynthPreparing} onClick={() => void toggleSynthPlayback()}>{isSynthPreparing ? "Preparing score…" : isSynthPlaying ? "Pause score" : "Play score"}</button>
                     <button type="button" className="ghost-button" onClick={() => stopSynth(true)}>Stop score</button>
-                    {(["guitar", "melody", "metronome"] as PlaybackTrack[]).map((track) => <label className="synth-track" key={track}><input type="checkbox" aria-label={track + " track"} checked={synthTracks[track]} onChange={() => { stopSynth(false); setSynthTracks((tracks) => ({ ...tracks, [track]: !tracks[track] })); }} /><span>{track}</span><input type="range" min="0" max="1" step="0.05" value={synthVolumes[track]} onChange={(event) => { stopSynth(false); setSynthVolumes((volumes) => ({ ...volumes, [track]: Number(event.target.value) })); }} aria-label={track + " volume"} /><button type="button" className={synthSoloTrack === track ? "synth-solo synth-solo-active" : "synth-solo"} onClick={() => { stopSynth(false); setSynthSoloTrack((current) => current === track ? null : track); }}>{synthSoloTrack === track ? "Soloed" : "Solo"}</button></label>)}
+                    {(["guitar", "melody", "metronome"] as PlaybackTrack[]).map((track) => <label className="synth-track" key={track}><input type="checkbox" aria-label={track + " track"} checked={synthTracks[track]} onChange={() => { stopSynth(false); setSynthTracks((tracks) => ({ ...tracks, [track]: !tracks[track] })); }} /><span>{track}</span><input type="range" min="0" max="1" step="0.01" value={synthVolumes[track]} onChange={(event) => { stopSynth(false); setSynthVolumes((volumes) => ({ ...volumes, [track]: Number(event.target.value) })); }} aria-label={track + " volume"} /><button type="button" className={synthSoloTrack === track ? "synth-solo synth-solo-active" : "synth-solo"} onClick={() => { stopSynth(false); setSynthSoloTrack((current) => current === track ? null : track); }}>{synthSoloTrack === track ? "Soloed" : "Solo"}</button></label>)}
                     <span role="status">{activeBeatIndex >= 0 ? `Bar ${score.beats[activeBeatIndex].measure} · Beat ${score.beats[activeBeatIndex].beat}` : "Beat —"}</span>
                   </div>
                 </details>

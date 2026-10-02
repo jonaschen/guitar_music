@@ -66,7 +66,7 @@ export function PlaybackReference({ onStart, stopRef }: {
           const velocity = event.pitch_velocities[index] ?? event.velocity;
           const peak = event.track === "guitar" ? 0.24 * velocity / 127 / Math.sqrt(event.pitches.length) : 0.018;
           if (tone === "pluck") {
-            const source = createPluckedVoice(context, buffers.get(pitch)!, start, end, peak);
+            const source = createPluckedVoice(context, buffers.get(pitch)!, start, end, peak, 0, event.stroke);
             if (source) sources.current.push(source);
             return;
           }

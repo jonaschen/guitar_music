@@ -43,7 +43,7 @@ export async function preparePluckedBuffers(context: BaseAudioContext, pitches: 
   return prepared;
 }
 
-export function createPluckedVoice(context: BaseAudioContext, buffer: AudioBuffer, start: number, end: number, level: number, offset = 0) {
+export function createPluckedVoice(context: BaseAudioContext, buffer: AudioBuffer, start: number, end: number, level: number, offset = 0, stroke?: string | null) {
   if (offset >= buffer.duration || end <= start || level <= 0) return null;
   const source = context.createBufferSource();
   source.buffer = buffer;
@@ -53,8 +53,14 @@ export function createPluckedVoice(context: BaseAudioContext, buffer: AudioBuffe
   if (offset > 0) gain.gain.linearRampToValueAtTime(level, Math.min(end, start + 0.008));
   gain.gain.setValueAtTime(level, end);
   gain.gain.exponentialRampToValueAtTime(0.00001, end + 0.28);
-  source.connect(gain).connect(context.destination);
-  source.addEventListener("ended", () => { source.disconnect(); gain.disconnect(); });
+  // Direction already controls string order and velocity. Add pick colour
+  // without resetting or shortening the string's independent resonance.
+  const colour = context.createBiquadFilter();
+  colour.type = "highshelf";
+  colour.frequency.setValueAtTime(1200, start);
+  colour.gain.setValueAtTime(stroke === "U" ? 4 : stroke === "D" ? -3 : 0, start);
+  source.connect(gain).connect(colour).connect(context.destination);
+  source.addEventListener("ended", () => { source.disconnect(); gain.disconnect(); colour.disconnect(); });
   source.start(start, offset);
   source.stop(end + 0.29);
   return source;
