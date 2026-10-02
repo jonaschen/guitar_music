@@ -77,6 +77,7 @@ class LyricsRevisionResponse(BaseModel):
 
 
 class YouTubeJobRequest(BaseModel):
+    skip_seconds: float = Field(default=0, ge=0, allow_inf_nan=False)
     url: str = Field(description="A single youtube.com or youtu.be video URL. Playlists are not accepted.")
     rights_confirmed: bool = Field(description="Must be true: the caller confirms they have rights to analyze this audio.")
     melody_mode: str = Field(default="vocal", description="Melody extraction mode: vocal, guitar, or mix.")
@@ -259,6 +260,7 @@ async def create_analysis_job(
     melody_mode: str = Form(default="vocal"),
     chord_complexity: str = Form(default="standard"),
     separate_vocals: bool = Form(default=False),
+    skip_seconds: float = Form(default=0, ge=0, allow_inf_nan=False),
     _rate_limit: None = Depends(enforce_submission_rate_limit),
     job_service: AnalysisJobService = Depends(get_job_service),
 ) -> AnalysisJob:
@@ -275,6 +277,7 @@ async def create_analysis_job(
             melody_mode=melody_mode,
             separate_vocals=separate_vocals,
             chord_complexity=chord_complexity,
+            skip_seconds=skip_seconds,
         )
     except JobQueueFullError as exc:
         raise HTTPException(status_code=503, detail=str(exc), headers={"Retry-After": "30"}) from exc
@@ -296,7 +299,7 @@ async def create_youtube_analysis_job(
     if not request.rights_confirmed:
         raise HTTPException(status_code=400, detail="Rights must be confirmed")
     try:
-        return await job_service.submit_youtube(validate_youtube_url(request.url), request.melody_mode, request.chord_complexity, request.separate_vocals)
+        return await job_service.submit_youtube(validate_youtube_url(request.url), request.melody_mode, request.chord_complexity, request.separate_vocals, request.skip_seconds)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except RuntimeError as exc:
@@ -333,7 +336,9 @@ async def get_job_audio(job_id: str, job_service: AnalysisJobService = Depends(g
         raise HTTPException(status_code=404, detail="Analysis job not found") from exc
     if job.status != JobStatus.COMPLETED:
         raise HTTPException(status_code=409, detail="Audio is available after analysis completes")
-    candidates = list(job_service.store.job_dir(job_id).glob("input.*"))
+    directory = job_service.store.job_dir(job_id)
+    candidates = [directory / "analysis-source.wav"] if job.skip_seconds > 0 else list(directory.glob("input.*"))
+    candidates = [path for path in candidates if path.is_file()]
     if not candidates:
         raise HTTPException(status_code=404, detail="Job audio is unavailable")
     return FileResponse(candidates[0], filename=f"guitarscribe-source{candidates[0].suffix}")

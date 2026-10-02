@@ -414,6 +414,20 @@ test("phrase shift previews the selected range and moves all notes once with und
   expect(saved.melody.map((n: any) => [n.id, n.start, n.end])).toEqual([["n1", 0, .5], ["n2", 3, 4], ["outside", 5, 6]]);
 });
 
+test("cropped analysis explains source offset without skipping the opening twice", async ({ page }) => {
+  const cropped = { ...score, song: { ...score.song, source_start_seconds: 19 } };
+  await page.route("**/api/v1/jobs/editor", (route) => route.fulfill({ json: { id: "editor", status: "completed", progress: 100, artifacts: [], score: cropped } }));
+  await page.route("**/rhythm-patterns?*", (route) => route.fulfill({ json: [] }));
+  await page.goto("/?job=editor");
+  await expect(page.getByText("分析前已略過 19 秒；樂譜／播放 0 秒 = 原檔 19 秒。請勿再次略過同一段開場。", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("Playback position", { exact: true })).toHaveAttribute("min", "0");
+  await expect(page.getByLabel("Playback position", { exact: true })).toHaveAttribute("max", "8");
+  await page.locator(".song-range-editor > summary").click();
+  await expect(page.getByLabel("Song range start")).toHaveValue("0");
+  await page.getByText("旋律人工編輯 · Melody editor", { exact: true }).click();
+  await expect(page.getByRole("button", { name: "Tab n1 C4 2弦1格", exact: true })).toBeVisible();
+});
+
 test("saved revision can be recovered without a surviving analysis job", async ({ page }) => {
   await page.route("**/revisions/recovered", (route) => route.fulfill({ json: score }));
   await page.route("**/rhythm-patterns?*", (route) => route.fulfill({ json: [] }));

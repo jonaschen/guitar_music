@@ -15,10 +15,11 @@ export function SongRangeEditor({ score, playhead, onApply, onPreview }: {
   const valid = start.trim() !== "" && end.trim() !== "" && Number.isFinite(Number(start)) && Number.isFinite(Number(end)) && Number(start) >= 0 && Number(start) < Number(end) && Number(end) <= score.song.duration_seconds;
   return <details className="workspace-disclosure song-range-editor">
     <summary>歌曲有效範圍 · 略過 MV 開場（目前 {bounds.start.toFixed(2)}–{bounds.end.toFixed(2)} 秒）</summary>
-    <p>例如 MV 前 19 秒非歌曲，可將起點設為約 20 秒。原檔、音符、和弦及時間戳不改，只限定播放與主要譜面範圍。歌曲起點不是重新指定小節第一拍。</p>
+    <p>此處只限定已分析樂譜的播放與主要譜面，不移動音符或和弦、不重新指定小節第一拍。</p>
+    {(score.song.source_start_seconds ?? 0) > 0 ? <p>分析前已略過 {score.song.source_start_seconds} 秒；此處 0 秒對應原檔 {score.song.source_start_seconds} 秒。所有編輯、播放及匯出使用裁切後時間，不要再重複略過開場。</p> : null}
     <div className="melody-edit-fields">
-      <label>歌曲起點（原檔秒數）<input aria-label="Song range start" type="number" min="0" step="0.01" value={start} onChange={(e) => setStart(e.target.value)} /></label>
-      <label>歌曲終點（原檔秒數）<input aria-label="Song range end" type="number" min="0" max={score.song.duration_seconds} step="0.01" value={end} onChange={(e) => setEnd(e.target.value)} /></label>
+      <label>歌曲起點（分析音訊秒數）<input aria-label="Song range start" type="number" min="0" step="0.01" value={start} onChange={(e) => setStart(e.target.value)} /></label>
+      <label>歌曲終點（分析音訊秒數）<input aria-label="Song range end" type="number" min="0" max={score.song.duration_seconds} step="0.01" value={end} onChange={(e) => setEnd(e.target.value)} /></label>
     </div>
     <div className="toolbar-actions">
       <button type="button" className="ghost-button" onClick={() => setStart(String(playhead))}>用目前位置作起點</button>
@@ -28,6 +29,6 @@ export function SongRangeEditor({ score, playhead, onApply, onPreview }: {
     </div>
     {!valid ? <p role="alert">起點需小於終點，並且都在原檔時間內。</p> : null}
     <p>{message}</p>
-    <p>本版針對已分析樂譜；不裁切檔案、不重編小節。新分析的範圍裁切及範圍專用 MIDI／MusicXML 匯出尚未提供，現有匯出仍包含完整工作樂譜。</p>
+    <p>此設定不裁切檔案、不重編小節；MIDI／MusicXML 仍匯出完整工作樂譜。若要讓開場不參與分析，請在開始新分析前設定「分析前略過開頭」。</p>
   </details>;
 }

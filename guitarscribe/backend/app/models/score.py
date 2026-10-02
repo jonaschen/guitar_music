@@ -8,6 +8,7 @@ class SongInfo(BaseModel):
     source_type: str = "local"
     source_url: Optional[str] = None
     duration_seconds: float = 0.0
+    source_start_seconds: float = Field(default=0, ge=0, allow_inf_nan=False)
 
 class AnalysisSummary(BaseModel):
     key: str = "C"

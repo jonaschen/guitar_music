@@ -82,13 +82,14 @@ function semitoneDelta(from: string, to: string): number {
   return raw;
 }
 
-async function createAnalysisJob(file: File, melodyMode: string, separateVocals: boolean, chordComplexity: string): Promise<AnalysisJob> {
+async function createAnalysisJob(file: File, melodyMode: string, separateVocals: boolean, chordComplexity: string, skipSeconds: number): Promise<AnalysisJob> {
   const formData = new FormData();
   formData.append("audio_file", file);
   formData.append("rights_confirmed", "true");
   formData.append("melody_mode", melodyMode);
   formData.append("separate_vocals", String(separateVocals));
   formData.append("chord_complexity", chordComplexity);
+  formData.append("skip_seconds", String(skipSeconds));
 
   const response = await fetch(`${API_BASE}/api/v1/jobs`, {
     method: "POST",
@@ -102,11 +103,11 @@ async function createAnalysisJob(file: File, melodyMode: string, separateVocals:
   return response.json();
 }
 
-async function createYouTubeAnalysisJob(url: string, melodyMode: string, separateVocals: boolean, chordComplexity: string): Promise<AnalysisJob> {
+async function createYouTubeAnalysisJob(url: string, melodyMode: string, separateVocals: boolean, chordComplexity: string, skipSeconds: number): Promise<AnalysisJob> {
   const response = await fetch(`${API_BASE}/api/v1/youtube-jobs`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ url, rights_confirmed: true, melody_mode: melodyMode, separate_vocals: separateVocals, chord_complexity: chordComplexity }),
+    body: JSON.stringify({ url, rights_confirmed: true, melody_mode: melodyMode, separate_vocals: separateVocals, chord_complexity: chordComplexity, skip_seconds: skipSeconds }),
   });
   if (!response.ok) throw new Error(await response.text());
   return response.json();
@@ -207,6 +208,7 @@ export function App() {
   const [separateVocals, setSeparateVocals] = useState(false);
   const [showRawChordSegments, setShowRawChordSegments] = useState(false);
   const [chordComplexity, setChordComplexity] = useState("standard");
+  const [skipSeconds, setSkipSeconds] = useState("0");
   const [score, setScore] = useState<SongScore | null>(EMPTY_SCORE);
   const scoreRef = useRef(score);
   scoreRef.current = score;
@@ -594,9 +596,10 @@ export function App() {
     setStatus("queued");
     setError("");
     try {
+      if (!skipSeconds.trim() || !Number.isFinite(Number(skipSeconds)) || Number(skipSeconds) < 0) throw new Error("略過秒數必須是大於或等於 0 的數字。");
       const createdJob = useYouTube
-        ? await createYouTubeAnalysisJob(youtubeUrl.trim(), melodyMode, separateVocals, chordComplexity)
-        : await createAnalysisJob(file!, melodyMode, separateVocals, chordComplexity);
+        ? await createYouTubeAnalysisJob(youtubeUrl.trim(), melodyMode, separateVocals, chordComplexity, Number(skipSeconds))
+        : await createAnalysisJob(file!, melodyMode, separateVocals, chordComplexity, Number(skipSeconds));
       setAnalysisJob(createdJob);
       window.localStorage.setItem("guitarscribe.activeJobId", createdJob.id);
     } catch (submitError) {
@@ -1572,6 +1575,11 @@ export function App() {
             </div>
 
             <div className="rights-box">
+              <label className="field">
+                <span>分析前略過開頭（秒）</span>
+                <input aria-label="Skip opening seconds" type="number" min="0" step="0.01" required value={skipSeconds} onChange={(event) => setSkipSeconds(event.target.value)} />
+              </label>
+              <p>例如填 19：只分析原檔 19 秒之後的內容。播放、編輯與匯出從新時間 0 秒開始；原檔保留。起點不保證是小節第一拍。</p>
               <strong>Rights check</strong>
               <p>You should provide only audio or YouTube videos you own, control, or have permission to analyze.</p>
             </div>
@@ -1614,6 +1622,7 @@ export function App() {
 
             {score ? (
               <>
+                {(score.song.source_start_seconds ?? 0) > 0 ? <p role="status">分析前已略過 {score.song.source_start_seconds} 秒；樂譜／播放 0 秒 = 原檔 {score.song.source_start_seconds} 秒。請勿再次略過同一段開場。</p> : null}
                 <SongRangeEditor score={score} playhead={playbackTime}
                   onPreview={(start, end) => void auditionSourceSegment(start, end, true)}
                   onApply={(range) => { audioRef.current?.pause(); stopSynth(false); recordScoreChange({ ...score, song_range: range ?? null }); }} />

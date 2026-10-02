@@ -39,6 +39,7 @@ class AnalysisJob(BaseModel):
     message: str = "Queued for analysis"
     melody_mode: str = "vocal"
     separate_vocals: bool = False
+    skip_seconds: float = Field(default=0, ge=0, allow_inf_nan=False)
     chord_complexity: str = "standard"
     source_type: SourceType = SourceType.LOCAL
     source_url: str | None = None

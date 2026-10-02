@@ -8,6 +8,7 @@ export type SongScore = {
     source_type: string;
     source_url?: string | null;
     duration_seconds: number;
+    source_start_seconds?: number;
   };
   analysis: {
     key: string;
