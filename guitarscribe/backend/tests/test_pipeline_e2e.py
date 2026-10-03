@@ -128,8 +128,9 @@ async def test_pipeline_falls_back_to_full_mix_when_vocal_separation_fails(tmp_p
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("with_contour", [False, True])
+@pytest.mark.parametrize("engine", ["test", "pyin_vocal"])
 @pytest.mark.parametrize("accompaniment", ["absent", "present", "missing_file"])
-async def test_pipeline_reports_successful_vocal_separation(tmp_path, with_contour, accompaniment):
+async def test_pipeline_reports_successful_vocal_separation(tmp_path, with_contour, accompaniment, engine):
     from app.core.pipeline import AnalysisPipeline
     from app.models.analysis import BeatAnalysis, ChordAnalysis, MelodyAnalysis, MelodyMode, MelodyNote, RhythmSuggestion
     from app.models.audio import AudioAsset, NormalizedAudio
@@ -168,7 +169,7 @@ async def test_pipeline_reports_successful_vocal_separation(tmp_path, with_conto
     class MelodyAnalyzer:
         async def analyze(self, audio, beats, mode):
             assert audio is vocals
-            return MelodyAnalysis(mode=MelodyMode.VOCAL, contour=MelodyContour(
+            return MelodyAnalysis(engine=engine, mode=MelodyMode.VOCAL, contour=MelodyContour(
                 source_artifact_sha256="0" * 64, source_start=0, source_end=8,
                 hop_seconds=0.5, frequencies_hz=(450.1,) * 16,
                 voiced_probabilities=(0.1,) * 16,
@@ -212,8 +213,10 @@ async def test_pipeline_reports_successful_vocal_separation(tmp_path, with_conto
     assert raw_candidates["analysis"]["notes"][0]["id"] == "n"
     assert raw_candidates["analysis"]["notes"][0]["end"] == 0.25
     assert len(raw_candidates["analysis"]["notes"]) == 2
-    assert len(score.melody) == 1
-    assert score.melody[0].end == 0.5
+    source_timed = with_contour and engine == "pyin_vocal"
+    assert len(score.melody) == (2 if source_timed else 1)
+    assert score.melody[0].end == (0.25 if source_timed else 0.5)
+    assert score.provenance.parameters["melody_note_processing"] == ("source-timed-semitone-v2" if source_timed else "legacy-eighth-grid")
     timing_artifact = artifacts / "timing-candidates.json"
     assert timing_artifact.is_file()
     assert '"raw_artifact": "timing-candidates.json"' in timing_artifact.read_text()

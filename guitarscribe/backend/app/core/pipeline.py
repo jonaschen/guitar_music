@@ -123,6 +123,7 @@ class AnalysisPipeline:
         source_separated = False
         raw_detector_notes = []
         raw_contour = None
+        source_timed_melody = False
         try:
             melody_audio = normalized
             separation_warnings: list[str] = []
@@ -174,8 +175,13 @@ class AnalysisPipeline:
                                 "analysis": melody.model_dump(mode="json")}, ensure_ascii=False, indent=2),
                     encoding="utf-8",
                 )
-            melody.notes = self.melody_post.process(melody.notes, beats.beats, melody_mode)
-            if source_separated and analyzer is not self.melody_analyzer:
+            source_timed_melody = source_separated and melody.engine == "pyin_vocal" and melody.contour is not None
+            if source_timed_melody:
+                melody.notes = self.melody_post.process_source_timed(melody.notes)
+                melody.warnings.append("Vocal notes preserve source frame timing; no automatic beat snapping or repeated-note merging. Verify pitches and bar alignment by ear.")
+            else:
+                melody.notes = self.melody_post.process(melody.notes, beats.beats, melody_mode)
+            if source_separated and analyzer is not self.melody_analyzer and not source_timed_melody:
                 try:
                     reference = await self.melody_analyzer.analyze(melody_audio, beats, melody_mode)
                     reference.notes = self.melody_post.process(reference.notes, beats.beats, melody_mode)
@@ -255,6 +261,7 @@ class AnalysisPipeline:
                     "melody_mode": melody_mode.value,
                     "separate_vocals_requested": separate_vocals,
                     "vocal_source_separated": source_separated,
+                    "melody_note_processing": "source-timed-semitone-v2" if source_timed_melody else "legacy-eighth-grid",
                     "chord_complexity": complexity.value,
                     **chords.parameters,
                     "chord_postprocess_version": "2-preserve-decoder-events",

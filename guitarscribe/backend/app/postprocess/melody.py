@@ -11,6 +11,17 @@ MODE_MIDI_RANGES = {
 }
 
 class MelodyPostProcessor:
+    def process_source_timed(self, notes: List[MelodyNote]) -> List[MelodyNote]:
+        """Filter an already monophonic trace without snapping or joining rests.
+
+        Never run polyphonic candidate selection on a single F0 line. Return
+        copies so diagnostic input and prior working scores remain immutable.
+        """
+        ordered = sorted((note.model_copy(deep=True) for note in notes), key=lambda note: note.start)
+        if any(right.start < left.end - 1e-9 for left, right in zip(ordered, ordered[1:])):
+            raise ValueError("Source-timed melody must be monophonic")
+        return self.remove_low_confidence(self.remove_short_notes(ordered))
+
     def assess_quality(self, notes: List[MelodyNote], duration_seconds: float, mode: MelodyMode, source_separated: bool = False) -> tuple[float, list[str]]:
         """Estimate transcription reliability without claiming source isolation."""
         warnings = [] if source_separated else [

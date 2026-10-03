@@ -28,23 +28,32 @@ def frames_to_notes(
 ) -> list[MelodyNote]:
     """Turn pYIN frames into stable semitone note spans.
 
-    A one-semitone tolerance absorbs normal vocal vibrato.  Unvoiced frames
-    deliberately terminate a note: invented bridges sound worse than a short
-    rest in a practice transcription.
+    Brief semitone excursions are treated as vibrato, but a sustained
+    semitone change gets its own note, backdated to the first changed frame.
+    Unvoiced frames terminate notes; no beat grid is used here.
     """
+    if not np.isfinite(hop_seconds) or not np.isfinite(min_duration) or hop_seconds <= 0 or min_duration <= 0:
+        raise ValueError("Frame timing must be finite and positive")
     events: list[tuple[int, int, list[int], list[float]]] = []
     start: int | None = None
     pitches: list[int] = []
     probabilities: list[float] = []
+    pending: list[tuple[int, int, float]] = []
+
+    def absorb_pending() -> None:
+        pitches.extend(value for _, value, _ in pending)
+        probabilities.extend(probability for _, _, probability in pending)
+        pending.clear()
 
     def finish(end: int) -> None:
         nonlocal start, pitches, probabilities
-        if start is not None and pitches and (end - start) * hop_seconds >= min_duration:
+        if start is not None and pitches and (end - start) * hop_seconds >= min_duration - 1e-9:
             events.append((start, end, pitches, probabilities))
         start, pitches, probabilities = None, [], []
 
     for index, raw_midi in enumerate(midi_values):
         if raw_midi is None or not np.isfinite(raw_midi):
+            absorb_pending()
             finish(index)
             continue
         pitch = int(round(float(raw_midi)))
@@ -52,12 +61,20 @@ def frames_to_notes(
         probability = float(raw_probability) if raw_probability is not None and np.isfinite(raw_probability) else 0.0
         if start is None:
             start, pitches, probabilities = index, [pitch], [probability]
-        elif abs(pitch - round(median(pitches))) <= 1:
+        elif pitch == round(median(pitches)):
+            absorb_pending()
             pitches.append(pitch)
             probabilities.append(probability)
         else:
-            finish(index)
-            start, pitches, probabilities = index, [pitch], [probability]
+            if pending and pending[-1][1] != pitch:
+                absorb_pending()
+            pending.append((index, pitch, probability))
+            if abs(pitch - round(median(pitches))) > 1 or len(pending) * hop_seconds >= min_duration - 1e-9:
+                boundary = pending[0][0]
+                finish(boundary)
+                start = boundary
+                absorb_pending()
+    absorb_pending()
     finish(len(midi_values))
 
     notes: list[MelodyNote] = []
