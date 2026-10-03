@@ -359,7 +359,7 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await page.getByRole("button", { name: "Add/change at playhead" }).click();
   await expect(page.getByRole("heading", { name: "Edit G" })).toBeVisible();
   await expect(page.locator(".chord-sheet .chord-symbol", { hasText: "G" }).first()).toBeVisible();
-  await page.locator(".toolbar-actions button").last().click();
+  await page.locator(".toolbar-block.toolbar-actions button").last().click();
   await expect(page.locator(".toolbar-block").nth(1)).toContainText("D major");
   await page.getByRole("button", { name: "Undo" }).click();
   await expect(page.locator(".toolbar-block").nth(1)).toContainText("C major");
