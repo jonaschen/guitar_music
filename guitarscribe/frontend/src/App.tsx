@@ -12,6 +12,7 @@ import { mergeChordSpans, type ChordSpan } from "./chordSpans";
 import { measureLayout } from "./measureLayout";
 import { MelodyEditor } from "./MelodyEditor";
 import { SongRangeEditor } from "./SongRangeEditor";
+import { PlaybackRangeEditor } from "./PlaybackRangeEditor";
 import { songBounds, clipRange } from "./songRange";
 import { notationBars } from "./melodyNotation";
 
@@ -575,7 +576,7 @@ export function App() {
   }
 
   useEffect(() => {
-    if (!followPlayhead || !activeChordId) return;
+    if (!followPlayhead || !activeChordId || (!isPlaying && !isSynthPlaying)) return;
     // The open melody editor owns its own scrolling viewport. Chord follow
     // must not pull the page away during audition, source playback or seek.
     if (document.querySelector(".melody-editor[open], .song-range-editor[open]")) return;
@@ -584,7 +585,7 @@ export function App() {
       block: "nearest",
       inline: "nearest",
     });
-  }, [activeChordId, followPlayhead]);
+  }, [activeChordId, followPlayhead, isPlaying, isSynthPlaying]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -1804,7 +1805,7 @@ export function App() {
                     <label className="transport-speed">Count-in <select value={countInMeasures} onChange={(event) => setCountInMeasures(Number(event.target.value))}><option value={0}>Off</option><option value={1}>1 bar</option><option value={2}>2 bars</option></select></label>
                     <button type="button" className="ghost-button" onClick={() => stopSynth(true)}>Stop</button>
                     <label className="transport-speed">Speed <select value={playbackRate} onChange={(event) => setSpeed(Number(event.target.value))}>{[0.5, 0.6, 0.75, 0.9, 1, 1.1, 1.25, 1.5].map((rate) => <option key={rate} value={rate}>{Math.round(rate * 100)}%</option>)}</select></label>
-                    <input className="transport-timeline" type="range" min={bounds.start} max={bounds.end} step="0.01" value={Math.max(bounds.start, Math.min(playbackTime, bounds.end))} onChange={(event) => seekTo(Number(event.target.value))} aria-label="Playback position" />
+                    <input className="transport-timeline" type="range" min={bounds.start} max={bounds.end} step="0.01" value={Math.max(bounds.start, Math.min(playbackTime, bounds.end))} onPointerDown={() => setFollowPlayhead(false)} onKeyDown={() => setFollowPlayhead(false)} onChange={(event) => { setFollowPlayhead(false); seekTo(Number(event.target.value)); }} aria-label="Playback position" />
                     <span>{playbackTime.toFixed(1)}s / {score.song.duration_seconds.toFixed(1)}s</span>
                     {analysisJob?.status === "completed" ? <DiagnosticTimeline audioUrl={`${API_BASE}/api/v1/jobs/${analysisJob.id}/audio`} score={score} playbackTime={playbackTime} onSeek={seekTo} /> : null}
                   </section>
@@ -1812,6 +1813,11 @@ export function App() {
 
                 <details className="synth-panel workspace-disclosure">
                   <summary>Compiled score playback</summary>
+                  <PlaybackRangeEditor start={bounds.start} end={bounds.end} loopStart={loopStart} loopEnd={loopEnd}
+                    onInteract={() => setFollowPlayhead(false)}
+                    onApply={(a, b) => { audioRef.current?.pause(); stopSynth(false); setFollowPlayhead(false); setLoopRange(null); setLoopStart(a); setLoopEnd(b); seekTo(a); }}
+                    onClear={() => { audioRef.current?.pause(); stopSynth(false); setLoopStart(null); setLoopEnd(null); }} />
+                  {!followPlayhead ? <p>手動定位時已關閉頁面自動跟隨。<button type="button" className="ghost-button" onClick={() => setFollowPlayhead(true)}>恢復播放跟隨</button></p> : null}
                   <div className="toolbar-actions">
                     <button type="button" className="ghost-button" onClick={() => { stopSynth(false); setSynthTracks({ guitar: true, melody: true, metronome: false }); setSynthSoloTrack(null); setSynthVolumes({ guitar: 0.24, melody: 0.45, metronome: 0.18 }); }}>旋律＋吉他（預設平衡）</button>
                     <button type="button" className="ghost-button" onClick={() => { stopSynth(false); setSynthTracks((tracks) => ({ ...tracks, melody: true })); setSynthSoloTrack("melody"); setSynthVolumes((volumes) => ({ ...volumes, melody: 0.45 })); }}>只聽旋律</button>

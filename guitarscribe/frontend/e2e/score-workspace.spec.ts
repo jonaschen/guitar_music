@@ -96,6 +96,51 @@ test("whole-song pluck playback resumes string age and cancels pending preparati
   await expect(page.getByRole("button", { name: "Pause score", exact: true })).toHaveCount(0);
 });
 
+test("manual seek stays put and exact A–B loops without editing the score", async ({ page }) => {
+  await page.addInitScript(() => {
+    (window as any).__chordScrolls = 0;
+    const original = HTMLElement.prototype.scrollIntoView;
+    HTMLElement.prototype.scrollIntoView = function(options) {
+      if (this.matches(".chord-block-active")) (window as any).__chordScrolls++;
+      original.call(this, options);
+    };
+  });
+  const longScore = { ...score, song: { ...score.song, duration_seconds: 80 },
+    chords: [{ ...score.chords[0], end: 50 }, { ...score.chords[0], id: "late", start: 50, end: 80, symbol: "G" }] };
+  await page.route("**/api/v1/jobs/range-input", (route) => route.fulfill({ json: { id: "range-input", status: "completed", progress: 100, artifacts: [], score: longScore } }));
+  await page.route("**/rhythm-patterns?*", (route) => route.fulfill({ json: [] }));
+  await page.route("**/scores/playback/manifest", (route) => {
+    expect(route.request().postDataJSON()).toEqual(longScore);
+    return route.fulfill({ json: { revision: "range", duration_seconds: 80, bpm: 120, time_signature: "4/4", events: [] } });
+  });
+  await page.goto("/?job=range-input");
+  const slider = page.getByLabel("Playback position", { exact: true });
+  await slider.fill("55");
+  await expect(page.getByRole("button", { name: "Follow score off", exact: true })).toBeVisible();
+  expect(await page.evaluate(() => (window as any).__chordScrolls)).toBe(0);
+  await page.getByText("Compiled score playback", { exact: true }).click();
+  await page.getByLabel("Loop start seconds").fill("50");
+  await page.getByLabel("Loop end seconds").fill("63");
+  await page.getByRole("button", { name: "套用 A–B 並定位到 A", exact: true }).click();
+  await expect(slider).toHaveValue("50");
+  await expect(page.getByRole("region", { name: "Exact playback range" })).toContainText("目前循環 50.00–63.00 秒");
+  await page.getByLabel("Loop end seconds").fill("49");
+  await expect(page.getByRole("button", { name: "套用 A–B 並定位到 A", exact: true })).toBeDisabled();
+  await page.getByLabel("Loop end seconds").fill("81");
+  await expect(page.getByRole("button", { name: "套用 A–B 並定位到 A", exact: true })).toBeDisabled();
+  await page.getByLabel("Loop end seconds").fill("50.4");
+  await page.getByRole("button", { name: "套用 A–B 並定位到 A", exact: true }).click();
+  await page.getByRole("button", { name: "Play score", exact: true }).click();
+  await expect.poll(async () => Number(await slider.inputValue()), { intervals: [20] }).toBeGreaterThan(50.2);
+  await expect.poll(async () => Number(await slider.inputValue()), { intervals: [20] }).toBeLessThan(50.15);
+  expect(await page.evaluate(() => (window as any).__chordScrolls)).toBe(0);
+  await page.getByRole("button", { name: "取消秒數循環", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Play score", exact: true })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Exact playback range" })).toContainText("尚未設定秒數循環");
+  await page.getByRole("button", { name: "恢復播放跟隨", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Follow score on", exact: true })).toBeVisible();
+});
+
 test("listening presets enable melody, restore balance and clear solo", async ({ page }) => {
   await page.route("**/api/v1/jobs/listening", (route) => route.fulfill({ json: { id: "listening", status: "completed", progress: 100, artifacts: [], score } }));
   await page.route("**/rhythm-patterns?*", (route) => route.fulfill({ json: [] }));

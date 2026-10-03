@@ -31,6 +31,8 @@
 .melody-editor input[type="checkbox"] { width: auto; }
 .song-range-editor input { min-width: 0; width: 100%; padding: 0.4rem; border: 1px solid var(--border); border-radius: 0.4rem; color: inherit; background: #202329; }
 .song-range-editor .toolbar-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.7rem; }
+.playback-range-editor input { min-width: 0; width: 100%; padding: 0.4rem; border: 1px solid var(--border); border-radius: 0.4rem; color: inherit; background: #202329; }
+.playback-range-editor > button { margin: 0.5rem 0.4rem 0 0; }
 .editable-tab { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 350px), 1fr)); gap: 0.6rem; margin: 0.8rem 0; max-height: 28rem; overflow-y: auto; overflow-anchor: none; }
 .editable-tab-bar { min-width: 0; padding: 0.6rem; border: 1px solid var(--border); border-radius: 0.7rem; }
 .editable-tab-bar > p { min-height: 3rem; margin: 0.4rem 0; padding: 0.4rem; }
