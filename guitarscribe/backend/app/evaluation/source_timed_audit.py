@@ -21,6 +21,32 @@ from .diagnostic_audio import render_melody_diagnostic
 from .pitch_contour import render_pitch_contour
 
 
+def connected_note_frames(notes, contour: MelodyContour) -> list[float | None]:
+    """Project monophonic notes onto source frames without filling rests.
+
+    This only controls audition synthesis; it does not edit score boundaries.
+    """
+    ordered = sorted(notes, key=lambda note: note.start)
+    if any(b.start < a.end - 1e-9 for a, b in zip(ordered, ordered[1:])):
+        raise ValueError("Connected audition requires monophonic notes")
+    result = []
+    index = 0
+    for frame in range(len(contour.frequencies_hz)):
+        time = contour.source_start + frame * contour.hop_seconds
+        while index < len(ordered) and ordered[index].end <= time + 1e-9:
+            index += 1
+        note = ordered[index] if index < len(ordered) else None
+        result.append(440 * 2 ** ((note.midi - 69) / 12)
+                      if note is not None and note.start <= time + 1e-9 else None)
+    return result
+
+
+def rounded_contour_frames(contour: MelodyContour) -> list[float | None]:
+    """Change only frame pitch to the nearest semitone; retain every rest."""
+    return [None if hz is None else 440 * 2 ** (round(12 * math.log2(hz / 440)) / 12)
+            for hz in contour.frequencies_hz]
+
+
 def build_candidate(score: SongScore, contour: MelodyContour) -> SongScore:
     if abs(score.song.duration_seconds - contour.source_end) > .05 or contour.source_start != 0:
         raise ValueError("Score and contour must share the same complete analysis timeline")
@@ -63,11 +89,17 @@ def audit(jobs_root: Path, job_id: str, output: Path, start: float = 50, end: fl
         render_melody_diagnostic(clipped, end - start, output / filename)
     render_pitch_contour(list(contour.frequencies_hz), contour.hop_seconds, 0, start, end,
                          output / "C-source-contour.wav", interpolate_frames=False)
+    for filename, frames in [
+        ("D-candidate-connected.wav", connected_note_frames(candidate.melody, contour)),
+        ("E-frame-semitones-connected.wav", rounded_contour_frames(contour)),
+    ]:
+        render_pitch_contour(frames, contour.hop_seconds, contour.source_start, start, end,
+                             output / filename, interpolate_frames=False)
     report = {"status": "pending_human_listening", "source_job_id": job_id, "analysis_seconds": [start, end],
               "source_start_seconds": score.song.source_start_seconds, "contour_sha256": hashlib.sha256(raw).hexdigest(),
               "old_notes": len(score.melody), "candidate_notes": len(candidate.melody),
               "unchanged": ["beats", "chords", "rhythm", "source audio", "saved revisions"],
-              "comparison": "A/B use matched per-note synthesis and gain; B changes segmentation and postprocessing. C is continuous source contour, not ground truth."}
+              "comparison": "A/B use matched per-note synthesis and gain. C/D/E share continuous-phase synthesis and gain: C raw F0, D candidate notes projected to source frames, E frame-rounded semitones without segmentation or filtering. B/D differ in envelope, phase and gain; frame projection may shift boundaries by up to one hop. None is ground truth."}
     (output / "report.json").write_text(json.dumps(report, indent=2))
     return report
 

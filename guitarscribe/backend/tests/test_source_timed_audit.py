@@ -1,5 +1,5 @@
 import pytest
-from app.evaluation.source_timed_audit import build_candidate
+from app.evaluation.source_timed_audit import build_candidate, connected_note_frames, rounded_contour_frames
 from app.models.score import SongScore, SongInfo
 from app.models.melody_contour import MelodyContour
 from app.models.analysis import BeatInfo, ChordEvent, MelodyNote
@@ -32,3 +32,23 @@ def test_source_timed_path_rejects_polyphonic_input_instead_of_silently_selectin
            MelodyNote(id="b",start=.2,end=.7,midi=64,note="E4")]
     with pytest.raises(ValueError,match="monophonic"):
         MelodyPostProcessor().process_source_timed(notes)
+
+
+def test_connected_controls_preserve_rests_and_half_open_note_boundaries():
+    contour = MelodyContour(source_artifact_sha256="0"*64, source_start=0, source_end=.5,
+                            hop_seconds=.1, frequencies_hz=(441, None, 467, 467, None),
+                            voiced_probabilities=(.9, None, .9, .9, None))
+    before = contour.model_dump_json()
+    notes = [MelodyNote(id="a", start=0, end=.1, midi=69, note="A4"),
+             MelodyNote(id="b", start=.2, end=.3, midi=70, note="Bb4"),
+             MelodyNote(id="c", start=.3, end=.4, midi=69, note="A4")]
+    frames = connected_note_frames(notes, contour)
+    assert frames[1] is None and frames[4] is None
+    assert [frames[i] for i in [0,2,3]] == pytest.approx([440, 440*2**(1/12), 440])
+    rounded = rounded_contour_frames(contour)
+    assert rounded[1] is None and rounded[4] is None
+    assert [rounded[i] for i in [0,2,3]] == pytest.approx([440, 440*2**(1/12), 440*2**(1/12)])
+    assert contour.model_dump_json() == before
+    assert connected_note_frames([], contour) == [None]*5
+    with pytest.raises(ValueError, match="monophonic"):
+        connected_note_frames(notes + [notes[0]], contour)
