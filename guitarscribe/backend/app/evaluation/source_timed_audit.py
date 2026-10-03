@@ -16,6 +16,8 @@ from ..models.melody_contour import MelodyContour
 from ..models.score import SongScore
 from ..postprocess.melody import MelodyPostProcessor
 from ..models.analysis import MelodyAnalysis
+from ..models.analysis import MelodyNote
+from ..analyzers.melody.basic_pitch_adapter import midi_to_note_name
 from ..fretboard.mapper import SimpleFretboardMapper
 from .diagnostic_audio import render_melody_diagnostic
 from .pitch_contour import render_pitch_contour
@@ -45,6 +47,52 @@ def rounded_contour_frames(contour: MelodyContour) -> list[float | None]:
     """Change only frame pitch to the nearest semitone; retain every rest."""
     return [None if hz is None else 440 * 2 ** (round(12 * math.log2(hz / 440)) / 12)
             for hz in contour.frequencies_hz]
+
+
+def frame_faithful_notes(contour: MelodyContour) -> list[MelodyNote]:
+    """Diagnostic notation baseline: preserve every rounded frame and rest.
+
+    No minimum-duration or confidence gate. This can produce too many tiny
+    notes for useful notation and must not be enabled as a production decoder.
+    """
+    result = []
+    frames = rounded_contour_frames(contour)
+    left = 0
+    while left < len(frames):
+        right = left + 1
+        while right < len(frames) and frames[right] == frames[left]:
+            right += 1
+        if frames[left] is not None:
+            pitch = round(69 + 12 * math.log2(frames[left] / 440))
+            probabilities = [p if p is not None else 0 for p in contour.voiced_probabilities[left:right]]
+            result.append(MelodyNote(
+                id=f"frame-reference-{len(result)+1}",
+                start=contour.source_start + left * contour.hop_seconds,
+                end=min(contour.source_end, contour.source_start + right * contour.hop_seconds),
+                midi=pitch, note=midi_to_note_name(pitch),
+                confidence=sum(probabilities) / len(probabilities),
+            ))
+        left = right
+    return result
+
+
+def frame_loss(reference, candidate, hop: float, start: float, end: float) -> dict:
+    """Count source-relative losses, never musical correctness."""
+    if len(reference) != len(candidate):
+        raise ValueError("Frame counts must match")
+    counts = dict(voiced=0, dropped=0, changed_pitch=0, invented_voicing=0)
+    for i, (source, decoded) in enumerate(zip(reference, candidate)):
+        if not start <= i * hop < end:
+            continue
+        if source is not None:
+            counts["voiced"] += 1
+            if decoded is None:
+                counts["dropped"] += 1
+            elif abs(12 * math.log2(decoded / source)) > 1e-6:
+                counts["changed_pitch"] += 1
+        elif decoded is not None:
+            counts["invented_voicing"] += 1
+    return counts
 
 
 def build_candidate(score: SongScore, contour: MelodyContour) -> SongScore:
@@ -81,7 +129,22 @@ def audit(jobs_root: Path, job_id: str, output: Path, start: float = 50, end: fl
     if not 0 <= start < end <= score.song.duration_seconds:
         raise ValueError("Invalid listening range")
     candidate = build_candidate(score, contour)
+    segmented_notes = frames_to_notes(
+        [None if hz is None else 69 + 12 * math.log2(hz / 440) for hz in contour.frequencies_hz],
+        contour.voiced_probabilities, hop_seconds=contour.hop_seconds)
+    reference_notes = frame_faithful_notes(contour)
+    reference_frames = rounded_contour_frames(contour)
+    if connected_note_frames(reference_notes, contour) != reference_frames:
+        # Hz round trips may have harmless floating-point error.
+        loss = frame_loss(reference_frames, connected_note_frames(reference_notes, contour),
+                          contour.hop_seconds, 0, contour.source_end)
+        if any(loss[key] for key in ("dropped", "changed_pitch", "invented_voicing")):
+            raise ValueError("Frame-reference round trip lost source information")
     output.mkdir(parents=True, exist_ok=False)
+    (output / "frame-reference-notes.json").write_text(json.dumps({
+        "status": "diagnostic_only_not_a_production_score", "source_sha256": hashlib.sha256(raw).hexdigest(),
+        "notes": [note.model_dump(mode="json") for note in reference_notes],
+    }, indent=2))
     (output / "candidate-score.json").write_text(candidate.model_dump_json(indent=2))
     for filename, notes in [("A-current-notes.wav", score.melody), ("B-source-timed-notes.wav", candidate.melody)]:
         clipped = [n.model_copy(update={"start": max(start, n.start) - start, "end": min(end, n.end) - start, "confidence": .8})
@@ -98,6 +161,11 @@ def audit(jobs_root: Path, job_id: str, output: Path, start: float = 50, end: fl
     report = {"status": "pending_human_listening", "source_job_id": job_id, "analysis_seconds": [start, end],
               "source_start_seconds": score.song.source_start_seconds, "contour_sha256": hashlib.sha256(raw).hexdigest(),
               "old_notes": len(score.melody), "candidate_notes": len(candidate.melody),
+              "frame_reference_notes": len(reference_notes),
+              "segmentation_loss_before_confidence_filter": frame_loss(reference_frames,
+                  connected_note_frames(segmented_notes, contour), contour.hop_seconds, start, end),
+              "candidate_loss_vs_rounded_frames": frame_loss(reference_frames,
+                  connected_note_frames(candidate.melody, contour), contour.hop_seconds, start, end),
               "unchanged": ["beats", "chords", "rhythm", "source audio", "saved revisions"],
               "comparison": "A/B use matched per-note synthesis and gain. C/D/E share continuous-phase synthesis and gain: C raw F0, D candidate notes projected to source frames, E frame-rounded semitones without segmentation or filtering. B/D differ in envelope, phase and gain; frame projection may shift boundaries by up to one hop. None is ground truth."}
     (output / "report.json").write_text(json.dumps(report, indent=2))

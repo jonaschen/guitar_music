@@ -1,5 +1,5 @@
 import pytest
-from app.evaluation.source_timed_audit import build_candidate, connected_note_frames, rounded_contour_frames
+from app.evaluation.source_timed_audit import build_candidate, connected_note_frames, rounded_contour_frames, frame_faithful_notes, frame_loss
 from app.models.score import SongScore, SongInfo
 from app.models.melody_contour import MelodyContour
 from app.models.analysis import BeatInfo, ChordEvent, MelodyNote
@@ -52,3 +52,19 @@ def test_connected_controls_preserve_rests_and_half_open_note_boundaries():
     assert connected_note_frames([], contour) == [None]*5
     with pytest.raises(ValueError, match="monophonic"):
         connected_note_frames(notes + [notes[0]], contour)
+
+
+def test_frame_reference_keeps_short_low_confidence_notes_and_exact_rests():
+    contour = MelodyContour(source_artifact_sha256="0"*64, source_start=0, source_end=.095,
+                            hop_seconds=.02, frequencies_hz=(440, None, 467, 467, 440),
+                            voiced_probabilities=(.1, None, .2, .2, .1))
+    notes = frame_faithful_notes(contour)
+    assert len(notes) == 3
+    assert notes[-1].end == .095
+    assert notes[0].confidence == .1
+    loss = frame_loss(rounded_contour_frames(contour), connected_note_frames(notes, contour), .02, 0, .095)
+    assert loss == dict(voiced=4, dropped=0, changed_pitch=0, invented_voicing=0)
+    assert frame_loss([440, 440, None], [None, 467, 440], .1, 0, .3) == dict(
+        voiced=2, dropped=1, changed_pitch=1, invented_voicing=1)
+    with pytest.raises(ValueError, match="counts"):
+        frame_loss([440], [], .1, 0, .1)
