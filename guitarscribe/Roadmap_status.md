@@ -16,6 +16,8 @@
 
 ## 2026-10-04 最新產品方向與優先序
 
+#2 器樂來源細分：使用者回報 R 與 M1 皆在試聽 0–2、7–11 秒較接近，未支持升級 R，停止門檻調整。改為同一局部四軌分離的 N（全部非人聲伴奏）對 O（other 剩餘器樂群），固定原 MELODIA 參數；保留真實 O 音訊以區分分離失真與音高追蹤錯誤。模型固定 snapshot，不是小提琴專用分離器，也不自動套用正式譜。見 [器樂來源比較](docs/Other_Stem_Checkpoint_2026-10-04.md)。
+
 #2 最新：使用者對 M1 主觀估計約 55% 正確、片段第 7 秒後大致正確，M2 約 18%，先保留伴奏路徑。兩個單因素檢查後，擴大音域 W 無差異、不重測；有聲門檻 R 僅在試聽第 3–4 秒增加約 0.71 秒聲音，原有音高與後半段來源影格完全不變。23 項相關測試通過，現待辨認新增內容是否是真旋律，不等同準確率提高。見 [M1 局部追查](docs/M1_Followup_2026-10-04.md)。
 
 GitHub 正式追蹤已建立：[總追蹤 #6](https://github.com/jonaschen/guitar_music/issues/6)、[器樂辨識 P0 #2](https://github.com/jonaschen/guitar_music/issues/2)、[時間軸 P1 #3](https://github.com/jonaschen/guitar_music/issues/3)、[候選編輯 P1 #4](https://github.com/jonaschen/guitar_music/issues/4)、[品質 gates #5](https://github.com/jonaschen/guitar_music/issues/5)。本輪只推進 #2 的既有方法隔離 benchmark；使用者已判定 I1／I2 失敗，人聲細解析度僅略好，兩者皆不升級正式預設。進度與驗收節奏見 [GitHub 迭代追蹤](docs/GitHub_Iteration_Tracking_2026-10-04.md)。
