@@ -84,3 +84,46 @@ def test_fractional_note_boundaries_do_not_accumulate_measure_rounding_error():
     measure = ElementTree.fromstring(export_musicxml(score)).find(".//measure")
     assert len(measure.findall("note[pitch]")) == 30
     assert sum(int(n.findtext("duration")) for n in measure.findall("note")) == 1920
+
+
+def test_chord_changes_keep_local_offsets_and_repeated_return_chord():
+    score = SongScore(song={"duration_seconds": 4},
+        beats=[BeatInfo(time=0, beat=1, measure=1), BeatInfo(time=.6, beat=2, measure=1),
+               BeatInfo(time=1.2, beat=3, measure=1), BeatInfo(time=1.8, beat=4, measure=1),
+               BeatInfo(time=2.4, beat=1, measure=2)],
+        chords=[ChordEvent(id=str(i), start=t, end=t + .3, symbol=s)
+                for i, (t, s) in enumerate([(0, "C"), (.6, "G"), (1.8, "C"), (2.4, "Am")])])
+    before = score.model_dump_json()
+    measures = ElementTree.fromstring(export_musicxml(score)).findall(".//measure")
+    assert [h.findtext("root/root-step") for h in measures[0].findall("harmony")] == ["C", "G", "C"]
+    assert [int(h.findtext("offset")) for h in measures[0].findall("harmony")] == [0, 480, 1440]
+    assert measures[1].findtext("harmony/offset") == "0"
+    assert score.model_dump_json() == before
+
+
+@pytest.mark.parametrize("symbol,step,alter,kind,bass,bass_alter", [
+    ("Bbmaj7/D", "B", "-1", "major-seventh", "D", None),
+    ("F#m7/C#", "F", "1", "minor-seventh", "C", "1"),
+    ("E♭sus4/B♭", "E", "-1", "suspended-fourth", "B", "-1"),
+    ("Bdim7", "B", None, "diminished-seventh", None, None),
+    ("G7", "G", None, "dominant", None, None),
+    ("Cm7b5", "C", None, "half-diminished", None, None),
+])
+def test_harmony_keeps_quality_accidentals_and_slash_bass(symbol, step, alter, kind, bass, bass_alter):
+    score = SongScore(chords=[ChordEvent(id="c", start=0, end=1, symbol=symbol)])
+    harmony = ElementTree.fromstring(export_musicxml(score)).find(".//harmony")
+    assert harmony.findtext("root/root-step") == step
+    assert harmony.findtext("root/root-alter") == alter
+    assert harmony.findtext("kind") == kind
+    assert harmony.findtext("bass/bass-step") == bass
+    assert harmony.findtext("bass/bass-alter") == bass_alter
+    assert harmony.find("kind").attrib["text"] != symbol
+
+
+@pytest.mark.parametrize("symbol", ["N", "N.C.", "C7alt", "?", ""])
+def test_unknown_and_no_chord_labels_are_not_exported_as_major_chords(symbol):
+    score = SongScore(chords=[ChordEvent(id="c", start=.5, end=1, symbol=symbol)])
+    root = ElementTree.fromstring(export_musicxml(score))
+    assert root.find(".//harmony") is None
+    assert root.findtext(".//direction/direction-type/words") == symbol
+    assert root.findtext(".//direction/offset") == "480"

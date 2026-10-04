@@ -1,8 +1,9 @@
 from collections import defaultdict
 from bisect import bisect_right
+import re
 from xml.etree.ElementTree import Element, SubElement, tostring
 
-from ..models.analysis import MelodyNote
+from ..models.analysis import ChordEvent, MelodyNote
 from ..models.score import SongScore
 
 
@@ -10,6 +11,39 @@ DIVISIONS = 480
 PITCH_NAMES = (("C", 0), ("C", 1), ("D", 0), ("D", 1), ("E", 0), ("F", 0),
                ("F", 1), ("G", 0), ("G", 1), ("A", 0), ("A", 1), ("B", 0))
 KEY_FIFTHS = {"C": 0, "G": 1, "D": 2, "A": 3, "E": 4, "B": 5, "F#": 6, "C#": 7, "F": -1, "Bb": -2, "Eb": -3, "Ab": -4, "Db": -5, "Gb": -6, "Cb": -7}
+CHORD_SYMBOL = re.compile(r"^([A-G])([#b]?)([^/]*)(?:/([A-G])([#b]?))?$")
+CHORD_KINDS = {"": "major", "maj": "major", "m": "minor", "min": "minor",
+               "7": "dominant", "maj7": "major-seventh", "M7": "major-seventh",
+               "m7": "minor-seventh", "dim": "diminished", "dim7": "diminished-seventh",
+               "m7b5": "half-diminished", "aug": "augmented", "+": "augmented",
+               "sus2": "suspended-second", "sus4": "suspended-fourth",
+               "6": "major-sixth", "m6": "minor-sixth", "9": "dominant-ninth",
+               "maj9": "major-ninth", "m9": "minor-ninth", "5": "power"}
+
+
+def _harmony(measure: Element, symbol: str, offset: int) -> None:
+    normalized = symbol.strip().replace("♯", "#").replace("♭", "b")
+    match = CHORD_SYMBOL.fullmatch(normalized)
+    suffix = match[3].lstrip(":") if match else None
+    if not match or suffix not in CHORD_KINDS:
+        # Preserve unsupported labels visibly instead of inventing major harmony.
+        direction = SubElement(measure, "direction", placement="above")
+        SubElement(SubElement(direction, "direction-type"), "words").text = symbol
+        SubElement(direction, "offset").text = str(offset)
+        return
+    harmony = SubElement(measure, "harmony")
+    root = SubElement(harmony, "root")
+    SubElement(root, "root-step").text = match[1]
+    if match[2]:
+        SubElement(root, "root-alter").text = "1" if match[2] == "#" else "-1"
+    # kind text is the suffix, not the complete symbol (which would repeat the root).
+    SubElement(harmony, "kind", text=suffix).text = CHORD_KINDS[suffix]
+    if match[4]:
+        bass = SubElement(harmony, "bass")
+        SubElement(bass, "bass-step").text = match[4]
+        if match[5]:
+            SubElement(bass, "bass-alter").text = "1" if match[5] == "#" else "-1"
+    SubElement(harmony, "offset").text = str(offset)
 
 
 def _measure_clock(score: SongScore, number: int, start: float, end: float,
@@ -90,7 +124,7 @@ def export_musicxml(score: SongScore) -> str:
     while measures[-1][1] + measure_seconds < last_content:
         measures.append((measures[-1][0] + 1, measures[-1][1] + measure_seconds))
     notes_by_measure: dict[int, list[MelodyNote]] = defaultdict(list)
-    chords_by_measure: dict[int, list[str]] = defaultdict(list)
+    chords_by_measure: dict[int, list[ChordEvent]] = defaultdict(list)
     for note in score.melody:
         for index, (_, start) in enumerate(measures):
             end = measures[index + 1][1] if index + 1 < len(measures) else start + measure_seconds
@@ -98,7 +132,7 @@ def export_musicxml(score: SongScore) -> str:
                 notes_by_measure[index].append(note)
     for chord in score.chords:
         index = max(index for index, (_, start) in enumerate(measures) if start <= chord.start)
-        chords_by_measure[index].append(chord.symbol)
+        chords_by_measure[index].append(chord)
     root = Element("score-partwise", version="3.1")
     score_part = SubElement(SubElement(root, "part-list"), "score-part", id="P1")
     SubElement(score_part, "part-name").text = "GuitarScribe Melody Tab"
@@ -134,12 +168,8 @@ def export_musicxml(score: SongScore) -> str:
             tempo = (right[1] - left[1]) / DIVISIONS * 60 / (right[0] - left[0])
             sound = SubElement(measure, "sound", tempo=f"{tempo:.9f}")
             SubElement(sound, "offset").text = str(left[1])
-        for symbol in dict.fromkeys(chords_by_measure[index]):
-            harmony = SubElement(measure, "harmony")
-            root_node = SubElement(harmony, "root")
-            SubElement(root_node, "root-step").text = symbol[0].upper()
-            kind = SubElement(harmony, "kind")
-            kind.text, kind.attrib["text"] = ("minor" if len(symbol) > 1 and symbol[1] == "m" else "major"), symbol
+        for chord in sorted(chords_by_measure[index], key=lambda c: c.start):
+            _harmony(measure, chord.symbol, position(chord.start))
         cursor = start
         for note in sorted(notes_by_measure[index], key=lambda item: item.start):
             note_start = max(cursor, note.start)
