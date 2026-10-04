@@ -1,4 +1,5 @@
 from collections import defaultdict
+from bisect import bisect_right
 from xml.etree.ElementTree import Element, SubElement, tostring
 
 from ..models.analysis import MelodyNote
@@ -11,8 +12,26 @@ PITCH_NAMES = (("C", 0), ("C", 1), ("D", 0), ("D", 1), ("E", 0), ("F", 0),
 KEY_FIFTHS = {"C": 0, "G": 1, "D": 2, "A": 3, "E": 4, "B": 5, "F#": 6, "C#": 7, "F": -1, "Bb": -2, "Eb": -3, "Ab": -4, "Db": -5, "Gb": -6, "Cb": -7}
 
 
-def _units(seconds: float, bpm: float) -> int:
-    return max(1, round(seconds * bpm / 60 * DIVISIONS))
+def _measure_clock(score: SongScore, number: int, start: float, end: float,
+                   beats: int, beat_type: int, bpm: float, pickup: bool):
+    """Map absolute seconds onto local divisions without cumulative rounding."""
+    capacity = round((end - start) * bpm / 60 * DIVISIONS) if pickup else round(beats * 4 / beat_type * DIVISIONS)
+    anchors = [(start, 0)]
+    if not pickup:
+        for beat in sorted(score.beats, key=lambda b: b.time):
+            units = round((beat.beat - 1) * 4 / beat_type * DIVISIONS)
+            if (beat.measure == number and anchors[-1][0] < beat.time < end
+                    and anchors[-1][1] < units < capacity):
+                anchors.append((beat.time, units))
+    anchors.append((end, capacity))
+    times = [a[0] for a in anchors]
+
+    def position(time: float) -> int:
+        i = max(0, min(len(anchors) - 2, bisect_right(times, time) - 1))
+        left, right = anchors[i], anchors[i + 1]
+        return round(left[1] + (time - left[0]) / (right[0] - left[0]) * (right[1] - left[1]))
+
+    return position, anchors
 
 
 def _type(duration: int) -> str:
@@ -58,6 +77,8 @@ def export_musicxml(score: SongScore) -> str:
     try:
         beats, beat_type = score.analysis.time_signature.split("/", maxsplit=1)
         beats, beat_type = int(beats), int(beat_type)
+        if beats <= 0 or beat_type <= 0:
+            raise ValueError("Invalid meter")
     except (AttributeError, ValueError):
         beats, beat_type = 4, 4
     measure_seconds = 60 / bpm * beats * 4 / beat_type
@@ -85,6 +106,10 @@ def export_musicxml(score: SongScore) -> str:
     for index, (number, start) in enumerate(measures):
         end = measures[index + 1][1] if index + 1 < len(measures) else start + measure_seconds
         measure = SubElement(part, "measure", number=str(number))
+        pickup = index == 0 and number not in starts and len(measures) > 1 and measures[1][0] in starts
+        if pickup:
+            measure.set("implicit", "yes")
+        position, anchors = _measure_clock(score, number, start, end, beats, beat_type, bpm, pickup)
         if index == 0:
             attributes = SubElement(measure, "attributes")
             SubElement(attributes, "divisions").text = str(DIVISIONS)
@@ -104,6 +129,11 @@ def export_musicxml(score: SongScore) -> str:
                 SubElement(tuning, "tuning-octave").text = str(midi // 12 - 1)
             clef = SubElement(attributes, "clef")
             SubElement(clef, "sign").text, SubElement(clef, "line").text = "TAB", "5"
+        # Explicit tempo offsets preserve source seconds when local pulse lengths vary.
+        for left, right in zip(anchors, anchors[1:]):
+            tempo = (right[1] - left[1]) / DIVISIONS * 60 / (right[0] - left[0])
+            sound = SubElement(measure, "sound", tempo=f"{tempo:.9f}")
+            SubElement(sound, "offset").text = str(left[1])
         for symbol in dict.fromkeys(chords_by_measure[index]):
             harmony = SubElement(measure, "harmony")
             root_node = SubElement(harmony, "root")
@@ -114,12 +144,17 @@ def export_musicxml(score: SongScore) -> str:
         for note in sorted(notes_by_measure[index], key=lambda item: item.start):
             note_start = max(cursor, note.start)
             if note_start > cursor:
-                _rest(measure, _units(note_start - cursor, bpm))
+                duration = position(note_start) - position(cursor)
+                if duration > 0:
+                    _rest(measure, duration)
             note_end = min(end, max(note.end, note_start))
-            if note_end > note_start:
-                _tab_note(measure, note, _units(note_end - note_start, bpm),
+            duration = position(note_end) - position(note_start)
+            if duration > 0:
+                _tab_note(measure, note, duration,
                           tie_start=note.end > end, tie_stop=note.start < start)
             cursor = max(cursor, note_end)
         if cursor < end:
-            _rest(measure, _units(end - cursor, bpm))
+            duration = position(end) - position(cursor)
+            if duration > 0:
+                _rest(measure, duration)
     return '<?xml version="1.0" encoding="UTF-8"?>\n' + tostring(root, encoding="unicode")
