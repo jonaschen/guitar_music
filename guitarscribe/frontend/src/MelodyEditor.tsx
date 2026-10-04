@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { SongScore } from "./types";
 import { EditableTab } from "./EditableTab";
+import { BarTimingEditor } from "./BarTimingEditor";
 import { songBounds } from "./songRange";
 import { notationBars, notationClock, noteLengths, lengthLabel, noteGrid } from "./melodyNotation";
 
@@ -164,6 +165,8 @@ export function MelodyEditor(props: Props) {
       <button type="button" onClick={() => setWindowStart(props.playhead)}>顯示暫停位置</button>
       <label><input type="checkbox" aria-label="Loop edited bars" checked={loop} onChange={(e) => { props.onStop(); setLoop(e.target.checked); }} />循環修訂段落</label>
     </div>
+    <BarTimingEditor score={score} bars={shownBars} playhead={props.playhead} onStop={props.onStop}
+      onSeek={props.onSeek} onOriginal={props.onOriginal} onCommit={props.onCommit} />
     <div className="melody-coverage" aria-label="旋律資料狀態">
       <p>工作樂譜共 {score.melody.length} 個旋律音符；所選小節有 {rangeNotes.length} 個。{props.jobId ? `來源分析：${props.jobId}` : "目前版本未附來源分析 ID。"}</p>
       {!rangeNotes.length ? <p role="status">{score.melody.length ? "所選小節沒有旋律音符可修改。空白可能是未抓到旋律，不代表歌曲沒有旋律，也不會從 Contour 自動產生音符。請跳到有音符的小節，或點空白弦線手動補音。" : "目前工作樂譜沒有旋律音符。Contour 有聲音不代表已產生可編輯音符；可載入先前修訂，或點空白弦線、設定品格及音長，再按 Add note 補入。"}</p> : <p>直接點弦上的品格數字，再到下方改弦／品格或音長，按 Apply note；無指型音符會列在弦線下方。</p>}
