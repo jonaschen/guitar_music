@@ -21,6 +21,96 @@ from app.services.rate_limit import SubmissionRateLimiter
 from app.sources.youtube import validate_youtube_url
 
 
+@pytest.mark.asyncio
+async def test_manual_bar_grid_survives_revision_and_drives_playback_and_midi(tmp_path):
+    """A calibrated grid changes accompaniment, not source note/chord timestamps."""
+    from app.models.analysis import BeatInfo, ChordEvent, RhythmSuggestion
+
+    score = SongScore(
+        song=SongInfo(title="Bar calibration", duration_seconds=6),
+        analysis=AnalysisSummary(bpm=120, time_signature="4/4"),
+        beats=[BeatInfo(time=i / 2, beat=i % 4 + 1, measure=i // 4 + 1) for i in range(12)],
+        chords=[ChordEvent(id="c", start=0, end=6, symbol="C")],
+        melody=[MelodyNote(id="n", start=2.1, end=2.7, midi=72, note="C5")],
+        rhythm=RhythmSuggestion(subdivision=4, display=["D"]),
+    )
+    store = RevisionStore(tmp_path / "revisions")
+    parent = store.save(score)
+    original = score.model_dump(mode="json")
+    edited = score.model_dump(mode="json")
+    # Same local linear map as retimeBars: anchors 0, 2.4, 4 (outer anchors fixed).
+    times = [0, .6, 1.2, 1.8, 2.4, 2.8, 3.2, 3.6, 4, 4.5, 5, 5.5]
+    for beat, time in zip(edited["beats"], times):
+        beat["time"] = time
+    edited["provenance"]["tempo_map_version"] = "manual-bar-anchors-v1"
+    edited["provenance"]["parameters"] = {"timing_origin": "user", "last_bar_timing_edit": '{"even":false}'}
+    app.dependency_overrides[get_revision_store] = lambda: store
+    try:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+            response = await client.post("/revisions", json={"score": edited, "revision_id": parent, "create_new": True})
+            assert response.status_code == 200
+            revision = response.json()["revision_id"]
+            assert revision != parent
+            loaded = await client.get(f"/revisions/{revision}")
+            assert loaded.status_code == 200
+            restored = loaded.json()
+            assert restored["beats"] == edited["beats"]
+            assert restored["provenance"] == edited["provenance"]
+            assert restored["melody"] == original["melody"]
+            assert restored["chords"] == original["chords"]
+            assert store.load(parent).model_dump(mode="json") == original
+            before = await client.post("/scores/playback/manifest", json=original)
+            after = await client.post("/scores/playback/manifest", json=restored)
+            assert after.status_code == 200
+            manifest = after.json()
+            assert manifest["revision"] != before.json()["revision"]
+            for track in ("guitar", "metronome"):
+                assert [e["start"] for e in manifest["events"] if e["track"] == track] == times
+            melody = [e for e in manifest["events"] if e["track"] == "melody"]
+            assert [(e["start"], e["end"]) for e in melody] == [(2.1, 2.7)]
+            exported = await client.post("/scores/midi", json=restored)
+            assert exported.status_code == 200
+            # Decode this exporter’s format-0 stream independently; no running status.
+            data, pos, ticks, tempo = exported.content, 22, 0, None
+            division = int.from_bytes(data[12:14], "big")
+            starts, ends = {0: [], 1: []}, {0: [], 1: []}
+            def variable():
+                nonlocal pos
+                value = 0
+                while True:
+                    byte = data[pos]
+                    pos += 1
+                    value = (value << 7) | (byte & 127)
+                    if byte < 128:
+                        return value
+            while pos < len(data):
+                ticks += variable()
+                status = data[pos]
+                pos += 1
+                if status == 255:
+                    kind = data[pos]
+                    pos += 1
+                    size = variable()
+                    if kind == 81:
+                        tempo = int.from_bytes(data[pos:pos + size], "big")
+                    pos += size
+                elif status & 240 == 192:
+                    pos += 1
+                else:
+                    assert status & 240 in (128, 144)
+                    assert tempo is not None
+                    seconds = ticks * tempo / division / 1_000_000
+                    (starts if status & 240 == 144 else ends)[status & 15].append(seconds)
+                    pos += 2
+            assert starts[0] == pytest.approx([2.1], abs=.0011)
+            assert ends[0] == pytest.approx([2.7], abs=.0011)
+            # Each six-string voicing has its first attack at the corrected pulse.
+            for time in times:
+                assert any(abs(t - time) < .0011 for t in starts[1])
+    finally:
+        app.dependency_overrides.clear()
+
+
 class StubPipeline:
     async def run(self, source_request, options):
         return SongScore(
