@@ -30,6 +30,8 @@ MusicXML schema checkpoint：官方 3.1 XSD 發現 clef／staff-details 順序�
 
 alphaTab 1.8.4 匯入 checkpoint：發現並修正附點音符 type／dot 與 duration 不一致；三組真實後端匯出→讀譜器資料驗證通過，後端相關 67 項通過。另確認同小節後續 harmony 在 alphaTab 匯入遺失，保留待修；尚非瀏覽器視覺驗收，後台未部署。
 
+alphaTab 同小節和弦後續修正：harmony 改為在實際音樂 cursor 輸出，休止分割、長音以 tie 跨越換和弦；五組實際 reader 檢查通過，包含第二和弦定位與延音連結，後端相關 68 項通過。原 SongScore 不拆音符，仍未部署／未通過瀏覽器視覺驗收。
+
 ### 以下為先前實驗紀錄（非目前待測項目）
 
 #2 器樂來源細分：使用者回報 R 與 M1 皆在試聽 0–2、7–11 秒較接近，未支持升級 R，停止門檻調整。改為同一局部四軌分離的 N（全部非人聲伴奏）對 O（other 剩餘器樂群），固定原 MELODIA 參數；保留真實 O 音訊以區分分離失真與音高追蹤錯誤。模型固定 snapshot，不是小提琴專用分離器，也不自動套用正式譜。見 [器樂來源比較](docs/Other_Stem_Checkpoint_2026-10-04.md)。

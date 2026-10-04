@@ -98,7 +98,13 @@ def test_chord_changes_keep_local_offsets_and_repeated_return_chord():
     before = score.model_dump_json()
     measures = ElementTree.fromstring(export_musicxml(score)).findall(".//measure")
     assert [h.findtext("root/root-step") for h in measures[0].findall("harmony")] == ["C", "G", "C"]
-    assert [int(h.findtext("offset")) for h in measures[0].findall("harmony")] == [0, 480, 1440]
+    cursor, positions = 0, []
+    for node in measures[0]:
+        if node.tag == "note":
+            cursor += int(node.findtext("duration"))
+        elif node.tag == "harmony":
+            positions.append(cursor + int(node.findtext("offset")))
+    assert positions == [0, 480, 1440]
     assert measures[1].findtext("harmony/offset") == "0"
     assert score.model_dump_json() == before
 
@@ -128,7 +134,21 @@ def test_unknown_and_no_chord_labels_are_not_exported_as_major_chords(symbol):
     root = ElementTree.fromstring(export_musicxml(score))
     assert root.find(".//harmony") is None
     assert root.findtext(".//direction/direction-type/words") == symbol
-    assert root.findtext(".//direction/offset") == "480"
+    assert root.findtext(".//direction/offset") == "0"
+    assert root.findtext(".//measure/note/duration") == "480"
+
+
+def test_harmony_in_sustained_note_splits_notation_with_ties_not_new_attacks():
+    score = SongScore(song={"duration_seconds": 2}, melody=[
+        MelodyNote(id="n", start=0, end=2, midi=60, note="C4", string=2, fret=1)],
+        chords=[ChordEvent(id="c", start=0, end=1, symbol="C"),
+                ChordEvent(id="g", start=1, end=2, symbol="G")])
+    before = score.model_dump_json()
+    root = ElementTree.fromstring(export_musicxml(score))
+    notes = root.findall(".//note[pitch]")
+    assert [int(n.findtext("duration")) for n in notes] == [960, 960]
+    assert [[t.attrib["type"] for t in n.findall("tie")] for n in notes] == [["start"], ["stop"]]
+    assert score.model_dump_json() == before
 
 
 @pytest.mark.parametrize("duration,value,dots", [(.75, "quarter", 1), (.875, "quarter", 2), (.375, "eighth", 1)])

@@ -181,23 +181,47 @@ def export_musicxml(score: SongScore) -> str:
             tempo = (right[1] - left[1]) / DIVISIONS * 60 / (right[0] - left[0])
             sound = SubElement(measure, "sound", tempo=f"{tempo:.9f}")
             SubElement(sound, "offset").text = str(left[1])
+        harmonies: dict[int, list[str]] = defaultdict(list)
         for chord in sorted(chords_by_measure[index], key=lambda c: c.start):
-            _harmony(measure, chord.symbol, position(chord.start))
+            harmonies[position(chord.start)].append(chord.symbol)
+
+        def emit_span(left: int, right: int, note: MelodyNote | None = None,
+                      tie_start: bool = False, tie_stop: bool = False) -> None:
+            # Some readers only attach a harmony to the following beat. Place
+            # events at their actual cursor and tie any sustaining melody across
+            # the change rather than emitting all harmonies at measure start.
+            cuts = [left, *(p for p in sorted(harmonies) if left < p < right), right]
+            for a, b in zip(cuts, cuts[1:]):
+                if b <= a:
+                    continue
+                for symbol in harmonies.pop(a, []):
+                    _harmony(measure, symbol, 0)
+                if note is None:
+                    _rest(measure, b - a)
+                else:
+                    _tab_note(measure, note, b - a,
+                              tie_start=tie_start or b < right,
+                              tie_stop=tie_stop or a > left)
         cursor = start
         for note in sorted(notes_by_measure[index], key=lambda item: item.start):
             note_start = max(cursor, note.start)
             if note_start > cursor:
                 duration = position(note_start) - position(cursor)
                 if duration > 0:
-                    _rest(measure, duration)
+                    emit_span(position(cursor), position(note_start))
             note_end = min(end, max(note.end, note_start))
             duration = position(note_end) - position(note_start)
             if duration > 0:
-                _tab_note(measure, note, duration,
+                emit_span(position(note_start), position(note_end), note,
                           tie_start=note.end > end, tie_stop=note.start < start)
             cursor = max(cursor, note_end)
         if cursor < end:
             duration = position(end) - position(cursor)
             if duration > 0:
-                _rest(measure, duration)
+                emit_span(position(cursor), position(end))
+        # A sub-tick event can round exactly to the bar end; retain it rather
+        # than silently dropping the label when no following span exists.
+        for at, symbols in sorted(harmonies.items()):
+            for symbol in symbols:
+                _harmony(measure, symbol, at - position(end))
     return '<?xml version="1.0" encoding="UTF-8"?>\n' + tostring(root, encoding="unicode")
