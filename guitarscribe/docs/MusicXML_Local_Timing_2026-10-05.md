@@ -14,6 +14,12 @@
 
 追加和弦位置修正：每個和弦事件依同一局部拍點座標輸出 offset，不再按名稱去重，因此 C → G → C 的返回事件保留。輸出根音升降、常見大小／七／減／增／掛留／六／九／power 品質及斜線低音；kind 的顯示文字只保留品質後綴，避免重複根音。不支援的品質、N／N.C. 等保留為原文字 direction，不捏造大三和弦；文字不代表完整和聲播放語意。依據 [W3C harmony 結構](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/harmony/) 與 [kind 定義](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/kind/)。新增 12 項位置／語意案例後，MusicXML／API／MIDI 共 64 項通過。
 
-尚未完成：第三方讀譜器實際渲染／播放验收、完整 schema 驗證、細緻的附點／連音記譜、完整延伸和弦與無和弦播放語意。和弦目前在原事件起點標記，不在每個延續小節重印。不要把這次修正解讀成整份 MusicXML 品質通過。
+官方 schema 檢查發現既有 attributes 子節點順序錯誤：clef 必須在 staff-details 前；已修正並增加順序回歸檢查。新增 `backend/scripts/validate_musicxml_schema.py`，固定官方 MusicXML 3.1 三份 XSD 的 SHA-256、禁止網路解析與外部 entities，驗證空譜、TAB 跨小節 tie、弱起、和弦／文字 fallback、6/8 局部格線五組案例，並以非法文件確認驗證器會拒絕錯誤。
+
+重跑方式：從 [W3C MusicXML v3.1 schema](https://github.com/w3c/musicxml/tree/v3.1/schema) 下載 `musicxml.xsd`、`xml.xsd`、`xlink.xsd` 到隔離資料夾（保留原始 bytes）。於拋棄式容器安裝 `lxml==6.0.2`，來源掛載 backend，唯讀掛載 schema 資料夾為 `/schema`，執行 `PYTHONPATH=. python scripts/validate_musicxml_schema.py /schema`。不將驗證依賴加入正式 backend、不讀寫使用者資料。
+
+實際驗證結果：五組案例均通過，非法控制文件被拒絕；同容器 MusicXML／API／MIDI 64 項回歸通過。
+
+尚未完成：第三方讀譜器實際渲染／播放验收、所有可能輸入的 schema 覆蓋、細緻的附點／連音記譜、完整延伸和弦與無和弦播放語意。和弦目前在原事件起點標記，不在每個延續小節重印。不要把這次修正解讀成整份 MusicXML 品質通過。
 
 本次後端程式已提交但未重啟正式容器，避免中斷現有工作；需於適當部署窗口重建 backend 才會反映到網頁下載。小節分界 UI 的上一轮測試不受影響，也不需要再比較旋律候選。

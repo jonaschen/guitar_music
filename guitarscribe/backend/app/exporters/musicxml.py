@@ -152,6 +152,8 @@ def export_musicxml(score: SongScore) -> str:
             SubElement(key, "mode").text = score.key_context.target.mode
             time = SubElement(attributes, "time")
             SubElement(time, "beats").text, SubElement(time, "beat-type").text = str(beats), str(beat_type)
+            clef = SubElement(attributes, "clef")
+            SubElement(clef, "sign").text, SubElement(clef, "line").text = "TAB", "5"
             staff = SubElement(attributes, "staff-details")
             SubElement(staff, "staff-lines").text = "6"
             for string, midi in enumerate(reversed(score.guitar.tuning), start=1):
@@ -161,8 +163,6 @@ def export_musicxml(score: SongScore) -> str:
                 if alter:
                     SubElement(tuning, "tuning-alter").text = str(alter)
                 SubElement(tuning, "tuning-octave").text = str(midi // 12 - 1)
-            clef = SubElement(attributes, "clef")
-            SubElement(clef, "sign").text, SubElement(clef, "line").text = "TAB", "5"
         # Explicit tempo offsets preserve source seconds when local pulse lengths vary.
         for left, right in zip(anchors, anchors[1:]):
             tempo = (right[1] - left[1]) / DIVISIONS * 60 / (right[0] - left[0])
