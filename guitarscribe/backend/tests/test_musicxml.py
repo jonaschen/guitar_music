@@ -129,3 +129,14 @@ def test_unknown_and_no_chord_labels_are_not_exported_as_major_chords(symbol):
     assert root.find(".//harmony") is None
     assert root.findtext(".//direction/direction-type/words") == symbol
     assert root.findtext(".//direction/offset") == "480"
+
+
+@pytest.mark.parametrize("duration,value,dots", [(.75, "quarter", 1), (.875, "quarter", 2), (.375, "eighth", 1)])
+def test_dotted_note_and_rest_values_match_their_exact_duration(duration, value, dots):
+    score = SongScore(song={"duration_seconds": 2}, melody=[
+        MelodyNote(id="n", start=duration, end=2 * duration, midi=60, note="C4")])
+    root = ElementTree.fromstring(export_musicxml(score))
+    for node in root.findall(".//note")[:2]:
+        assert node.findtext("type") == value
+        assert len(node.findall("dot")) == dots
+        assert int(node.findtext("duration")) == round(duration * 960)

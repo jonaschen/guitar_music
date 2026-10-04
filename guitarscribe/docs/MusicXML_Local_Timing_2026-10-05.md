@@ -20,6 +20,19 @@
 
 實際驗證結果：五組案例均通過，非法控制文件被拒絕；同容器 MusicXML／API／MIDI 64 項回歸通過。
 
+## alphaTab 1.8.4 實際匯入檢查
+
+直接使用專案安裝的 ScoreLoader 讀取後端當次匯出，而非手寫 XML fixture。發現 .75 秒（120 BPM）的音符雖保留 1440 alphaTab ticks，但 type=quarter、dots=0，顯示語意錯誤。已補常見單／雙附點的 type 與 dot，不更改 duration；不規則長度仍保留精確 divisions，不偷偷吸附到規整音長。
+
+三組讀譜器檢查（附點四分、雙附點四分、附點八分）通過：type／dots、精確 ticks、TAB 弦格與全小節總長符合預期。後端 MusicXML／API／MIDI 現為 67 項通過。可在 guitarscribe 目錄重跑：
+
+```bash
+set -o pipefail
+docker compose run --rm -T -v "$PWD/backend:/app" backend sh -c 'PYTHONPATH=. python scripts/musicxml_reader_fixtures.py' | node frontend/scripts/validate-musicxml-reader.mjs
+```
+
+另有未解決相容性證據：同小節 C（0 秒）→ G（1 秒）的 XML 有兩個 harmony／offset，但 alphaTab 匯入只有第一個和弦。需後續處理匯入相容的事件排列，不可將目前 MusicXML 預覽當作完整和弦位置真相；工作譜與 GuitarScribe 自有播放不受此讀譜器問題影響。本輪驗證是 reader model，不是瀏覽器視覺 screenshot 驗收。
+
 尚未完成：第三方讀譜器實際渲染／播放验收、所有可能輸入的 schema 覆蓋、細緻的附點／連音記譜、完整延伸和弦與無和弦播放語意。和弦目前在原事件起點標記，不在每個延續小節重印。不要把這次修正解讀成整份 MusicXML 品質通過。
 
 本次後端程式已提交但未重啟正式容器，避免中斷現有工作；需於適當部署窗口重建 backend 才會反映到網頁下載。小節分界 UI 的上一轮測試不受影響，也不需要再比較旋律候選。

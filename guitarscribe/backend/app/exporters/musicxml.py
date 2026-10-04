@@ -72,6 +72,19 @@ def _type(duration: int) -> str:
     return "whole" if duration >= 1920 else "half" if duration >= 960 else "quarter" if duration >= 480 else "eighth" if duration >= 240 else "16th" if duration >= 120 else "32nd"
 
 
+def _note_value(node: Element, duration: int) -> None:
+    for units, name in ((1920, "whole"), (960, "half"), (480, "quarter"),
+                        (240, "eighth"), (120, "16th"), (60, "32nd"), (30, "64th")):
+        for dots, numerator, denominator in ((0, 1, 1), (1, 3, 2), (2, 7, 4)):
+            if duration * denominator == units * numerator:
+                SubElement(node, "type").text = name
+                for _ in range(dots):
+                    SubElement(node, "dot")
+                return
+    # Preserve exact divisions for irregular values; do not silently quantize them.
+    SubElement(node, "type").text = _type(duration)
+
+
 def _pitch(node: Element, midi: int) -> None:
     pitch = SubElement(node, "pitch")
     step, alter = PITCH_NAMES[midi % 12]
@@ -85,7 +98,7 @@ def _rest(measure: Element, duration: int) -> None:
     node = SubElement(measure, "note")
     SubElement(node, "rest")
     SubElement(node, "duration").text = str(duration)
-    SubElement(node, "type").text = _type(duration)
+    _note_value(node, duration)
 
 
 def _tab_note(measure: Element, note: MelodyNote, duration: int, *, tie_start: bool = False, tie_stop: bool = False) -> None:
@@ -95,7 +108,7 @@ def _tab_note(measure: Element, note: MelodyNote, duration: int, *, tie_start: b
     ties = (["stop"] if tie_stop else []) + (["start"] if tie_start else [])
     for kind in ties:
         SubElement(node, "tie", type=kind)
-    SubElement(node, "type").text = _type(duration)
+    _note_value(node, duration)
     notations = SubElement(node, "notations") if ties or (note.string is not None and note.fret is not None) else None
     if note.string is not None and note.fret is not None:
         technical = SubElement(notations, "technical")
