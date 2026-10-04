@@ -16,6 +16,8 @@
 
 ## 2026-10-04 最新產品方向與優先序
 
+#2 最新：使用者對 M1 主觀估計約 55% 正確、片段第 7 秒後大致正確，M2 約 18%，先保留伴奏路徑。兩個單因素檢查後，擴大音域 W 無差異、不重測；有聲門檻 R 僅在試聽第 3–4 秒增加約 0.71 秒聲音，原有音高與後半段來源影格完全不變。23 項相關測試通過，現待辨認新增內容是否是真旋律，不等同準確率提高。見 [M1 局部追查](docs/M1_Followup_2026-10-04.md)。
+
 GitHub 正式追蹤已建立：[總追蹤 #6](https://github.com/jonaschen/guitar_music/issues/6)、[器樂辨識 P0 #2](https://github.com/jonaschen/guitar_music/issues/2)、[時間軸 P1 #3](https://github.com/jonaschen/guitar_music/issues/3)、[候選編輯 P1 #4](https://github.com/jonaschen/guitar_music/issues/4)、[品質 gates #5](https://github.com/jonaschen/guitar_music/issues/5)。本輪只推進 #2 的既有方法隔離 benchmark；使用者已判定 I1／I2 失敗，人聲細解析度僅略好，兩者皆不升級正式預設。進度與驗收節奏見 [GitHub 迭代追蹤](docs/GitHub_Iteration_Tracking_2026-10-04.md)。
 
 #2 工程子項已完成：拋棄式容器內完成固定版本 Essentia MELODIA，比較同段伴奏 M1／原曲 M2，22 項相關測試通過、兩個 13 秒音檔可播放，現待人工確認是否跟隨器樂旋律。未加入正式依賴、未部署、未修改 G 或修訂；授權採用審核仍未完成，#2 不關閉。見 [MELODIA checkpoint](docs/Melodia_Issue_2_Checkpoint_2026-10-04.md)。
