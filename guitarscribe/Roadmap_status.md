@@ -16,6 +16,10 @@
 
 ## 2026-10-04 最新產品方向與優先序
 
+GitHub 正式追蹤已建立：[總追蹤 #6](https://github.com/jonaschen/guitar_music/issues/6)、[器樂辨識 P0 #2](https://github.com/jonaschen/guitar_music/issues/2)、[時間軸 P1 #3](https://github.com/jonaschen/guitar_music/issues/3)、[候選編輯 P1 #4](https://github.com/jonaschen/guitar_music/issues/4)、[品質 gates #5](https://github.com/jonaschen/guitar_music/issues/5)。本輪只推進 #2 的既有方法隔離 benchmark；使用者已判定 I1／I2 失敗，人聲細解析度僅略好，兩者皆不升級正式預設。進度與驗收節奏見 [GitHub 迭代追蹤](docs/GitHub_Iteration_Tracking_2026-10-04.md)。
+
+#2 工程子項已完成：拋棄式容器內完成固定版本 Essentia MELODIA，比較同段伴奏 M1／原曲 M2，22 項相關測試通過、兩個 13 秒音檔可播放，現待人工確認是否跟隨器樂旋律。未加入正式依賴、未部署、未修改 G 或修訂；授權採用審核仍未完成，#2 不關閉。見 [MELODIA checkpoint](docs/Melodia_Issue_2_Checkpoint_2026-10-04.md)。
+
 本輪方向檢視：保持「可辨認來源 → 忠實轉譜 → 可編輯草稿 → 旋律／和弦共享時間軸」；G 多段接近 C 不代表來源旋律正確。使用者已確認中段分離人聲正常、後段旋律在伴奏軌且似小提琴，因此優先分開驗證人聲 F0 與器樂候選，固定 G、不增加輸出格式或美術。候選通過才進 UI 接受／修訂流程；Bar 30–31 對齊、跨歌品質 gate 仍未過。見 [整體方向與本輪實驗](docs/Development_Direction_2026-10-04.md)。
 
 ### 2026-10-01 最新 checkpoint：六線譜直接編輯（待使用者試用）
