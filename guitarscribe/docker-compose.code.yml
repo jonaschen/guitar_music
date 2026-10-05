@@ -1,0 +1,9 @@
+# Optional local code-only update; retains the existing backend dependencies.
+# docker compose -f docker-compose.yml -f docker-compose.code.yml up -d --no-build
+# Python changes require restarting backend; dependency changes require a rebuild.
+services:
+  backend:
+    volumes:
+      - ./backend/app:/app/app:ro
+      - ./backend/scripts:/app/scripts:ro
+      - ./backend/tests:/app/tests:ro

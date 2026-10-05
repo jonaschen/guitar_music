@@ -21,8 +21,15 @@ for (const width of [1280, 390]) {
     await page.route("**/rhythm-patterns?*", r => r.fulfill({ json: [] }));
     await page.route("**/chord-voicings?*", r => r.fulfill({ json: [] }));
     await page.route("**/api/v1/jobs/xml-render/audio", r => r.fulfill({ status: 404, body: "No source in synthetic fixture" }));
-    await page.route("**/scores/musicxml", r => r.fulfill({ contentType: "application/xml", body: fixture.xml }));
-    await page.goto("/?job=xml-render");
+    await page.route("**/scores/musicxml", async r => {
+      if (process.env.GUITARSCRIBE_LIVE_SMOKE === "1") {
+        const response = await page.request.post("http://127.0.0.1:8000/scores/musicxml", { data: r.request().postDataJSON() });
+        expect(response.ok()).toBe(true);
+        return r.fulfill({ response });
+      }
+      return r.fulfill({ contentType: "application/xml", body: fixture.xml });
+    });
+    await page.goto(`${process.env.GUITARSCRIBE_UI_URL ?? ""}/?job=xml-render`);
     await page.getByText("Melody & Tab previews · Experimental", { exact: true }).click();
     const host = page.getByLabel("Standard notation and guitar tab preview", { exact: true });
     await host.scrollIntoViewIfNeeded();
