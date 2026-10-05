@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import * as alphaTab from "@coderline/alphatab";
+import bravuraFont from "@coderline/alphatab/font/Bravura.woff2?url";
 import type { SongScore } from "./types";
 
 const API_BASE = "http://localhost:8000";
@@ -13,6 +14,7 @@ function AlphaTabScore({ score }: { score: SongScore }) {
   useEffect(() => {
     if (!hostRef.current) return;
     const api = new alphaTab.AlphaTabApi(hostRef.current, {
+      core: { smuflFontSources: new Map([[alphaTab.FontFileFormat.Woff2, bravuraFont]]) },
       display: { layoutMode: "page", barsPerRow: 4, scale: 0.8 },
       player: { enablePlayer: false },
     });

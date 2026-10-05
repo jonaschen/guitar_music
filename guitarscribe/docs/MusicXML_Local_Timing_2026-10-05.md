@@ -39,6 +39,20 @@ docker compose run --rm -T -v "$PWD/backend:/app" backend sh -c 'PYTHONPATH=. py
 
 alphaTab 五組驗證現涵蓋三種附點、休止內換和弦、持續音下換和弦，確認 C@0／G@1920 ticks、完整小節時值與 tie origin/destination；後端相關 68 項通過。這解決了具體重現案例，不代表任意密集和弦、讀譜器畫面或全部播放語意皆已驗收。
 
+## 瀏覽器實際顯示 checkpoint
+
+新增 `frontend/e2e/musicxml-render.spec.ts`，測試起始時透過隔離容器產生當前後端的合成 SongScore／XML，再把回應接入真實 UI。不是手写 XML，也不存取使用者歌曲；需 Docker、已建置 backend image 與本機 frontend dependencies。
+
+這次實測抓到並修正三個問題：
+
+- 預設音樂字型載入失敗，預覽沒有顯示錯誤卻空白：明確從套件 import Bravura WOFF2 URL，交由 Vite 管理 dev／production 資產。production build 已確認輸出字型檔。
+- 手機 result-panel 因 grid 最小內容寬度而超出 viewport：panel 與預覽 grid 加入可縮小寬度約束。390px、1280px 的實際 SVG 可见且預覽容器不超出畫面。
+- staff-tuning 原先把 technical string 的高到低順序用在 staff line，方向顛倒。依 [W3C staff-tuning](https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/staff-tuning/) 的由下往上規則改成低 E2 到高 E4；新增輸出順序與 alphaTab 讀回實際 C4 音高檢查。
+
+已目視檢查兩張 Playwright 截圖：C／G 標記、持續音延音線、標準調音、TAB 品格可見；手機內容在框內。這是兩個合成案例的畫面驗收，不是實曲完整譜面或聽感驗收。截圖由測試輸出到 test-results，不納入版本控制。
+
+本輪 TypeScript／Vite production build 通過；Playwright 譜面與旋律編輯共 22 項通過，後端相關 68 項通過，五組 alphaTab reader 檢查通過。未重啟正式後端。
+
 尚未完成：第三方讀譜器實際渲染／播放验收、所有可能輸入的 schema 覆蓋、細緻的附點／連音記譜、完整延伸和弦與無和弦播放語意。和弦目前在原事件起點標記，不在每個延續小節重印。不要把這次修正解讀成整份 MusicXML 品質通過。
 
 本次後端程式已提交但未重啟正式容器，避免中斷現有工作；需於適當部署窗口重建 backend 才會反映到網頁下載。小節分界 UI 的上一轮測試不受影響，也不需要再比較旋律候選。

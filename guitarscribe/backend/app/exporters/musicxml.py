@@ -169,7 +169,8 @@ def export_musicxml(score: SongScore) -> str:
             SubElement(clef, "sign").text, SubElement(clef, "line").text = "TAB", "5"
             staff = SubElement(attributes, "staff-details")
             SubElement(staff, "staff-lines").text = "6"
-            for string, midi in enumerate(reversed(score.guitar.tuning), start=1):
+            # staff lines count bottom-to-top, unlike technical string numbers.
+            for string, midi in enumerate(score.guitar.tuning, start=1):
                 tuning = SubElement(staff, "staff-tuning", line=str(string))
                 step, alter = PITCH_NAMES[midi % 12]
                 SubElement(tuning, "tuning-step").text = step

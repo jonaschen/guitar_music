@@ -32,6 +32,8 @@ alphaTab 1.8.4 匯入 checkpoint：發現並修正附點音符 type／dot 與 du
 
 alphaTab 同小節和弦後續修正：harmony 改為在實際音樂 cursor 輸出，休止分割、長音以 tie 跨越換和弦；五組實際 reader 檢查通過，包含第二和弦定位與延音連結，後端相關 68 項通過。原 SongScore 不拆音符，仍未部署／未通過瀏覽器視覺驗收。
 
+瀏覽器譜面 checkpoint：修正 Bravura 載入失敗造成空白、手機預覽撐寬，以及 MusicXML staff-tuning 方向顛倒。新測試使用當前後端產生 XML，390px／1280px 實際 SVG 與截圖檢查；另驗證 alphaTab 讀回實際音高。仍是合成案例，不代表實曲品質通過；後端修正尚未部署。
+
 ### 以下為先前實驗紀錄（非目前待測項目）
 
 #2 器樂來源細分：使用者回報 R 與 M1 皆在試聽 0–2、7–11 秒較接近，未支持升級 R，停止門檻調整。改為同一局部四軌分離的 N（全部非人聲伴奏）對 O（other 剩餘器樂群），固定原 MELODIA 參數；保留真實 O 音訊以區分分離失真與音高追蹤錯誤。模型固定 snapshot，不是小提琴專用分離器，也不自動套用正式譜。見 [器樂來源比較](docs/Other_Stem_Checkpoint_2026-10-04.md)。

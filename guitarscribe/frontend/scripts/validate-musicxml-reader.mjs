@@ -29,6 +29,7 @@ for (const fixture of cases) {
   assert.equal(first.notes[0].fret, 1);
   // alphaTab string numbers count from the bass string; MusicXML counts from treble.
   assert.equal(first.notes[0].string, 5);
+  assert.equal(first.notes[0].realValue, 60, `${fixture.name}: sounding pitch from TAB tuning`);
   assert.equal(beats.reduce((sum, beat) => sum + beat.displayDuration, 0), 3840);
   console.log(`PASS ${fixture.name}: dots, duration, TAB position, full measure`);
 }

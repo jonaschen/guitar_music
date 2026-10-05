@@ -22,6 +22,9 @@ def test_musicxml_exports_detected_melody_note():
     assert "<string>1</string><fret>3</fret>" in output
     attributes = ElementTree.fromstring(output).find(".//attributes")
     assert [node.tag for node in attributes] == ["divisions", "key", "time", "clef", "staff-details"]
+    tuning = attributes.findall("staff-details/staff-tuning")
+    assert [(t.attrib["line"], t.findtext("tuning-step"), t.findtext("tuning-octave")) for t in tuning] == [
+        ("1", "E", "2"), ("2", "A", "2"), ("3", "D", "3"), ("4", "G", "3"), ("5", "B", "3"), ("6", "E", "4")]
 
 
 def test_edited_long_note_keeps_duration_across_bars_with_sound_and_notation_ties():
