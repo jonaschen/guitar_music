@@ -11,6 +11,7 @@ import { createMetronomeVoice } from "./metronomeVoice";
 import { mergeChordSpans, type ChordSpan } from "./chordSpans";
 import { measureLayout } from "./measureLayout";
 import { MelodyEditor } from "./MelodyEditor";
+import { ContourCandidate } from "./ContourCandidate";
 import { SongRangeEditor } from "./SongRangeEditor";
 import { PlaybackRangeEditor } from "./PlaybackRangeEditor";
 import { songBounds, clipRange } from "./songRange";
@@ -1905,6 +1906,8 @@ export function App() {
                   <div className="rhythm-steps">{score.rhythm.display.map((stroke, index) => <span key={index} title={stroke === "A" ? "Arpeggio" : undefined} className={stroke ? "rhythm-step rhythm-step-active" : "rhythm-step"}>{stroke === "A" ? "⌁" : stroke ?? "·"}</span>)}</div>
                 </section>
 
+                <ContourCandidate score={score} jobId={workingJobId} apiBase={API_BASE}
+                  onCommit={(base, next) => { if (scoreRef.current !== base) return false; audioRef.current?.pause(); stopSynth(false); recordScoreChange(next); return true; }} />
                 <MelodyEditor score={score} jobId={workingJobId} playhead={playbackTime} apiBase={API_BASE}
                   onCommit={(base, next) => { if (scoreRef.current !== base) return false; recordScoreChange(next); return true; }}
                   onSeek={seekTo} onPitch={(midi) => void auditionEditedNotes([{ midi, start: 0, end: 0.6 }])}

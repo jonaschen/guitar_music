@@ -1,4 +1,5 @@
 import tempfile
+import asyncio
 from typing import Literal
 from uuid import uuid4
 from pathlib import Path
@@ -326,6 +327,37 @@ async def cancel_analysis_job(
         return job_service.cancel(job_id)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail="Analysis job not found") from exc
+
+
+@app.post("/api/v1/jobs/{job_id}/melody-candidate", response_model=SongScore, tags=["Scores"])
+async def build_contour_candidate(job_id: str, score: SongScore,
+                                  job_service: AnalysisJobService = Depends(get_job_service)) -> SongScore:
+    """Generate an explicit, unsaved candidate from this job's preserved contour."""
+    from .evaluation.bounded_checkpoint import build_score
+    from .models.melody_contour import MelodyContour
+    try:
+        job = job_service.get(job_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Analysis job not found") from exc
+    if job.status != JobStatus.COMPLETED or job.score is None:
+        raise HTTPException(status_code=409, detail="Requires a completed analysis")
+    original = job.score
+    if (original.provenance.melody_engine != "pyin_vocal"
+            or not original.provenance.parameters.get("vocal_source_separated")):
+        raise HTTPException(status_code=409, detail="Requires isolated vocal pYIN contour")
+    if (score.song.duration_seconds != original.song.duration_seconds
+            or score.song.source_start_seconds != original.song.source_start_seconds
+            or score.key_context != original.key_context or score.melody != original.melody):
+        raise HTTPException(status_code=409, detail="Working melody/key/timeline differs from this analysis; preserve your revision and use the original analysis for this candidate")
+    try:
+        contour = MelodyContour.model_validate_json((job_service.store.job_dir(job_id) / "melody-contour.json").read_bytes())
+        candidate = await asyncio.to_thread(build_score, score, contour)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Saved contour is unavailable") from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    candidate.provenance.parameters["candidate_source_job_id"] = job_id
+    return candidate
 
 
 @app.get("/api/v1/jobs/{job_id}/audio", tags=["Analysis jobs"], summary="Download normalized source audio for a completed job")

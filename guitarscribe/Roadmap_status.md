@@ -1,6 +1,6 @@
 # GuitarScribe 開發進度與待辦事項
 
-> 最後更新：2026-10-05
+> 最後更新：2026-10-06
 > 參考規格文件：  
 > 1. `GuitarScribe_Web_UI_AI_Handoff.md`（主交接文件）  
 > 2. `GuitarScribe_UI_Key_and_Chord_Voicings_Addendum.md`（升降 Key 與和弦指型追加規格）  
@@ -14,7 +14,9 @@
 
 ---
 
-## 2026-10-05 最新產品方向與優先序
+## 2026-10-06 最新產品方向與優先序
+
+使用者確認新分析 Contour 整體較準，器樂前奏／尾奏可延後。當前第一優先改為 **人聲 Contour → 忠實音符 → Play score／MIDI／可編輯修訂**；之後再做跨歌曲驗收，不重啟器樂反覆調參。新增固定 G decoder 的明確候選入口，不覆蓋原分析，不自動變更正式分析預設。新資料候選 1072 音符、無有聲影格遺失／無虛構有聲區間；未代表聽感通過。見 [候選測試與保護措施](docs/Contour_To_Notes_Checkpoint_2026-10-06.md)。
 
 **目前可試用：** 本輪分界校正與 MusicXML／字型／手機版面修正已透過 `docker-compose.code.yml` 的唯讀程式碼掛載啟動，保留現有分析依賴，未完成的全量重建已取消。實際 health／匯出 API smoke 通過，未重分析或覆寫使用者資料。請依 [集中測試清單](docs/Editing_Workflow_Checkpoint_2026-10-05.md) 驗收定位、Undo／另存重載與譜面顯示；以下各先前 checkpoint 的「未部署」是歷史狀態，不是目前狀態。旋律辨識与八小節編輯區整合合奏仍未完成。
 

@@ -34,7 +34,7 @@ def build_score(score: SongScore, contour: MelodyContour) -> SongScore:
     candidate.song.title += " · G bounded candidate (experimental)"
     candidate.provenance.parameters.update(melody_note_processing="bounded-source-v1",
         listening_candidate=True, bounded_switch_cost=.35, bounded_max_error_semitones=.6)
-    candidate.analysis.warnings.append("Independent G candidate: only 50–63s listening accepted. Full-song accuracy, notation and ensemble alignment remain unverified. Original analysis warnings are retained as history.")
+    candidate.analysis.warnings.append("Independent Contour-to-note G candidate: preserves vocal contour timing with bounded semitone decoding. This is not verified whole-song transcription; instrumental passages and ensemble alignment remain unverified. Original analysis warnings are retained as history.")
     return candidate
 
 

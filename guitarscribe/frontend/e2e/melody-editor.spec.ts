@@ -13,6 +13,35 @@ const score = {
   provenance: { beat_engine: "test", chord_engine: "test", melody_engine: "test" },
 };
 
+test("Contour candidate is explicit, undoable and cannot apply after work changes", async ({ page }) => {
+  let held: Route | undefined;
+  let delay = false;
+  const candidate = { ...score, melody: score.melody.map(n => ({ ...n, midi: 64, note: "E4", fret: 5 })),
+    provenance: { ...score.provenance, parameters: { melody_note_processing: "bounded-source-v1" } } };
+  await page.route("**/api/v1/jobs/editor/melody-candidate", r => {
+    if (delay) { held = r; return; }
+    return r.fulfill({ json: candidate });
+  });
+  await setup(page);
+  await page.getByText("Contour → 可編輯音符候選（G，實驗性）", { exact: true }).click();
+  const generate = page.getByRole("button", { name: "產生 Contour 音符候選", exact: true });
+  const apply = page.getByRole("button", { name: "套用候選到工作譜（可 Undo）", exact: true });
+  await generate.click();
+  await expect(apply).toBeVisible();
+  await expect(page.getByRole("button", { name: "C4 · 0.00–0.50s", exact: true })).toBeVisible();
+  await apply.click();
+  await expect(page.getByRole("button", { name: "E4 · 0.00–0.50s", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Undo melody edit", exact: true }).click();
+  await expect(page.getByRole("button", { name: "C4 · 0.00–0.50s", exact: true })).toBeVisible();
+  delay = true;
+  await generate.click();
+  await expect.poll(() => Boolean(held)).toBe(true);
+  await page.getByRole("button", { name: "Redo melody edit", exact: true }).click();
+  await held!.fulfill({ json: candidate });
+  await expect(page.getByText("工作譜或來源已改變，候選已失效，未套用。", { exact: true })).toBeVisible();
+  await expect(apply).toHaveCount(0);
+});
+
 async function setup(page: Page, empty = false, noteStart = 0) {
   await page.route("**/api/v1/jobs/editor", (route) => route.fulfill({ json: {
     id: "editor", status: "completed", progress: 100, artifacts: [], score: { ...score, melody: empty ? [] : score.melody.map((note) => ({ ...note, start: noteStart, end: noteStart + .5 })) },
