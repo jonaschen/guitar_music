@@ -279,8 +279,9 @@ export function App() {
   const [redoHistory, setRedoHistory] = useState<SongScore[]>([]);
   const [rememberedVersion, setRememberedVersion] = useState<SavedVersion | null>(readSavedVersion);
   const [savedSnapshot, setSavedSnapshot] = useState<{ id: string; score: SongScore } | null>(null);
-  const [restorePreview, setRestorePreview] = useState<{ id: string; base: SongScore | null; next: SongScore; job: AnalysisJob | null } | null>(null);
+  const [restorePreview, setRestorePreview] = useState<{ id: string; base: SongScore | null; generation: number; next: SongScore; job: AnalysisJob | null } | null>(null);
   const cleanScoreRef = useRef(score);
+  const workGenerationRef = useRef(0);
   const revisionRequestRef = useRef(0);
   const saveInFlightRef = useRef(false);
   const hasUnsavedChanges = !!score && score !== cleanScoreRef.current;
@@ -303,6 +304,7 @@ export function App() {
   }, [hasUnsavedChanges]);
 
   function replaceScore(nextScore: SongScore) {
+    workGenerationRef.current++;
     scoreRef.current = nextScore;
     cleanScoreRef.current = nextScore;
     setSavedSnapshot(null);
@@ -322,6 +324,7 @@ export function App() {
   }
 
   function recordScoreChange(nextScore: SongScore) {
+    workGenerationRef.current++;
     if (score) setUndoHistory((history) => [...history, score].slice(-50));
     setRedoHistory([]);
     scoreRef.current = nextScore;
@@ -330,6 +333,7 @@ export function App() {
 
   function undoScoreChange() {
     if (!score || undoHistory.length === 0) return;
+    workGenerationRef.current++;
     const previous = undoHistory[undoHistory.length - 1];
     scoreRef.current = previous;
     setUndoHistory((history) => history.slice(0, -1));
@@ -339,6 +343,7 @@ export function App() {
 
   function redoScoreChange() {
     if (!score || redoHistory.length === 0) return;
+    workGenerationRef.current++;
     const next = redoHistory[0];
     scoreRef.current = next;
     setRedoHistory((history) => history.slice(1));
@@ -352,11 +357,14 @@ export function App() {
     if (!savedJobId) return;
     setStatus("queued");
     let disposed = false;
+    const generation = workGenerationRef.current;
+    const obsolete = () => disposed || generation !== workGenerationRef.current;
     let retryTimer: number | undefined;
     const restore = async () => {
+      if (obsolete()) return;
       try {
         const job = await getAnalysisJob(savedJobId);
-        if (disposed) return;
+        if (obsolete()) return;
         window.localStorage.setItem("guitarscribe.activeJobId", savedJobId);
         setAnalysisJob(job);
         setError("");
@@ -373,7 +381,7 @@ export function App() {
           setError(job.error ?? job.message);
         }
       } catch (restoreError) {
-        if (disposed) return;
+        if (obsolete()) return;
         if (restoreError instanceof ApiError && restoreError.status === 404) {
           if (window.localStorage.getItem("guitarscribe.activeJobId") === savedJobId) {
             window.localStorage.removeItem("guitarscribe.activeJobId");
@@ -1558,6 +1566,7 @@ export function App() {
     if (!requestedId) return;
     const request = ++revisionRequestRef.current;
     const base = scoreRef.current;
+    const generation = workGenerationRef.current;
     setRestorePreview(null);
     setIsLoadingRevision(true);
     setError("");
@@ -1569,8 +1578,8 @@ export function App() {
         try { job = await getAnalysisJob(source); } catch { /* Saved notes remain usable after source expiry. */ }
       }
       if (request !== revisionRequestRef.current) return;
-      if (base !== scoreRef.current) { setSaveStatus("讀取期間工作譜已改變，未載入舊回應。請重新選擇恢復版本。"); return; }
-      setRestorePreview({ id: requestedId, base, next: loadedScore, job });
+      if (base !== scoreRef.current || generation !== workGenerationRef.current) { setSaveStatus("讀取期間工作譜已改變，未載入舊回應。請重新選擇恢復版本。"); return; }
+      setRestorePreview({ id: requestedId, base, generation, next: loadedScore, job });
       setSaveStatus("已讀取保存版本；請在上方「工作版本」確認恢復，目前樂譜未變。");
     } catch (loadError) {
       if (request === revisionRequestRef.current) setError(loadError instanceof Error ? loadError.message : "Revision load failed.");
@@ -1581,8 +1590,8 @@ export function App() {
 
   function applyRestoredVersion() {
     if (!restorePreview) return;
-    const { id, base, next, job } = restorePreview;
-    if (scoreRef.current !== base) { setRestorePreview(null); setSaveStatus("工作譜已改變，未恢復舊預覽。請重新讀取版本。"); return; }
+    const { id, base, generation, next, job } = restorePreview;
+    if (scoreRef.current !== base || generation !== workGenerationRef.current) { setRestorePreview(null); setSaveStatus("工作譜已改變，未恢復舊預覽。請重新讀取版本。"); return; }
     audioRef.current?.pause(); stopSynth(false); referenceStopRef.current();
     recordScoreChange(next);
     cleanScoreRef.current = next;
@@ -1715,9 +1724,9 @@ export function App() {
               {isLoadingRevision ? <button type="button" onClick={() => { revisionRequestRef.current++; setIsLoadingRevision(false); setSaveStatus("已取消讀取，目前工作譜不變。"); }}>取消讀取版本</button> : null}
               {restorePreview ? <div role="status">
                 <p>待恢復：{melodyVersion(restorePreview.next)} · {restorePreview.next.melody.length} 音符 · {restorePreview.id}</p>
-                {restorePreview.base !== score ? <p>工作譜已改變，此預覽已失效；請重新讀取要恢復的版本。</p> : null}
+                {restorePreview.generation !== workGenerationRef.current ? <p>工作譜已改變，此預覽已失效；請重新讀取要恢復的版本。</p> : null}
                 <p>{hasUnsavedChanges ? "目前有未保存修改，建議先保存。" : ""}確認後切換工作譜；原工作譜可用 Undo 找回。</p>
-                <button type="button" disabled={isSavingRevision || restorePreview.base !== score} onClick={applyRestoredVersion}>確認恢復版本（可 Undo）</button>
+                <button type="button" disabled={isSavingRevision || restorePreview.generation !== workGenerationRef.current} onClick={applyRestoredVersion}>確認恢復版本（可 Undo）</button>
                 <button type="button" onClick={() => setRestorePreview(null)}>保留目前工作譜</button>
               </div> : null}
               <p role="status">{saveStatus}</p>

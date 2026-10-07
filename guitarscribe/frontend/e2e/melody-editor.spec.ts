@@ -162,6 +162,55 @@ test("revision preview and late responses never replace newer edits; cancel and 
   await expect(page.getByLabel("Editor melody version")).not.toContainText("Contour G");
 });
 
+for (const lateStatus of [200, 404]) {
+  test(`late original analysis ${lateStatus} cannot replace an explicitly restored G revision`, async ({ page }) => {
+    const held: Route[] = [];
+    let restoringRevision = false;
+    const candidate = { ...score, melody: [{ ...score.melody[0], midi: 64, note: "E4" }],
+      provenance: { ...score.provenance, parameters: { melody_note_processing: "bounded-source-v1", candidate_source_job_id: "editor" } } };
+    const job = { id: "editor", status: "completed", progress: 100, artifacts: [], score };
+    await page.route("**/api/v1/jobs/editor", route => {
+      if (!restoringRevision) { held.push(route); return; }
+      return route.fulfill({ json: job });
+    });
+    await page.route("**/revisions/g", route => route.fulfill({ json: candidate }));
+    await page.route("**/rhythm-patterns?*", route => route.fulfill({ json: [] }));
+    await page.goto("/?job=editor");
+    // Development StrictMode launches two initial reads; hold both.
+    await expect.poll(() => held.length).toBe(2);
+    await page.getByLabel("Saved revision ID").fill("g");
+    restoringRevision = true;
+    await page.getByRole("button", { name: "載入已保存修訂", exact: true }).click();
+    await page.getByRole("button", { name: "確認恢復版本（可 Undo）", exact: true }).click();
+    await expect(page.getByLabel("Current working version")).toContainText("Contour G 候選");
+    const lateResponse = page.waitForResponse(r => r.headers()["x-delayed-test"] === "1");
+    await Promise.all(held.map(route => route.fulfill({ status: lateStatus, headers: { "x-delayed-test": "1" }, json: lateStatus === 200 ? job : { detail: "Expired" } })));
+    await lateResponse;
+    await page.waitForTimeout(150);
+    await expect(page.getByLabel("Current working version")).toContainText("Contour G 候選");
+    await expect(page.getByLabel("Current working version")).toContainText("已保存／載入：g");
+    await expect(page.locator("audio")).toHaveAttribute("src", /jobs\/editor\/audio$/);
+    await expect(page.getByText("This saved analysis has expired or is no longer available. Start a new analysis below.")).toHaveCount(0);
+  });
+}
+
+test("restore preview stays invalid after Undo returns to the same score object", async ({ page }) => {
+  await page.route("**/revisions/old", route => route.fulfill({ json: score }));
+  await page.route("**/scores/melody/edit", route => route.fulfill({ json: answer(route) }));
+  await setup(page);
+  await page.getByLabel("Melody revision ID").fill("old");
+  await page.getByRole("button", { name: "Load melody revision", exact: true }).click();
+  const confirm = page.getByRole("button", { name: "確認恢復版本（可 Undo）", exact: true });
+  await expect(confirm).toBeEnabled();
+  await page.getByRole("button", { name: "C4 · 0.00–0.50s", exact: true }).click();
+  await page.getByLabel("Melody pitch").selectOption("64");
+  await page.getByRole("button", { name: "Apply note", exact: true }).click();
+  await expect(confirm).toBeDisabled();
+  await page.getByRole("button", { name: "Undo melody edit", exact: true }).click();
+  await expect(page.getByRole("button", { name: "C4 · 0.00–0.50s", exact: true })).toBeVisible();
+  await expect(confirm).toBeDisabled();
+});
+
 test("editor ensemble uses current score, clips both tracks, loops and cancels pending playback", async ({ page }) => {
   let held: Route | undefined;
   let delay = false;
