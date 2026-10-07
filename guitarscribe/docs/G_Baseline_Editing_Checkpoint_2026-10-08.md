@@ -43,6 +43,8 @@ GUITARSCRIBE_RECOVERY_REVISION=db8c657e-62a5-4fad-a33e-cde25a9e1c0d npx playwrig
 
 ## 下一次人工測試
 
+使用者明確分工：只有試聽與 UI 易用性驗收交由使用者，其餘工程檢查、資料一致性與回歸測試由開發端持續完成。
+
 不用重新分析或產生候選。工作版本已是 G 時直接開始；若重整後顯示原分析，用「恢復上次保存版本 → 確認恢復版本」載入已保存 G。
 
 1. Melody editor 選 Bar 10、旋律＋吉他合奏。
@@ -50,3 +52,17 @@ GUITARSCRIBE_RECOVERY_REVISION=db8c657e-62a5-4fad-a33e-cde25a9e1c0d npx playwrig
 3. 按 Undo melody edit，再重播。
 
 回報是否聽到改音、Undo 是否回復，以及選音或找控制項是否困難。這是刻意改一個音再撤銷，不需判定新音比較準；不必保存這個測試改動。循環／更長段落操作及實曲時間軸仍可後續另驗。
+
+## 追加：所有工作譜修改共用過期回應保護
+
+檢查發現移調、Tab 重配、和弦指型最佳化、簡化旋律及歌詞匯入會回傳整份 score；若請求期間已恢復 G，舊結果仍可能覆蓋它。現在 `recordScoreChange` 同時檢查發起操作時的 score 與工作世代，拒絕過期提交，不改 Undo／Redo 或已保存狀態。編輯後 Undo 回到同一個物件也不會讓舊請求重新有效。編輯器與候選入口回傳實際提交結果，避免誤報套用成功。
+
+相關過期失敗回應不覆蓋新工作錯誤狀態；Capo 建議與 LRC 讀檔同樣檢查目前工作。歌詞時間操作補上錯誤處理。
+
+新增五種延遲操作與一次編輯／Undo 往返共六項瀏覽器案例。第一次四過、兩項測試因 label 定位方式逾時；改用實際可存取的 combobox 名稱後六項全過，未修改產品控制項或放寬等待條件。
+
+追加修正後驗證：
+
+- `melody-editor.spec.ts`、`score-workspace.spec.ts`、`bar-timing.spec.ts` 合計 **48 項全過**（單 worker）。包含先前曾波動的原曲範圍播放，本次沒有放寬容差。
+- 實際 5173 UI／8000 API 的保存 G 恢復、Bar 10 改音、合奏與 Undo 測試 **1 項通過**；保存修訂前後逐欄一致。
+- TypeScript、Vite build 通過；仍有既有 alphaTab 大型 chunk 提示。沒有變更後端或 G 解碼參數。

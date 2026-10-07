@@ -162,6 +162,61 @@ test("revision preview and late responses never replace newer edits; cancel and 
   await expect(page.getByLabel("Editor melody version")).not.toContainText("Contour G");
 });
 
+for (const operation of ["simplify", "remap", "transpose", "voicings", "lyrics"] as const) {
+  test(`late ${operation} result cannot overwrite restored G or add a false Undo entry`, async ({ page }) => {
+    let held: Route | undefined;
+    const endpoint = { simplify: "melody/simplify", remap: "remap-tab", transpose: "transpose", voicings: "optimize-voicings", lyrics: "lyrics/import-text" }[operation];
+    const candidate = { ...score, melody: [{ ...score.melody[0], midi: 64, note: "E4" }],
+      provenance: { ...score.provenance, parameters: { melody_note_processing: "bounded-source-v1", candidate_source_job_id: "editor" } } };
+    await page.route(`**/scores/${endpoint}`, route => { held = route; });
+    await page.route("**/revisions/g", route => route.fulfill({ json: candidate }));
+    await setup(page);
+    if (operation === "simplify") {
+      await page.getByText("Melody & Tab previews · Experimental", { exact: true }).click();
+      await page.getByRole("button", { name: "Simplify melody", exact: true }).click();
+    } else if (operation === "remap") {
+      await page.getByRole("combobox", { name: "Tab mapping", exact: true }).selectOption("low_position");
+    } else if (operation === "transpose") {
+      await page.getByRole("combobox", { name: "Target key", exact: true }).selectOption("2");
+    } else if (operation === "voicings") {
+      await page.getByRole("button", { name: "Optimize song voicings", exact: true }).click();
+    } else {
+      await page.getByText("Lyrics", { exact: true }).click();
+      await page.locator(".lyrics-panel textarea").fill("Test lyrics");
+      await page.getByRole("button", { name: "Import lyrics", exact: true }).click();
+    }
+    await expect.poll(() => !!held).toBe(true);
+    await page.getByLabel("Melody revision ID").fill("g");
+    await page.getByRole("button", { name: "Load melody revision", exact: true }).click();
+    await page.getByRole("button", { name: "確認恢復版本（可 Undo）", exact: true }).click();
+    await expect(page.getByLabel("Current working version")).toContainText("Contour G 候選");
+    await held!.fulfill({ json: score });
+    await expect(page.getByText("工作譜已改變，較舊的操作結果未套用；目前版本與 Undo 紀錄保持不變。", { exact: true })).toBeVisible();
+    await expect(page.getByLabel("Current working version")).toContainText("已保存／載入：g");
+    await expect(page.getByRole("button", { name: "E4 · 0.00–0.50s", exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Undo melody edit", exact: true }).click();
+    await expect(page.getByRole("button", { name: "C4 · 0.00–0.50s", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Undo melody edit", exact: true })).toBeDisabled();
+  });
+}
+
+test("a pending score transform stays stale after editing and Undo return to its original score", async ({ page }) => {
+  let held: Route | undefined;
+  await page.route("**/scores/optimize-voicings", route => { held = route; });
+  await page.route("**/scores/melody/edit", route => route.fulfill({ json: answer(route) }));
+  await setup(page);
+  await page.getByRole("button", { name: "Optimize song voicings", exact: true }).click();
+  await expect.poll(() => !!held).toBe(true);
+  await page.getByRole("button", { name: "C4 · 0.00–0.50s", exact: true }).click();
+  await page.getByLabel("Melody pitch").selectOption("64");
+  await page.getByRole("button", { name: "Apply note", exact: true }).click();
+  await page.getByRole("button", { name: "Undo melody edit", exact: true }).click();
+  await held!.fulfill({ json: { ...score, melody: [] } });
+  await expect(page.getByText("工作譜已改變，較舊的操作結果未套用；目前版本與 Undo 紀錄保持不變。", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "C4 · 0.00–0.50s", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Redo melody edit", exact: true })).toBeEnabled();
+});
+
 for (const lateStatus of [200, 404]) {
   test(`late original analysis ${lateStatus} cannot replace an explicitly restored G revision`, async ({ page }) => {
     const held: Route[] = [];

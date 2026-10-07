@@ -285,6 +285,9 @@ export function App() {
   const revisionRequestRef = useRef(0);
   const saveInFlightRef = useRef(false);
   const hasUnsavedChanges = !!score && score !== cleanScoreRef.current;
+  // Every handler captures the score generation of its render, including across await.
+  const renderedWorkGeneration = workGenerationRef.current;
+  const isCurrentWork = () => scoreRef.current === score && workGenerationRef.current === renderedWorkGeneration;
 
   useEffect(() => {
     if (!score) return;
@@ -324,11 +327,16 @@ export function App() {
   }
 
   function recordScoreChange(nextScore: SongScore) {
+    if (!isCurrentWork()) {
+      setError("工作譜已改變，較舊的操作結果未套用；目前版本與 Undo 紀錄保持不變。");
+      return false;
+    }
     workGenerationRef.current++;
     if (score) setUndoHistory((history) => [...history, score].slice(-50));
     setRedoHistory([]);
     scoreRef.current = nextScore;
     setScore(nextScore);
+    return true;
   }
 
   function undoScoreChange() {
@@ -668,6 +676,7 @@ export function App() {
       if (!response.ok) throw new Error(await response.text());
       recordScoreChange(await response.json());
     } catch (optimizerError) {
+      if (!isCurrentWork()) return;
       setError(optimizerError instanceof Error ? optimizerError.message : "Could not optimize voicings.");
     }
   }
@@ -677,8 +686,10 @@ export function App() {
     try {
       const response = await fetch(`${API_BASE}/scores/capo-recommendations`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ score, max_capo: score.guitar.max_capo }) });
       if (!response.ok) throw new Error(await response.text());
-      setCapoRecommendations(await response.json());
+      const recommendations = await response.json();
+      if (isCurrentWork()) setCapoRecommendations(recommendations);
     } catch (capoError) {
+      if (!isCurrentWork()) return;
       setError(capoError instanceof Error ? capoError.message : "Could not find capo recommendations.");
     }
   }
@@ -692,6 +703,7 @@ export function App() {
       const updated = await postTranspose(score, nextSemitones, nextPreference, nextCapo);
       recordScoreChange({ ...updated, guitar: { ...updated.guitar, capo: nextCapo } });
     } catch (transposeError) {
+      if (!isCurrentWork()) return;
       setError(transposeError instanceof Error ? transposeError.message : "Transposition failed.");
     } finally {
       setIsRetuningScore(false);
@@ -708,9 +720,11 @@ export function App() {
     setIsImportingLyrics(true);
     try {
       const content = await selected.text();
+      if (!isCurrentWork()) return;
       setLyricsDraft(content);
       recordScoreChange(await importLyrics(score, content, "lrc"));
     } catch (lyricsError) {
+      if (!isCurrentWork()) return;
       setError(lyricsError instanceof Error ? lyricsError.message : "LRC import failed.");
     } finally {
       setIsImportingLyrics(false);
@@ -724,6 +738,7 @@ export function App() {
     try {
       recordScoreChange(await importLyrics(score, lyricsDraft));
     } catch (lyricsError) {
+      if (!isCurrentWork()) return;
       setError(lyricsError instanceof Error ? lyricsError.message : "Lyrics import failed.");
     } finally {
       setIsImportingLyrics(false);
@@ -823,16 +838,24 @@ export function App() {
 
   async function distributeLyricTiming() {
     if (!score?.lyrics) return;
-    const response = await fetch(API_BASE + "/scores/lyrics/distribute-timing", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(score) });
-    if (!response.ok) throw new Error(await response.text());
-    recordScoreChange(await response.json());
+    try {
+      const response = await fetch(API_BASE + "/scores/lyrics/distribute-timing", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(score) });
+      if (!response.ok) throw new Error(await response.text());
+      recordScoreChange(await response.json());
+    } catch (error) {
+      if (isCurrentWork()) setError(error instanceof Error ? error.message : "Lyrics timing failed.");
+    }
   }
 
   async function fitLyricTimingToBars() {
     if (!score?.lyrics) return;
-    const response = await fetch(API_BASE + "/scores/lyrics/fit-timing-to-bars", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(score) });
-    if (!response.ok) throw new Error(await response.text());
-    recordScoreChange(await response.json());
+    try {
+      const response = await fetch(API_BASE + "/scores/lyrics/fit-timing-to-bars", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(score) });
+      if (!response.ok) throw new Error(await response.text());
+      recordScoreChange(await response.json());
+    } catch (error) {
+      if (isCurrentWork()) setError(error instanceof Error ? error.message : "Lyrics timing failed.");
+    }
   }
 
   async function simplifyMelody() {
@@ -846,6 +869,7 @@ export function App() {
       if (!response.ok) throw new Error(await response.text());
       recordScoreChange(await response.json() as SongScore);
     } catch (simplifyError) {
+      if (!isCurrentWork()) return;
       setError(simplifyError instanceof Error ? `Could not simplify melody: ${simplifyError.message}` : "Could not simplify melody.");
     }
   }
@@ -930,6 +954,7 @@ export function App() {
       if (!response.ok) throw new Error(await response.text());
       recordScoreChange(await response.json() as SongScore);
     } catch (requestError) {
+      if (!isCurrentWork()) return;
       setError(requestError instanceof Error ? `Could not remap Tab: ${requestError.message}` : "Could not remap Tab.");
     }
   }
@@ -1593,7 +1618,7 @@ export function App() {
     const { id, base, generation, next, job } = restorePreview;
     if (scoreRef.current !== base || generation !== workGenerationRef.current) { setRestorePreview(null); setSaveStatus("工作譜已改變，未恢復舊預覽。請重新讀取版本。"); return; }
     audioRef.current?.pause(); stopSynth(false); referenceStopRef.current();
-    recordScoreChange(next);
+    if (!recordScoreChange(next)) return;
     cleanScoreRef.current = next;
     setSavedSnapshot({ id, score: next });
     setRevisionId(id);
@@ -2021,9 +2046,9 @@ export function App() {
                 </section>
 
                 <ContourCandidate score={score} jobId={workingJobId} apiBase={API_BASE}
-                  onCommit={(base, next) => { if (scoreRef.current !== base) return false; audioRef.current?.pause(); stopSynth(false); recordScoreChange(next); return true; }} />
+                  onCommit={(base, next) => { if (scoreRef.current !== base) return false; audioRef.current?.pause(); stopSynth(false); return recordScoreChange(next); }} />
                 <MelodyEditor score={score} jobId={workingJobId} playhead={playbackTime} apiBase={API_BASE}
-                  onCommit={(base, next) => { if (scoreRef.current !== base) return false; recordScoreChange(next); return true; }}
+                  onCommit={(base, next) => { if (scoreRef.current !== base) return false; return recordScoreChange(next); }}
                   onSeek={seekTo} onPitch={(midi) => void auditionEditedNotes([{ midi, start: 0, end: 0.6 }])}
                   onAudition={(start, end, loop) => { const range = clipRange(start, end, score); if (range.end <= range.start) return; void auditionEditedNotes(score.melody.filter((note) => note.end > range.start && note.start < range.end).map((note) => ({ midi: note.midi, start: Math.max(0, note.start - range.start), end: Math.min(range.end, note.end) - range.start })), { ...range, loop }); }}
                   onOriginal={(start, end) => void auditionSourceSegment(start, end)}
