@@ -15,6 +15,11 @@
 }
 
 .melody-editor { padding: 1rem; border: 1px solid var(--border); border-radius: 1rem; }
+.revision-recovery { padding: 1rem; margin: 1rem 0; border: 1px solid var(--accent-2); border-radius: .8rem; background: var(--bg-panel-strong); overflow-wrap: anywhere; }
+.revision-recovery h3 { margin: 0 0 .6rem; }
+.revision-recovery p { font-size: .9rem; }
+.revision-recovery button { margin: .25rem .5rem .25rem 0; padding: .5rem .75rem; border: 1px solid var(--border); border-radius: .5rem; color: inherit; background: rgba(137,194,167,.12); cursor: pointer; }
+.revision-recovery button:disabled { opacity: .45; cursor: default; }
 .melody-editor p { font-size: 0.85rem; color: var(--text-muted); }
 .melody-edit-list { display: flex; flex-wrap: wrap; gap: 0.4rem; max-height: 12rem; overflow: auto; margin: 0.8rem 0; }
 .melody-edit-list button[aria-pressed="true"] { outline: 2px solid var(--accent); }

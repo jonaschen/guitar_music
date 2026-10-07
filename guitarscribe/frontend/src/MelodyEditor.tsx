@@ -3,6 +3,7 @@ import type { SongScore } from "./types";
 import { EditableTab } from "./EditableTab";
 import { BarTimingEditor } from "./BarTimingEditor";
 import { songBounds } from "./songRange";
+import { melodyVersion } from "./scoreVersion";
 import { notationBars, notationClock, noteLengths, lengthLabel, noteGrid } from "./melodyNotation";
 
 const pitches = Array.from({ length: 128 }, (_, midi) => ({ midi,
@@ -14,6 +15,7 @@ type Props = {
   onSeek: (time: number) => void;
   onPitch: (midi: number) => void;
   onAudition: (start: number, end: number, loop?: boolean) => void;
+  onEnsemble: (start: number, end: number, loop: boolean, from?: number) => void;
   onOriginal: (start: number, end: number) => void;
   onStop: () => void;
   onUndo: () => void; onRedo: () => void; canUndo: boolean; canRedo: boolean;
@@ -23,6 +25,8 @@ type Props = {
 
 export function MelodyEditor(props: Props) {
   const { score } = props;
+  const melodyProcessing = score.provenance.parameters?.melody_note_processing;
+  const isGCandidate = melodyProcessing === "bounded-source-v1";
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [windowStart, setWindowStart] = useState(0);
   const [midi, setMidi] = useState(60);
@@ -35,6 +39,7 @@ export function MelodyEditor(props: Props) {
   const [explicitTab, setExplicitTab] = useState(false);
   const [barCount, setBarCount] = useState(4);
   const [loop, setLoop] = useState(false);
+  const [ensemble, setEnsemble] = useState(false);
   const [gridQuarters, setGridQuarters] = useState(.5);
   const [targetSlot, setTargetSlot] = useState(0);
   const inFlight = useRef(false);
@@ -146,6 +151,8 @@ export function MelodyEditor(props: Props) {
 
   return <details className="melody-editor workspace-disclosure">
     <summary>旋律人工編輯 · Melody editor</summary>
+    <p aria-label="Editor melody version"><strong>旋律版本：{melodyVersion(score)}</strong> · {score.melody.length} 音符。重播與合奏使用這份工作譜。</p>
+    {!isGCandidate ? <p>若要測先前較好的 G 版本，請先載入已保存的 G 修訂；尚未保存時，從原分析使用上方「Contour → 可編輯音符候選」產生並套用。先保存重要修改，不要重新分析。</p> : <p>G 已在工作譜中；請用 Save new revision 保存。重新整理會回到原分析，已保存的 G 仍需明確載入。</p>}
     <p>聽一段 → 暫停 → 點六線譜數字修改 → 重播所選小節。上方為第 1 弦，品格相對 Capo {score.analysis.capo}；橫線尾巴表示持續時間，⌒ 表示跨小節延續。</p>
     <p><strong>時間比例六線譜草稿，尚非傳統節奏排版。</strong>弦上的數字是「品格」，不是簡譜音級；例如第 4 弦的 5，就是彈第 4 弦第 5 格。</p>
     <details className="tab-reading-guide"><summary>怎麼讀這張譜？</summary>
@@ -176,12 +183,13 @@ export function MelodyEditor(props: Props) {
       </div>
     </div>
     <div className="editor-actions">
-      <button type="button" onClick={() => props.onAudition(rangeStart, rangeEnd, loop)}>重播所選小節</button>
+      <label>試聽聲部<select aria-label="Editor audition mode" value={ensemble ? "ensemble" : "melody"} onChange={(e) => { props.onStop(); setEnsemble(e.target.value === "ensemble"); }}><option value="melody">旋律獨聽</option><option value="ensemble">旋律＋吉他合奏</option></select></label>
+      <button type="button" onClick={() => ensemble ? props.onEnsemble(rangeStart, rangeEnd, loop) : props.onAudition(rangeStart, rangeEnd, loop)}>重播所選小節</button>
       <button type="button" onClick={props.onStop}>暫停，保留位置</button>
-      <button type="button" onClick={() => props.onAudition(props.playhead >= rangeStart && props.playhead < rangeEnd ? props.playhead : rangeStart, rangeEnd)}>從暫停位置續播</button>
+      <button type="button" onClick={() => { const from = props.playhead >= rangeStart && props.playhead < rangeEnd ? props.playhead : rangeStart; if (ensemble) props.onEnsemble(rangeStart, rangeEnd, loop, from); else props.onAudition(from, rangeEnd); }}>從暫停位置續播</button>
       <button type="button" onClick={() => props.onOriginal(rangeStart, rangeEnd)}>對照來源片段</button>
     </div>
-    <p aria-label="Tab transport position">位置 {props.playhead.toFixed(2)}s · 所選 {rangeStart.toFixed(2)}–{rangeEnd.toFixed(2)}s。修訂播放只有旋律；來源使用上方選定的音軌。小節／音長依推定拍點顯示，未自動量化。譜面區內跟隨播放，不跳到和弦區；可選 4 或 8 小節。</p>
+    <p aria-label="Tab transport position">位置 {props.playhead.toFixed(2)}s · 所選 {rangeStart.toFixed(2)}–{rangeEnd.toFixed(2)}s。{ensemble ? "合奏沿用 Play score 的音色、速度與聲部音量，啟用旋律及吉他、不加節拍器或預備拍；吉他為建議伴奏。" : "修訂播放只有旋律。"}來源使用上方選定的音軌。小節／音長依推定拍點顯示，未自動量化。譜面區內跟隨播放，不跳到和弦區；可選 4 或 8 小節。</p>
     <p>格線只吸附「點空白弦線新增」的位置，不移動既有音符；依目前拍點換算，不是固定毫秒。選錯位置可用下方前／後移一格。音長若碰到原音尾端仍需確認，不自動截短或覆蓋。</p>
     <EditableTab score={score} bars={shownBars} selectedId={selectedId} playhead={props.playhead} onSelect={selectNote} onInsert={insertOnTab} gridQuarters={gridQuarters} />
     <details className="phrase-shift"><summary>移除段落前方空白（整段前移）</summary>

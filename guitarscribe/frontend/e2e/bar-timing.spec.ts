@@ -74,5 +74,6 @@ test("eight-bar boundaries support validation, undo, redo and revision reload", 
   expect(saved?.chords).toEqual(score.chords);
   await page.getByRole("button", { name: "Undo melody edit", exact: true }).click();
   await page.getByRole("button", { name: "Load melody revision", exact: true }).click();
+  await page.getByRole("button", { name: "確認恢復版本（可 Undo）", exact: true }).click();
   await expect(boundary).toHaveValue("2.4");
 });

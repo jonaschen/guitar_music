@@ -110,7 +110,8 @@ test("manual seek stays put and exact A–B loops without editing the score", as
   await page.route("**/api/v1/jobs/range-input", (route) => route.fulfill({ json: { id: "range-input", status: "completed", progress: 100, artifacts: [], score: longScore } }));
   await page.route("**/rhythm-patterns?*", (route) => route.fulfill({ json: [] }));
   await page.route("**/scores/playback/manifest", (route) => {
-    expect(route.request().postDataJSON()).toEqual(longScore);
+    expect(route.request().postDataJSON()).toEqual({ ...longScore,
+      provenance: { ...longScore.provenance, parameters: { analysis_source_job_id: "range-input" } } });
     return route.fulfill({ json: { revision: "range", duration_seconds: 80, bpm: 120, time_signature: "4/4", events: [] } });
   });
   await page.goto("/?job=range-input");
@@ -295,7 +296,7 @@ test("renders an analyzed score workspace", async ({ page }) => {
     const requested = route.request().postDataJSON() as typeof score;
     return route.fulfill({ json: requested });
   });
-  await page.route("**/scores/melody/simplify", (route) => route.fulfill({ json: score }));
+  await page.route("**/scores/melody/simplify", (route) => route.fulfill({ json: { ...score, provenance: route.request().postDataJSON().score.provenance } }));
   await page.route("**/chord-voicings?*", (route) => route.fulfill({ json: [{ id: "closed-e-major-c", symbol: "C", shape_symbol: "C", frets: [8, 10, 10, 9, 8, 8], fingers: [1, 3, 4, 2, 1, 1], base_fret: 8, capo: 0, difficulty: 3.5, tags: ["closed", "barre", "e-shape"] }] }));
   await page.route("**/rhythm-patterns?*", (route) => route.fulfill({ json: [{ subdivision: 8, pattern_id: "flowing", display: ["D", null, "D", "U"], confidence: 0.8, label: "Flowing strum" }, { subdivision: 8, pattern_id: "steady", display: ["D", null, "D", null], confidence: 0.8, label: "Steady strum" }] }));
   const lyricScore = { ...score, lyrics: { id: "lyrics-1", language: "und", source: "manual", timing_level: "none", raw_text: "One two", revision: 1, lines: [{ id: "line-1", order: 0, start: null, end: null, text: "One two", confidence: 1, origin: "user", edited: true }] } };

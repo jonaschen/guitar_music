@@ -23,6 +23,7 @@ test("Contour candidate is explicit, undoable and cannot apply after work change
     return r.fulfill({ json: candidate });
   });
   await setup(page);
+  await expect(page.getByLabel("Editor melody version")).toContainText("其他／較早音符版本（未標記 G）");
   await page.getByText("Contour → 可編輯音符候選（G，實驗性）", { exact: true }).click();
   const generate = page.getByRole("button", { name: "產生 Contour 音符候選", exact: true });
   const apply = page.getByRole("button", { name: "套用候選到工作譜（可 Undo）", exact: true });
@@ -30,8 +31,10 @@ test("Contour candidate is explicit, undoable and cannot apply after work change
   await expect(apply).toBeVisible();
   await expect(page.getByRole("button", { name: "C4 · 0.00–0.50s", exact: true })).toBeVisible();
   await apply.click();
+  await expect(page.getByLabel("Editor melody version")).toContainText("Contour G 候選");
   await expect(page.getByRole("button", { name: "E4 · 0.00–0.50s", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Undo melody edit", exact: true }).click();
+  await expect(page.getByLabel("Editor melody version")).toContainText("其他／較早音符版本（未標記 G）");
   await expect(page.getByRole("button", { name: "C4 · 0.00–0.50s", exact: true })).toBeVisible();
   delay = true;
   await generate.click();
@@ -42,9 +45,11 @@ test("Contour candidate is explicit, undoable and cannot apply after work change
   await expect(apply).toHaveCount(0);
 });
 
-async function setup(page: Page, empty = false, noteStart = 0) {
+async function setup(page: Page, empty = false, noteStart = 0, completeBeats = false) {
   await page.route("**/api/v1/jobs/editor", (route) => route.fulfill({ json: {
-    id: "editor", status: "completed", progress: 100, artifacts: [], score: { ...score, melody: empty ? [] : score.melody.map((note) => ({ ...note, start: noteStart, end: noteStart + .5 })) },
+    id: "editor", status: "completed", progress: 100, artifacts: [], score: { ...score,
+      beats: completeBeats ? Array.from({ length: 16 }, (_, i) => ({ time: i * .5, beat: i % 4 + 1, measure: Math.floor(i / 4) + 1, confidence: 1 })) : score.beats,
+      melody: empty ? [] : score.melody.map((note) => ({ ...note, start: noteStart, end: noteStart + .5 })) },
   } }));
   await page.route("**/rhythm-patterns?*", (route) => route.fulfill({ json: [] }));
   await page.goto("/?job=editor");
@@ -66,6 +71,159 @@ function answer(route: Route) {
   result.melody = body.operation === "add" ? [...result.melody, note] : result.melody.map((n: any) => n.id === note.id ? note : n);
   return { score: result, selected_note_id: note.id };
 }
+
+test("G survives explicit save, refresh, restore and resave with the same playback notes and source", async ({ page }) => {
+  const candidate = { ...score, melody: [{ ...score.melody[0], midi: 64, note: "E4", start: .123, end: .456 }],
+    provenance: { ...score.provenance, parameters: { melody_note_processing: "bounded-source-v1", candidate_source_job_id: "editor" } } };
+  const saved: Record<string, any> = {};
+  const compiled: any[] = [];
+  let saveCount = 0;
+  await page.route("**/jobs/editor/melody-candidate", r => r.fulfill({ json: candidate }));
+  await page.route("**/revisions", r => {
+    const body = r.request().postDataJSON();
+    expect(body.create_new).toBe(true);
+    const id = `g-${++saveCount}`; saved[id] = body.score;
+    return r.fulfill({ json: { revision_id: id } });
+  });
+  await page.route("**/revisions/g-*", r => r.fulfill({ json: saved[r.request().url().split("/").at(-1)!] }));
+  await page.route("**/scores/playback/manifest", r => {
+    const body = r.request().postDataJSON(); compiled.push(body.melody);
+    return r.fulfill({ json: { events: body.melody.map((n: any) => ({ track: "melody", start: n.start, end: n.end, pitches: [n.midi], pitch_offsets: [0], pitch_velocities: [96], velocity: 96 })) } });
+  });
+  await setup(page);
+  await page.getByText("Contour → 可編輯音符候選（G，實驗性）", { exact: true }).click();
+  await page.getByRole("button", { name: "產生 Contour 音符候選", exact: true }).click();
+  await page.getByRole("button", { name: "套用候選到工作譜（可 Undo）", exact: true }).click();
+  await expect(page.getByLabel("Current working version")).toContainText("有未保存修改");
+  await page.getByRole("button", { name: "保存目前工作版本", exact: true }).click();
+  await expect(page.getByLabel("Current working version")).toContainText("已保存／載入：g-1");
+  await page.reload();
+  await expect(page.getByLabel("Current working version")).not.toContainText("Contour G");
+  await page.getByRole("button", { name: "恢復上次保存版本", exact: true }).click();
+  await expect(page.getByLabel("Current working version")).not.toContainText("Contour G");
+  await page.getByRole("button", { name: "確認恢復版本（可 Undo）", exact: true }).click();
+  await expect(page.getByLabel("Current working version")).toContainText("Contour G");
+  await expect(page.locator("audio")).toHaveAttribute("src", /jobs\/editor\/audio$/);
+  await page.getByText("旋律人工編輯 · Melody editor", { exact: true }).click();
+  await expect(page.getByLabel("旋律資料狀態")).toContainText("來源分析：editor");
+  await page.getByLabel("Editor audition mode").selectOption("ensemble");
+  await page.getByRole("button", { name: "重播所選小節", exact: true }).click();
+  await expect.poll(() => compiled.length).toBe(1);
+  await page.getByRole("button", { name: "暫停，保留位置", exact: true }).click();
+  await page.getByText("Compiled score playback", { exact: true }).click();
+  await page.getByRole("button", { name: "Play score", exact: true }).click();
+  await expect.poll(() => compiled.length).toBe(2);
+  expect(compiled).toEqual([candidate.melody, candidate.melody]);
+  await page.getByRole("button", { name: "保存目前工作版本", exact: true }).click();
+  await expect(page.getByLabel("Current working version")).toContainText("已保存／載入：g-2");
+  expect(saved["g-2"]).toEqual(saved["g-1"]);
+  expect(await page.evaluate(() => localStorage.getItem("guitarscribe.melodyRevision.editor"))).toBe("g-2");
+});
+
+test("revision preview and late responses never replace newer edits; cancel and expired source are safe", async ({ page }) => {
+  let held: Route | undefined;
+  let delay = false;
+  const candidate = { ...score, provenance: { ...score.provenance,
+    parameters: { melody_note_processing: "bounded-source-v1", candidate_source_job_id: "expired" } } };
+  await page.route("**/revisions/g", r => { if (delay) { held = r; return; } return r.fulfill({ json: candidate }); });
+  await page.route("**/jobs/expired", r => r.fulfill({ status: 404, json: { detail: "Expired" } }));
+  await page.route("**/scores/melody/edit", r => r.fulfill({ json: answer(r) }));
+  await setup(page);
+  await page.getByLabel("Melody revision ID").fill("g");
+  const load = page.getByRole("button", { name: "Load melody revision", exact: true });
+  const confirm = page.getByRole("button", { name: "確認恢復版本（可 Undo）", exact: true });
+  await load.click();
+  await expect(confirm).toBeEnabled();
+  await page.getByRole("button", { name: "C4 · 0.00–0.50s", exact: true }).click();
+  await page.getByLabel("Melody pitch").selectOption("64");
+  await page.getByRole("button", { name: "Apply note", exact: true }).click();
+  await expect(confirm).toBeDisabled();
+  delay = true;
+  await load.click();
+  await expect.poll(() => !!held).toBe(true);
+  await page.getByRole("button", { name: "Undo melody edit", exact: true }).click();
+  await held!.fulfill({ json: candidate });
+  await expect(page.getByLabel("工作版本")).toContainText("讀取期間工作譜已改變");
+  await expect(confirm).toHaveCount(0);
+  held = undefined;
+  await load.click();
+  await expect.poll(() => !!held).toBe(true);
+  await page.getByRole("button", { name: "取消讀取版本", exact: true }).click();
+  await held!.fulfill({ json: candidate });
+  await expect(page.getByLabel("工作版本")).toContainText("已取消讀取");
+  await expect(confirm).toHaveCount(0);
+  delay = false;
+  await load.click();
+  await confirm.click();
+  await expect(page.getByLabel("Editor melody version")).toContainText("Contour G");
+  await expect(page.locator("audio")).toHaveCount(0);
+  await expect(page.getByLabel("旋律資料狀態")).toContainText("來源分析：expired");
+  await page.getByRole("button", { name: "Undo melody edit", exact: true }).click();
+  await expect(page.getByLabel("Editor melody version")).not.toContainText("Contour G");
+});
+
+test("editor ensemble uses current score, clips both tracks, loops and cancels pending playback", async ({ page }) => {
+  let held: Route | undefined;
+  let delay = false;
+  const requests: any[] = [];
+  await page.addInitScript(() => {
+    (window as any).__frequencies = [];
+    const original = AudioParam.prototype.setValueAtTime;
+    AudioParam.prototype.setValueAtTime = function(value, time) {
+      if (value > 20) (window as any).__frequencies.push(value);
+      return original.call(this, value, time);
+    };
+  });
+  const manifest = (body: any) => ({ events: [
+    { track: "guitar", start: 0, end: 4, pitches: [48], pitch_offsets: [0], pitch_velocities: [90], velocity: 90 },
+    { track: "melody", start: 0, end: 4, pitches: [body.melody[0].midi], pitch_offsets: [0], pitch_velocities: [90], velocity: 90 },
+    { track: "melody", start: 2, end: 3, pitches: [84], pitch_offsets: [0], pitch_velocities: [90], velocity: 90 },
+  ] });
+  await page.route("**/scores/playback/manifest", route => {
+    const body = route.request().postDataJSON(); requests.push(body);
+    if (delay) { held = route; return; }
+    return route.fulfill({ json: manifest(body) });
+  });
+  await page.route("**/scores/melody/edit", route => route.fulfill({ json: answer(route) }));
+  await setup(page, false, 0, true);
+  await page.getByText("Compiled score playback", { exact: true }).click();
+  await page.getByLabel("Score guitar tone").selectOption("simple");
+  await page.getByRole("button", { name: "C4 · 0.00–0.50s", exact: true }).click();
+  await page.getByLabel("Melody pitch").selectOption("64");
+  await page.getByRole("button", { name: "Apply note", exact: true }).click();
+  await page.getByLabel("Tab bar count").selectOption("1");
+  await page.getByLabel("Editor audition mode").selectOption("ensemble");
+  const replay = page.getByRole("button", { name: "重播所選小節", exact: true });
+  const pause = page.getByRole("button", { name: "暫停，保留位置", exact: true });
+  const position = () => page.getByLabel("Tab transport position").innerText().then(s => Number(s.match(/位置 ([\d.]+)s/)![1]));
+  await replay.click();
+  await expect.poll(position).toBeGreaterThan(.2);
+  expect(requests[0].melody[0].midi).toBe(64);
+  await expect.poll(() => page.evaluate(() => [130.8128, 329.6276].every(f => (window as any).__frequencies.some((v: number) => Math.abs(v - f) < .01)))).toBe(true);
+  await pause.click();
+  const paused = await position();
+  await page.waitForTimeout(150);
+  expect(await position()).toBe(paused);
+  await page.getByRole("button", { name: "從暫停位置續播", exact: true }).click();
+  await expect.poll(position).toBeGreaterThan(paused + .1);
+  await expect.poll(position).toBe(2);
+  await page.waitForTimeout(150);
+  expect(await position()).toBe(2);
+  expect(await page.evaluate(() => (window as any).__frequencies.some((f: number) => Math.abs(f - 1046.5023) < .01))).toBe(false);
+  await page.getByLabel("Loop edited bars").check();
+  await replay.click();
+  await expect.poll(position, { intervals: [30] }).toBeGreaterThan(1.6);
+  await expect.poll(position, { intervals: [30] }).toBeLessThan(.5);
+  await pause.click();
+  delay = true;
+  await replay.click();
+  await expect.poll(() => Boolean(held)).toBe(true);
+  await pause.click();
+  const stopped = await position();
+  await held!.fulfill({ json: manifest(requests.at(-1)) });
+  await page.waitForTimeout(300);
+  expect(await position()).toBe(stopped);
+});
 
 test("edit pitch and duration, audition, undo, save and reload without a selected chord", async ({ page }) => {
   let saved: any;
@@ -102,12 +260,14 @@ test("edit pitch and duration, audition, undo, save and reload without a selecte
   expect(saved.melody[0].end).toBe(0.75);
   await page.getByRole("button", { name: "Undo melody edit", exact: true }).click();
   await page.getByRole("button", { name: "Load melody revision", exact: true }).click();
+  await page.getByRole("button", { name: "確認恢復版本（可 Undo）", exact: true }).click();
   await expect(page.getByRole("button", { name: "E4 · 0.00–0.75s · Edited", exact: true })).toBeVisible();
   await page.reload();
   await page.getByText("旋律人工編輯 · Melody editor", { exact: true }).click();
   await page.getByText("進階：秒數、音高與音符清單", { exact: true }).click();
   await expect(page.getByLabel("Melody revision ID")).toHaveValue("saved-edit");
   await page.getByRole("button", { name: "Load melody revision", exact: true }).click();
+  await page.getByRole("button", { name: "確認恢復版本（可 Undo）", exact: true }).click();
   await expect(page.getByRole("button", { name: "E4 · 0.00–0.75s · Edited", exact: true })).toBeVisible();
 });
 
@@ -463,6 +623,7 @@ test("saved revision can be recovered without a surviving analysis job", async (
   await page.goto("/");
   await page.getByLabel("Saved revision ID").fill("recovered");
   await page.getByRole("button", { name: "載入已保存修訂", exact: true }).click();
+  await page.getByRole("button", { name: "確認恢復版本（可 Undo）", exact: true }).click();
   await expect(page.getByText("旋律人工編輯 · Melody editor", { exact: true })).toBeVisible();
   await page.getByText("旋律人工編輯 · Melody editor", { exact: true }).click();
   await expect(page.getByRole("button", { name: "Tab n1 C4 2弦1格", exact: true })).toBeVisible();
@@ -540,6 +701,7 @@ test("song range preserves timestamps, filters notation, bounds score playback a
   await page.getByRole("button", { name: "取消範圍，顯示全曲", exact: true }).click();
   await expect(page.getByLabel("Playback position", { exact: true })).toHaveAttribute("min", "0");
   await page.getByRole("button", { name: "Load melody revision", exact: true }).click();
+  await page.getByRole("button", { name: "確認恢復版本（可 Undo）", exact: true }).click();
   await expect(page.getByLabel("Playback position", { exact: true })).toHaveAttribute("min", "2");
   await page.getByLabel("Song range start").fill("4");
   await expect(page.getByRole("button", { name: "套用歌曲範圍", exact: true })).toBeDisabled();

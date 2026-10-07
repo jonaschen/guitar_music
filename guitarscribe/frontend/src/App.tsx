@@ -11,6 +11,7 @@ import { createMetronomeVoice } from "./metronomeVoice";
 import { mergeChordSpans, type ChordSpan } from "./chordSpans";
 import { measureLayout } from "./measureLayout";
 import { MelodyEditor } from "./MelodyEditor";
+import { melodyVersion, sourceJobId, scoreFromJob, readSavedVersion, type SavedVersion } from "./scoreVersion";
 import { ContourCandidate } from "./ContourCandidate";
 import { SongRangeEditor } from "./SongRangeEditor";
 import { PlaybackRangeEditor } from "./PlaybackRangeEditor";
@@ -276,8 +277,36 @@ export function App() {
   const [isLoadingRevision, setIsLoadingRevision] = useState(false);
   const [undoHistory, setUndoHistory] = useState<SongScore[]>([]);
   const [redoHistory, setRedoHistory] = useState<SongScore[]>([]);
+  const [rememberedVersion, setRememberedVersion] = useState<SavedVersion | null>(readSavedVersion);
+  const [savedSnapshot, setSavedSnapshot] = useState<{ id: string; score: SongScore } | null>(null);
+  const [restorePreview, setRestorePreview] = useState<{ id: string; base: SongScore | null; next: SongScore; job: AnalysisJob | null } | null>(null);
+  const cleanScoreRef = useRef(score);
+  const revisionRequestRef = useRef(0);
+  const saveInFlightRef = useRef(false);
+  const hasUnsavedChanges = !!score && score !== cleanScoreRef.current;
+
+  useEffect(() => {
+    if (!score) return;
+    const source = sourceJobId(score);
+    setWorkingJobId(source);
+    if (analysisJob && source !== analysisJob.id) {
+      audioRef.current?.pause();
+      setAudioUrl(null); setAnalysisJob(null);
+    }
+  }, [score]);
+
+  useEffect(() => {
+    if (!hasUnsavedChanges) return;
+    const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [hasUnsavedChanges]);
 
   function replaceScore(nextScore: SongScore) {
+    scoreRef.current = nextScore;
+    cleanScoreRef.current = nextScore;
+    setSavedSnapshot(null);
+    setRestorePreview(null);
     setScore(nextScore);
     setBeatTimingDraft(null);
     setUndoHistory([]);
@@ -288,18 +317,21 @@ export function App() {
     setWorkingJobId(id);
     const saved = window.localStorage.getItem(`guitarscribe.melodyRevision.${id}`) ?? "";
     setRevisionId(saved);
+    setRememberedVersion(saved ? { id: saved, label: readSavedVersion()?.id === saved ? readSavedVersion()!.label : "已保存修訂", jobId: id } : null);
     setSaveStatus(saved ? `Saved draft ${saved} found. Use Load melody revision to open it; the original analysis is currently shown.` : "No saved revision yet.");
   }
 
   function recordScoreChange(nextScore: SongScore) {
     if (score) setUndoHistory((history) => [...history, score].slice(-50));
     setRedoHistory([]);
+    scoreRef.current = nextScore;
     setScore(nextScore);
   }
 
   function undoScoreChange() {
     if (!score || undoHistory.length === 0) return;
     const previous = undoHistory[undoHistory.length - 1];
+    scoreRef.current = previous;
     setUndoHistory((history) => history.slice(0, -1));
     setRedoHistory((history) => [score, ...history].slice(0, 50));
     setScore(previous);
@@ -308,6 +340,7 @@ export function App() {
   function redoScoreChange() {
     if (!score || redoHistory.length === 0) return;
     const next = redoHistory[0];
+    scoreRef.current = next;
     setRedoHistory((history) => history.slice(1));
     setUndoHistory((history) => [...history, score].slice(-50));
     setScore(next);
@@ -328,7 +361,7 @@ export function App() {
         setAnalysisJob(job);
         setError("");
         if (job.status === "completed" && job.score) {
-          replaceScore(job.score);
+          replaceScore(scoreFromJob(job));
           restoreWorkingJob(job.id);
           setAudioUrl(`${API_BASE}/api/v1/jobs/${job.id}/audio`);
           setStatus("ready");
@@ -387,7 +420,7 @@ export function App() {
         setAnalysisJob(nextJob);
         setError("");
         if (nextJob.status === "completed" && nextJob.score) {
-          replaceScore(nextJob.score);
+          replaceScore(scoreFromJob(nextJob));
           restoreWorkingJob(nextJob.id);
           setAudioUrl(`${API_BASE}/api/v1/jobs/${nextJob.id}/audio`);
           setRevisionId("");
@@ -1025,11 +1058,15 @@ export function App() {
     trackSynthSource(pick);
   }
 
-  async function toggleSynthPlayback() {
+  async function toggleSynthPlayback(segment?: { start: number; end: number; loop: boolean; from?: number }) {
     referenceStopRef.current();
     if (!score) return;
-    if (isSynthPlaying) { stopSynth(false); return; }
+    if (isSynthPlaying && !segment) { stopSynth(false); return; }
     stopSynth(false);
+    const selectedRange = segment ? clipRange(segment.start, segment.end, score) : null;
+    if (selectedRange && selectedRange.end <= selectedRange.start) return;
+    const tracks = segment ? { guitar: true, melody: true, metronome: false } : synthTracks;
+    const solo = segment ? null : synthSoloTrack;
     const generation = synthGenerationRef.current;
     setIsSynthPreparing(true);
     try {
@@ -1039,22 +1076,22 @@ export function App() {
       await context.resume();
       const manifest = await compilePlayback(score);
       if (generation !== synthGenerationRef.current) return;
-      const buffers = guitarTone === "pluck" && synthTracks.guitar && (synthSoloTrack === null || synthSoloTrack === "guitar")
+      const buffers = guitarTone === "pluck" && tracks.guitar && (solo === null || solo === "guitar")
         ? await preparePluckedBuffers(context, manifest.events.filter((event) => event.track === "guitar").flatMap((event) => event.pitches), () => generation !== synthGenerationRef.current)
         : new Map<number, AudioBuffer>();
       if (generation !== synthGenerationRef.current) return;
       setIsSynthPreparing(false);
       setSynthSnapshot({ manifest, chords: score.chords });
-      const rawLoop = loopStart !== null && loopEnd !== null && loopEnd > loopStart
+      const rawLoop = selectedRange ? (segment?.loop ? [selectedRange.start, selectedRange.end] as [number, number] : null) : loopStart !== null && loopEnd !== null && loopEnd > loopStart
         ? [loopStart, loopEnd] as [number, number]
         : loopRange;
       const clippedLoop = rawLoop ? [Math.max(bounds.start, rawLoop[0]), Math.min(bounds.end, rawLoop[1])] : null;
       const requestedLoop = clippedLoop && clippedLoop[1] > clippedLoop[0] ? clippedLoop : null;
-      const playhead = playbackTime >= bounds.end || playbackTime < bounds.start ? bounds.start : playbackTime;
+      const playhead = selectedRange ? Math.max(selectedRange.start, Math.min(segment?.from ?? selectedRange.start, selectedRange.end - .001)) : playbackTime >= bounds.end || playbackTime < bounds.start ? bounds.start : playbackTime;
       const scoreStart = requestedLoop && (playhead < requestedLoop[0] || playhead >= requestedLoop[1])
         ? requestedLoop[0]
         : playhead;
-      const countInBeats = (Number(score.analysis.time_signature.charAt(0)) || 4) * countInMeasures;
+      const countInBeats = segment ? 0 : (Number(score.analysis.time_signature.charAt(0)) || 4) * countInMeasures;
       const beatSeconds = 60 / Math.max(score.analysis.bpm, 1) / playbackRate;
       const countInStart = context.currentTime + 0.06;
       if (countInBeats > 0) {
@@ -1071,10 +1108,10 @@ export function App() {
       const acousticEnd = (event: PlaybackManifest["events"][number]) =>
         event.track === "guitar" && guitarTone === "pluck" ? event.sustain_end ?? event.end : event.end;
       const scheduleSegment = (segmentStart: number, contextStart: number) => {
-        const segmentEnd = requestedLoop?.[1] ?? bounds.end;
+        const segmentEnd = selectedRange?.end ?? requestedLoop?.[1] ?? bounds.end;
         synthClockRef.current = { contextStart, scoreStart: segmentStart };
         const segmentEvents = manifest.events
-          .filter((event) => synthTracks[event.track] && synthVolumes[event.track] > 0 && (synthSoloTrack === null || event.track === synthSoloTrack) && acousticEnd(event) > segmentStart && event.start < segmentEnd)
+          .filter((event) => tracks[event.track] && synthVolumes[event.track] > 0 && (solo === null || event.track === solo) && acousticEnd(event) > segmentStart && event.start < segmentEnd)
           .sort((left, right) => left.start - right.start);
         let nextEventIndex = 0;
         const scheduleEvent = (event: PlaybackManifest["events"][number], resumeScoreTime: number) => {
@@ -1485,42 +1522,91 @@ export function App() {
     setChordDraft("");
   }
 
-  async function saveRevision(createNew = false) {
-    if (!score) return;
+  async function saveRevision(createNew = true) {
+    if (!score || saveInFlightRef.current) return;
+    saveInFlightRef.current = true;
     setIsSavingRevision(true);
     setError("");
     try {
       const response = await postSaveRevision(score, revisionId.trim() || null, createNew);
+      const jobId = sourceJobId(score) ?? workingJobId;
+      const remembered = { id: response.revision_id, label: `${melodyVersion(score)} · ${score.melody.length} 音符`, jobId };
+      setRememberedVersion(remembered);
+      let storageWarning = "";
+      try {
+        window.localStorage.setItem("guitarscribe.savedVersion", JSON.stringify(remembered));
+        if (jobId) window.localStorage.setItem(`guitarscribe.melodyRevision.${jobId}`, response.revision_id);
+      } catch { storageWarning = " 瀏覽器無法記住版本，請抄下此 ID。"; }
       if (scoreRef.current !== score) {
-        setSaveStatus(`Saved snapshot ${response.revision_id}; subsequent changes are not saved.`);
+        setSaveStatus(`Saved snapshot ${response.revision_id}; subsequent changes are not saved.${storageWarning}`);
         return;
       }
       setRevisionId(response.revision_id);
-      if (createNew && workingJobId) window.localStorage.setItem(`guitarscribe.melodyRevision.${workingJobId}`, response.revision_id);
-      setSaveStatus(`Saved revision ${response.revision_id}.`);
+      cleanScoreRef.current = score;
+      setSavedSnapshot({ id: response.revision_id, score });
+      setSaveStatus(`Saved revision ${response.revision_id}.${storageWarning}`);
     } catch (saveError) {
       const message = saveError instanceof Error ? saveError.message : "Revision save failed.";
       setError(message); setSaveStatus(message);
     } finally {
+      saveInFlightRef.current = false;
       setIsSavingRevision(false);
     }
   }
 
-  async function loadRevision() {
-    if (!revisionId.trim()) return;
+  async function loadRevision(requestedId = revisionId.trim()) {
+    if (!requestedId) return;
+    const request = ++revisionRequestRef.current;
+    const base = scoreRef.current;
+    setRestorePreview(null);
     setIsLoadingRevision(true);
     setError("");
     try {
-      const loadedScore = await getRevision(revisionId.trim());
-      replaceScore(loadedScore);
-      setWorkingJobId(loadedScore.melody_edits?.find((edit) => edit.source_job_id)?.source_job_id ?? undefined);
-      setStatus("ready");
-      setSaveStatus(`Loaded revision ${revisionId.trim()}.`);
+      const loadedScore = await getRevision(requestedId);
+      const source = sourceJobId(loadedScore);
+      let job: AnalysisJob | null = null;
+      if (source) {
+        try { job = await getAnalysisJob(source); } catch { /* Saved notes remain usable after source expiry. */ }
+      }
+      if (request !== revisionRequestRef.current) return;
+      if (base !== scoreRef.current) { setSaveStatus("讀取期間工作譜已改變，未載入舊回應。請重新選擇恢復版本。"); return; }
+      setRestorePreview({ id: requestedId, base, next: loadedScore, job });
+      setSaveStatus("已讀取保存版本；請在上方「工作版本」確認恢復，目前樂譜未變。");
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Revision load failed.");
+      if (request === revisionRequestRef.current) setError(loadError instanceof Error ? loadError.message : "Revision load failed.");
     } finally {
-      setIsLoadingRevision(false);
+      if (request === revisionRequestRef.current) setIsLoadingRevision(false);
     }
+  }
+
+  function applyRestoredVersion() {
+    if (!restorePreview) return;
+    const { id, base, next, job } = restorePreview;
+    if (scoreRef.current !== base) { setRestorePreview(null); setSaveStatus("工作譜已改變，未恢復舊預覽。請重新讀取版本。"); return; }
+    audioRef.current?.pause(); stopSynth(false); referenceStopRef.current();
+    recordScoreChange(next);
+    cleanScoreRef.current = next;
+    setSavedSnapshot({ id, score: next });
+    setRevisionId(id);
+    const source = sourceJobId(next);
+    setWorkingJobId(source);
+    const remembered = { id, label: `${melodyVersion(next)} · ${next.melody.length} 音符`, jobId: source };
+    setRememberedVersion(remembered);
+    let storageWarning = "";
+    try {
+      localStorage.setItem("guitarscribe.savedVersion", JSON.stringify(remembered));
+      if (source) localStorage.setItem(`guitarscribe.melodyRevision.${source}`, id);
+    } catch { storageWarning = " 瀏覽器無法記住版本，請抄下此 ID。"; }
+    // Never leave another song's source audio attached to a restored score.
+    const compatible = job?.status === "completed" && job.score
+      && job.score.song.duration_seconds === next.song.duration_seconds
+      && (job.score.song.source_start_seconds ?? 0) === (next.song.source_start_seconds ?? 0);
+    setAnalysisJob(compatible ? job : null);
+    setDiagnosticAudioTrack("source");
+    setAudioUrl(compatible ? `${API_BASE}/api/v1/jobs/${job.id}/audio` : null);
+    setStatus("ready");
+    setRestorePreview(null);
+    setSaveStatus(`Loaded revision ${id}.${compatible ? "" : " 來源音訊未恢復；仍可編輯及播放保存的樂譜。"}${storageWarning}`);
   }
 
   return (
@@ -1617,6 +1703,25 @@ export function App() {
               </div>
               <div className="status-pill">{status === "ready" ? "Editable draft" : analysisJob ? `${analysisJob.progress}%` : "Waiting for analysis"}</div>
             </div>
+
+            <section className="revision-recovery" aria-label="工作版本">
+              <h3>工作版本</h3>
+              <p aria-label="Current working version">{score ? `${melodyVersion(score)} · ${score.melody.length} 音符` : "尚未載入樂譜"} · {savedSnapshot?.score === score ? `已保存／載入：${savedSnapshot.id}` : hasUnsavedChanges ? "有未保存修改" : "目前為原分析／未保存初稿"}</p>
+              {score ? <button type="button" disabled={isSavingRevision || isLoadingRevision} onClick={() => void saveRevision(true)}>保存目前工作版本</button> : null}
+              {rememberedVersion ? <div>
+                <p>可恢復：{rememberedVersion.label} · {rememberedVersion.id}。此記錄不代表目前已載入。</p>
+                <button type="button" disabled={isLoadingRevision || isSavingRevision} onClick={() => void loadRevision(rememberedVersion.id)}>恢復上次保存版本</button>
+              </div> : <p>尚無此分析的保存記錄。G 候選套用後請保存；重新整理不會自動套用 G。</p>}
+              {isLoadingRevision ? <button type="button" onClick={() => { revisionRequestRef.current++; setIsLoadingRevision(false); setSaveStatus("已取消讀取，目前工作譜不變。"); }}>取消讀取版本</button> : null}
+              {restorePreview ? <div role="status">
+                <p>待恢復：{melodyVersion(restorePreview.next)} · {restorePreview.next.melody.length} 音符 · {restorePreview.id}</p>
+                {restorePreview.base !== score ? <p>工作譜已改變，此預覽已失效；請重新讀取要恢復的版本。</p> : null}
+                <p>{hasUnsavedChanges ? "目前有未保存修改，建議先保存。" : ""}確認後切換工作譜；原工作譜可用 Undo 找回。</p>
+                <button type="button" disabled={isSavingRevision || restorePreview.base !== score} onClick={applyRestoredVersion}>確認恢復版本（可 Undo）</button>
+                <button type="button" onClick={() => setRestorePreview(null)}>保留目前工作譜</button>
+              </div> : null}
+              <p role="status">{saveStatus}</p>
+            </section>
 
             {!score ? <section className="revision-recovery" aria-label="載入已保存修訂">
               <h3>繼續編輯已保存的樂譜</h3>
@@ -1913,6 +2018,7 @@ export function App() {
                   onSeek={seekTo} onPitch={(midi) => void auditionEditedNotes([{ midi, start: 0, end: 0.6 }])}
                   onAudition={(start, end, loop) => { const range = clipRange(start, end, score); if (range.end <= range.start) return; void auditionEditedNotes(score.melody.filter((note) => note.end > range.start && note.start < range.end).map((note) => ({ midi: note.midi, start: Math.max(0, note.start - range.start), end: Math.min(range.end, note.end) - range.start })), { ...range, loop }); }}
                   onOriginal={(start, end) => void auditionSourceSegment(start, end)}
+                  onEnsemble={(start, end, loop, from) => void toggleSynthPlayback({ start, end, loop, from })}
                   onStop={() => { audioRef.current?.pause(); stopSynth(false); }} onUndo={undoScoreChange} onRedo={redoScoreChange}
                   canUndo={undoHistory.length > 0} canRedo={redoHistory.length > 0}
                   revisionId={revisionId} onRevisionId={setRevisionId} onSave={() => void saveRevision(true)} onLoad={() => void loadRevision()}
@@ -2024,9 +2130,9 @@ export function App() {
                   </label>
                   <div className="editor-actions">
                     <button type="button" className="ghost-button" onClick={() => void saveRevision()} disabled={isSavingRevision}>
-                      {isSavingRevision ? "Saving..." : "Save revision"}
+                      {isSavingRevision ? "Saving..." : "Save revision (new version)"}
                     </button>
-                    <button type="button" className="ghost-button" onClick={loadRevision} disabled={isLoadingRevision}>
+                    <button type="button" className="ghost-button" onClick={() => void loadRevision()} disabled={isLoadingRevision}>
                       {isLoadingRevision ? "Loading..." : "Load revision"}
                     </button>
                   </div>
