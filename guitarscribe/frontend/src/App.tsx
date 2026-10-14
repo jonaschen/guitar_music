@@ -1268,7 +1268,7 @@ export function App() {
     referenceStopRef.current();
     const audio = audioRef.current;
     if (!audio) return;
-    if (isPlaying) { audio.pause(); return; }
+    if (isPlaying) { audio.pause(); if (sourceSegmentRef.current) stopSynth(false); return; }
     stopSynth(false);
     if (audio.currentTime < bounds.start || audio.currentTime >= bounds.end) audio.currentTime = bounds.start;
     if (!score || countInMeasures === 0) { await audio.play(); return; }
@@ -1295,6 +1295,7 @@ export function App() {
         const loop = loopStart !== null && loopEnd !== null && loopEnd > loopStart ? [loopStart, loopEnd] : loopRange;
         if (loop && loop[1] > bounds.start && loop[0] < bounds.end) { seekTo(Math.max(bounds.start, loop[0])); return; }
         audioRef.current?.pause();
+        if (audioRef.current && audioRef.current.currentTime !== bounds.end) audioRef.current.currentTime = bounds.end;
         setPlaybackTime(bounds.end); return;
       }
       if (time < bounds.start) { if (audioRef.current) audioRef.current.currentTime = bounds.start; setPlaybackTime(bounds.start); return; }
@@ -1313,7 +1314,8 @@ export function App() {
 
   function seekTo(time: number) {
     time = Math.max(bounds.start, Math.min(bounds.end, time));
-    if (isSynthPlaying || isSynthPreparing) stopSynth(false);
+    if (isSynthPlaying || isSynthPreparing || sourceSegmentRef.current || isCountingIn) stopSynth(false);
+    if (pendingAudioTrackSeekRef.current !== null) pendingAudioTrackSeekRef.current = time;
     setPlaybackTime(time);
     if (audioRef.current) {
       createMediaTransportClock(audioRef.current).seek?.(time);
@@ -1322,6 +1324,7 @@ export function App() {
 
   function selectDiagnosticAudioTrack(track: DiagnosticAudioTrack) {
     if (!analysisJob || track === diagnosticAudioTrack) return;
+    referenceStopRef.current(); stopSynth(false);
     audioRef.current?.pause();
     setIsPlaying(false);
     pendingAudioTrackSeekRef.current = playbackTime;

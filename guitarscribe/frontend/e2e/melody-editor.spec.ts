@@ -499,6 +499,52 @@ test("range loop restarts, pause cancels it, and cross-bar notes remain one edit
   expect(await position()).toBeCloseTo(paused, 1);
 });
 
+for (const action of ["seek", "track", "pause"] as const) {
+  test(`source preview boundary is cancelled by ${action}`, async ({ page }) => {
+    // Drive media time explicitly: this tests ownership of the preview boundary,
+    // independently of audio hardware or wall-clock playback jitter.
+    await page.addInitScript(() => {
+      const states = new WeakMap<HTMLMediaElement, { time: number; paused: boolean }>();
+      function state(media: HTMLMediaElement) {
+        if (!states.has(media)) states.set(media, { time: 0, paused: true });
+        return states.get(media)!;
+      }
+      Object.defineProperty(HTMLMediaElement.prototype, "currentTime", { get() { return state(this).time; }, set(value) { state(this).time = value; } });
+      Object.defineProperty(HTMLMediaElement.prototype, "paused", { get() { return state(this).paused; } });
+      HTMLMediaElement.prototype.play = function () { state(this).paused = false; this.dispatchEvent(new Event("play")); return Promise.resolve(); };
+      HTMLMediaElement.prototype.pause = function () { state(this).paused = true; this.dispatchEvent(new Event("pause")); };
+    });
+    await page.route("**/api/v1/jobs/editor", route => route.fulfill({ json: {
+      id: "editor", status: "completed", progress: 100, artifacts: ["vocal-stem"],
+      score: { ...score, beats: Array.from({ length: 16 }, (_, i) => ({ time: i * .5, beat: i % 4 + 1, measure: Math.floor(i / 4) + 1, confidence: 1 })) },
+    } }));
+    await page.route("**/rhythm-patterns?*", route => route.fulfill({ json: [] }));
+    await page.goto("/?job=editor");
+    await page.getByText("旋律人工編輯 · Melody editor", { exact: true }).click();
+    await page.getByLabel("Tab bar count").selectOption("1");
+    await page.getByRole("button", { name: "對照來源片段", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Pause", exact: true })).toBeVisible();
+    if (action === "seek") await page.getByLabel("Playback position", { exact: true }).fill("1");
+    if (action === "track") await page.getByRole("button", { name: "Vocal stem", exact: true }).click();
+    if (action === "pause") await page.getByRole("button", { name: "Pause", exact: true }).click();
+    const time = await page.locator("audio").evaluate(async (audio: HTMLAudioElement) => {
+      audio.currentTime = 4;
+      audio.dispatchEvent(new Event("timeupdate"));
+      await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+      return audio.currentTime;
+    });
+    expect(time).toBe(4); // The cancelled Bar 1 boundary must not pull us back to 2s.
+    if (action === "track") {
+      await page.getByLabel("Playback position", { exact: true }).fill("1");
+      const afterMetadata = await page.locator("audio").evaluate((audio: HTMLAudioElement) => {
+        audio.dispatchEvent(new Event("loadedmetadata"));
+        return audio.currentTime;
+      });
+      expect(afterMetadata).toBe(1); // Loading the new track must respect the latest seek.
+    }
+  });
+}
+
 test("source segment plays through media onPlay and stops at its selected bar boundary", async ({ page }) => {
   const wav = Buffer.alloc(44 + 8000 * 2 * 2);
   wav.write("RIFF", 0); wav.writeUInt32LE(wav.length - 8, 4); wav.write("WAVEfmt ", 8);
