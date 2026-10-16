@@ -17,6 +17,7 @@ import { SongRangeEditor } from "./SongRangeEditor";
 import { PlaybackRangeEditor } from "./PlaybackRangeEditor";
 import { songBounds, clipRange } from "./songRange";
 import { notationBars } from "./melodyNotation";
+import { waitForMediaMetadata } from "./mediaReady";
 
 const AlphaTabScore = lazy(() => import("./AlphaTabScore"));
 
@@ -222,6 +223,8 @@ export function App() {
   const [analysisJob, setAnalysisJob] = useState<AnalysisJob | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const sourceSegmentRef = useRef(false);
+  const sourceLoadAbortRef = useRef<AbortController | null>(null);
+  const [isSourcePreparing, setIsSourcePreparing] = useState(false);
   const pendingAudioTrackSeekRef = useRef<number | null>(null);
   const metronomeContextRef = useRef<AudioContext | null>(null);
   const synthContextRef = useRef<AudioContext | null>(null);
@@ -272,6 +275,15 @@ export function App() {
   const [chordEndDraft, setChordEndDraft] = useState("");
   const [candidateVoicings, setCandidateVoicings] = useState<ScoreChord["available_voicings"]>([]);
   const [revisionId, setRevisionId] = useState("");
+  const [focusedWorkspace, setFocusedWorkspace] = useState(() => {
+    try { return localStorage.getItem("guitarscribe.workspaceMode") !== "full"; } catch { return true; }
+  });
+  const focusMode = !!score && focusedWorkspace;
+  function switchWorkspace() {
+    audioRef.current?.pause(); stopSynth(false); referenceStopRef.current();
+    setFocusedWorkspace(value => !value);
+    try { localStorage.setItem("guitarscribe.workspaceMode", focusedWorkspace ? "full" : "focus"); } catch { /* UI remains usable without storage. */ }
+  }
   const [saveStatus, setSaveStatus] = useState("No saved revision yet.");
   const [isSavingRevision, setIsSavingRevision] = useState(false);
   const [isLoadingRevision, setIsLoadingRevision] = useState(false);
@@ -522,6 +534,8 @@ export function App() {
   useEffect(() => {
     const handleShortcut = (event: KeyboardEvent) => {
       if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== "z") return;
+      const target = event.target;
+      if (target instanceof HTMLElement && (target.closest("input, textarea, select") || target.isContentEditable)) return;
       event.preventDefault();
       if (event.shiftKey) redoScoreChange();
       else undoScoreChange();
@@ -974,6 +988,8 @@ export function App() {
   }
 
   function stopSynth(reset = false) {
+    sourceLoadAbortRef.current?.abort(); sourceLoadAbortRef.current = null;
+    setIsSourcePreparing(false);
     if (sourceSegmentRef.current) audioRef.current?.pause();
     sourceSegmentRef.current = false;
     synthGenerationRef.current++;
@@ -1055,10 +1071,17 @@ export function App() {
     setLoopRange(null); setLoopStart(null); setLoopEnd(null);
     const audio = audioRef.current;
     if (!audio) { setError("沒有可用來源音訊。"); return; }
-    audio.pause(); audio.currentTime = start; setPlaybackTime(start);
+    audio.pause(); setPlaybackTime(start);
+    if (pendingAudioTrackSeekRef.current !== null) pendingAudioTrackSeekRef.current = start;
     const generation = synthGenerationRef.current;
+    const loading = new AbortController(); sourceLoadAbortRef.current = loading;
     sourceSegmentRef.current = true;
     try {
+      setIsSourcePreparing(true);
+      await waitForMediaMetadata(audio, loading.signal);
+      if (generation !== synthGenerationRef.current || audio !== audioRef.current) return;
+      setIsSourcePreparing(false);
+      audio.currentTime = start;
       await audio.play();
       if (generation !== synthGenerationRef.current) return;
       const update = () => {
@@ -1647,12 +1670,12 @@ export function App() {
   }
 
   return (
-    <div className="page-shell">
+    <div className={`page-shell${focusMode ? " focus-workspace" : ""}`}>
       <div className="aurora aurora-left" />
       <div className="aurora aurora-right" />
       <main className="layout">
-        <PlaybackReference stopRef={referenceStopRef} onStart={() => { stopSynth(false); audioRef.current?.pause(); }} />
-        <section className="hero-card">
+        <div hidden={focusMode}><PlaybackReference stopRef={referenceStopRef} onStart={() => { stopSynth(false); audioRef.current?.pause(); }} /></div>
+        <section className="hero-card" hidden={focusMode}>
           <div className="hero-copy">
             <p className="eyebrow">GuitarScribe / September 4, 2026 handoff build</p>
             <h1>Paste less. Listen once. Get a playable draft.</h1>
@@ -1741,6 +1764,10 @@ export function App() {
               <div className="status-pill">{status === "ready" ? "Editable draft" : analysisJob ? `${analysisJob.progress}%` : "Waiting for analysis"}</div>
             </div>
 
+            {score ? <nav className="workspace-mode" aria-label="工作區模式">
+              <div><strong>{focusMode ? "專注修譜" : "完整工具"}</strong><p>選一段 → 對照來源 → 修譜與重播 → 保存版本</p></div>
+              <button type="button" className="ghost-button" onClick={switchWorkspace}>{focusMode ? "顯示完整工具" : "回到專注修譜"}</button>
+            </nav> : null}
             <section className="revision-recovery" aria-label="工作版本">
               <h3>工作版本</h3>
               <p aria-label="Current working version">{score ? `${melodyVersion(score)} · ${score.melody.length} 音符` : "尚未載入樂譜"} · {savedSnapshot?.score === score ? `已保存／載入：${savedSnapshot.id}` : hasUnsavedChanges ? "有未保存修改" : "目前為原分析／未保存初稿"}</p>
@@ -1769,6 +1796,7 @@ export function App() {
 
             {score ? (
               <>
+                <div hidden={focusMode} className="advanced-workspace">
                 {(score.song.source_start_seconds ?? 0) > 0 ? <p role="status">分析前已略過 {score.song.source_start_seconds} 秒；樂譜／播放 0 秒 = 原檔 {score.song.source_start_seconds} 秒。請勿再次略過同一段開場。</p> : null}
                 <SongRangeEditor score={score} playhead={playbackTime}
                   onPreview={(start, end) => void auditionSourceSegment(start, end, true)}
@@ -1905,9 +1933,12 @@ export function App() {
                 {audioUrl ? (
                   <section className="transport-bar">
                     <audio
+                      key={audioUrl}
                       ref={audioRef}
                       src={audioUrl}
                       onLoadedMetadata={(event) => {
+                        if (event.currentTarget !== audioRef.current) return;
+                        event.currentTarget.playbackRate = playbackRate;
                         if (pendingAudioTrackSeekRef.current !== null) {
                           event.currentTarget.currentTime = pendingAudioTrackSeekRef.current;
                           pendingAudioTrackSeekRef.current = null;
@@ -2050,7 +2081,12 @@ export function App() {
 
                 <ContourCandidate score={score} jobId={workingJobId} apiBase={API_BASE}
                   onCommit={(base, next) => { if (scoreRef.current !== base) return false; audioRef.current?.pause(); stopSynth(false); return recordScoreChange(next); }} />
+                </div>
                 <MelodyEditor score={score} jobId={workingJobId} playhead={playbackTime} apiBase={API_BASE}
+                  focused={focusMode} sourceAvailable={!!audioUrl} sourceTrack={diagnosticAudioTrack}
+                  playbackRate={playbackRate} onSpeed={setSpeed}
+                  sourceTracks={analysisJob?.artifacts ?? []} onSourceTrack={track => selectDiagnosticAudioTrack(track as DiagnosticAudioTrack)}
+                  playbackStatus={isSourcePreparing ? "載入來源中" : isSynthPreparing ? "準備合奏中" : isSynthPlaying ? "播放工作譜" : isPlaying ? "播放來源音訊" : "已暫停"}
                   onCommit={(base, next) => { if (scoreRef.current !== base) return false; return recordScoreChange(next); }}
                   onSeek={seekTo} onPitch={(midi) => void auditionEditedNotes([{ midi, start: 0, end: 0.6 }])}
                   onAudition={(start, end, loop) => { const range = clipRange(start, end, score); if (range.end <= range.start) return; void auditionEditedNotes(score.melody.filter((note) => note.end > range.start && note.start < range.end).map((note) => ({ midi: note.midi, start: Math.max(0, note.start - range.start), end: Math.min(range.end, note.end) - range.start })), { ...range, loop }); }}
@@ -2061,6 +2097,7 @@ export function App() {
                   revisionId={revisionId} onRevisionId={setRevisionId} onSave={() => void saveRevision(true)} onLoad={() => void loadRevision()}
                   saving={isSavingRevision || isLoadingRevision} saveStatus={saveStatus} />
 
+                <div hidden={focusMode} className="advanced-workspace">
                 {score.melody.length > 0 ? <details className="melody-workspace workspace-disclosure">
                 <summary>Melody &amp; Tab previews · Experimental</summary>
                 <section className="melody-panel">
@@ -2142,6 +2179,7 @@ export function App() {
                     </div>
                   ))}
                 </div>
+                </div>
               </>
             ) : (
               <div className="placeholder">
@@ -2150,7 +2188,7 @@ export function App() {
             )}
           </div>
 
-          <aside className="panel side-panel">
+          <aside className="panel side-panel" hidden={focusMode}>
             <div className="panel-header">
               <div>
                 <p className="eyebrow">Session notes</p>

@@ -10,6 +10,9 @@ const pitches = Array.from({ length: 128 }, (_, midi) => ({ midi,
   label: `${["C", "C♯", "D", "E♭", "E", "F", "F♯", "G", "A♭", "A", "B♭", "B"][midi % 12]}${Math.floor(midi / 12) - 1}` }));
 
 type Props = {
+  focused?: boolean; sourceAvailable?: boolean; sourceTrack?: string; sourceTracks?: string[];
+  onSourceTrack?: (track: string) => void; playbackStatus?: string;
+  playbackRate?: number; onSpeed?: (rate: number) => void;
   score: SongScore; jobId?: string; playhead: number; apiBase: string;
   onCommit: (base: SongScore, next: SongScore) => boolean;
   onSeek: (time: number) => void;
@@ -37,6 +40,7 @@ export function MelodyEditor(props: Props) {
   const [tabString, setTabString] = useState(2);
   const [tabFret, setTabFret] = useState(1);
   const [explicitTab, setExplicitTab] = useState(false);
+  const [newDraftTouched, setNewDraftTouched] = useState(false);
   const [barCount, setBarCount] = useState(4);
   const [loop, setLoop] = useState(false);
   const [ensemble, setEnsemble] = useState(false);
@@ -80,11 +84,12 @@ export function MelodyEditor(props: Props) {
   }, [selected]);
 
   function selectNote(id: string) {
-    props.onStop(); setSelectedId(id); setMessage("");
+    props.onStop(); setSelectedId(id); setMessage(""); setNewDraftTouched(false);
     // Selecting a note does not move the paused transport or restart playback.
   }
 
   function setPosition(string: number, fret: number) {
+    setNewDraftTouched(true);
     props.onStop(); setTabString(string); setTabFret(fret); setExplicitTab(true);
     setMidi(score.guitar.tuning[6 - string] + score.analysis.capo + fret);
   }
@@ -97,6 +102,7 @@ export function MelodyEditor(props: Props) {
   }
 
   function moveDraft(direction: number) {
+    setNewDraftTouched(true);
     props.onStop();
     const nextStart = clock.endAfter(Number(start), direction * gridQuarters);
     const nextEnd = clock.endAfter(Number(end), direction * gridQuarters);
@@ -107,6 +113,7 @@ export function MelodyEditor(props: Props) {
   }
 
   function newNote() {
+    setNewDraftTouched(true);
     setExplicitTab(false);
     setSelectedId(null);
     setStart(String(props.playhead));
@@ -143,16 +150,18 @@ export function MelodyEditor(props: Props) {
         setMessage("樂譜已在其他操作中改變，本次較舊的回應未套用。請重新操作。"); return;
       }
       setSelectedId(body.selected_note_id);
+      setNewDraftTouched(false);
       if (operation === "shift_phrase") props.onSeek(targetTime);
       setMessage(operation === "shift_phrase" ? `已將 ${phraseNotes.length} 個音符整段前移 ${phraseDelta.toFixed(3)} 秒，可一次 Undo；尚未保存。原曲、和弦及小節線未移動。` : "已修改工作樂譜，尚未保存。原曲與 Contour 不變；用「重播所選小節」聽修改結果。");
     } catch (error) { setMessage(error instanceof Error ? error.message : "Edit failed"); }
     finally { inFlight.current = false; setBusy(false); }
   }
 
-  return <details className="melody-editor workspace-disclosure">
+  return <details className="melody-editor workspace-disclosure" open={props.focused || undefined}>
     <summary>旋律人工編輯 · Melody editor</summary>
     <p aria-label="Editor melody version"><strong>旋律版本：{melodyVersion(score)}</strong> · {score.melody.length} 音符。重播與合奏使用這份工作譜。</p>
-    {!isGCandidate ? <p>若要測先前較好的 G 版本，請先載入已保存的 G 修訂；尚未保存時，從原分析使用上方「Contour → 可編輯音符候選」產生並套用。先保存重要修改，不要重新分析。</p> : <p>G 已在工作譜中；請用 Save new revision 保存。重新整理會回到原分析，已保存的 G 仍需明確載入。</p>}
+    {!isGCandidate ? <p>目前不是 G。要使用先前較好的旋律，請先恢復已保存的 G；尚未保存時可在「完整工具」產生候選。先保存重要修改，不需重新分析。</p> : null}
+    <details className="editor-help"><summary>修譜說明與版本注意事項</summary>
     <p>聽一段 → 暫停 → 點六線譜數字修改 → 重播所選小節。上方為第 1 弦，品格相對 Capo {score.analysis.capo}；橫線尾巴表示持續時間，⌒ 表示跨小節延續。</p>
     <p><strong>時間比例六線譜草稿，尚非傳統節奏排版。</strong>弦上的數字是「品格」，不是簡譜音級；例如第 4 弦的 5，就是彈第 4 弦第 5 格。</p>
     <details className="tab-reading-guide"><summary>怎麼讀這張譜？</summary>
@@ -165,6 +174,7 @@ export function MelodyEditor(props: Props) {
       </ul>
       <p>尚未提供傳統符桿、連桿與完整休止記號，也不是簡譜。這一版先用實際時間保留尚未校正的分析結果。</p>
     </details>
+    </details>
     <div className="editor-actions">
       <label>起始小節<select aria-label="Tab start bar" value={barIndex} onChange={(e) => { props.onStop(); setWindowStart(bars[Number(e.target.value)].start); }}>{bars.map((bar, i) => <option key={bar.start} value={i}>Bar {bar.number} · {barNoteCounts[i]} 音符</option>)}</select></label>
       <label>段落長度<select aria-label="Tab bar count" value={barCount} onChange={(e) => { props.onStop(); setBarCount(Number(e.target.value)); }}>{[1, 2, 4, 8].map((n) => <option key={n} value={n}>{n} 小節</option>)}</select></label>
@@ -174,7 +184,9 @@ export function MelodyEditor(props: Props) {
     </div>
     <BarTimingEditor score={score} bars={shownBars} playhead={props.playhead} onStop={props.onStop}
       onSeek={props.onSeek} onOriginal={props.onOriginal} onCommit={props.onCommit} />
-    <div className="melody-coverage" aria-label="旋律資料狀態">
+    <details className="melody-coverage" open={!props.focused || !rangeNotes.length}>
+    <summary>段落音符資訊 · {rangeNotes.length} 音符</summary>
+    <div aria-label="旋律資料狀態">
       <p>工作樂譜共 {score.melody.length} 個旋律音符；所選小節有 {rangeNotes.length} 個。{props.jobId ? `來源分析：${props.jobId}` : "目前版本未附來源分析 ID。"}</p>
       {!rangeNotes.length ? <p role="status">{score.melody.length ? "所選小節沒有旋律音符可修改。空白可能是未抓到旋律，不代表歌曲沒有旋律，也不會從 Contour 自動產生音符。請跳到有音符的小節，或點空白弦線手動補音。" : "目前工作樂譜沒有旋律音符。Contour 有聲音不代表已產生可編輯音符；可載入先前修訂，或點空白弦線、設定品格及音長，再按 Add note 補入。"}</p> : <p>直接點弦上的品格數字，再到下方改弦／品格或音長，按 Apply note；無指型音符會列在弦線下方。</p>}
       <div className="editor-actions">
@@ -182,14 +194,24 @@ export function MelodyEditor(props: Props) {
         <button type="button" disabled={nextWithNotes < 0} onClick={() => showNotes(nextWithNotes)}>下一個有音符的小節</button>
       </div>
     </div>
-    <div className="editor-actions">
+    </details>
+    <div className="editor-actions editor-transport">
+      {props.onSourceTrack ? <label>對照音軌<select aria-label="Editor source track" value={props.sourceTrack ?? "source"} disabled={!props.sourceAvailable} onChange={event => props.onSourceTrack?.(event.target.value)}>
+        <option value="source">原曲 Original</option>
+        {[["vocal-stem", "人聲 Vocal"], ["accompaniment-stem", "伴奏（非器樂旋律）"], ["melody-contour", "Contour 音高（非工作譜）"]].map(([track, label]) => <option key={track} value={track} disabled={!props.sourceTracks?.includes(track)}>{label}</option>)}
+        {["raw-melody", "final-melody"].includes(props.sourceTrack ?? "") ? <option value={props.sourceTrack}>進階診斷：{props.sourceTrack}</option> : null}
+      </select></label> : null}
       <label>試聽聲部<select aria-label="Editor audition mode" value={ensemble ? "ensemble" : "melody"} onChange={(e) => { props.onStop(); setEnsemble(e.target.value === "ensemble"); }}><option value="melody">旋律獨聽</option><option value="ensemble">旋律＋吉他合奏</option></select></label>
+      {props.onSpeed ? <label>來源／合奏速度<select aria-label="Editor playback speed" value={props.playbackRate ?? 1} onChange={e => props.onSpeed?.(Number(e.target.value))}>{[.5, .6, .75, .9, 1, 1.1, 1.25, 1.5].map(rate => <option key={rate} value={rate}>{Math.round(rate * 100)}%</option>)}</select></label> : null}
       <button type="button" onClick={() => ensemble ? props.onEnsemble(rangeStart, rangeEnd, loop) : props.onAudition(rangeStart, rangeEnd, loop)}>重播所選小節</button>
       <button type="button" onClick={props.onStop}>暫停，保留位置</button>
       <button type="button" onClick={() => { const from = props.playhead >= rangeStart && props.playhead < rangeEnd ? props.playhead : rangeStart; if (ensemble) props.onEnsemble(rangeStart, rangeEnd, loop, from); else props.onAudition(from, rangeEnd); }}>從暫停位置續播</button>
-      <button type="button" onClick={() => props.onOriginal(rangeStart, rangeEnd)}>對照來源片段</button>
+      <button type="button" disabled={props.sourceAvailable === false} onClick={() => props.onOriginal(rangeStart, rangeEnd)}>對照來源片段</button>
     </div>
-    <p aria-label="Tab transport position">位置 {props.playhead.toFixed(2)}s · 所選 {rangeStart.toFixed(2)}–{rangeEnd.toFixed(2)}s。{ensemble ? "合奏沿用 Play score 的音色、速度與聲部音量，啟用旋律及吉他、不加節拍器或預備拍；吉他為建議伴奏。" : "修訂播放只有旋律。"}來源使用上方選定的音軌。小節／音長依推定拍點顯示，未自動量化。譜面區內跟隨播放，不跳到和弦區；可選 4 或 8 小節。</p>
+    {props.sourceAvailable === false ? <p role="status">來源音訊目前不可用；仍可播放、編輯及保存工作譜。</p> : null}
+    <p aria-label="Editor playback status">{props.playbackStatus} · 對照：{props.sourceTrack === "source" ? "原曲 Original" : props.sourceTrack ?? "來源"} · 工作譜：{ensemble ? "旋律＋吉他" : "旋律獨聽"}</p>
+    {!ensemble ? <p>旋律獨聽固定 100% 原速；速度選擇適用來源與合奏。</p> : null}
+    <p aria-label="Tab transport position">位置 {props.playhead.toFixed(2)}s · 所選 {rangeStart.toFixed(2)}–{rangeEnd.toFixed(2)}s · 原檔 {(props.playhead + (score.song.source_start_seconds ?? 0)).toFixed(2)}s。{ensemble ? "合奏使用目前工作譜；吉他為建議伴奏。" : "修訂播放只有旋律、原速。"}</p>
     <p>格線只吸附「點空白弦線新增」的位置，不移動既有音符；依目前拍點換算，不是固定毫秒。選錯位置可用下方前／後移一格。音長若碰到原音尾端仍需確認，不自動截短或覆蓋。</p>
     <EditableTab score={score} bars={shownBars} selectedId={selectedId} playhead={props.playhead} onSelect={selectNote} onInsert={insertOnTab} gridQuarters={gridQuarters} />
     <details className="phrase-shift"><summary>移除段落前方空白（整段前移）</summary>
@@ -200,7 +222,8 @@ export function MelodyEditor(props: Props) {
       <p>這會改變旋律相對原曲／和弦的時間；原音訊、小節線、和弦與段落外音符不動。不會把整首歌曲自動提前。</p>
       <button type="button" disabled={busy || !canShift} onClick={() => void edit("shift_phrase")}>套用整段前移</button>
     </details>
-    <fieldset disabled={busy}>
+    {props.focused && !selected && !newDraftTouched ? <p>點六線譜上的品格數字開始修改；要補音，請點所選小節的空白弦線。</p> : null}
+    <fieldset disabled={busy} hidden={props.focused && !selected && !newDraftTouched}>
       <legend>{selected ? `譜上選音：${selected.note}` : "點譜上數字修改，或點空白弦線補音"}</legend>
       <div className="melody-edit-fields">
         <label>弦<select aria-label="Tab string" value={tabString} onChange={(e) => setPosition(Number(e.target.value), tabFret)}>{[1,2,3,4,5,6].map((n) => <option key={n} value={n}>第 {n} 弦</option>)}</select></label>
@@ -247,9 +270,9 @@ export function MelodyEditor(props: Props) {
     <fieldset disabled={busy}>
       <legend>{selected ? `編輯 ${selected.note}` : "新增音符"}</legend>
       <div className="melody-edit-fields">
-        <label>音高<select aria-label="Melody pitch" value={midi} onChange={(e) => { setMidi(Number(e.target.value)); setExplicitTab(false); }}>{pitches.map((p) => <option key={p.midi} value={p.midi}>{p.label} · {p.midi}</option>)}</select></label>
-        <label>起點（秒）<input aria-label="Melody note start" type="number" min="0" step="0.01" value={start} onChange={(e) => setStart(e.target.value)} /></label>
-        <label>終點（秒）<input aria-label="Melody note end" type="number" min="0" step="0.01" value={end} onChange={(e) => setEnd(e.target.value)} /></label>
+        <label>音高<select aria-label="Melody pitch" value={midi} onChange={(e) => { setNewDraftTouched(true); setMidi(Number(e.target.value)); setExplicitTab(false); }}>{pitches.map((p) => <option key={p.midi} value={p.midi}>{p.label} · {p.midi}</option>)}</select></label>
+        <label>起點（秒）<input aria-label="Melody note start" type="number" min="0" step="0.01" value={start} onChange={(e) => { setNewDraftTouched(true); setStart(e.target.value); }} /></label>
+        <label>終點（秒）<input aria-label="Melody note end" type="number" min="0" step="0.01" value={end} onChange={(e) => { setNewDraftTouched(true); setEnd(e.target.value); }} /></label>
       </div>
       <p>長度：{Number.isFinite(Number(end) - Number(start)) ? (Number(end) - Number(start)).toFixed(3) : "—"} 秒{selected && (selected.string == null || selected.fret == null) ? " · 目前吉他設定無可用指型；音符仍保留，可修改音高／調弦／把位。" : ""}</p>
       <div className="editor-actions">
@@ -264,11 +287,15 @@ export function MelodyEditor(props: Props) {
     </div>
     <p>片段試聽只播放目前工作樂譜的旋律、原速、不加吉他。Undo／Redo 共用整份樂譜的歷史。</p>
     </details>
+    <details open={!props.focused}><summary>以版本 ID 保存／載入</summary>
     <div className="editor-actions">
       <label>版本 ID<input aria-label="Melody revision ID" value={props.revisionId} onChange={(e) => props.onRevisionId(e.target.value)} /></label>
       <button type="button" disabled={busy || props.saving} onClick={props.onSave}>Save new revision</button>
       <button type="button" disabled={busy || props.saving || !props.revisionId.trim()} onClick={props.onLoad}>Load melody revision</button>
     </div>
     <p>{props.saveStatus}</p>
+    </details>
+    {selected && (midi !== selected.midi || Number(start) !== selected.start || Number(end) !== selected.end || tabString !== (selected.string ?? 1) || tabFret !== (selected.fret ?? 0)) ? <p role="status">音符草稿尚未套用。請先按 Apply note；保存版本只包含已套用的修改。</p> : null}
+    {!selected && newDraftTouched ? <p role="status">新增音符草稿尚未套用。請先按 Add note；保存版本只包含已套用的修改。</p> : null}
   </details>;
 }

@@ -3,7 +3,8 @@ import type { SongScore } from "../src/types";
 
 // Opt-in: reads an existing revision; edits only an isolated browser's working copy.
 // All persistence/analysis requests from the page are blocked, even on test failure.
-test("saved G restores, note and bar edits reach real ensemble playback, and Undo preserves the saved revision", async ({ page, request }) => {
+for (const workspace of ["full", "focus"] as const) {
+test(`${workspace}: saved G restores, note and bar edits reach real ensemble playback, and Undo preserves the saved revision`, async ({ page, request }) => {
   const revision = process.env.GUITARSCRIBE_RECOVERY_REVISION;
   test.skip(!revision, "Requires an explicit saved revision ID and running UI/API");
   // Two independent edit/Undo round trips now compile the full real song six
@@ -16,6 +17,7 @@ test("saved G restores, note and bar edits reach real ensemble playback, and Und
   const original: SongScore = await response.json();
   expect(original.provenance.parameters?.melody_note_processing).toBe("bounded-source-v1");
   const blocked: string[] = [];
+  await page.addInitScript(mode => localStorage.setItem("guitarscribe.workspaceMode", mode), workspace);
   await page.route("**/*", route => {
     const req = route.request();
     const path = new URL(req.url()).pathname;
@@ -33,13 +35,14 @@ test("saved G restores, note and bar edits reach real ensemble playback, and Und
     await page.getByRole("button", { name: "確認恢復版本（可 Undo）", exact: true }).click();
     await expect(page.getByLabel("Current working version")).toContainText(`Contour G 候選 · ${original.melody.length} 音符`);
     await expect(page.getByLabel("Current working version")).toContainText(revision!);
-    await page.getByText("旋律人工編輯 · Melody editor", { exact: true }).click();
+    if (workspace === "full") await page.getByText("旋律人工編輯 · Melody editor", { exact: true }).click();
     const startBar = page.getByLabel("Tab start bar");
     const value = await startBar.locator("option").evaluateAll(options => options.find(option => option.textContent?.startsWith("Bar 10 ·"))?.getAttribute("value"));
     expect(value).toBeTruthy();
     await startBar.selectOption(value!);
     await page.getByLabel("Tab bar count").selectOption("4");
     await page.getByLabel("Editor audition mode").selectOption("ensemble");
+    if (workspace === "focus") await page.screenshot({ path: test.info().outputPath("saved-g-focus.png"), fullPage: true });
     async function compiledPlayback() {
       const pending = page.waitForResponse(r => new URL(r.url()).pathname === "/scores/playback/manifest");
       await page.getByRole("button", { name: "重播所選小節", exact: true }).click();
@@ -112,3 +115,4 @@ test("saved G restores, note and bar edits reach real ensemble playback, and Und
     expect(await after.json()).toEqual(original);
   }
 });
+}

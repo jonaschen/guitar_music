@@ -511,6 +511,7 @@ for (const action of ["seek", "track", "pause"] as const) {
       }
       Object.defineProperty(HTMLMediaElement.prototype, "currentTime", { get() { return state(this).time; }, set(value) { state(this).time = value; } });
       Object.defineProperty(HTMLMediaElement.prototype, "paused", { get() { return state(this).paused; } });
+      Object.defineProperty(HTMLMediaElement.prototype, "readyState", { get() { return 4; } });
       HTMLMediaElement.prototype.play = function () { state(this).paused = false; this.dispatchEvent(new Event("play")); return Promise.resolve(); };
       HTMLMediaElement.prototype.pause = function () { state(this).paused = true; this.dispatchEvent(new Event("pause")); };
     });
