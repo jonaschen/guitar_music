@@ -12,3 +12,6 @@ output/
 !fixtures/audio/*.wav
 .pytest_cache/
 .ruff_cache/
+
+# Regenerable local listening packets (HTML and audio).
+frontend/public/listening/transition-*/
