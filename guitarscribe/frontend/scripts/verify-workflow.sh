@@ -60,6 +60,7 @@ run_step 'Workflow Playwright regressions' npx --no-install playwright test \
   e2e/score-workspace.spec.ts \
   e2e/bar-timing.spec.ts \
   e2e/focused-workspace.spec.ts \
+  e2e/revision-link.spec.ts \
   e2e/connected-melody.spec.ts \
   e2e/melody-articulation.spec.ts \
   --workers=1
@@ -67,6 +68,7 @@ run_step 'Workflow Playwright regressions' npx --no-install playwright test \
 if [[ -n "${GUITARSCRIBE_RECOVERY_REVISION:-}" ]]; then
   run_step 'Opt-in saved-revision Playwright live regression' npx --no-install playwright test \
     e2e/revision-recovery-live.spec.ts \
+    e2e/editor-audio-parity-live.spec.ts \
     --workers=1
 fi
 

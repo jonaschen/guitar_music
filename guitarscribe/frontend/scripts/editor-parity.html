@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>G 與編輯器播放比較</title>
+<style>body{font:18px/1.6 system-ui,sans-serif;max-width:720px;margin:40px auto;padding:0 20px;background:#f6f5ef;color:#252d32}h1{font-size:28px}section{background:white;border:1px solid #d5d8d0;border-radius:12px;padding:16px 22px;margin:16px 0}h2{font-size:20px;margin:0 0 10px}audio{width:100%}button{font:inherit;border:0;border-radius:8px;background:#245d50;color:white;padding:12px 20px;cursor:pointer}button.secondary{background:#596469}p{margin:12px 0}.note{font-size:15px;color:#53605b}</style>
+<h1>G 與編輯器播放比較</h1>
+<p>同一段 Bar 28–35，每段約 14.5 秒。先聽原曲，再比較G 試聽與編輯器播放。</p>
+<button id="compare">依序播放三段</button> <button id="stop" class="secondary">全部停止</button>
+<p id="status" role="status">尚未播放</p>
+<section><h2>1 · 原曲參考</h2><audio controls preload="metadata" src="source.wav" aria-label="原曲參考"></audio></section>
+<section><h2>2 · 目前 G</h2><audio controls preload="metadata" src="G.wav" aria-label="目前 G"></audio></section>
+<section><h2>3 · 編輯器載入同一份 G</h2><audio controls preload="metadata" src="editor.wav" aria-label="編輯器載入同一份 G"></audio></section>
+<p>只需回報：第 3 段是否仍有之前的零落感？<strong>沒有／仍有</strong>。</p>
+<p class="note">第 3 段使用編輯器的合成路徑，已核對同一份 G 的音高與時間；音量已配平。這個頁面不會修改或保存樂譜。</p>
+<p><a href="/?revision=db8c657e-62a5-4fad-a33e-cde25a9e1c0d" target="_blank" rel="noopener">開啟同一份 G 修譜</a></p>
+<script>
+const tracks=[...document.querySelectorAll('audio')],status=document.querySelector('#status');let sequential=false;
+function stop(){sequential=false;tracks.forEach(t=>t.pause());status.textContent='已停止';}
+async function play(i){tracks.forEach(t=>t.pause());tracks[i].currentTime=0;try{await tracks[i].play();}catch(e){stop();status.textContent='播放未成功，請直接按該段播放器的播放鍵。';}}
+tracks.forEach((track,i)=>{track.addEventListener('play',()=>{tracks.forEach(other=>{if(other!==track)other.pause();});status.textContent='播放中：'+track.getAttribute('aria-label');});track.addEventListener('ended',()=>{if(sequential&&i<2)void play(i+1);else{sequential=false;status.textContent='播放完成';}});track.addEventListener('error',()=>{stop();status.textContent='音訊載入失敗，請重新整理頁面。';});});
+document.querySelector('#compare').onclick=()=>{stop();sequential=true;void play(0);};document.querySelector('#stop').onclick=stop;
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
+</script></html>

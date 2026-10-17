@@ -98,10 +98,7 @@ test("G survives explicit save, refresh, restore and resave with the same playba
   await page.getByRole("button", { name: "保存目前工作版本", exact: true }).click();
   await expect(page.getByLabel("Current working version")).toContainText("已保存／載入：g-1");
   await page.reload();
-  await expect(page.getByLabel("Current working version")).not.toContainText("Contour G");
-  await page.getByRole("button", { name: "恢復上次保存版本", exact: true }).click();
-  await expect(page.getByLabel("Current working version")).not.toContainText("Contour G");
-  await page.getByRole("button", { name: "確認恢復版本（可 Undo）", exact: true }).click();
+  await expect(page).toHaveURL(/revision=g-1/);
   await expect(page.getByLabel("Current working version")).toContainText("Contour G");
   await expect(page.locator("audio")).toHaveAttribute("src", /jobs\/editor\/audio$/);
   await page.getByText("旋律人工編輯 · Melody editor", { exact: true }).click();

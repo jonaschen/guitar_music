@@ -374,6 +374,34 @@ export function App() {
   }
 
   useEffect(() => {
+    const linkedRevision = new URLSearchParams(window.location.search).get("revision");
+    if (!linkedRevision) return;
+    let disposed = false;
+    const request = ++revisionRequestRef.current;
+    const generation = workGenerationRef.current;
+    const obsolete = () => disposed || request !== revisionRequestRef.current || generation !== workGenerationRef.current;
+    setIsLoadingRevision(true); setRevisionId(linkedRevision);
+    void (async () => {
+      try {
+        const next = await getRevision(linkedRevision);
+        const source = sourceJobId(next);
+        let job: AnalysisJob | null = null;
+        if (source) { try { job = await getAnalysisJob(source); } catch { /* Notes work without source audio. */ } }
+        if (obsolete()) return;
+        replaceScore(next);
+        finishRevisionRestore(linkedRevision, next, job);
+      } catch (error) {
+        if (!obsolete()) {
+          setStatus("idle");
+          setError(`無法載入指定保存版本 ${linkedRevision}；未改播原分析。${error instanceof Error ? error.message : ""}`);
+        }
+      } finally { if (!disposed && request === revisionRequestRef.current) setIsLoadingRevision(false); }
+    })();
+    return () => { disposed = true; };
+  }, []);
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("revision")) return;
     const linkedJobId = new URLSearchParams(window.location.search).get("job");
     const savedJobId = linkedJobId ?? window.localStorage.getItem("guitarscribe.activeJobId");
     if (!savedJobId) return;
@@ -665,9 +693,15 @@ export function App() {
     setError("");
     try {
       if (!skipSeconds.trim() || !Number.isFinite(Number(skipSeconds)) || Number(skipSeconds) < 0) throw new Error("略過秒數必須是大於或等於 0 的數字。");
+      workGenerationRef.current++;
+      revisionRequestRef.current++;
+      setIsLoadingRevision(false); setRestorePreview(null);
       const createdJob = useYouTube
         ? await createYouTubeAnalysisJob(youtubeUrl.trim(), melodyMode, separateVocals, chordComplexity, Number(skipSeconds))
         : await createAnalysisJob(file!, melodyMode, separateVocals, chordComplexity, Number(skipSeconds));
+      const url = new URL(window.location.href);
+      url.searchParams.delete("revision"); url.searchParams.set("job", createdJob.id);
+      window.history.replaceState({}, "", url);
       setAnalysisJob(createdJob);
       window.localStorage.setItem("guitarscribe.activeJobId", createdJob.id);
     } catch (submitError) {
@@ -1605,6 +1639,7 @@ export function App() {
   async function saveRevision(createNew = true) {
     if (!score || saveInFlightRef.current) return;
     saveInFlightRef.current = true;
+    const generation = workGenerationRef.current;
     setIsSavingRevision(true);
     setError("");
     try {
@@ -1617,11 +1652,12 @@ export function App() {
         window.localStorage.setItem("guitarscribe.savedVersion", JSON.stringify(remembered));
         if (jobId) window.localStorage.setItem(`guitarscribe.melodyRevision.${jobId}`, response.revision_id);
       } catch { storageWarning = " 瀏覽器無法記住版本，請抄下此 ID。"; }
-      if (scoreRef.current !== score) {
+      if (scoreRef.current !== score || generation !== workGenerationRef.current) {
         setSaveStatus(`Saved snapshot ${response.revision_id}; subsequent changes are not saved.${storageWarning}`);
         return;
       }
       setRevisionId(response.revision_id);
+      rememberRevisionUrl(response.revision_id);
       cleanScoreRef.current = score;
       setSavedSnapshot({ id: response.revision_id, score });
       setSaveStatus(`Saved revision ${response.revision_id}.${storageWarning}`);
@@ -1666,7 +1702,20 @@ export function App() {
     if (scoreRef.current !== base || generation !== workGenerationRef.current) { setRestorePreview(null); setSaveStatus("工作譜已改變，未恢復舊預覽。請重新讀取版本。"); return; }
     audioRef.current?.pause(); stopSynth(false); referenceStopRef.current();
     if (!recordScoreChange(next)) return;
+    finishRevisionRestore(id, next, job);
+  }
+
+  function rememberRevisionUrl(id: string) {
+    const url = new URL(window.location.href);
+    url.searchParams.set("revision", id);
+    url.searchParams.delete("job");
+    window.history.replaceState({}, "", url);
+  }
+
+  function finishRevisionRestore(id: string, next: SongScore, job: AnalysisJob | null) {
     cleanScoreRef.current = next;
+    rememberRevisionUrl(id);
+    setError("");
     setSavedSnapshot({ id, score: next });
     setRevisionId(id);
     const source = sourceJobId(next);
@@ -1796,7 +1845,7 @@ export function App() {
               {rememberedVersion ? <div>
                 <p>可恢復：{rememberedVersion.label} · {rememberedVersion.id}。此記錄不代表目前已載入。</p>
                 <button type="button" disabled={isLoadingRevision || isSavingRevision} onClick={() => void loadRevision(rememberedVersion.id)}>恢復上次保存版本</button>
-              </div> : <p>尚無此分析的保存記錄。G 候選套用後請保存；重新整理不會自動套用 G。</p>}
+              </div> : <p>尚無此分析的保存記錄。G 候選套用後請保存；保存後可用版本網址重新開啟同一份譜。</p>}
               {isLoadingRevision ? <button type="button" onClick={() => { revisionRequestRef.current++; setIsLoadingRevision(false); setSaveStatus("已取消讀取，目前工作譜不變。"); }}>取消讀取版本</button> : null}
               {restorePreview ? <div role="status">
                 <p>待恢復：{melodyVersion(restorePreview.next)} · {restorePreview.next.melody.length} 音符 · {restorePreview.id}</p>
