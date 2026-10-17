@@ -60,6 +60,8 @@ run_step 'Workflow Playwright regressions' npx --no-install playwright test \
   e2e/score-workspace.spec.ts \
   e2e/bar-timing.spec.ts \
   e2e/focused-workspace.spec.ts \
+  e2e/connected-melody.spec.ts \
+  e2e/melody-articulation.spec.ts \
   --workers=1
 
 if [[ -n "${GUITARSCRIBE_RECOVERY_REVISION:-}" ]]; then

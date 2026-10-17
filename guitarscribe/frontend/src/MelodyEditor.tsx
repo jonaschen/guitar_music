@@ -13,6 +13,7 @@ type Props = {
   focused?: boolean; sourceAvailable?: boolean; sourceTrack?: string; sourceTracks?: string[];
   onSourceTrack?: (track: string) => void; playbackStatus?: string;
   playbackRate?: number; onSpeed?: (rate: number) => void;
+  melodyConnection?: "connected" | "separate"; onMelodyConnection?: (value: "connected" | "separate") => void;
   score: SongScore; jobId?: string; playhead: number; apiBase: string;
   onCommit: (base: SongScore, next: SongScore) => boolean;
   onSeek: (time: number) => void;
@@ -202,6 +203,7 @@ export function MelodyEditor(props: Props) {
         {["raw-melody", "final-melody"].includes(props.sourceTrack ?? "") ? <option value={props.sourceTrack}>進階診斷：{props.sourceTrack}</option> : null}
       </select></label> : null}
       <label>試聽聲部<select aria-label="Editor audition mode" value={ensemble ? "ensemble" : "melody"} onChange={(e) => { props.onStop(); setEnsemble(e.target.value === "ensemble"); }}><option value="melody">旋律獨聽</option><option value="ensemble">旋律＋吉他合奏</option></select></label>
+      {props.onMelodyConnection ? <label>旋律銜接<select aria-label="Melody connection" value={props.melodyConnection} onChange={e => props.onMelodyConnection?.(e.target.value as "connected" | "separate")}><option value="connected">連續銜接（試用）</option><option value="separate">原逐音起奏（對照）</option></select></label> : null}
       {props.onSpeed ? <label>來源／合奏速度<select aria-label="Editor playback speed" value={props.playbackRate ?? 1} onChange={e => props.onSpeed?.(Number(e.target.value))}>{[.5, .6, .75, .9, 1, 1.1, 1.25, 1.5].map(rate => <option key={rate} value={rate}>{Math.round(rate * 100)}%</option>)}</select></label> : null}
       <button type="button" onClick={() => ensemble ? props.onEnsemble(rangeStart, rangeEnd, loop) : props.onAudition(rangeStart, rangeEnd, loop)}>重播所選小節</button>
       <button type="button" onClick={props.onStop}>暫停，保留位置</button>
@@ -211,6 +213,7 @@ export function MelodyEditor(props: Props) {
     {props.sourceAvailable === false ? <p role="status">來源音訊目前不可用；仍可播放、編輯及保存工作譜。</p> : null}
     <p aria-label="Editor playback status">{props.playbackStatus} · 對照：{props.sourceTrack === "source" ? "原曲 Original" : props.sourceTrack ?? "來源"} · 工作譜：{ensemble ? "旋律＋吉他" : "旋律獨聽"}</p>
     {!ensemble ? <p>旋律獨聽固定 100% 原速；速度選擇適用來源與合奏。</p> : null}
+    {props.melodyConnection === "connected" ? <p>連續銜接只連接原本相接的不同音高，不填休止、不改音符長度；同音重奏保留起音。</p> : null}
     <p aria-label="Tab transport position">位置 {props.playhead.toFixed(2)}s · 所選 {rangeStart.toFixed(2)}–{rangeEnd.toFixed(2)}s · 原檔 {(props.playhead + (score.song.source_start_seconds ?? 0)).toFixed(2)}s。{ensemble ? "合奏使用目前工作譜；吉他為建議伴奏。" : "修訂播放只有旋律、原速。"}</p>
     <p>格線只吸附「點空白弦線新增」的位置，不移動既有音符；依目前拍點換算，不是固定毫秒。選錯位置可用下方前／後移一格。音長若碰到原音尾端仍需確認，不自動截短或覆蓋。</p>
     <EditableTab score={score} bars={shownBars} selectedId={selectedId} playhead={props.playhead} onSelect={selectNote} onInsert={insertOnTab} gridQuarters={gridQuarters} />

@@ -18,6 +18,7 @@ import { PlaybackRangeEditor } from "./PlaybackRangeEditor";
 import { songBounds, clipRange } from "./songRange";
 import { notationBars } from "./melodyNotation";
 import { waitForMediaMetadata } from "./mediaReady";
+import { melodyPhrases, playMelodyPhrase } from "./connectedMelody";
 
 const AlphaTabScore = lazy(() => import("./AlphaTabScore"));
 
@@ -247,6 +248,7 @@ export function App() {
   const [guitarTone, setGuitarTone] = useState("pluck");
   const [synthTracks, setSynthTracks] = useState<Record<PlaybackTrack, boolean>>({ guitar: true, melody: false, metronome: false });
   const [synthVolumes, setSynthVolumes] = useState<Record<PlaybackTrack, number>>({ guitar: 0.24, melody: 0.45, metronome: 0.18 });
+  const [melodyConnection, setMelodyConnection] = useState<"connected" | "separate">("connected");
   const [synthSoloTrack, setSynthSoloTrack] = useState<PlaybackTrack | null>(null);
   const [metronomeEnabled, setMetronomeEnabled] = useState(false);
   const [countInMeasures, setCountInMeasures] = useState(0);
@@ -1030,7 +1032,12 @@ export function App() {
       await context.resume();
       if (generation !== synthGenerationRef.current) return;
       const origin = context.currentTime + 0.03;
-      for (const note of notes) {
+      if (melodyConnection === "connected") {
+        for (const phrase of melodyPhrases(notes)) {
+          const source = playMelodyPhrase(context, phrase, { scoreStart: 0, scoreEnd: range ? range.end - range.start : Math.max(...notes.map(n => n.end), 0), contextStart: origin, rate: 1, peak: .16, type: "sine" });
+          if (source) trackSynthSource(source);
+        }
+      } else for (const note of notes) {
         if (note.end <= note.start) continue;
         const source = context.createOscillator();
         const gain = context.createGain();
@@ -1166,8 +1173,13 @@ export function App() {
       const scheduleSegment = (segmentStart: number, contextStart: number) => {
         const segmentEnd = selectedRange?.end ?? requestedLoop?.[1] ?? bounds.end;
         synthClockRef.current = { contextStart, scoreStart: segmentStart };
+        const connected = melodyConnection === "connected" && tracks.melody && synthVolumes.melody > 0 && (solo === null || solo === "melody");
+        const phrases = connected ? melodyPhrases(manifest.events.filter(event => event.track === "melody" && event.pitches.length === 1 && event.end > segmentStart && event.start < segmentEnd)
+          .map(event => ({ start: event.start, end: event.end, midi: event.pitches[0], velocity: event.pitch_velocities?.[0] ?? event.velocity }))) : [];
+        let nextPhraseIndex = 0;
         const segmentEvents = manifest.events
           .filter((event) => tracks[event.track] && synthVolumes[event.track] > 0 && (solo === null || event.track === solo) && acousticEnd(event) > segmentStart && event.start < segmentEnd)
+          .filter(event => !(connected && event.track === "melody" && event.pitches.length === 1))
           .sort((left, right) => left.start - right.start);
         let nextEventIndex = 0;
         const scheduleEvent = (event: PlaybackManifest["events"][number], resumeScoreTime: number) => {
@@ -1198,7 +1210,9 @@ export function App() {
             }
             const strumDelay = event.track === "guitar" ? (compiledOffset ?? pitchIndex * 0.012) / playbackRate : 0;
             const startAt = Math.max(context.currentTime + 0.005, contextStart + (eventStart - segmentStart) / playbackRate + strumDelay);
-            const endAt = Math.max(startAt + 0.025, contextStart + (eventEnd - segmentStart) / playbackRate);
+            const writtenEnd = contextStart + (eventEnd - segmentStart) / playbackRate;
+            const endAt = event.track === "melody" ? writtenEnd : Math.max(startAt + 0.025, writtenEnd);
+            if (endAt <= startAt) return;
             const oscillator = context.createOscillator();
             const gain = context.createGain();
             const isGuitar = event.track === "guitar";
@@ -1240,6 +1254,13 @@ export function App() {
         const schedulePendingEvents = () => {
           const elapsedScoreTime = Math.max(0, (context.currentTime - contextStart) * playbackRate);
           const horizon = segmentStart + elapsedScoreTime + SYNTH_SCHEDULE_AHEAD_SECONDS * playbackRate;
+          while (nextPhraseIndex < phrases.length && phrases[nextPhraseIndex][0].start < horizon) {
+            const source = playMelodyPhrase(context, phrases[nextPhraseIndex], {
+              scoreStart: segmentStart, scoreEnd: segmentEnd, contextStart, rate: playbackRate, peak: synthVolumes.melody,
+            });
+            if (source) trackSynthSource(source);
+            nextPhraseIndex++;
+          }
           while (nextEventIndex < segmentEvents.length && segmentEvents[nextEventIndex].start < horizon) {
             scheduleEvent(segmentEvents[nextEventIndex], segmentStart + elapsedScoreTime);
             nextEventIndex += 1;
@@ -2084,6 +2105,7 @@ export function App() {
                 </div>
                 <MelodyEditor score={score} jobId={workingJobId} playhead={playbackTime} apiBase={API_BASE}
                   focused={focusMode} sourceAvailable={!!audioUrl} sourceTrack={diagnosticAudioTrack}
+                  melodyConnection={melodyConnection} onMelodyConnection={value => { stopSynth(false); setMelodyConnection(value); }}
                   playbackRate={playbackRate} onSpeed={setSpeed}
                   sourceTracks={analysisJob?.artifacts ?? []} onSourceTrack={track => selectDiagnosticAudioTrack(track as DiagnosticAudioTrack)}
                   playbackStatus={isSourcePreparing ? "載入來源中" : isSynthPreparing ? "準備合奏中" : isSynthPlaying ? "播放工作譜" : isPlaying ? "播放來源音訊" : "已暫停"}

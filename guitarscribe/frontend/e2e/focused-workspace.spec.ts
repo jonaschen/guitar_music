@@ -12,9 +12,9 @@ const score = {
   provenance: { beat_engine: "test", chord_engine: "test", melody_engine: "test", parameters: { melody_note_processing: "bounded-source-v1", candidate_source_job_id: "focus" } },
 } as SongScore;
 
-async function setup(page: Page) {
+async function setup(page: Page, workingScore = score) {
   await page.addInitScript(() => localStorage.removeItem("guitarscribe.workspaceMode"));
-  await page.route("**/api/v1/jobs/focus", route => route.fulfill({json:{id:"focus",status:"completed",progress:100,artifacts:["vocal-stem"],score}}));
+  await page.route("**/api/v1/jobs/focus", route => route.fulfill({json:{id:"focus",status:"completed",progress:100,artifacts:["vocal-stem"],score:workingScore}}));
   await page.route("**/rhythm-patterns?*", route => route.fulfill({json:[]}));
   await page.route("**/scores/musicxml", route => route.fulfill({status:503,body:"Not used in focus mode"}));
   await page.goto("/?job=focus");
@@ -116,4 +116,51 @@ test("source failure is explained in focus mode and leaves the score editable", 
   await page.getByRole("button",{name:"Tab n1 C4 2弦1格",exact:true}).click();
   await expect(page.getByRole("button",{name:"Apply note",exact:true})).toBeEnabled();
   await expect(page.getByLabel("Current working version")).not.toContainText("有未保存修改");
+});
+
+
+test("connection switch cancels sound and compares the same score in solo and ensemble", async ({page}) => {
+  await page.addInitScript(() => {
+    const state = {started:0, stopped:0}; (window as any).__tones = state;
+    const create = AudioContext.prototype.createOscillator;
+    AudioContext.prototype.createOscillator = function() {
+      const node = create.call(this), start = node.start.bind(node), stop = node.stop.bind(node);
+      node.start = time => { state.started++; start(time); };
+      node.stop = time => { if (time === undefined || time <= this.currentTime) state.stopped++; stop(time); };
+      return node;
+    };
+  });
+  const workingScore = structuredClone(score);
+  workingScore.melody = [0,1,2].map(i => ({...score.melody[0], id:`n${i+1}`,start:i*.1,end:(i+1)*.1,midi:60+i*2}));
+  // Exact adjacency independent of binary multiplication rounding.
+  workingScore.melody[1].end = workingScore.melody[2].start;
+  const compiled: SongScore[] = [];
+  await page.route("**/scores/playback/manifest", route => {
+    const body = route.request().postDataJSON(); compiled.push(body);
+    return route.fulfill({json:{events:body.melody.map((n:any) => ({track:"melody",start:n.start,end:n.end,pitches:[n.midi],velocity:96,pitch_velocities:[96],pitch_offsets:[0]}))}});
+  });
+  await setup(page, workingScore);
+  const connection = page.getByLabel("Melody connection");
+  await expect(connection).toHaveValue("connected");
+  for (const mode of ["melody", "ensemble"]) {
+    await page.getByLabel("Editor audition mode").selectOption(mode);
+    for (const [option, count] of [["connected",1],["separate",3]] as const) {
+      await connection.selectOption(option);
+      await page.evaluate(() => { (window as any).__tones.started = 0; });
+      await page.getByRole("button",{name:"重播所選小節",exact:true}).click();
+      await expect.poll(() => page.evaluate(() => (window as any).__tones.started)).toBe(count);
+      await page.getByRole("button",{name:"暫停，保留位置",exact:true}).click();
+    }
+  }
+  expect(compiled).toHaveLength(2);
+  expect(compiled[0]).toEqual(compiled[1]);
+  expect(compiled[0].melody).toEqual(workingScore.melody);
+  await expect(page.getByLabel("Current working version")).not.toContainText("有未保存修改");
+  // Cancel a long live note using the selector itself, before its scheduled end.
+  await page.getByLabel("Editor audition mode").selectOption("melody");
+  await page.getByRole("button",{name:"Tab n1 C4 2弦1格",exact:true}).click();
+  await page.getByRole("button",{name:"預聽音高",exact:true}).click();
+  await page.evaluate(() => { (window as any).__tones.stopped = 0; });
+  await connection.selectOption("connected");
+  await expect.poll(() => page.evaluate(() => (window as any).__tones.stopped)).toBeGreaterThan(0);
 });

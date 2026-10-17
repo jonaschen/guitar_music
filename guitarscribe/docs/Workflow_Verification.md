@@ -9,7 +9,9 @@ cd guitarscribe/frontend
 
 The script runs the TypeScript project check, a production Vite build, then the
 single-worker Playwright regressions for melody editing, score workspace
-playback/source comparison, bar timing, and the focused workspace workflow.
+playback/source comparison, bar timing, the focused workspace workflow, and
+offline melody articulation/continuity audio rendering. These audio checks verify
+timing and signal behavior, not musical transcription correctness.
 All `npx` calls use `--no-install`, so the script does not fetch missing tools.
 Playwright starts the configured local Vite server as needed. Any failed step
 exits nonzero and records its last output lines.
