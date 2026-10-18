@@ -11,7 +11,9 @@ The script runs the TypeScript project check, a production Vite build, then the
 single-worker Playwright regressions for melody editing, score workspace
 playback/source comparison, bar timing, the focused workspace workflow, and
 offline melody articulation/continuity audio rendering, plus explicit revision
-links and their reload/race protections. These audio checks verify
+links and their reload/race protections. Real-time solo playback checks cover
+three loop passes without display frames, pause/resume retaining the full loop,
+and cancellation preventing later scheduling. These audio checks verify
 timing and signal behavior, not musical transcription correctness.
 All `npx` calls use `--no-install`, so the script does not fetch missing tools.
 Playwright starts the configured local Vite server as needed. Any failed step

@@ -62,6 +62,7 @@ run_step 'Workflow Playwright regressions' npx --no-install playwright test \
   e2e/focused-workspace.spec.ts \
   e2e/revision-link.spec.ts \
   e2e/connected-melody.spec.ts \
+  e2e/melody-realtime.spec.ts \
   e2e/melody-articulation.spec.ts \
   --workers=1
 

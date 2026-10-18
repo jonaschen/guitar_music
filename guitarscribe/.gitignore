@@ -16,3 +16,4 @@ output/
 # Regenerable local listening packets (HTML and audio).
 frontend/public/listening/transition-*/
 frontend/public/listening/editor-parity-*/
+frontend/public/listening/realtime-*/

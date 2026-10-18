@@ -19,6 +19,7 @@ import { songBounds, clipRange } from "./songRange";
 import { notationBars } from "./melodyNotation";
 import { waitForMediaMetadata } from "./mediaReady";
 import { melodyPhrases, playMelodyPhrase } from "./connectedMelody";
+import { startMelodyAudition, type MelodyAudition } from "./melodyAudition";
 
 const AlphaTabScore = lazy(() => import("./AlphaTabScore"));
 
@@ -229,6 +230,8 @@ export function App() {
   const pendingAudioTrackSeekRef = useRef<number | null>(null);
   const metronomeContextRef = useRef<AudioContext | null>(null);
   const synthContextRef = useRef<AudioContext | null>(null);
+  const melodyAuditionRef = useRef<MelodyAudition | null>(null);
+  useEffect(() => () => { melodyAuditionRef.current?.stop(); }, []);
   const synthGenerationRef = useRef(0);
   const referenceStopRef = useRef<() => void>(() => {});
   const synthSourcesRef = useRef<AudioScheduledSourceNode[]>([]);
@@ -1024,6 +1027,7 @@ export function App() {
   }
 
   function stopSynth(reset = false) {
+    melodyAuditionRef.current?.stop(); melodyAuditionRef.current = null;
     sourceLoadAbortRef.current?.abort(); sourceLoadAbortRef.current = null;
     setIsSourcePreparing(false);
     if (sourceSegmentRef.current) audioRef.current?.pause();
@@ -1056,53 +1060,45 @@ export function App() {
     synthSourcesRef.current.push(source);
   }
 
-  async function auditionEditedNotes(notes: Array<{ midi: number; start: number; end: number }>, range?: { start: number; end: number; loop?: boolean }) {
+  async function auditionEditedNotes(notes: Array<{ midi: number; start: number; end: number }>, range?: { start: number; end: number; loop?: boolean; from?: number }) {
     referenceStopRef.current(); audioRef.current?.pause(); stopSynth(false);
-    if (notes.length > 256) { setError("此片段音符過密，請先刪除誤音或縮短片段。"); return; }
+    if (notes.length > 256) { setError("此片段音符過密，請縮短試聽範圍；音符未變更。"); return; }
     const generation = synthGenerationRef.current;
     try {
       const context = synthContextRef.current ?? new AudioContext();
       synthContextRef.current = context;
       await context.resume();
       if (generation !== synthGenerationRef.current) return;
-      const origin = context.currentTime + 0.03;
-      if (melodyConnection === "connected") {
-        for (const phrase of melodyPhrases(notes)) {
-          const source = playMelodyPhrase(context, phrase, { scoreStart: 0, scoreEnd: range ? range.end - range.start : Math.max(...notes.map(n => n.end), 0), contextStart: origin, rate: 1, peak: .16, type: "sine" });
-          if (source) trackSynthSource(source);
-        }
-      } else for (const note of notes) {
-        if (note.end <= note.start) continue;
-        const source = context.createOscillator();
-        const gain = context.createGain();
-        const start = origin + note.start, end = origin + note.end;
-        const edge = Math.min(0.005, (end - start) / 4);
-        const concurrent = notes.filter((other) => other.start < note.end && other.end > note.start).length;
-        source.frequency.setValueAtTime(440 * 2 ** ((note.midi - 69) / 12), start);
-        gain.gain.setValueAtTime(0, start);
-        gain.gain.linearRampToValueAtTime(0.16 / Math.sqrt(Math.max(1, concurrent)), start + edge);
-        gain.gain.setValueAtTime(0.16 / Math.sqrt(Math.max(1, concurrent)), end - edge);
-        gain.gain.linearRampToValueAtTime(0, end);
-        source.connect(gain).connect(context.destination);
-        source.start(start); source.stop(end + 0.01); trackSynthSource(source);
-      }
+      const duration = range ? range.end - range.start : Math.max(...notes.map(n => n.end), 0);
+      if (duration <= 0) return;
+      const transport = startMelodyAudition(context, notes, {
+        duration, from: range ? (range.from ?? range.start) - range.start : 0,
+        loop: range?.loop, connection: melodyConnection,
+        onComplete: () => {
+          if (generation !== synthGenerationRef.current) return;
+          if (range) setPlaybackTime(range.end);
+          stopSynth(false);
+        },
+        onError: error => {
+          if (generation !== synthGenerationRef.current) return;
+          stopSynth(false); setError(error instanceof Error ? error.message : "Audio preview unavailable");
+        },
+      });
+      melodyAuditionRef.current = transport;
       if (range) {
-        setIsSynthPlaying(true); setPlaybackTime(range.start);
+        setIsSynthPlaying(true); setPlaybackTime(range.start + transport.position());
         const update = () => {
           if (generation !== synthGenerationRef.current) return;
-          const time = range.start + Math.max(0, context.currentTime - origin);
-          if (time >= range.end) {
-            setPlaybackTime(range.end);
-            if (range.loop) void auditionEditedNotes(notes, range);
-            else stopSynth(false);
-            return;
-          }
-          setPlaybackTime(time);
+          setPlaybackTime(range.start + transport.position());
+          if (transport.finished()) { stopSynth(false); return; }
           synthAnimationRef.current = window.requestAnimationFrame(update);
         };
         synthAnimationRef.current = window.requestAnimationFrame(update);
       }
-    } catch (error) { setError(error instanceof Error ? error.message : "Audio preview unavailable"); }
+    } catch (error) {
+      if (generation !== synthGenerationRef.current) return;
+      stopSynth(false); setError(error instanceof Error ? error.message : "Audio preview unavailable");
+    }
   }
 
   async function auditionSourceSegment(start: number, end: number, previewOutsideRange = false) {
@@ -2160,7 +2156,7 @@ export function App() {
                   playbackStatus={isSourcePreparing ? "載入來源中" : isSynthPreparing ? "準備合奏中" : isSynthPlaying ? "播放工作譜" : isPlaying ? "播放來源音訊" : "已暫停"}
                   onCommit={(base, next) => { if (scoreRef.current !== base) return false; return recordScoreChange(next); }}
                   onSeek={seekTo} onPitch={(midi) => void auditionEditedNotes([{ midi, start: 0, end: 0.6 }])}
-                  onAudition={(start, end, loop) => { const range = clipRange(start, end, score); if (range.end <= range.start) return; void auditionEditedNotes(score.melody.filter((note) => note.end > range.start && note.start < range.end).map((note) => ({ midi: note.midi, start: Math.max(0, note.start - range.start), end: Math.min(range.end, note.end) - range.start })), { ...range, loop }); }}
+                  onAudition={(start, end, loop, from) => { const range = clipRange(start, end, score); if (range.end <= range.start) return; void auditionEditedNotes(score.melody.filter((note) => note.end > range.start && note.start < range.end).map((note) => ({ midi: note.midi, start: Math.max(0, note.start - range.start), end: Math.min(range.end, note.end) - range.start })), { ...range, loop, from }); }}
                   onOriginal={(start, end) => void auditionSourceSegment(start, end)}
                   onEnsemble={(start, end, loop, from) => void toggleSynthPlayback({ start, end, loop, from })}
                   onStop={() => { audioRef.current?.pause(); stopSynth(false); }} onUndo={undoScoreChange} onRedo={redoScoreChange}

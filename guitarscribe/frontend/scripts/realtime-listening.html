@@ -1,0 +1,34 @@
+<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>G 即時播放確認</title>
+<style>body{font:18px/1.6 system-ui,sans-serif;max-width:720px;margin:40px auto;padding:0 20px;background:#f6f5ef;color:#252d32}h1{font-size:28px}section{background:white;border:1px solid #d5d8d0;border-radius:12px;padding:18px 22px;margin:16px 0}h2{font-size:20px;margin:0 0 10px}audio{width:100%}button{font:inherit;border:0;border-radius:8px;background:#245d50;color:white;padding:12px 20px;cursor:pointer;margin:4px 4px 4px 0}button:disabled{opacity:.5;cursor:wait}.secondary{background:#596469}p{margin:12px 0}.note{font-size:15px;color:#53605b}</style>
+<h1>G 即時播放確認</h1>
+<p>同一段 Bar 28–35。先聽已通過的錄音，再由瀏覽器即時播放同一份音符；總共約 30 秒。</p>
+<button id="compare" disabled>依序比較兩段</button><button id="stop" class="secondary">全部停止</button>
+<p id="status" role="status">準備音符中</p>
+<section><h2>1 · 已通過的編輯器錄音</h2><audio id="reference" controls preload="metadata" src="reference.wav"></audio></section>
+<section><h2>2 · 瀏覽器即時播放</h2><button id="live" disabled>播放即時旋律</button><p id="position">0.0 秒</p></section>
+<p>只需回報：第二段是否也自然連貫？<strong>是／仍有零落感</strong>。</p>
+<p class="note">兩段使用相同 G 音符，音量已配平。即時播放與編輯器共用播放程式，沒有重新辨識，也不會修改樂譜。</p>
+<script type="module">
+import {startMelodyAudition} from '/src/melodyAudition.ts';
+const reference=document.querySelector('#reference'),status=document.querySelector('#status'),position=document.querySelector('#position');
+const compare=document.querySelector('#compare'),live=document.querySelector('#live');
+let score,context,transport,frame,sequence=false,generation=0;
+reference.volume=.16/.3;
+function stop(){generation++;sequence=false;reference.pause();transport?.stop();transport=null;cancelAnimationFrame(frame);status.textContent='已停止';}
+async function startLive(){
+ stop();const token=generation;
+ try{context??=new AudioContext();await context.resume();if(token!==generation)return;
+ transport=startMelodyAudition(context,score.notes,{duration:score.duration,connection:'connected'});
+ status.textContent='播放中：即時旋律';
+ const update=()=>{if(!transport)return;position.textContent=transport.position().toFixed(1)+' 秒';if(transport.finished()){transport.stop();transport=null;status.textContent='播放完成';return;}frame=requestAnimationFrame(update);};update();
+ }catch(e){stop();status.textContent='播放未成功，請重新整理後再試。';}
+}
+reference.addEventListener('play',()=>{generation++;transport?.stop();transport=null;cancelAnimationFrame(frame);status.textContent='播放中：已通過錄音';});
+reference.addEventListener('ended',()=>{if(sequence)void startLive();else status.textContent='播放完成';});
+reference.addEventListener('error',()=>{stop();status.textContent='錄音載入失敗，請重新整理頁面。';});
+compare.onclick=async()=>{stop();const token=generation;sequence=true;reference.currentTime=0;try{context??=new AudioContext();await context.resume();if(token!==generation)return;await reference.play();}catch(e){if(token!==generation)return;stop();status.textContent='播放未成功，請直接按播放鍵。';}};
+live.onclick=()=>void startLive();document.querySelector('#stop').onclick=stop;
+window.addEventListener('pagehide',stop);
+try{const response=await fetch('notes.json');if(!response.ok)throw Error('Missing notes');score=await response.json();compare.disabled=false;live.disabled=false;status.textContent='準備完成';}catch(e){status.textContent='音符載入失敗，請重新整理頁面。';}
+</script></html>

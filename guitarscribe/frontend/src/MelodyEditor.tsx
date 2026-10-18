@@ -18,7 +18,7 @@ type Props = {
   onCommit: (base: SongScore, next: SongScore) => boolean;
   onSeek: (time: number) => void;
   onPitch: (midi: number) => void;
-  onAudition: (start: number, end: number, loop?: boolean) => void;
+  onAudition: (start: number, end: number, loop?: boolean, from?: number) => void;
   onEnsemble: (start: number, end: number, loop: boolean, from?: number) => void;
   onOriginal: (start: number, end: number) => void;
   onStop: () => void;
@@ -207,7 +207,7 @@ export function MelodyEditor(props: Props) {
       {props.onSpeed ? <label>來源／合奏速度<select aria-label="Editor playback speed" value={props.playbackRate ?? 1} onChange={e => props.onSpeed?.(Number(e.target.value))}>{[.5, .6, .75, .9, 1, 1.1, 1.25, 1.5].map(rate => <option key={rate} value={rate}>{Math.round(rate * 100)}%</option>)}</select></label> : null}
       <button type="button" onClick={() => ensemble ? props.onEnsemble(rangeStart, rangeEnd, loop) : props.onAudition(rangeStart, rangeEnd, loop)}>重播所選小節</button>
       <button type="button" onClick={props.onStop}>暫停，保留位置</button>
-      <button type="button" onClick={() => { const from = props.playhead >= rangeStart && props.playhead < rangeEnd ? props.playhead : rangeStart; if (ensemble) props.onEnsemble(rangeStart, rangeEnd, loop, from); else props.onAudition(from, rangeEnd); }}>從暫停位置續播</button>
+      <button type="button" onClick={() => { const from = props.playhead >= rangeStart && props.playhead < rangeEnd ? props.playhead : rangeStart; if (ensemble) props.onEnsemble(rangeStart, rangeEnd, loop, from); else props.onAudition(rangeStart, rangeEnd, loop, from); }}>從暫停位置續播</button>
       <button type="button" disabled={props.sourceAvailable === false} onClick={() => props.onOriginal(rangeStart, rangeEnd)}>對照來源片段</button>
     </div>
     {props.sourceAvailable === false ? <p role="status">來源音訊目前不可用；仍可播放、編輯及保存工作譜。</p> : null}

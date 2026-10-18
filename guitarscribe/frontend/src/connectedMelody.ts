@@ -44,6 +44,7 @@ export function playMelodyPhrase(context: BaseAudioContext, notes: readonly Melo
   gain.gain.setValueAtTime(level(audible[audible.length - 1]), end - edge);
   gain.gain.linearRampToValueAtTime(0, end);
   source.connect(gain).connect(context.destination);
-  source.start(start); source.stop(end);
+  try { source.start(start); source.stop(end); }
+  catch (error) { try { source.stop(); } catch { /* Not started. */ } source.disconnect(); gain.disconnect(); throw error; }
   return source;
 }
