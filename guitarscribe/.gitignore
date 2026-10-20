@@ -17,3 +17,4 @@ output/
 frontend/public/listening/transition-*/
 frontend/public/listening/editor-parity-*/
 frontend/public/listening/realtime-*/
+frontend/public/listening/ensemble-*/

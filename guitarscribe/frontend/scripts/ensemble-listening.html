@@ -1,0 +1,56 @@
+<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>原曲與 G 合奏對齊確認</title>
+<style>body{font:18px/1.6 system-ui,sans-serif;max-width:720px;margin:40px auto;padding:0 20px;background:#f6f5ef;color:#252d32}h1{font-size:27px}section{background:white;border:1px solid #d5d8d0;border-radius:12px;padding:18px 22px;margin:16px 0}h2{font-size:20px;margin:0 0 10px}audio{width:100%}button{font:inherit;border:0;border-radius:8px;background:#245d50;color:white;padding:12px 20px;cursor:pointer;margin:4px 4px 4px 0}button:disabled{opacity:.5;cursor:wait}.secondary{background:#596469}.note{font-size:15px;color:#53605b}iframe{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;border:0}</style>
+<h1>原曲與 G 合奏對齊確認</h1>
+<p>同一段 Bar 28–35。先聽原曲，再聽旋律＋吉他合奏，約 30 秒。</p>
+<button id="compare" disabled>依序播放原曲與合奏</button><button id="stop" class="secondary">全部停止</button>
+<p id="status" role="status">準備中</p>
+<section><h2>1 · 原曲</h2><audio id="source" controls preload="metadata" src="source.wav"></audio></section>
+<section><h2>2 · G 旋律＋吉他</h2><button id="ensemble" disabled>播放合奏</button><p id="position">0.0 秒</p></section>
+<p>只需回報：<strong>節拍與和弦跟得上／有明顯錯位</strong>。有問題時，可補「前半／後半」或大約秒數。</p>
+<p class="note">這次只判斷節拍與和弦跟隨，不重測已通過的旋律連貫性。合奏直接使用實際編輯器與保存的 G，不會另存或重新分析。</p>
+<iframe id="editor" title="合奏播放引擎" aria-hidden="true" tabindex="-1" allow="autoplay"></iframe>
+<script type="module">
+const frame=document.querySelector('#editor'),source=document.querySelector('#source'),status=document.querySelector('#status'),position=document.querySelector('#position');
+const compare=document.querySelector('#compare'),ensemble=document.querySelector('#ensemble');
+let config,sequence=false,generation=0,monitor,ready=false;
+const doc=()=>frame.contentDocument;
+const label=name=>doc()?.querySelector(`[aria-label="${name}"]`);
+const button=name=>[...(doc()?.querySelectorAll('button')??[])].find(b=>b.textContent.trim()===name);
+const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+async function waitFor(check,token,timeout=20000){const until=Date.now()+timeout;while(Date.now()<until){if(token!==undefined&&token!==generation)throw Error('cancelled');if(check())return;await sleep(50);}throw Error('timeout');}
+function stop(){generation++;sequence=false;source.pause();button('暫停，保留位置')?.click();clearInterval(monitor);status.textContent='已停止';}
+function fail(){stop();status.textContent='播放未成功，請重新整理頁面後再試。';}
+async function playEnsemble(){
+ stop();const token=generation;
+ try{
+  if(!ready)throw Error('not ready');
+  status.textContent='準備合奏中';button('重播所選小節').click();
+  await waitFor(()=>label('Editor playback status')?.textContent.includes('播放工作譜'),token);
+  if(token!==generation)return;status.textContent='播放中：G 合奏';
+  monitor=setInterval(()=>{
+   const text=label('Tab transport position')?.textContent??'';
+   const time=Number(text.match(/位置 ([\d.]+)s/)?.[1]);
+   if(Number.isFinite(time))position.textContent=Math.max(0,time-config.start).toFixed(1)+' 秒';
+   if(!label('Editor playback status')?.textContent.includes('播放工作譜')){clearInterval(monitor);status.textContent='播放完成';}
+  },100);
+ }catch(e){if(token===generation)fail();}
+}
+source.addEventListener('play',()=>{generation++;clearInterval(monitor);button('暫停，保留位置')?.click();status.textContent='播放中：原曲';});
+source.addEventListener('ended',()=>{if(sequence)void playEnsemble();else status.textContent='播放完成';});
+source.addEventListener('error',()=>fail());
+compare.onclick=async()=>{stop();sequence=true;source.currentTime=0;try{await source.play();}catch{fail();}};
+ensemble.onclick=()=>void playEnsemble();document.querySelector('#stop').onclick=stop;
+window.addEventListener('pagehide',stop);
+try{
+ const response=await fetch('config.json');if(!response.ok)throw Error('config');config=await response.json();
+ frame.src='/?revision='+encodeURIComponent(config.revision);
+ const token=undefined;
+ await waitFor(()=>label('Current working version')?.textContent.includes(config.revision)&&label('Tab start bar'),token);
+ async function select(name,value){const element=label(name);if(!element)throw Error(name);element.value=value;element.dispatchEvent(new Event('change',{bubbles:true}));await sleep(0);}
+ const bar=[...label('Tab start bar').options].find(o=>o.textContent.startsWith('Bar 28 ·'));if(!bar)throw Error('bar');
+ await select('Tab start bar',bar.value);await select('Tab bar count','8');await select('Editor audition mode','ensemble');await select('Editor playback speed','1');
+ if(label('Loop edited bars')?.checked)label('Loop edited bars').click();
+ ready=true;compare.disabled=false;ensemble.disabled=false;status.textContent='準備完成';
+}catch(e){if(!ready)status.textContent='載入未完成，請重新整理頁面。';}
+</script></html>

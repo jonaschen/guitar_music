@@ -1,7 +1,7 @@
 import { ChangeEvent, FormEvent, lazy, Suspense, useEffect, useRef, useState } from "react";
 import type { AccidentalPreference, AnalysisJob, PlaybackManifest, PlaybackTrack, SongScore } from "./types";
 import { ChordDiagram } from "./ChordDiagram";
-import { createAudioContextTransportClock, createMediaTransportClock } from "./transportClock";
+import { createMediaTransportClock } from "./transportClock";
 import { DiagnosticTimeline } from "./DiagnosticTimeline";
 import { guitarEnvelope } from "./guitarEnvelope";
 import { melodyEnvelope } from "./melodyEnvelope";
@@ -239,7 +239,6 @@ export function App() {
   const synthSchedulerRef = useRef<number | null>(null);
   const mediaAnimationRef = useRef<number | null>(null);
   const synthCountInTimerRef = useRef<number | null>(null);
-  const synthClockRef = useRef<{ contextStart: number; scoreStart: number } | null>(null);
   const lastMetronomeBeatRef = useRef<number | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [diagnosticAudioTrack, setDiagnosticAudioTrack] = useState<DiagnosticAudioTrack>("source");
@@ -1041,7 +1040,6 @@ export function App() {
     synthAnimationRef.current = null;
     if (synthSchedulerRef.current !== null) window.clearTimeout(synthSchedulerRef.current);
     synthSchedulerRef.current = null;
-    synthClockRef.current = null;
     if (synthCountInTimerRef.current !== null) window.clearTimeout(synthCountInTimerRef.current);
     synthCountInTimerRef.current = null;
     setIsCountingIn(false);
@@ -1200,9 +1198,13 @@ export function App() {
       const initialContextStart = countInStart + countInBeats * beatSeconds;
       const acousticEnd = (event: PlaybackManifest["events"][number]) =>
         event.track === "guitar" && guitarTone === "pluck" ? event.sustain_end ?? event.end : event.end;
-      const scheduleSegment = (segmentStart: number, contextStart: number) => {
-        const segmentEnd = selectedRange?.end ?? requestedLoop?.[1] ?? bounds.end;
-        synthClockRef.current = { contextStart, scoreStart: segmentStart };
+      const segmentEnd = selectedRange?.end ?? requestedLoop?.[1] ?? bounds.end;
+      const firstEnd = initialContextStart + (segmentEnd - scoreStart) / playbackRate;
+      const loopDuration = requestedLoop ? (requestedLoop[1] - requestedLoop[0]) / playbackRate : 0;
+      if (requestedLoop && (!Number.isFinite(loopDuration) || loopDuration < .01 || firstEnd + loopDuration <= firstEnd)) {
+        throw new Error("循環範圍過短，請擴大選取範圍。");
+      }
+      const createSegmentScheduler = (segmentStart: number, contextStart: number) => {
         const connected = melodyConnection === "connected" && tracks.melody && synthVolumes.melody > 0 && (solo === null || solo === "melody");
         const phrases = connected ? melodyPhrases(manifest.events.filter(event => event.track === "melody" && event.pitches.length === 1 && event.end > segmentStart && event.start < segmentEnd)
           .map(event => ({ start: event.start, end: event.end, midi: event.pitches[0], velocity: event.pitch_velocities?.[0] ?? event.velocity }))) : [];
@@ -1211,6 +1213,12 @@ export function App() {
           .filter((event) => tracks[event.track] && synthVolumes[event.track] > 0 && (solo === null || event.track === solo) && acousticEnd(event) > segmentStart && event.start < segmentEnd)
           .filter(event => !(connected && event.track === "melody" && event.pitches.length === 1))
           .sort((left, right) => left.start - right.start);
+        // Short editor selections are bounded: queue their complete audio up
+        // front so rendering a large score cannot delay an internal onset.
+        // Whole-song playback and dense selections keep the rolling horizon.
+        const scheduleWholeSelection = !!selectedRange && segmentEnd - segmentStart <= 30
+          && segmentEvents.reduce((count, event) => count + event.pitches.length, 0)
+            + phrases.reduce((count, phrase) => count + phrase.length, 0) <= 1024;
         let nextEventIndex = 0;
         const scheduleEvent = (event: PlaybackManifest["events"][number], resumeScoreTime: number) => {
           const eventStart = Math.max(event.start, segmentStart, resumeScoreTime);
@@ -1227,9 +1235,10 @@ export function App() {
             const compiledOffset = event.pitch_offsets[pitchIndex];
             if (event.track === "guitar" && guitarTone === "pluck") {
               const onset = event.start + (compiledOffset ?? pitchIndex * 0.012);
-              const startAt = Math.max(context.currentTime + 0.005, contextStart + (onset - segmentStart) / playbackRate);
+              const startAt = Math.max(context.currentTime + 0.005,
+                contextStart + (Math.max(onset, segmentStart, resumeScoreTime) - segmentStart) / playbackRate);
               const endAt = contextStart + (eventEnd - segmentStart) / playbackRate;
-              const age = Math.max(0, (Math.max(segmentStart, resumeScoreTime) - onset) / playbackRate);
+              const age = Math.max(0, (segmentStart - onset) / playbackRate + (startAt - contextStart));
               const buffer = buffers.get(pitch);
               if (buffer) {
                 const source = createPluckedVoice(context, buffer, startAt, endAt,
@@ -1281,9 +1290,10 @@ export function App() {
             trackSynthSource(oscillator);
           });
         };
-        const schedulePendingEvents = () => {
+        return () => {
           const elapsedScoreTime = Math.max(0, (context.currentTime - contextStart) * playbackRate);
-          const horizon = segmentStart + elapsedScoreTime + SYNTH_SCHEDULE_AHEAD_SECONDS * playbackRate;
+          const horizon = scheduleWholeSelection ? segmentEnd
+            : segmentStart + (context.currentTime + SYNTH_SCHEDULE_AHEAD_SECONDS - contextStart) * playbackRate;
           while (nextPhraseIndex < phrases.length && phrases[nextPhraseIndex][0].start < horizon) {
             const source = playMelodyPhrase(context, phrases[nextPhraseIndex], {
               scoreStart: segmentStart, scoreEnd: segmentEnd, contextStart, rate: playbackRate, peak: synthVolumes.melody,
@@ -1295,31 +1305,45 @@ export function App() {
             scheduleEvent(segmentEvents[nextEventIndex], segmentStart + elapsedScoreTime);
             nextEventIndex += 1;
           }
-          if (synthClockRef.current?.contextStart === contextStart && context.currentTime < contextStart + (segmentEnd - segmentStart) / playbackRate) {
-            synthSchedulerRef.current = window.setTimeout(schedulePendingEvents, SYNTH_SCHEDULER_INTERVAL_MS);
-          }
         };
-        schedulePendingEvents();
-        const updatePlayhead = () => {
-          const clock = synthClockRef.current;
-          if (!clock) return;
-          const nextTime = createAudioContextTransportClock(context, clock, playbackRate).now();
-          if (nextTime >= segmentEnd) {
-            if (requestedLoop) {
-              scheduleSegment(requestedLoop[0], context.currentTime + 0.015);
-              return;
+      };
+      let passes = [{ end: firstEnd, schedule: createSegmentScheduler(scoreStart, initialContextStart) }];
+      let nextOrigin = firstEnd;
+      const schedulePending = () => {
+        if (generation !== synthGenerationRef.current) return;
+        try {
+          const now = context.currentTime;
+          if (!requestedLoop && now >= firstEnd) {
+            setPlaybackTime(segmentEnd); stopSynth(false); return;
+          }
+          passes = passes.filter(pass => pass.end > now);
+          if (requestedLoop) {
+            // Preserve the original audio-clock grid even after a late timer.
+            if (nextOrigin + loopDuration <= now) nextOrigin += Math.floor((now - nextOrigin) / loopDuration) * loopDuration;
+            const horizon = now + SYNTH_SCHEDULE_AHEAD_SECONDS;
+            while (nextOrigin < horizon) {
+              passes.push({ end: nextOrigin + loopDuration, schedule: createSegmentScheduler(requestedLoop[0], nextOrigin) });
+              nextOrigin += loopDuration;
             }
-            setPlaybackTime(segmentEnd);
-            stopSynth(false);
-            return;
           }
-          setPlaybackTime(Math.max(clock.scoreStart, nextTime));
-          synthAnimationRef.current = window.requestAnimationFrame(updatePlayhead);
-        };
+          for (const pass of passes) pass.schedule();
+          synthSchedulerRef.current = window.setTimeout(schedulePending, SYNTH_SCHEDULER_INTERVAL_MS);
+        } catch (error) {
+          stopSynth(false); setError(error instanceof Error ? error.message : "Could not schedule compiled score.");
+        }
+      };
+      const updatePlayhead = () => {
+        if (generation !== synthGenerationRef.current) return;
+        const now = context.currentTime;
+        const time = requestedLoop && now >= firstEnd
+          ? requestedLoop[0] + ((now - firstEnd) % loopDuration) * playbackRate
+          : Math.min(segmentEnd, scoreStart + Math.max(0, now - initialContextStart) * playbackRate);
+        setPlaybackTime(time);
         synthAnimationRef.current = window.requestAnimationFrame(updatePlayhead);
       };
       setIsSynthPlaying(true);
-      scheduleSegment(scoreStart, initialContextStart);
+      schedulePending();
+      if (generation === synthGenerationRef.current) synthAnimationRef.current = window.requestAnimationFrame(updatePlayhead);
     } catch (synthError) {
       if (generation !== synthGenerationRef.current) return;
       stopSynth(false);

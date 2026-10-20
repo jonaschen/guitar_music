@@ -35,3 +35,14 @@ tree flag, and each Playwright run's passed/skipped summary under
 `GUITARSCRIBE_VERIFICATION_RECORD` to choose a different record path. Captured
 command output is temporary and removed when the script exits. The dirty flag
 does not include or print filenames.
+
+The ensemble regressions cover fixed loop timing without animation frames,
+pause/stop cancellation, and a sustained guitar string sharing the melody's
+segment start while retaining its decay age. To additionally check the local
+Bar 28–35 alignment listening packet, first generate it with
+`python3 scripts/prepare-ensemble-listening.py --revision ID`, then set both
+`GUITARSCRIBE_ALIGNMENT_PACKET=1` and `GUITARSCRIBE_RECOVERY_REVISION=ID`.
+This opt-in check uses the actual App and native AudioContext to compare melody
+and guitar scheduling against the saved score and compiled manifest, checks
+source-to-ensemble handoff and stop, and verifies the revision remains unchanged.
+It requires the packet and running local UI/API; it does not judge musical quality.

@@ -63,6 +63,7 @@ run_step 'Workflow Playwright regressions' npx --no-install playwright test \
   e2e/revision-link.spec.ts \
   e2e/connected-melody.spec.ts \
   e2e/melody-realtime.spec.ts \
+  e2e/ensemble-realtime.spec.ts \
   e2e/melody-articulation.spec.ts \
   --workers=1
 
@@ -71,6 +72,15 @@ if [[ -n "${GUITARSCRIBE_RECOVERY_REVISION:-}" ]]; then
     e2e/revision-recovery-live.spec.ts \
     e2e/editor-audio-parity-live.spec.ts \
     --workers=1
+fi
+
+if [[ -n "${GUITARSCRIBE_ALIGNMENT_PACKET:-}" ]]; then
+  if [[ -z "${GUITARSCRIBE_RECOVERY_REVISION:-}" ]]; then
+    printf 'GUITARSCRIBE_ALIGNMENT_PACKET requires GUITARSCRIBE_RECOVERY_REVISION\n' >&2
+    exit 1
+  fi
+  run_step 'Opt-in alignment packet Playwright regression' npx --no-install playwright test \
+    e2e/ensemble-alignment-live.spec.ts --workers=1
 fi
 
 printf 'Finished: %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$record_file"
