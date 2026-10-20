@@ -58,3 +58,5 @@ npm run dev -- --host 0.0.0.0 --port 5173
 - 真實保存 G 的 4 項 live 測試全部通過（1.7 分鐘），包含原生 AudioContext 下 67 音與吉他排程、簡化頁、完整／專注模式修譜及還原。紀錄 `/tmp/guitarscribe-live-20261020.log`。
 - 最終 TypeScript、Vite build、git diff --check 通過。保存 revisions SQLite 檔案 SHA-256 前後一致；既有 G 獨聽 WAV 的 SHA-256 仍為 `0d6699e607bff97340f5d8d78646838e368c783718249ab5f359fb1489124650`。
 - 目前只待本 checkpoint 的原曲／合奏音樂跟隨聽感驗收。
+
+10/21 交付入口確認：全新瀏覽器預設專注模式可載入正確的 1072 音 G，試聽頁顯示「準備完成」，截圖檢視主要操作與文字正常；未重現入口載入缺陷。API 與試聽頁皆 HTTP 200。本輪工程工作完成，等待上述單項聽感驗收。
