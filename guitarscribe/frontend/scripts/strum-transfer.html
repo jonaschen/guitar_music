@@ -1,0 +1,20 @@
+<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>恢復刷奏後是否更合拍？</title>
+<style>body{font:18px/1.6 system-ui,sans-serif;max-width:700px;margin:40px auto;padding:0 20px;background:#f6f5ef;color:#252d32}h1{font-size:27px}section{background:white;border:1px solid #d5d8d0;border-radius:12px;padding:20px;margin:16px 0}button{font:inherit;border:0;border-radius:8px;background:#245d50;color:white;padding:12px 20px;cursor:pointer;margin:4px}audio{width:100%}.note{font-size:15px;color:#53605b}</style>
+<h1>恢復刷奏後是否更合拍？</h1>
+<p>同一段原曲搭配吉他刷奏。A、B 各 7.5 秒，只比較剛才兩處換和弦的起奏時間。</p>
+<section><button id="all">依序播放 A → B</button><button id="stop">停止</button><p id="status" role="status">準備完成</p><div><button data-mode="A">重聽 A</button><button data-mode="B">重聽 B</button></div><audio controls preload="metadata"></audio></section>
+<p>只需回報：<strong>A 較合拍／B 較合拍／都不對／分不出來</strong>。</p>
+<p class="note">總共約 16 秒。這是刷奏對照，G 旋律與保存譜沒有修改。不需要再測先前的簡化和弦版本。</p>
+<script>
+const audio=document.querySelector('audio'),status=document.querySelector('#status');let queue=[],timer,token=0,current;
+function stop(){token++;clearTimeout(timer);queue=[];audio.pause();status.textContent='已停止';}
+async function play(mode){const run=token;current=mode;audio.src=`${mode}.wav`;try{await audio.play();}catch{if(run===token){stop();status.textContent='播放失敗，請重新整理後再試。';}}}
+document.querySelector('#all').onclick=()=>{stop();queue=['B'];play('A');};
+document.querySelector('#stop').onclick=stop;
+document.querySelectorAll('[data-mode]').forEach(button=>button.onclick=()=>{stop();play(button.dataset.mode);});
+audio.onplay=()=>status.textContent=`播放 ${current}`;
+audio.onpause=()=>{if(!audio.ended){queue=[];status.textContent=`已暫停 ${current??''}`;}};
+audio.onended=()=>{const next=queue.shift();if(next){status.textContent=`下一段 ${next}`;timer=setTimeout(()=>play(next),800);}else status.textContent='播放完成';};
+audio.onerror=()=>{stop();status.textContent='音檔載入失敗，請重新整理後再試。';};
+window.addEventListener('pagehide',stop);
+</script></html>
