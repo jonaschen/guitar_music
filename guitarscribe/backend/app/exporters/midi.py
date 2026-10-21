@@ -240,6 +240,11 @@ def _varlen(value: int) -> bytes:
 
 def export_midi(score: SongScore, ticks_per_beat: int = 480) -> bytes:
     manifest = compile_playback_manifest(score)
+    return export_manifest_midi(manifest, ticks_per_beat)
+
+
+def export_manifest_midi(manifest: PlaybackManifest, ticks_per_beat: int = 480) -> bytes:
+    """Export an already compiled performance, including explicit timing edits."""
     tempo = max(1, round(60_000_000 / manifest.bpm))
     # Format 0 still supports multiple MIDI channels. Keep the detected melody
     # on channel 0 and put the playable, selected guitar voicing on channel 1

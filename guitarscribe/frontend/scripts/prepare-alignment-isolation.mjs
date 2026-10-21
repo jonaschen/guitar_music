@@ -6,7 +6,8 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 const direction=process.argv.includes('--boundary-probe');
-const transfer=process.argv.includes('--strum-transfer');
+const tail=process.argv.includes('--tail-context');
+const transfer=process.argv.includes('--strum-transfer')||tail;
 assert.ok(!(direction&&transfer),'Choose one probe mode');
 const block=process.argv.includes('--block')||direction;
 const revision=process.argv[2];if(!revision)throw Error('Explicit saved revision ID required');
@@ -31,14 +32,15 @@ const blocks=spans.filter(c=>c.end>start&&c.start<end).map(c=>{
  assert.ok(event,`No playable voicing for ${c.symbol}`);
  return {...event,start:c.start,end:c.end,sustain_end:c.end,pitch_offsets:event.pitches.map(()=>0),symbol:c.symbol};
 });
-const out=path.join(root,transfer?'public/listening/strum-transfer-2026-10-22':direction?'public/listening/harmony-boundaries-2026-10-21':block?'public/listening/harmony-block-2026-10-21':'public/listening/alignment-isolation-2026-10-21');await mkdir(out,{recursive:true});
+const out=path.join(root,tail?'public/listening/strum-tail-2026-10-22':transfer?'public/listening/strum-transfer-2026-10-22':direction?'public/listening/harmony-boundaries-2026-10-21':block?'public/listening/harmony-block-2026-10-21':'public/listening/alignment-isolation-2026-10-21');await mkdir(out,{recursive:true});
 // Local boundary probe: only C->G and G->Am move, including the preceding chord's end.
 // Render the entire passage before cropping, retaining preceding string decay at the crop boundary.
 const targets=direction||transfer?blocks.filter(e=>e.start-start>7&&e.start-start<10):[];
 if(direction||transfer)assert.deepEqual(targets.map(e=>e.symbol),['G','Am']);
-const variants=transfer?[{mode:'A',shift:0},{mode:'B',shift:.15}]:direction?[{mode:'A',shift:0},{mode:'B',shift:.15},{mode:'C',shift:-.15}]:
+const variants=tail?[{mode:'B',shift:.15}]:transfer?[{mode:'A',shift:0},{mode:'B',shift:.15}]:direction?[{mode:'A',shift:0},{mode:'B',shift:.15},{mode:'C',shift:-.15}]:
  (block?['harmony']:['beats','guitar']).map(mode=>({mode,shift:0}));
-const crop=transfer?[5,12.5]:direction?[5,10.5]:null;
+const crop=tail?[5,end-start+.35]:transfer?[5,12.5]:direction?[5,10.5]:null;
+const checkpoint=tail?JSON.parse(await readFile(path.join(root,'../output/evaluation/accepted-strum-2026-10-22/manifest.json'),'utf8')):null;
 let compilerComparison;
 if(transfer){
  const candidate=structuredClone(score);
@@ -64,6 +66,11 @@ try{
   const variantManifest=transfer?{...manifest,events:manifest.events.map(e=>e.track==='guitar'?{
    ...e,start:move(e.start),end:move(e.end),sustain_end:e.sustain_end==null?e.sustain_end:move(e.sustain_end),
   }:e)}:manifest;
+  if(checkpoint){
+   const byId=new Map(checkpoint.events.map(e=>[e.id,e]));
+   assert.equal(byId.size,variantManifest.events.length);
+   for(const event of variantManifest.events)assert.deepEqual(byId.get(event.id),event);
+  }
   if(transfer){
    let changedStarts=0;
    for(let i=0;i<manifest.events.length;i++){
@@ -83,12 +90,13 @@ try{
    assert.ok(variantBlocks[i].end>variantBlocks[i].start);
    if(i)assert.ok(Math.abs(variantBlocks[i-1].end-variantBlocks[i].start)<1e-8);
   }
-  const result=await page.evaluate(async({score,manifest,blocks,start,end,mode,direction,transfer,crop})=>{
+  const result=await page.evaluate(async({score,manifest,blocks,start,end,mode,direction,transfer,crop,tail})=>{
    const {createMetronomeVoice}=await import('/src/metronomeVoice.ts');
    const {preparePluckedBuffers,createPluckedVoice}=await import('/src/pluckedTone.ts');
-   const rate=22050,context=new OfflineAudioContext(1,Math.round((end-start)*rate),rate);
+   const rate=22050,context=new OfflineAudioContext(1,Math.round((end-start+(tail?.35:0))*rate),rate);
    const data=await (await fetch('/listening/ensemble-2026-10-18/source.wav')).arrayBuffer();
    const source=context.createBufferSource(),gain=context.createGain();source.buffer=await context.decodeAudioData(data);gain.gain.value=.45;source.connect(gain).connect(context.destination);source.start(0);
+   if(tail){gain.gain.setValueAtTime(.45,end-start-.04);gain.gain.linearRampToValueAtTime(0,end-start);}
    const timings=[];
    if(mode==='beats')for(const b of score.beats.filter(b=>b.time>=start&&b.time<end)){
     createMetronomeVoice(context,b.time-start,b.beat===1,.8);timings.push(b.time-start);
@@ -106,7 +114,7 @@ try{
    const samples=Array.from(crop?buffer.getChannelData(0).slice(crop[0]*rate,crop[1]*rate):buffer.getChannelData(0));
    let peak=0,sum=0;for(const sample of samples){peak=Math.max(peak,Math.abs(sample));sum+=sample*sample;}
    return {samples,peak,rms:Math.sqrt(sum/samples.length),timings,rate};
-  },{score,manifest:variantManifest,blocks:variantBlocks,start,end,mode,direction,transfer,crop});
+  },{score,manifest:checkpoint??variantManifest,blocks:variantBlocks,start,end,mode,direction,transfer,crop,tail});
   assert.ok(result.peak<1&&result.rms>.01,`${mode}: clipping/silence`);
   assert.ok(result.timings.length>0&&result.timings.every(t=>t>=0&&t<end-start));
   if(mode==='beats')assert.deepEqual(result.timings,score.beats.filter(b=>b.time>=start&&b.time<end).map(b=>b.time-start));
@@ -117,7 +125,7 @@ try{
   }
   if(direction)assert.equal(result.samples.length,5.5*result.rate);
   if(transfer){
-   assert.equal(result.samples.length,7.5*result.rate);
+   assert.equal(result.samples.length,tail?Math.min(Math.round((end-start+.35)*result.rate),Math.floor(crop[1]*result.rate))-5*result.rate:7.5*result.rate);
    const expected=variantManifest.events.filter(e=>e.track==='guitar'&&(e.sustain_end??e.end)>start&&e.start<end).flatMap(e=>e.pitches.flatMap((_,i)=>{
     const onset=e.start+(e.pitch_offsets[i]??i*.012),at=Math.max(0,onset-start);
     return Math.max(0,start-onset)<4&&Math.min(end,e.sustain_end??e.end)-start>at?[at]:[];
@@ -131,6 +139,6 @@ try{
 }finally{await browser.close();}
 assert.deepEqual(await json(`${api}/revisions/${encodeURIComponent(revision)}`),score);
 assert.equal(createHash('sha256').update(await readFile(path.join(root,'public/listening/ensemble-2026-10-18/source.wav'))).digest('hex'),sourceHash);
-await copyFile(path.join(root,transfer?'scripts/strum-transfer.html':direction?'scripts/harmony-direction.html':block?'scripts/harmony-block.html':'scripts/alignment-isolation.html'),path.join(out,'index.html'));
+await copyFile(path.join(root,tail?'scripts/strum-tail.html':transfer?'scripts/strum-transfer.html':direction?'scripts/harmony-direction.html':block?'scripts/harmony-block.html':'scripts/alignment-isolation.html'),path.join(out,'index.html'));
 await writeFile(path.join(out,'report.json'),JSON.stringify({revision,start,end,sourceGain:.45,sourceHash,crop,compilerComparison,targetBoundaries:targets.map(e=>({symbol:e.symbol,time:e.start})),blockControl:block,blocks:block?blocks:undefined,sourceOffset:score.song.source_start_seconds,interpretation:transfer?'Evaluation manifest only: two first strums and preceding harmony cutoffs delayed 150ms. Other attacks, pitches, string offsets and original audio unchanged. Not the result of the current score compiler and not a saved revision.':'Diagnostic overlays; no correction and no accuracy claim. Only two chord boundaries change; original audio and remaining boundaries are fixed. Cannot establish chord identity or whole-passage correctness.',savedRevisionUnchanged:true,results},null,2));
 console.log(JSON.stringify({out,results:results.map(({timings,...r})=>r)}));

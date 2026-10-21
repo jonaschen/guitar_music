@@ -1,0 +1,13 @@
+<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>B 版補足片尾</title>
+<style>body{font:18px/1.6 system-ui,sans-serif;max-width:700px;margin:40px auto;padding:0 20px;background:#f6f5ef;color:#252d32}h1{font-size:27px}section{background:white;border-radius:12px;padding:20px}button{font:inherit;background:#245d50;color:white;border:0;border-radius:8px;padding:12px 20px;margin:4px}audio{width:100%}.note{font-size:15px;color:#53605b}</style>
+<h1>B 版補足片尾</h1><p>保留剛才較好的 B，補上後續與尾音，約 10 秒。沒有再移動任何換和弦。</p>
+<section><button id="play">播放 B</button><button id="stop">停止</button><p id="status" role="status">準備完成</p><audio controls preload="metadata" src="B.wav"></audio></section>
+<p>前次最後一次換和弦在約第 <strong>5.9 秒</strong>；前次片尾那一刷在約第 <strong>7.5 秒</strong>，現在都能完整聽到。</p>
+<p>若仍覺得早，只需回報：<strong>5.9 秒附近／7.5 秒附近／不確定</strong>；若補足片尾後較自然，也直接告訴我即可。</p>
+<p class="note">後面多保留原有伴奏作為上下文。G 旋律與保存譜不變。</p>
+<script>
+const audio=document.querySelector('audio'),status=document.querySelector('#status');let token=0;
+function stop(){token++;audio.pause();status.textContent='已停止';}
+document.querySelector('#play').onclick=async()=>{stop();const run=token;audio.currentTime=0;try{await audio.play();}catch{if(run===token)status.textContent='播放失敗，請重試。';}};
+document.querySelector('#stop').onclick=stop;audio.onplay=()=>status.textContent='播放 B';audio.onended=()=>status.textContent='播放完成';audio.onerror=()=>{stop();status.textContent='載入失敗，請重新整理後再試。';};window.addEventListener('pagehide',stop);
+</script></html>

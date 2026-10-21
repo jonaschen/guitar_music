@@ -1,0 +1,9 @@
+{
+  "revision": "db8c657e-62a5-4fad-a33e-cde25a9e1c0d",
+  "base_manifest_revision": "d8f5d37756d58e6d",
+  "feedback": "User prefers strum-transfer B; final change may feel early, unconfirmed. Local relative preference, not whole-song acceptance.",
+  "adjustments": [
+    {"source_id": "chord-79", "expected_start": 57.12108843537415, "delay_seconds": 0.15},
+    {"source_id": "chord-80", "expected_start": 58.967074829931974, "delay_seconds": 0.15}
+  ]
+}
