@@ -1,0 +1,20 @@
+<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>錯位來源定位</title>
+<style>body{font:18px/1.6 system-ui,sans-serif;max-width:720px;margin:40px auto;padding:0 20px;background:#f6f5ef;color:#252d32}h1{font-size:27px}section{background:white;border:1px solid #d5d8d0;border-radius:12px;padding:18px 22px;margin:16px 0}h2{font-size:20px}audio{width:100%}button{font:inherit;border:0;border-radius:8px;background:#245d50;color:white;padding:12px 20px;cursor:pointer;margin-right:8px}.note{font-size:15px;color:#53605b}</style>
+<h1>錯位來源定位</h1>
+<p>這次把原曲一起放進每段聲音，直接聽是否跟得上。兩段共約 30 秒。</p>
+<button id="play">依序播放兩段</button><button id="stop">全部停止</button><p id="status" role="status">準備完成</p>
+<section><h2>1 · 原曲＋節拍聲</h2><p>只聽「答答聲」有沒有跟上原曲的拍子。</p><audio id="beat" controls preload="metadata" src="beats.wav"></audio></section>
+<section><h2>2 · 原曲＋吉他伴奏</h2><p>只聽加上的吉他是否與原曲合得起來。</p><audio id="guitar" controls preload="metadata" src="guitar.wav"></audio></section>
+<p>回報哪段明顯不對即可：<strong>1／2／兩段／兩段都還好</strong>。</p>
+<p class="note">這是定位問題的對照，不是宣稱改善的新版本。使用相同 G 的拍點與和弦，原曲和添加聲音在同一音訊時鐘合成；沒有改動保存譜。</p>
+<script>
+const beat=document.querySelector('#beat'),guitar=document.querySelector('#guitar'),status=document.querySelector('#status');let sequence=false,token=0;
+function stop(){token++;sequence=false;beat.pause();guitar.pause();status.textContent='已停止';}
+async function play(audio){const current=token;try{audio.currentTime=0;await audio.play();}catch{if(current===token){stop();status.textContent='播放失敗，請重新整理後再試。';}}}
+document.querySelector('#play').onclick=()=>{stop();sequence=true;void play(beat);};document.querySelector('#stop').onclick=stop;
+beat.onplay=()=>{guitar.pause();status.textContent='播放中：1 · 原曲＋節拍';};guitar.onplay=()=>{beat.pause();status.textContent='播放中：2 · 原曲＋吉他';};
+beat.onended=()=>{if(sequence){sequence=false;void play(guitar);}else status.textContent='播放完成';};guitar.onended=()=>{sequence=false;status.textContent='播放完成';};
+for(const audio of [beat,guitar])audio.onerror=()=>{stop();status.textContent='音檔載入失敗，請重新整理後再試。';};
+window.addEventListener('pagehide',stop);
+</script></html>

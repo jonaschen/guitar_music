@@ -16,3 +16,7 @@
 相依：來源旋律可辨認，避免同時以錯旋律判斷錯拍。此 issue 不代表所有和弦結果皆錯。
 
 參考：`guitarscribe/docs/Playback_Detail_Checkpoint_2026-10-02.md`。
+
+## 2026-10-21 最新驗收
+
+原曲／G合奏人類驗收回報「有明顯錯位」，此 issue 仍開啟。來源裁切及實際排程核對通過不代表拍點或和弦正確。Bar31 壓縮與 Bar30 Em 延後刷奏已量測，但未證明因果；目前採同步原曲＋節拍／吉他的分項定位，見 [checkpoint](../Alignment_Isolation_Checkpoint_2026-10-21.md)。
