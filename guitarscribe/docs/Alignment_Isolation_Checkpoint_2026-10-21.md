@@ -41,3 +41,7 @@ node scripts/prepare-alignment-isolation.mjs db8c657e-62a5-4fad-a33e-cde25a9e1c0
 需要既有 ensemble packet 的相同 source.wav／config、目前 UI/API。產物為 ignored `public/listening/alignment-isolation-2026-10-21/` 的兩個 WAV、頁面與 report.json。兩檔各318976 frames／22050Hz，約14.466秒；來源固定增益0.45，節拍32個、吉他288個聲音事件，峰值約0.563／0.577，無削波。產生前後保存譜逐欄相同。未修改產品程式，無須重跑全部產品回歸。
 
 瀏覽器自動驗證兩檔各14.466032秒、依序切換、互斥播放、停止及重播均通過，無 pageerror；已檢視簡化頁截圖。人類音樂判斷尚待上述單項回報。
+
+## 使用者回報
+
+原曲＋吉他明顯不對，感覺拍數不足、換和弦太多或太早；節拍聲較小，無法判定。不得寫成節拍通過。後續見 [和弦維持拍數控制](Harmony_Duration_Checkpoint_2026-10-21.md)，舊兩段測試不再是待辦。

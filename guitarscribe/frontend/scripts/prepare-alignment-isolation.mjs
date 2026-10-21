@@ -4,6 +4,7 @@ import {writeFile,readFile,mkdir,copyFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import assert from 'node:assert/strict';
+const block=process.argv.includes('--block');
 const revision=process.argv[2];if(!revision)throw Error('Explicit saved revision ID required');
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const api=process.env.GUITARSCRIBE_API_URL??'http://127.0.0.1:8000';
@@ -15,13 +16,24 @@ assert.equal(config.revision,revision);
 const start=score.beats.find(b=>b.measure===28&&b.beat===1).time,end=score.beats.find(b=>b.measure===36&&b.beat===1).time;
 assert.equal(config.start,start);assert.equal(config.end,end);
 const manifest=await json(`${api}/scores/playback/manifest`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(score)});
+const spans=[];
+for(const chord of score.chords){
+ const previous=spans.at(-1);
+ if(previous&&previous.symbol===chord.symbol&&Math.abs(previous.end-chord.start)<1e-9)previous.end=chord.end;
+ else spans.push({symbol:chord.symbol,start:chord.start,end:chord.end});
+}
+const blocks=spans.filter(c=>c.end>start&&c.start<end).map(c=>{
+ const event=manifest.events.find(e=>e.track==='guitar'&&e.start>=c.start-1e-9&&e.start<c.end);
+ assert.ok(event,`No playable voicing for ${c.symbol}`);
+ return {...event,start:c.start,end:c.end,sustain_end:c.end,pitch_offsets:event.pitches.map(()=>0),symbol:c.symbol};
+});
 const browser=await chromium.launch({executablePath:'/usr/bin/google-chrome',headless:true});
-const out=path.join(root,'public/listening/alignment-isolation-2026-10-21');await mkdir(out,{recursive:true});
+const out=path.join(root,block?'public/listening/harmony-block-2026-10-21':'public/listening/alignment-isolation-2026-10-21');await mkdir(out,{recursive:true});
 const results=[];
 try{
  const page=await browser.newPage();await page.goto(`${ui}/listening/ensemble-2026-10-18/source.wav`);
- for(const mode of ['beats','guitar']){
-  const result=await page.evaluate(async({score,manifest,start,end,mode})=>{
+ for(const mode of (block?['harmony']:['beats','guitar'])){
+  const result=await page.evaluate(async({score,manifest,blocks,start,end,mode})=>{
    const {createMetronomeVoice}=await import('/src/metronomeVoice.ts');
    const {preparePluckedBuffers,createPluckedVoice}=await import('/src/pluckedTone.ts');
    const rate=22050,context=new OfflineAudioContext(1,Math.round((end-start)*rate),rate);
@@ -31,8 +43,8 @@ try{
    if(mode==='beats')for(const b of score.beats.filter(b=>b.time>=start&&b.time<end)){
     createMetronomeVoice(context,b.time-start,b.beat===1,.8);timings.push(b.time-start);
    }
-   if(mode==='guitar'){
-    const events=manifest.events.filter(e=>e.track==='guitar'&&(e.sustain_end??e.end)>start&&e.start<end);
+   if(mode==='guitar'||mode==='harmony'){
+    const events=(mode==='harmony'?blocks:manifest.events).filter(e=>e.track==='guitar'&&(e.sustain_end??e.end)>start&&e.start<end);
     const buffers=await preparePluckedBuffers(context,events.flatMap(e=>e.pitches));
     for(const e of events)for(let i=0;i<e.pitches.length;i++){
      const onset=e.start+(e.pitch_offsets[i]??i*.012),at=Math.max(0,onset-start),until=Math.min(end,e.sustain_end??e.end)-start,age=Math.max(0,start-onset);
@@ -43,7 +55,7 @@ try{
    const buffer=await context.startRendering(),samples=Array.from(buffer.getChannelData(0));
    let peak=0,sum=0;for(const sample of samples){peak=Math.max(peak,Math.abs(sample));sum+=sample*sample;}
    return {samples,peak,rms:Math.sqrt(sum/samples.length),timings,rate};
-  },{score,manifest,start,end,mode});
+  },{score,manifest,blocks,start,end,mode});
   assert.ok(result.peak<1&&result.rms>.01,`${mode}: clipping/silence`);
   assert.ok(result.timings.length>0&&result.timings.every(t=>t>=0&&t<end-start));
   if(mode==='beats')assert.deepEqual(result.timings,score.beats.filter(b=>b.time>=start&&b.time<end).map(b=>b.time-start));
@@ -53,6 +65,6 @@ try{
  }
 }finally{await browser.close();}
 assert.deepEqual(await json(`${api}/revisions/${encodeURIComponent(revision)}`),score);
-await copyFile(path.join(root,'scripts/alignment-isolation.html'),path.join(out,'index.html'));
-await writeFile(path.join(out,'report.json'),JSON.stringify({revision,start,end,sourceGain:.45,sourceOffset:score.song.source_start_seconds,interpretation:'Diagnostic overlays; no correction and no accuracy claim',savedRevisionUnchanged:true,results},null,2));
+await copyFile(path.join(root,block?'scripts/harmony-block.html':'scripts/alignment-isolation.html'),path.join(out,'index.html'));
+await writeFile(path.join(out,'report.json'),JSON.stringify({revision,start,end,sourceGain:.45,blockControl:block,blocks:block?blocks:undefined,sourceOffset:score.song.source_start_seconds,interpretation:'Diagnostic overlays; no correction and no accuracy claim',savedRevisionUnchanged:true,results},null,2));
 console.log(JSON.stringify({out,results:results.map(({timings,...r})=>r)}));

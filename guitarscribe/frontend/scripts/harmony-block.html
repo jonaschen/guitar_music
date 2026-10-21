@@ -1,0 +1,13 @@
+<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>只聽換和弦的位置</title>
+<style>body{font:18px/1.6 system-ui,sans-serif;max-width:720px;margin:40px auto;padding:0 20px;background:#f6f5ef;color:#252d32}h1{font-size:27px}section{background:white;border:1px solid #d5d8d0;border-radius:12px;padding:18px 22px;margin:16px 0}audio{width:100%}button{font:inherit;border:0;border-radius:8px;background:#245d50;color:white;padding:12px 20px;cursor:pointer;margin-right:8px}.note{font-size:15px;color:#53605b}</style>
+<h1>只聽換和弦的位置</h1>
+<p>原曲同步播放；每個和弦只彈一次，拿掉反覆刷奏，讓換和弦的位置更容易聽清楚。約15秒。</p>
+<section><button id="play">播放</button><button id="stop">停止</button><p id="status" role="status">準備完成</p><audio id="audio" controls preload="metadata" src="harmony.wav"></audio></section>
+<p>還有「和弦沒待夠拍數就換掉」的感覺嗎？<strong>仍明顯太早／換和弦位置比較合理／聽不確定</strong>。</p>
+<p class="note">這是定位用的簡化伴奏，不是正式修正版。保留保存譜的和弦名稱與邊界，在邊界同時撥弦；取消原本刷奏造成的延後與反覆起音。音色自然衰減不代表提早換和弦。G旋律與保存資料沒有修改。</p>
+<script>
+const audio=document.querySelector('#audio'),status=document.querySelector('#status');let token=0;
+function stop(){token++;audio.pause();status.textContent='已停止';}
+document.querySelector('#play').onclick=async()=>{stop();const current=token;audio.currentTime=0;try{await audio.play();}catch{if(current===token)status.textContent='播放未成功，請重新整理後再試。';}};
+document.querySelector('#stop').onclick=stop;audio.onplay=()=>status.textContent='播放中';audio.onended=()=>status.textContent='播放完成';audio.onerror=()=>{stop();status.textContent='載入失敗，請重新整理後再試。';};window.addEventListener('pagehide',stop);
+</script></html>
