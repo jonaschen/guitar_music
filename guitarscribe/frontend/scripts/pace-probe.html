@@ -1,0 +1,18 @@
+<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>快慢合拍比較</title>
+<style>body{font:18px/1.6 system-ui,sans-serif;max-width:720px;margin:40px auto;padding:0 20px;background:#f6f5ef;color:#252d32}h1{font-size:27px}section{background:white;border-radius:12px;padding:20px;margin:16px 0}button{font:inherit;background:#245d50;color:white;border:0;border-radius:8px;padding:12px 18px;margin:4px}audio{width:100%}.note{font-size:15px;color:#53605b}</style>
+<h1>哪一版最貼合原曲？</h1><p>同一段原曲，三版吉他有快、有慢，也保留目前版本。先不標示對應方向；X／Y／Z 是這次的新代號。</p>
+<section><button id="all">依序播放 X → Y → Z</button><button id="stop">停止</button><p id="status" role="status">準備完成</p><button data-mode="X">重聽 X</button><button data-mode="Y">重聽 Y</button><button data-mode="Z">重聽 Z</button><audio controls preload="metadata"></audio></section>
+<p>每版約10秒，總共約32秒。留意你指出的<strong>第4–7秒</strong>，把 X／Y／Z 由「最合拍」排到「最不合拍」即可。</p>
+<p>也可以回答「兩版差不多」「都不合拍」或「分不出來」，不必勉強排序。</p>
+<p class="note">原曲速度與位置固定，僅調整吉他起奏間距，音高不變。G與保存譜未修改。這是比較局部時間差，不是在考聽力；單次結果不能證明先前感覺是錯覺。</p>
+<script>
+const audio=document.querySelector('audio'),status=document.querySelector('#status');let queue=[],timer,token=0,current;
+function stop(){token++;clearTimeout(timer);queue=[];audio.pause();status.textContent='已停止';}
+async function play(mode){const run=token;current=mode;audio.src=`${mode}.wav`;try{await audio.play();}catch{if(run===token){stop();status.textContent='播放失敗，請重新整理後再試。';}}}
+document.querySelector('#all').onclick=()=>{stop();queue=['Y','Z'];play('X');};document.querySelector('#stop').onclick=stop;
+document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{stop();play(b.dataset.mode);});
+audio.onplay=()=>status.textContent=`播放 ${current}`;
+audio.onpause=()=>{if(!audio.ended){queue=[];status.textContent=`已暫停 ${current??''}`;}};
+audio.onended=()=>{const next=queue.shift();if(next){status.textContent=`下一段 ${next}`;timer=setTimeout(()=>play(next),800);}else status.textContent='播放完成';};
+audio.onerror=()=>{stop();status.textContent='載入失敗，請重新整理後再試。';};window.addEventListener('pagehide',stop);
+</script></html>
