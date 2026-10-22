@@ -1,0 +1,16 @@
+<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>這次換和弦有必要嗎？</title>
+<style>body{font:18px/1.6 system-ui,sans-serif;max-width:720px;margin:40px auto;padding:0 20px;background:#f6f5ef;color:#252d32}h1{font-size:27px}section{background:white;border-radius:12px;padding:20px;margin:16px 0}button{font:inherit;background:#245d50;color:white;border:0;border-radius:8px;padding:12px 18px;margin:4px}audio{width:100%}.note{font-size:15px;color:#53605b}</style>
+<h1>這次換和弦有必要嗎？</h1><p>只聽有疑點附近的短段。兩版速度、刷奏拍點完全相同；其中一版保留前一個和弦，多維持兩拍。</p>
+<section><button id="all">依序播放 M → N</button><button id="stop">停止</button><p id="status" role="status">準備完成</p><button data-mode="M">重聽 M</button><button data-mode="N">重聽 N</button><audio controls preload="metadata"></audio></section>
+<p>總共約12秒。請回報：<strong>M 更貼合原曲／N 更貼合原曲／差不多／都不對</strong>。</p>
+<p class="note">這次只查一次可能多出的換和弦，不調快慢。它不代表整段已修好，也未修改G或保存譜。</p>
+<script>
+const audio=document.querySelector('audio'),status=document.querySelector('#status');let queue=[],timer,token=0,current;
+function stop(){token++;clearTimeout(timer);queue=[];audio.pause();status.textContent='已停止';}
+async function play(mode){const run=token;current=mode;audio.src=`${mode}.wav`;try{await audio.play();}catch{if(run===token){stop();status.textContent='播放失敗，請重新整理後再試。';}}}
+document.querySelector('#all').onclick=()=>{stop();queue=['N'];play('M');};document.querySelector('#stop').onclick=stop;
+document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{stop();play(b.dataset.mode);});
+audio.onplay=()=>status.textContent=`播放 ${current}`;audio.onpause=()=>{if(!audio.ended){queue=[];status.textContent=`已暫停 ${current??''}`;}};
+audio.onended=()=>{const next=queue.shift();if(next){status.textContent=`下一段 ${next}`;timer=setTimeout(()=>play(next),800);}else status.textContent='播放完成';};
+audio.onerror=()=>{stop();status.textContent='載入失敗，請重新整理後再試。';};window.addEventListener('pagehide',stop);
+</script></html>
