@@ -1,0 +1,12 @@
+<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Y 版接入下一段</title>
+<style>body{font:18px/1.6 system-ui,sans-serif;max-width:720px;margin:40px auto;padding:0 20px;background:#f6f5ef;color:#252d32}h1{font-size:27px}section{background:white;border-radius:12px;padding:20px;margin:16px 0}button{font:inherit;background:#245d50;color:white;border:0;border-radius:8px;padding:12px 18px;margin:4px}audio{width:100%}.note{font-size:15px;color:#53605b}</style>
+<h1>Y 版接入下一段</h1><p>前段保留剛才較合拍的 Y，再接入後面的原曲與伴奏。約18秒，不用重新排序。</p>
+<section><button id="play">播放</button><button id="stop">停止</button><p id="status" role="status">準備完成</p><audio controls preload="metadata" src="Y.wav"></audio></section>
+<p>請留意<strong>約第10秒以後</strong>：仍跟得上原曲／又開始偏掉／不確定。若明顯偏掉，可以加一句太早或太晚，不必找精確秒數。</p>
+<p class="note">這是銜接候選。後段恢復原本刷奏間距，保留前段累積的時間差，避免和弦交錯；是否符合原曲仍待此次聽感確認。G與保存譜不變。</p>
+<script>
+const audio=document.querySelector('audio'),status=document.querySelector('#status');let token=0;
+function stop(){token++;audio.pause();status.textContent='已停止';}
+document.querySelector('#play').onclick=async()=>{stop();const run=token;audio.currentTime=0;try{await audio.play();}catch{if(run===token)status.textContent='播放失敗，請重試。';}};
+document.querySelector('#stop').onclick=stop;audio.onplay=()=>status.textContent='播放中';audio.onended=()=>status.textContent='播放完成';audio.onerror=()=>{stop();status.textContent='載入失敗，請重新整理後再試。';};window.addEventListener('pagehide',stop);
+</script></html>

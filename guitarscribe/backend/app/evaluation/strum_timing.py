@@ -2,7 +2,7 @@
 import hashlib
 import json
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from app.exporters.midi import PlaybackManifest
 
@@ -61,3 +61,59 @@ def apply_first_strum_delays(
         "adjustments": [change.model_dump() for change in adjustments],
     }, sort_keys=True).encode()).hexdigest()[:16]
     return manifest.model_copy(update={"revision": digest, "events": tuple(events)})
+
+
+class LocalGuitarTiming(BaseModel):
+    """Local spacing change followed by constant displacement, for evaluation only."""
+    anchor: float = Field(ge=0, allow_inf_nan=False)
+    end: float = Field(gt=0, allow_inf_nan=False)
+    spacing: float = Field(ge=0.9, le=1.1, allow_inf_nan=False)
+
+    @model_validator(mode="after")
+    def ordered_window(self):
+        if self.end <= self.anchor:
+            raise ValueError("Local timing end must be after its anchor")
+        return self
+
+    def at(self, time: float) -> float:
+        if time <= self.anchor:
+            return time
+        if time < self.end:
+            return self.anchor + (time - self.anchor) * self.spacing
+        # Never reset accumulated displacement abruptly at the exit boundary.
+        return time + (self.end - self.anchor) * (self.spacing - 1)
+
+
+def apply_local_guitar_timing(
+    manifest: PlaybackManifest, timing: LocalGuitarTiming, *, expected_revision: str,
+) -> PlaybackManifest:
+    """Preserve Y inside its window; continue at original spacing with an explicit offset.
+
+    This continuation is a new hypothesis, NOT a human-approved whole-song correction.
+    No beat, source, melody or global BPM is changed. Consumers must label the
+    downstream displacement and verify it before integrating a saved-score feature.
+    """
+    if manifest.revision != expected_revision:
+        raise ValueError("Performance changed; regenerate timing candidate")
+    if timing.end > manifest.duration_seconds:
+        raise ValueError("Local timing window exceeds source performance")
+    if timing.spacing == 1:
+        return manifest
+    events = []
+    for event in manifest.events:
+        if event.track != "guitar":
+            events.append(event)
+            continue
+        start, end = timing.at(event.start), timing.at(event.end)
+        sustain = None if event.sustain_end is None else timing.at(event.sustain_end)
+        latest_string = start + max(event.pitch_offsets, default=0)
+        if latest_string >= end or (sustain is not None and latest_string >= sustain):
+            raise ValueError("Local timing would truncate a strum")
+        events.append(event.model_copy(update={"start": start, "end": end, "sustain_end": sustain}))
+    events.sort(key=lambda event: (event.start, event.track, event.id))
+    duration = max([manifest.duration_seconds, *(e.sustain_end or e.end for e in events)])
+    digest = hashlib.sha256(json.dumps({
+        "base": manifest.revision, "operation": "local-spacing-with-carried-offset-v1",
+        "timing": timing.model_dump(),
+    }, sort_keys=True).encode()).hexdigest()[:16]
+    return manifest.model_copy(update={"revision": digest, "events": tuple(events), "duration_seconds": duration})

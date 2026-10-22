@@ -1,0 +1,16 @@
+{
+  "revision": "db8c657e-62a5-4fad-a33e-cde25a9e1c0d",
+  "base_manifest_revision": "d8f5d37756d58e6d",
+  "strum_candidate_revision": "904d6a4140724a66",
+  "feedback": "Corrected user feedback: speed X>Z>Y, alignment Y>Z>X. Y is a LOCAL preference; continuation after the audition is unapproved.",
+  "adjustments": [
+    {"source_id": "chord-79", "expected_start": 57.12108843537415, "delay_seconds": 0.15},
+    {"source_id": "chord-80", "expected_start": 58.967074829931974, "delay_seconds": 0.15}
+  ],
+  "local_timing": {
+    "anchor": 54.957732426303856,
+    "end": 64.4237641723356,
+    "spacing": 1.04
+  },
+  "continuation_policy": "Hold accumulated displacement after the tested region, with original spacing. Evaluation only; do not apply as a product default."
+}

@@ -7,7 +7,7 @@ from urllib.parse import quote
 from urllib.request import urlopen
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from app.evaluation.strum_timing import FirstStrumDelay, apply_first_strum_delays
+from app.evaluation.strum_timing import FirstStrumDelay, apply_first_strum_delays, LocalGuitarTiming, apply_local_guitar_timing
 from app.exporters.midi import compile_playback_manifest, export_manifest_midi
 from app.models.score import SongScore
 
@@ -40,6 +40,11 @@ def main():
         })
         if by_id[event.id] != expected:
             raise RuntimeError('Candidate differs from accepted operation')
+    if 'local_timing' in recipe:
+        candidate = apply_local_guitar_timing(
+            candidate, LocalGuitarTiming.model_validate(recipe['local_timing']),
+            expected_revision=recipe['strum_candidate_revision'],
+        )
     if read() != saved:
         raise RuntimeError('Saved score changed during checkpoint generation')
     args.output.mkdir(parents=True, exist_ok=False)
@@ -51,6 +56,8 @@ def main():
         'base_revision': base.revision, 'candidate_revision': candidate.revision,
         'event_count': len(candidate.events),
         'changed_first_strokes': len(changes),
+        'local_timing': recipe.get('local_timing'),
+        'continuation': 'Original spacing after window, retaining accumulated displacement; NOT yet listening-approved' if 'local_timing' in recipe else None,
         'status': 'Local performance checkpoint; not a saved score or product default',
         'midi_limit': 'Standard MIDI uses its instrument envelope; audio timbre/release need not match WebAudio',
     }, indent=2))

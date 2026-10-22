@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create a read-only Bar 28–35 listening packet from an explicit saved revision."""
+"""Create a read-only listening packet starting at Bar 28 from an explicit saved revision."""
 import argparse
 import hashlib
 import json
@@ -13,7 +13,11 @@ import wave
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--revision', required=True)
 parser.add_argument('--api', default='http://127.0.0.1:8000')
+parser.add_argument('--last-bar', type=int, default=35)
+parser.add_argument('--packet-name', default='ensemble-2026-10-18')
 args = parser.parse_args()
+if not re.fullmatch(r'[a-zA-Z0-9_-]+', args.packet_name) or args.last_bar < 28:
+    parser.error('Invalid packet name or last bar')
 frontend = Path(__file__).resolve().parents[1]
 with urlopen(args.api.rstrip('/') + '/revisions/' + quote(args.revision, safe=''), timeout=20) as response:
     score = json.load(response)
@@ -22,11 +26,11 @@ job = params['analysis_source_job_id']
 if not re.fullmatch(r'[a-zA-Z0-9_-]+', job):
     raise ValueError('Invalid source job identifier')
 start = next(b['time'] for b in score['beats'] if b['measure'] == 28 and b['beat'] == 1)
-end = next(b['time'] for b in score['beats'] if b['measure'] == 36 and b['beat'] == 1)
+end = next(b['time'] for b in score['beats'] if b['measure'] == args.last_bar + 1 and b['beat'] == 1)
 if not 0 <= start < end:
     raise ValueError('Invalid bar range')
 source = frontend.parent / 'output/work/jobs' / job / 'analysis-source.wav'
-packet = frontend / 'public/listening/ensemble-2026-10-18'
+packet = frontend / 'public/listening' / args.packet_name
 packet.mkdir(parents=True, exist_ok=True)
 # The analysis source already excludes source_start_seconds. Do not crop twice.
 with wave.open(str(source), 'rb') as audio:
