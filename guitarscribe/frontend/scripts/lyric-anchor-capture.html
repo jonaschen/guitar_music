@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>原曲歌詞起音標記</title>
+  <style>
+    :root { font: 17px/1.55 system-ui, -apple-system, "Noto Sans TC", sans-serif; color: #202a2b; background: #f3f5f2; }
+    * { box-sizing: border-box; }
+    body { max-width: 800px; margin: 0 auto; padding: 24px 18px 52px; }
+    h1 { margin: 0 0 8px; font-size: clamp(1.5rem, 5vw, 2rem); line-height: 1.25; }
+    h2 { margin: 0 0 10px; font-size: 1.15rem; }
+    p { margin: 8px 0; }
+    .muted, .hint { color: #52615e; font-size: .94rem; }
+    .panel { margin-top: 18px; padding: 18px; border: 1px solid #d4ddd8; border-radius: 14px; background: #fff; }
+    audio { display: block; width: 100%; margin-top: 14px; }
+    .progress { margin-top: 14px; color: #43534f; font-size: .93rem; }
+    .anchor-card { margin-top: 12px; padding: 20px; border-radius: 12px; background: #edf4f0; text-align: center; }
+    .phrase { margin: 2px 0 8px; font-size: clamp(1.7rem, 8vw, 2.5rem); font-weight: 700; line-height: 1.35; overflow-wrap: anywhere; }
+    .target { color: #145d4d; text-decoration: underline; text-decoration-thickness: .12em; text-underline-offset: .14em; }
+    .character { color: #145d4d; font-size: 1.35rem; font-weight: 700; }
+    button { min-height: 44px; border: 1px solid #b9c7c1; border-radius: 9px; padding: 8px 13px; color: #202a2b; background: #fff; font: inherit; cursor: pointer; }
+    button:hover:not(:disabled) { background: #edf4f0; }
+    button:focus-visible, input:focus-visible { outline: 3px solid #277a66; outline-offset: 2px; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    .primary { display: block; width: 100%; min-height: 84px; margin-top: 14px; border: 0; color: #fff; background: #17634f; font-size: 1.35rem; font-weight: 750; }
+    .primary:hover:not(:disabled) { background: #104c3d; }
+    .actions, .row-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .status { min-height: 1.6em; margin-top: 10px; color: #364a44; }
+    .error { color: #9b2c27; font-weight: 600; }
+    .saved { padding: 12px; border-radius: 8px; color: #124a3d; background: #e3f3ec; overflow-wrap: anywhere; }
+    .observations { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+    .observation { padding: 14px; border: 1px solid #dce3df; border-radius: 10px; }
+    .observation h3 { margin: 0; font-size: 1.05rem; }
+    .times { margin-top: 6px; color: #3c4b47; font-variant-numeric: tabular-nums; }
+    .review { display: flex; align-items: center; gap: 9px; margin-top: 10px; }
+    .review input { width: 20px; height: 20px; }
+    .skip { background: #f6f7f5; }
+    .submit { color: #fff; border-color: #17634f; background: #17634f; }
+    .submit:hover:not(:disabled) { background: #104c3d; }
+    @media (max-width: 500px) { body { padding: 18px 12px 36px; } .panel { padding: 14px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>原曲歌詞起音標記</h1>
+    <p class="muted">播放原曲；聽到目標字開始唱時就按大按鈕或空白鍵。這是粗略定位，不必等下一拍或重拍，也不用抓精確節拍。若這段音訊沒有該句或該字，直接跳過即可。</p>
+
+    <section class="panel" aria-labelledby="audio-title">
+      <h2 id="audio-title">原曲</h2>
+      <audio id="audio" controls preload="metadata"></audio>
+      <p id="time-context" class="hint">讀取標記資料中…</p>
+    </section>
+
+    <section class="panel" aria-labelledby="anchor-title">
+      <h2 id="anchor-title">目前標記</h2>
+      <p id="progress" class="progress" aria-live="polite">讀取中…</p>
+      <div id="current-anchor" class="anchor-card" aria-live="polite">
+        <p id="phrase" class="phrase"></p>
+        <p id="target-character" class="character"></p>
+      </div>
+      <button id="mark" class="primary" type="button" disabled>按這裡標記起唱時刻　<span aria-hidden="true">／</span>　空白鍵</button>
+      <div class="actions">
+        <button id="skip" class="skip" type="button" disabled>跳過此字</button>
+        <button id="undo" type="button" disabled>撤銷上一筆</button>
+      </div>
+      <p id="status" class="status" role="status"></p>
+    </section>
+
+    <section class="panel" aria-labelledby="marked-title">
+      <h2 id="marked-title">已標記與跳過</h2>
+      <p class="hint">可重聽標記附近（前 0.7 秒至後 1 秒），再以 0.05 秒微調。微調只改修訂時間，原始標記會保留；「已複聽確認」為選填。</p>
+      <ol id="observations" class="observations"></ol>
+      <p id="empty-list" class="muted">尚無標記。至少標記一個字才能提交；其他項目可跳過，不必標完全部。</p>
+      <p class="hint">提交至少需要一筆實際標記；跳過的項目可以和標記一起送出。</p>
+      <div class="actions">
+        <button id="submit" class="submit" type="button" disabled>提交目前標記</button>
+      </div>
+      <p id="draft-status" class="hint" aria-live="polite"></p>
+      <p id="receipt" class="saved" hidden></p>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const audio = document.querySelector("#audio");
+      const progress = document.querySelector("#progress");
+      const phrase = document.querySelector("#phrase");
+      const targetCharacter = document.querySelector("#target-character");
+      const markButton = document.querySelector("#mark");
+      const skipButton = document.querySelector("#skip");
+      const undoButton = document.querySelector("#undo");
+      const submitButton = document.querySelector("#submit");
+      const status = document.querySelector("#status");
+      const observationList = document.querySelector("#observations");
+      const emptyList = document.querySelector("#empty-list");
+      const receipt = document.querySelector("#receipt");
+      const timeContext = document.querySelector("#time-context");
+      const draftStatus = document.querySelector("#draft-status");
+
+      let config = null;
+      let currentIndex = 0;
+      let observations = new Map();
+      let history = [];
+      let previewStopAt = null;
+      let seekBlocked = false;
+      let seekProgressAfter = null;
+      let draftKey = null;
+      let saving = false;
+      let submitted = false;
+
+      const finite = value => typeof value === "number" && Number.isFinite(value);
+      const secondsText = value => `${value.toFixed(3)} 秒`;
+      const setError = message => {
+        status.textContent = message;
+        status.classList.add("error");
+      };
+      const clearStatus = () => {
+        status.textContent = "";
+        status.classList.remove("error");
+      };
+
+      function hasMarkedObservation() {
+        return [...observations.values()].some(observation => !observation.skipped);
+      }
+
+      function anchorSignature() {
+        return JSON.stringify(config.anchors.map(({ phrase, character, character_index }) => ({ phrase, character, character_index })));
+      }
+
+      function persistDraft() {
+        if (!config || !draftKey || submitted) return;
+        try {
+          localStorage.setItem(draftKey, JSON.stringify({
+            version: 1,
+            anchors: anchorSignature(),
+            observations: [...observations.values()],
+            history,
+            currentIndex,
+          }));
+          draftStatus.textContent = "此片段的草稿會自動保存在這個瀏覽器。";
+        } catch {
+          draftStatus.textContent = "瀏覽器無法保存本機草稿；提交前請勿關閉此頁。";
+        }
+      }
+
+      function restoreDraft() {
+        let saved;
+        try {
+          const raw = localStorage.getItem(draftKey);
+          if (!raw) return;
+          saved = JSON.parse(raw);
+        } catch {
+          draftStatus.textContent = "本機草稿無法讀取，將從空白標記開始。";
+          return;
+        }
+        if (!saved || saved.version !== 1 || saved.anchors !== anchorSignature()
+            || !Array.isArray(saved.observations) || !Array.isArray(saved.history)) {
+          draftStatus.textContent = "本機草稿與目前標記項目不符，未載入。";
+          return;
+        }
+        const restored = new Map();
+        for (const observation of saved.observations) {
+          const index = observation?.anchor_index;
+          if (!Number.isInteger(index) || index < 0 || index >= config.anchors.length || restored.has(index)
+              || typeof observation.reviewed !== "boolean" || typeof observation.skipped !== "boolean") {
+            draftStatus.textContent = "本機草稿資料不完整，未載入。";
+            return;
+          }
+          if (observation.skipped) {
+            if (observation.raw_seconds !== null || observation.seconds !== null) {
+              draftStatus.textContent = "本機草稿資料不完整，未載入。";
+              return;
+            }
+          } else if (!finite(observation.raw_seconds) || observation.raw_seconds < 0
+              || observation.raw_seconds > config.content_duration
+              || !finite(observation.seconds) || observation.seconds < 0
+              || observation.seconds > config.content_duration) {
+            draftStatus.textContent = "本機草稿資料不完整，未載入。";
+            return;
+          }
+          restored.set(index, { ...observation });
+        }
+        const restoredHistory = saved.history;
+        if (restoredHistory.some(index => !Number.isInteger(index) || !restored.has(index))
+            || new Set(restoredHistory).size !== restoredHistory.length
+            || restoredHistory.length !== restored.size) {
+          draftStatus.textContent = "本機草稿撤銷紀錄不完整，未載入。";
+          return;
+        }
+        observations = restored;
+        history = [...restoredHistory];
+        currentIndex = Number.isInteger(saved.currentIndex) && saved.currentIndex >= 0
+          ? Math.min(saved.currentIndex, config.anchors.length) : 0;
+        currentIndex = nextUnrecorded(currentIndex);
+        draftStatus.textContent = `已還原本機草稿：${observations.size} 筆；原始標記與微調時間都已保留。`;
+      }
+
+      function nextUnrecorded(from = currentIndex) {
+        for (let i = from; i < config.anchors.length; i++) {
+          if (!observations.has(i)) return i;
+        }
+        for (let i = 0; i < from; i++) {
+          if (!observations.has(i)) return i;
+        }
+        return config.anchors.length;
+      }
+
+      function updateMarkAvailability() {
+        if (!config) {
+          markButton.disabled = true;
+          return;
+        }
+        const active = !saving && !submitted && currentIndex < config.anchors.length;
+        markButton.disabled = !active || audio.paused || audio.ended || audio.seeking || seekBlocked
+          || previewStopAt !== null || !finite(audio.currentTime) || audio.currentTime > config.content_duration;
+      }
+
+      function renderCurrent() {
+        if (!config) return;
+        currentIndex = nextUnrecorded(currentIndex);
+        const done = observations.size;
+        progress.textContent = currentIndex >= config.anchors.length
+          ? `目前沒有其他未處理項目；已處理 ${done} 項。可提交目前結果。`
+          : `目前第 ${currentIndex + 1} 項（共 ${config.anchors.length} 項）；已處理 ${done} 項。可隨時提交，不必全部完成。`;
+        phrase.replaceChildren();
+        targetCharacter.textContent = "";
+        if (currentIndex < config.anchors.length) {
+          const anchor = config.anchors[currentIndex];
+          const chars = Array.from(anchor.phrase);
+          if (Number.isInteger(anchor.character_index) && anchor.character_index >= 0 && anchor.character_index < chars.length) {
+            chars.forEach((char, index) => {
+              const part = document.createElement("span");
+              part.textContent = char;
+              if (index === anchor.character_index) part.className = "target";
+              phrase.append(part);
+            });
+          } else {
+            phrase.textContent = anchor.phrase;
+          }
+          targetCharacter.textContent = `目標字：${anchor.character}`;
+        } else {
+          phrase.textContent = "暫無下一個未處理項目";
+        }
+        updateMarkAvailability();
+        skipButton.disabled = saving || submitted || currentIndex >= config.anchors.length;
+        undoButton.disabled = !history.length || saving || submitted;
+        submitButton.disabled = !hasMarkedObservation() || saving || submitted;
+        renderObservations();
+      }
+
+      function renderObservations() {
+        observationList.replaceChildren();
+        emptyList.hidden = observations.size > 0;
+        for (const [index, observation] of [...observations.entries()].sort((a, b) => a[0] - b[0])) {
+          const anchor = config.anchors[index];
+          const item = document.createElement("li");
+          item.className = "observation";
+          const heading = document.createElement("h3");
+          heading.textContent = `${index + 1}. ${anchor.phrase}　（${anchor.character}）`;
+          item.append(heading);
+
+          if (observation.skipped) {
+            const skipped = document.createElement("p");
+            skipped.className = "times";
+            skipped.textContent = "已跳過";
+            item.append(skipped);
+          } else {
+            const times = document.createElement("p");
+            times.className = "times";
+            times.textContent = `原始片段時間 ${secondsText(observation.raw_seconds)}；目前修訂時間 ${secondsText(observation.seconds)}`;
+            item.append(times);
+
+            const controls = document.createElement("div");
+            controls.className = "row-actions";
+            const listen = document.createElement("button");
+            listen.type = "button";
+            listen.textContent = "重聽標記附近";
+            listen.setAttribute("aria-label", `重聽第 ${index + 1} 項標記附近`);
+            listen.disabled = saving || submitted;
+            listen.addEventListener("click", () => preview(observation.seconds));
+            controls.append(listen);
+
+            for (const [delta, label] of [[-0.05, "−0.05 秒"], [0.05, "+0.05 秒"]]) {
+              const adjust = document.createElement("button");
+              adjust.type = "button";
+              adjust.textContent = label;
+              adjust.setAttribute("aria-label", `${label}調整第 ${index + 1} 項修訂時間`);
+              adjust.disabled = saving || submitted;
+              adjust.addEventListener("click", () => adjustObservation(index, delta));
+              controls.append(adjust);
+            }
+            item.append(controls);
+
+            const reviewLabel = document.createElement("label");
+            reviewLabel.className = "review";
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.checked = observation.reviewed;
+            checkbox.disabled = saving || submitted;
+            checkbox.addEventListener("change", () => {
+              observations.set(index, { ...observation, reviewed: checkbox.checked });
+              persistDraft();
+              renderCurrent();
+            });
+            reviewLabel.append(checkbox, document.createTextNode("已複聽確認（選填）"));
+            item.append(reviewLabel);
+          }
+          observationList.append(item);
+        }
+      }
+
+      function adjustObservation(index, delta) {
+        const observation = observations.get(index);
+        if (!observation || observation.skipped || saving || submitted) return;
+        const upperBound = Math.max(config.content_duration, observation.raw_seconds);
+        const seconds = Math.min(upperBound, Math.max(0, observation.seconds + delta));
+        observations.set(index, { ...observation, seconds, reviewed: false });
+        persistDraft();
+        clearStatus();
+        renderCurrent();
+      }
+
+      async function preview(center) {
+        if (saving || submitted || !finite(center)) return;
+        const start = Math.max(0, center - 0.7);
+        const stopAt = Math.min(finite(audio.duration) ? audio.duration : config.content_duration, center + 1.0);
+        if (stopAt <= start) {
+          setError("這個標記附近沒有可播放的音訊。");
+          return;
+        }
+        audio.pause();
+        previewStopAt = stopAt;
+        audio.currentTime = start;
+        renderCurrent();
+        try {
+          await audio.play();
+          status.textContent = "正在重聽標記附近；播放到後 1 秒會自動停止。";
+        } catch (error) {
+          previewStopAt = null;
+          renderCurrent();
+          setError("無法播放音訊，請再試一次。");
+        }
+      }
+
+      function markCurrent() {
+        if (!config || saving || submitted || previewStopAt !== null || currentIndex >= config.anchors.length) return;
+        if (audio.paused || audio.ended || !finite(audio.currentTime)) {
+          status.textContent = "請先播放原曲，再標記起唱時刻。";
+          return;
+        }
+        if (audio.seeking || seekBlocked) {
+          status.textContent = "音訊正在定位；請等播放繼續後再標記。";
+          return;
+        }
+        if (audio.currentTime > config.content_duration) {
+          status.textContent = "播放已超出可標記片段，無法在此處標記。";
+          return;
+        }
+        const raw = audio.currentTime;
+        observations.set(currentIndex, {
+          anchor_index: currentIndex,
+          raw_seconds: raw,
+          seconds: raw,
+          reviewed: false,
+          skipped: false,
+        });
+        history.push(currentIndex);
+        currentIndex = nextUnrecorded(currentIndex + 1);
+        persistDraft();
+        clearStatus();
+        renderCurrent();
+      }
+
+      function skipCurrent() {
+        if (!config || saving || submitted || currentIndex >= config.anchors.length) return;
+        observations.set(currentIndex, {
+          anchor_index: currentIndex,
+          raw_seconds: null,
+          seconds: null,
+          reviewed: false,
+          skipped: true,
+        });
+        history.push(currentIndex);
+        currentIndex = nextUnrecorded(currentIndex + 1);
+        persistDraft();
+        clearStatus();
+        renderCurrent();
+      }
+
+      function undoLast() {
+        if (saving || submitted || history.length === 0) return;
+        const index = history.pop();
+        observations.delete(index);
+        currentIndex = Math.min(currentIndex, index);
+        persistDraft();
+        clearStatus();
+        renderCurrent();
+      }
+
+      async function submitObservations() {
+        if (!config || saving || submitted || !hasMarkedObservation()) return;
+        saving = true;
+        clearStatus();
+        renderCurrent();
+        const payload = {
+          config_id: config.config_id,
+          observations: [...observations.entries()]
+            .sort((a, b) => a[0] - b[0])
+            .map(([, value]) => ({
+              anchor_index: value.anchor_index,
+              raw_seconds: value.raw_seconds,
+              seconds: value.seconds,
+              reviewed: value.reviewed,
+              skipped: value.skipped,
+            })),
+        };
+        try {
+          const response = await fetch(new URL("/marks", location.origin), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const result = await response.json();
+          if (!result || typeof result.receipt_id !== "string" || !result.receipt_id) {
+            throw new Error("回應缺少 receipt_id");
+          }
+          submitted = true;
+          try { localStorage.removeItem(draftKey); } catch { /* submission succeeded; storage cleanup is best-effort */ }
+          draftStatus.textContent = "已提交；本機草稿已清除。";
+          receipt.hidden = false;
+          receipt.textContent = `已保存。回報編號：${result.receipt_id}`;
+          status.textContent = "標記已提交。";
+        } catch (error) {
+          setError(`提交失敗，標記仍保留在此頁：${error instanceof Error ? error.message : "請檢查連線後重試。"}`);
+        } finally {
+          saving = false;
+          renderCurrent();
+        }
+      }
+
+      markButton.addEventListener("click", markCurrent);
+      skipButton.addEventListener("click", skipCurrent);
+      undoButton.addEventListener("click", undoLast);
+      submitButton.addEventListener("click", submitObservations);
+      document.addEventListener("keydown", event => {
+        if (event.code !== "Space" || event.repeat || event.ctrlKey || event.altKey || event.metaKey) return;
+        const target = event.target;
+        if (target instanceof HTMLElement && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
+        event.preventDefault();
+        markCurrent();
+      });
+      audio.addEventListener("timeupdate", () => {
+        if (seekBlocked && !audio.paused && !audio.seeking && finite(seekProgressAfter)
+            && audio.currentTime - seekProgressAfter >= 0.05) {
+          seekBlocked = false;
+          seekProgressAfter = null;
+        }
+        if (previewStopAt !== null && audio.currentTime >= previewStopAt) {
+          audio.pause();
+          audio.currentTime = previewStopAt;
+          previewStopAt = null;
+          status.textContent = "標記附近播放完成。";
+          renderCurrent();
+          return;
+        }
+        updateMarkAvailability();
+      });
+      audio.addEventListener("seeking", () => {
+        seekBlocked = true;
+        seekProgressAfter = audio.currentTime;
+        renderCurrent();
+      });
+      audio.addEventListener("seeked", () => {
+        seekProgressAfter = audio.currentTime;
+        renderCurrent();
+      });
+      audio.addEventListener("pause", () => {
+        if (previewStopAt !== null && audio.currentTime < previewStopAt) previewStopAt = null;
+        renderCurrent();
+      });
+      audio.addEventListener("play", renderCurrent);
+      audio.addEventListener("ended", () => {
+        if (previewStopAt !== null) {
+          previewStopAt = null;
+          status.textContent = "標記附近播放完成。";
+        }
+        renderCurrent();
+      });
+
+      async function initialize() {
+        try {
+          const response = await fetch(new URL("/config", location.origin), { cache: "no-store" });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const loaded = await response.json();
+          if (typeof loaded.config_id !== "string" || !loaded.config_id
+              || !finite(loaded.analysis_start) || loaded.analysis_start < 0
+              || !finite(loaded.content_duration) || loaded.content_duration <= 0
+              || !Array.isArray(loaded.anchors)) {
+            throw new Error("config 欄位格式不完整");
+          }
+          loaded.anchors.forEach((anchor, index) => {
+            if (typeof anchor.phrase !== "string" || typeof anchor.character !== "string"
+                || !Number.isInteger(anchor.character_index) || anchor.character_index < 0) {
+              throw new Error(`第 ${index + 1} 個 anchor 格式錯誤`);
+            }
+          });
+          config = loaded;
+          draftKey = `lyric-anchor-capture:${config.config_id}`;
+          restoreDraft();
+          audio.src = new URL("/audio.wav", location.origin).href;
+          timeContext.textContent = `標記時間以片段起點為 0 秒，片段長度 ${secondsText(config.content_duration)}。歌詞可能不在這段音訊中。`;
+          renderCurrent();
+          if (config.anchors.length === 0) {
+            status.textContent = "沒有待標記項目。";
+            submitButton.disabled = true;
+          }
+        } catch (error) {
+          setError(`無法載入標記設定：${error instanceof Error ? error.message : "請重新整理後再試。"}`);
+          progress.textContent = "設定載入失敗。";
+          markButton.disabled = true;
+          skipButton.disabled = true;
+          submitButton.disabled = true;
+        }
+      }
+
+      initialize();
+    })();
+  </script>
+</body>
+</html>
