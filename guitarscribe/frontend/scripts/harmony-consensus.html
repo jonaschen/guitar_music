@@ -1,0 +1,10 @@
+<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>換和弦落點比較</title>
+<style>body{font:18px/1.65 system-ui;max-width:720px;margin:35px auto;padding:0 20px;background:#f6f7f9;color:#17232a}section{background:white;padding:18px;margin:18px 0;border-radius:12px}audio{width:100%}h1{font-size:28px}h2{font-size:21px;margin:0 0 8px}p{margin:8px 0}</style>
+<h1>換和弦落點比較</h1><p>同一段原曲，約 16 秒。先聽原版，再聽候選版。</p>
+<p>主要留意「手、一、天、風」附近換和弦是否更貼合原曲。其他待查位置仍保留原樣，不需要勉強判斷整段都已修好。</p>
+<section><h2>原版</h2><audio controls preload="metadata" src="before.wav"></audio></section>
+<section><h2>音訊定位候選</h2><audio controls preload="metadata" src="candidate.wav"></audio></section>
+<details><summary>需要時單聽原曲</summary><audio controls preload="metadata" src="original.wav"></audio></details>
+<p>只需回報：<strong>更貼合／差不多／更差</strong>。若某一句仍明顯搶拍，可順便說是哪一句。</p>
+<script>const players=[...document.querySelectorAll('audio')];for(const player of players)player.addEventListener('play',()=>{for(const other of players)if(other!==player)other.pause();});</script>
+</html>

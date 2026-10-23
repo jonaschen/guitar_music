@@ -28,3 +28,5 @@ frontend/public/listening/pace-probe-*/
 frontend/public/listening/pace-continuation-*/
 frontend/public/listening/harmony-count-*/
 frontend/public/listening/harmony-context-*/
+
+frontend/public/listening/harmony-consensus-*/
