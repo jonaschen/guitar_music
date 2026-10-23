@@ -1,0 +1,17 @@
+{
+  "revision": "db8c657e-62a5-4fad-a33e-cde25a9e1c0d",
+  "source": "user listening annotation",
+  "source_start_seconds": 18,
+  "interpretation": "Perceived strong-beat landmarks. Not automatically chord changes, downbeats, or validated word timestamps.",
+  "latest_feedback": "Both M and N sound like an accompaniment player rushing chord changes.",
+  "anchors": [
+    {"phrase": "我們小手拉大手", "character": "手", "character_index": 3, "analysis_seconds": null},
+    {"phrase": "一起郊遊", "character": "一", "character_index": 0, "analysis_seconds": null},
+    {"phrase": "今天別想太多", "character": "天", "character_index": 1, "analysis_seconds": null},
+    {"phrase": "今天別想太多", "character": "多", "character_index": 5, "analysis_seconds": null},
+    {"phrase": "你是我的夢", "character": "夢", "character_index": 4, "analysis_seconds": null},
+    {"phrase": "像北方的風", "character": "風", "character_index": 4, "analysis_seconds": null},
+    {"phrase": "吹著南方暖洋洋的哀愁", "character": "暖", "character_index": 4, "analysis_seconds": null},
+    {"phrase": "吹著南方暖洋洋的哀愁", "character": "愁", "character_index": 9, "analysis_seconds": null}
+  ]
+}
