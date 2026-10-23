@@ -1,0 +1,19 @@
+<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>保留前後樂句的和弦比較</title>
+<style>body{font:18px/1.6 system-ui,sans-serif;max-width:750px;margin:40px auto;padding:0 20px;background:#f6f5ef;color:#252d32}h1{font-size:27px}section{background:white;border-radius:12px;padding:20px;margin:16px 0}button{font:inherit;background:#245d50;color:white;border:0;border-radius:8px;padding:12px 18px;margin:4px}audio{width:100%}.note{font-size:15px;color:#53605b}</style>
+<h1>先聽前後樂句，再比較和弦</h1>
+<p>每段約19秒，保留疑點前後的音樂。M／N沿用前次設定，沒有偷偷換成新修正版。</p>
+<section><button data-mode="original">原曲單獨播放</button><button data-mode="M">原曲＋M</button><button data-mode="N">原曲＋N</button><button id="all">連播 M → N</button><button id="stop">停止</button><p id="status" role="status">準備完成</p><audio controls preload="metadata"></audio></section>
+<p>可以先聽原曲，再選M／N。兩版只在約<strong>第7秒附近</strong>的和弦不同，速度與刷奏拍點相同。</p>
+<p>回報<strong>M較貼合／N較貼合／差不多／兩版都不對／仍無法判斷</strong>即可。若兩版都不對，不必勉強挑選。</p>
+<p class="note">這是補足脈絡的定位比較，尚未確認是哪一種錯誤；G與保存譜未修改。可隨時停止，不需三段全部聽完。</p>
+<script>
+const audio=document.querySelector('audio'),status=document.querySelector('#status');let queue=[],timer,token=0,current;
+const names={original:'原曲',M:'原曲＋M',N:'原曲＋N'};
+function stop(){token++;clearTimeout(timer);queue=[];audio.pause();status.textContent='已停止';}
+async function play(mode){const run=token;current=mode;audio.src=`${mode}.wav`;try{await audio.play();}catch{if(run===token){stop();status.textContent='播放失敗，請重新整理後再試。';}}}
+document.querySelector('#all').onclick=()=>{stop();queue=['N'];play('M');};document.querySelector('#stop').onclick=stop;
+document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{stop();play(b.dataset.mode);});
+audio.onplay=()=>status.textContent=`播放 ${names[current]}`;audio.onpause=()=>{if(!audio.ended){queue=[];status.textContent=`已暫停 ${names[current]??''}`;}};
+audio.onended=()=>{const next=queue.shift();if(next){status.textContent=`下一段 ${names[next]}`;timer=setTimeout(()=>play(next),800);}else status.textContent='播放完成';};
+audio.onerror=()=>{stop();status.textContent='載入失敗，請重新整理後再試。';};window.addEventListener('pagehide',stop);
+</script></html>

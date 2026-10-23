@@ -6,6 +6,7 @@ import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const contextMode=process.argv.includes('--context');
 const api=process.env.GUITARSCRIBE_API_URL??'http://127.0.0.1:8000',ui=process.env.GUITARSCRIBE_UI_URL??'http://127.0.0.1:5173';
 const revision='db8c657e-62a5-4fad-a33e-cde25a9e1c0d';
 async function json(url,options){const r=await fetch(url,options);assert.ok(r.ok,`${r.status}: ${url}`);return r.json();}
@@ -31,19 +32,19 @@ for(let i=0;i<baseEvents.length;i++){
  }
 }
 assert.ok(pitchChanges>0);
-const sourceFolder='pace-continuation-2026-10-22';
+const sourceFolder=contextMode?'harmony-context-2026-10-23':'pace-continuation-2026-10-22';
 const config=JSON.parse(await readFile(path.join(root,`public/listening/${sourceFolder}/config.json`),'utf8'));
 assert.equal(config.revision,revision);
-const start=config.start,cropStart=65.5,end=70.5,rate=22050;
+const start=config.start,cropStart=contextMode?score.beats.find(b=>b.measure===34&&b.beat===1).time:65.5,end=contextMode?config.end:70.5,rate=22050;
 assert.ok(config.end>=end);const frames=Math.round((end-start+.35)*rate),cropFrame=Math.round((cropStart-start)*rate);
 const sourcePath=path.join(root,`public/listening/${sourceFolder}/source.wav`),hash=v=>createHash('sha256').update(v).digest('hex');
 const sourceHash=hash(await readFile(sourcePath));
-const out=path.join(root,'public/listening/harmony-count-2026-10-22');await mkdir(out,{recursive:true});
+const out=path.join(root,contextMode?`public/listening/${sourceFolder}`:'public/listening/harmony-count-2026-10-22');await mkdir(out,{recursive:true});
 const browser=await chromium.launch({executablePath:'/usr/bin/google-chrome',headless:true}),results=[];
 try{
  const page=await browser.newPage();await page.goto(`${ui}/listening/${sourceFolder}/source.wav`);
- for(const [label,manifest] of [['M',original],['N',reduced]]){
-  const events=guitar(manifest).filter(e=>(e.sustain_end??e.end)>start&&e.start<end);
+ for(const [label,manifest] of (contextMode?[['original',original],['M',original],['N',reduced]]:[['M',original],['N',reduced]])){
+  const events=label==='original'?[]:guitar(manifest).filter(e=>(e.sustain_end??e.end)>start&&e.start<end);
   const r=await page.evaluate(async({events,start,end,rate,frames,cropFrame,sourceFolder})=>{
    const {preparePluckedBuffers,createPluckedVoice}=await import('/src/pluckedTone.ts');
    const context=new OfflineAudioContext(1,frames,rate);
@@ -66,6 +67,6 @@ try{
  }
 }finally{await browser.close();}
 assert.deepEqual(await json(`${api}/revisions/${revision}`),score);assert.equal(hash(await readFile(sourcePath)),sourceHash);
-await copyFile(path.join(root,'scripts/harmony-count.html'),path.join(out,'index.html'));
+await copyFile(path.join(root,contextMode?'scripts/harmony-context.html':'scripts/harmony-count.html'),path.join(out,'index.html'));
 await writeFile(path.join(out,'report.json'),JSON.stringify({revision,sourceHash,sourceGain:.45,crop:[cropStart,end],tail:.35,rate,changedRegionIds:ids,changedPitchStrokeCount:pitchChanges,results,savedRevisionUnchanged:true,interpretation:'M original Am, N extends D through the short Am span. Original rhythm timestamps and stroke count fixed; playable voicing/string count and harmony resonance change with chord identity. No tempo or time-shift corrections, not a saved revision.'},null,2));
 console.log(JSON.stringify({out,pitchChanges,results}));

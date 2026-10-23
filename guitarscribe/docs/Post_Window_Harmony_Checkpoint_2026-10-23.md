@@ -1,5 +1,22 @@
 # 後段拍點與和弦切分核對 · 2026-10-23
 
+## 最新回饋與較長對照
+
+使用者回報短版「太短了，聽不太出來，感覺上好像都不對」。記為無法可靠比較、兩版可能皆不合格，沒有M/N勝出，不升級候選。
+
+新頁：http://localhost:5173/listening/harmony-context-2026-10-23/index.html 。每段18.786秒（414245 frames／22050Hz），保留Bar34至43的上下文，提供原曲單獨播放、原曲＋M、原曲＋N及選用的M/N連播。不要求三段全部聽完。目標差異約在第7秒附近；可回報M較貼合／N較貼合／差不多／兩版都不對／仍無法判斷。
+
+M/N沿用原manifest，不改時間或和弦假設。舊5秒核心（末端淡出前4.9秒）與新對應內容在1 PCM16 LSB內相同；原曲／M／N三檔同長、尾音完整、峰值均低於0.579。原曲單獨版零合成弦音。原曲可播、M/N連播至尾、重播／停止及無pageerror由Chrome檢查。此輪不新增產品功能、不保存修訂、不宣稱已改善。
+
+frontend重現：
+
+```sh
+python3 scripts/prepare-ensemble-listening.py --revision db8c657e-62a5-4fad-a33e-cde25a9e1c0d --last-bar 43 --packet-name harmony-context-2026-10-23
+node scripts/prepare-harmony-count-probe.mjs --context
+```
+
+以下短版試聽為歷史，無需重做。
+
 使用者在Y延伸後回報「又開始偏掉」，詢問是否因硬切太多和弦。記錄為**延伸候選失敗**，不動局部Y偏好，不再用全段快慢／固定偏移追趕錯位。使用者授權繼續；本輪只做唯讀診斷與隔離試聽，未寫保存譜。
 
 ## 三項交叉核對
