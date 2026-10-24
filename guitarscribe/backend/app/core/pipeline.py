@@ -119,6 +119,10 @@ class AnalysisPipeline:
             chords = self.chord_analyzer.project(chord_result)
         else:
             chords = await self.chord_analyzer.analyze(normalized, beats)
+            if options.get("_artifact_directory"):
+                (Path(options["_artifact_directory"]) / "chord-analysis.json").write_text(
+                    chords.model_dump_json(indent=2) + "\n"
+                )
         complexity = ChordComplexity(options.get("chord_complexity", "standard"))
         chords.chords = self.chord_post.process(chords.chords, beats, complexity, chords.key, chords.mode)
         
@@ -286,7 +290,9 @@ def create_pipeline(settings: Settings) -> AnalysisPipeline:
     chord_analyzer = None
     if settings.chord_engine in (ChordEngine.AUTO, ChordEngine.CHORDINO):
         try:
-            import vamp
+            from ..services.capabilities import chordino_available
+            if not chordino_available():
+                raise RuntimeError('Chordino plugin is unavailable; check the Vamp installation and VAMP_PATH.')
             chord_analyzer = ChordinoChordAnalyzer()
             logger.info("Using Chordino for chord analysis")
         except Exception as e:

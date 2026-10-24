@@ -1,4 +1,5 @@
 import logging
+from ..worker import run_blocking_analysis
 from numbers import Real
 from collections.abc import Mapping, Sequence
 from ...models.audio import NormalizedAudio
@@ -21,6 +22,9 @@ def midi_to_note_name(midi: int) -> str:
 
 class BasicPitchMelodyAnalyzer:
     async def analyze(self, audio: NormalizedAudio, beats: BeatAnalysis, mode: MelodyMode = MelodyMode.VOCAL) -> MelodyAnalysis:
+        return await run_blocking_analysis(self._analyze, audio, beats, mode)
+
+    def _analyze(self, audio: NormalizedAudio, beats: BeatAnalysis, mode: MelodyMode = MelodyMode.VOCAL) -> MelodyAnalysis:
         logger.info("Analyzing melody with basic-pitch mode=%s path=%s", mode.value, audio.path)
         try:
             from basic_pitch.inference import predict

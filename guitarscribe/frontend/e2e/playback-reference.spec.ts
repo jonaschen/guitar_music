@@ -1,6 +1,10 @@
 import { expect, test } from "@playwright/test";
 import { pluckedSamples } from "../src/pluckedTone";
 
+test.beforeEach(async ({page}) => {
+  await page.route("**/api/v1/capabilities", r => r.fulfill({json:{youtube_enabled:true,vocal_separation_enabled:true,improved_accompaniment:false,melody_available:true,beat_engine:"test",chord_engine:"test"}}));
+});
+
 test("additive pluck starts smoothly, decays, and remains bounded", () => {
   const data = pluckedSamples(57, 22050, 2);
   const rms = (start: number, end: number) => {

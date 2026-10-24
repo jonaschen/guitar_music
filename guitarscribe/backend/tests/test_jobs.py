@@ -1,6 +1,10 @@
 import asyncio
+from io import BytesIO
 
+import numpy as np
 import pytest
+import soundfile as sf
+from pydantic import ValidationError
 
 from app.models.score import AnalysisSummary, KeyContext, KeySignature, SongInfo, SongScore
 from app.models.jobs import AnalysisJob, JobStatus
@@ -37,6 +41,26 @@ class WaitingPipeline:
         raise AssertionError("Cancelled task should not finish")
 
 
+class AudioDurationPipeline(StubPipeline):
+    def __init__(self):
+        self.analyzed_path = None
+        self.analyzed_duration = None
+
+    async def run(self, source_request, options, progress_callback=None):
+        self.analyzed_path = source_request.path
+        self.analyzed_duration = sf.info(str(source_request.path)).duration
+        score = await super().run(source_request, options, progress_callback)
+        score.song.duration_seconds = self.analyzed_duration
+        return score
+
+
+def wav_bytes(duration_seconds: float) -> bytes:
+    buffer = BytesIO()
+    samples = np.zeros(round(duration_seconds * 8000), dtype=np.float32)
+    sf.write(buffer, samples, 8000, format="WAV", subtype="PCM_16")
+    return buffer.getvalue()
+
+
 async def wait_for_terminal(service: AnalysisJobService, job_id: str):
     for _ in range(50):
         job = service.get(job_id)
@@ -61,6 +85,55 @@ async def test_job_service_persists_completed_score_and_progress(tmp_path):
     assert completed.artifacts == ["source"]
     assert service.get(created.id).score is not None
     assert (tmp_path / "jobs" / "jobs.sqlite3").exists()
+
+
+@pytest.mark.parametrize("value", [0, -1, 600.001, float("nan"), float("inf")])
+def test_analysis_seconds_requires_a_finite_value_in_0_to_600(value):
+    with pytest.raises(ValidationError):
+        AnalysisJob(
+            id="invalid-duration", analysis_seconds=value,
+            created_at="2026-01-01T00:00:00+00:00",
+            updated_at="2026-01-01T00:00:00+00:00",
+        )
+
+
+@pytest.mark.asyncio
+async def test_analysis_seconds_is_saved_and_45_second_limit_uses_real_source_length(tmp_path):
+    pipeline = AudioDurationPipeline()
+    service = AnalysisJobService(JobStore(tmp_path / "jobs"), pipeline_factory=lambda: pipeline)
+    source = wav_bytes(2.0)
+
+    created = await service.submit(
+        "short.wav", source, "vocal", "standard", analysis_seconds=45,
+    )
+    await service.tasks[created.id]
+    completed = service.get(created.id)
+
+    assert completed.status == JobStatus.COMPLETED
+    assert completed.analysis_seconds == 45
+    assert service.get(created.id).analysis_seconds == 45
+    assert pipeline.analyzed_duration == pytest.approx(2.0, abs=0.03)
+    assert pipeline.analyzed_path == service.store.job_dir(created.id) / "analysis-source.wav"
+    assert (service.store.job_dir(created.id) / "input.wav").read_bytes() == source
+
+
+@pytest.mark.asyncio
+async def test_duration_only_crops_from_zero_and_preserves_original_upload(tmp_path):
+    pipeline = AudioDurationPipeline()
+    service = AnalysisJobService(JobStore(tmp_path / "jobs"), pipeline_factory=lambda: pipeline)
+    source = wav_bytes(4.0)
+
+    created = await service.submit(
+        "long.wav", source, "vocal", "standard", analysis_seconds=1.25,
+    )
+    await service.tasks[created.id]
+    completed = service.get(created.id)
+
+    assert completed.status == JobStatus.COMPLETED
+    assert completed.score.song.duration_seconds == pytest.approx(1.25, abs=0.03)
+    assert completed.score.song.source_start_seconds == 0
+    assert pipeline.analyzed_duration == pytest.approx(1.25, abs=0.03)
+    assert (service.store.job_dir(created.id) / "input.wav").read_bytes() == source
 
 
 @pytest.mark.asyncio

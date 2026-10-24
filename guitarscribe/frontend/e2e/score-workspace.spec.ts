@@ -1,5 +1,9 @@
 import { expect, test } from "@playwright/test";
 
+test.beforeEach(async ({page}) => {
+  await page.route("**/api/v1/capabilities", r => r.fulfill({json:{youtube_enabled:true,vocal_separation_enabled:true,improved_accompaniment:false,melody_available:true,beat_engine:"test",chord_engine:"test"}}));
+});
+
 const score = {
   schema_version: "1.0",
   song: { title: "Browser test song", source_type: "youtube", duration_seconds: 8 },

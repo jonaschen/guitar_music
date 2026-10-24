@@ -6,7 +6,11 @@ import path from "node:path";
 let fixtures: { name: string; score: unknown; xml: string }[];
 test.beforeAll(() => {
   const project = path.resolve(process.cwd(), "..");
-  fixtures = JSON.parse(execFileSync("docker", ["compose", "run", "--rm", "-T", "-v",
+  const python = process.env.GUITARSCRIBE_TEST_PYTHON;
+  fixtures = JSON.parse(python ? execFileSync(python, ["scripts/musicxml_reader_fixtures.py"], {
+    cwd: path.join(project, "backend"), encoding: "utf8", timeout: 60000,
+    env: {...process.env, PYTHONPATH: path.join(project, "backend")},
+  }) : execFileSync("docker", ["compose", "run", "--rm", "-T", "-v",
     `${project}/backend:/app`, "backend", "sh", "-c",
     "PYTHONPATH=. python scripts/musicxml_reader_fixtures.py"], { cwd: project, encoding: "utf8", timeout: 60000 }));
 });

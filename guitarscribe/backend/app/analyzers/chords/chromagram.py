@@ -284,11 +284,11 @@ def estimate_key_from_chords(events: list[ChordEvent]) -> tuple[str, str]:
             )
             score = 0.0
             for event in events:
-                root_name = event.symbol[:-1] if event.symbol.endswith("m") else event.symbol
-                root = ROOT_TO_PITCH.get(root_name)
-                if root is None:
+                parsed = parse_chord(event.symbol)
+                if parsed is None or parsed[2] not in {'major', 'minor', 'dominant'}:
                     continue
-                is_minor = event.symbol.endswith("m")
+                root = parsed[1]
+                is_minor = parsed[2] == 'minor'
                 duration = max(0.0, event.end - event.start)
                 degree = (root - tonic) % 12
                 if (degree, is_minor) in compatible:

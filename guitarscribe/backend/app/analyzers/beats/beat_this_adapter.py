@@ -5,6 +5,7 @@ from pathlib import Path
 
 from ...models.audio import NormalizedAudio
 from .learned_projection import project_learned_beats
+from ..worker import run_blocking_analysis
 
 
 class BeatThisBeatAnalyzer:
@@ -27,6 +28,9 @@ class BeatThisBeatAnalyzer:
                 self.parameters['beat_this_weights_sha256']=hashlib.sha256(checkpoint.read_bytes()).hexdigest()
 
     async def analyze(self,audio:NormalizedAudio):
+        return await run_blocking_analysis(self._analyze, audio)
+
+    def _analyze(self,audio:NormalizedAudio):
         self._load()
         beats,downbeats=self._predictor(str(audio.path))
         return project_learned_beats([float(t)for t in beats],[float(t)for t in downbeats],self._version)

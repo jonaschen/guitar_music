@@ -8,11 +8,18 @@ from ..analyzers.preprocessor import FFmpegPreprocessor
 from ..core.config import Settings
 
 
-async def crop_analysis_audio(source: Path, target: Path, start: float) -> Path:
+async def crop_analysis_audio(
+    source: Path, target: Path, start: float, duration: float | None = None,
+) -> Path:
     binary = FFmpegPreprocessor(ffmpeg_binary=Settings.from_env().ffmpeg_binary)._resolve_ffmpeg()
-    process = await asyncio.create_subprocess_exec(
+    command = [
         binary, "-nostdin", "-y", "-i", str(source), "-ss", str(start),
-        "-vn", "-c:a", "pcm_s16le", str(target),
+    ]
+    if duration is not None:
+        command.extend(("-t", str(duration)))
+    command.extend(("-vn", "-c:a", "pcm_s16le", str(target)))
+    process = await asyncio.create_subprocess_exec(
+        *command,
         stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.PIPE,
     )
     try:

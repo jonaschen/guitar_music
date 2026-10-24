@@ -12,6 +12,7 @@ from ...models.analysis import BeatAnalysis, MelodyAnalysis, MelodyMode, MelodyN
 from ...models.audio import NormalizedAudio
 from ...models.melody_contour import MelodyContour
 from .basic_pitch_adapter import MODE_PROFILES, midi_to_note_name
+from ..worker import run_blocking_analysis
 
 PYIN_HOP_LENGTH = 512
 PYIN_SAMPLE_RATE = 22050
@@ -96,6 +97,9 @@ class PyinVocalMelodyAnalyzer:
     """Trace one fundamental-frequency line instead of polyphonic note events."""
 
     async def analyze(self, audio: NormalizedAudio, beats: BeatAnalysis, mode: MelodyMode = MelodyMode.VOCAL) -> MelodyAnalysis:
+        return await run_blocking_analysis(self._analyze, audio, beats, mode)
+
+    def _analyze(self, audio: NormalizedAudio, beats: BeatAnalysis, mode: MelodyMode = MelodyMode.VOCAL) -> MelodyAnalysis:
         if mode != MelodyMode.VOCAL:
             raise ValueError("pYIN vocal analyzer only supports vocal mode")
         import librosa

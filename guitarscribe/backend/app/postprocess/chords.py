@@ -88,7 +88,7 @@ class ChordPostProcessor:
                 if match:
                     chord.symbol = match.group(1) + (match.group(2) or '')
             elif level == ChordComplexity.STANDARD:
-                match = re.match(r'^([A-G][b#]?(?:maj7|m7|dim|aug|7|m)?(?:/[A-G][b#]?)?)', chord.symbol)
+                match = re.match(r'^([A-G][b#]?(?:maj7|m7b5|m7|m6|dim7|dim|aug|7|6|m)?(?:/[A-G][b#]?)?)', chord.symbol)
                 if match:
                     chord.symbol = match.group(1)
         return chords

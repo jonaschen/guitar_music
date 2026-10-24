@@ -40,6 +40,7 @@ class AnalysisJob(BaseModel):
     melody_mode: str = "vocal"
     separate_vocals: bool = False
     skip_seconds: float = Field(default=0, ge=0, allow_inf_nan=False)
+    analysis_seconds: float | None = Field(default=None, gt=0, le=600, allow_inf_nan=False)
     chord_complexity: str = "standard"
     source_type: SourceType = SourceType.LOCAL
     source_url: str | None = None

@@ -1,6 +1,10 @@
 import { expect, test, type Page, type Route } from "@playwright/test";
 import type { SongScore } from "../src/types";
 
+test.beforeEach(async ({page}) => {
+  await page.route("**/api/v1/capabilities", r => r.fulfill({json:{youtube_enabled:true,vocal_separation_enabled:true,improved_accompaniment:false,melody_available:true,beat_engine:"test",chord_engine:"test"}}));
+});
+
 function makeScore(midi: number, version: "original" | "g", sourceJob?: string): SongScore {
   const note = ["C", "C♯", "D", "E♭", "E", "F", "F♯", "G", "A♭", "A", "B♭", "B"][midi % 12];
   const score: SongScore = {

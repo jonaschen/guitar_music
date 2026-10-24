@@ -15,6 +15,9 @@
 }
 
 [hidden] { display: none !important; }
+.new-song-panel .intake-card { min-width: 0; }
+.new-song-panel details > summary { cursor: pointer; margin-bottom: .7rem; }
+.workspace-mode { flex-wrap: wrap; }
 .workspace-mode { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: .6rem 0; }
 .workspace-mode p { margin: .4rem 0; color: var(--text-muted); font-size: .9rem; }
 .focus-workspace .workspace { grid-template-columns: minmax(0, 1fr); }

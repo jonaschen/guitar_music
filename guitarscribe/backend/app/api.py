@@ -1,12 +1,15 @@
 import tempfile
 import asyncio
+import math
 from typing import Literal
 from uuid import uuid4
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile, status
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, PlainTextResponse, Response
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Response
+from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, Field
 
 from .core.config import Settings
@@ -79,6 +82,7 @@ class LyricsRevisionResponse(BaseModel):
 
 class YouTubeJobRequest(BaseModel):
     skip_seconds: float = Field(default=0, ge=0, allow_inf_nan=False)
+    analysis_seconds: float | None = Field(default=None, gt=0, le=600, allow_inf_nan=False)
     url: str = Field(description="A single youtube.com or youtu.be video URL. Playlists are not accepted.")
     rights_confirmed: bool = Field(description="Must be true: the caller confirms they have rights to analyze this audio.")
     melody_mode: str = Field(default="vocal", description="Melody extraction mode: vocal, guitar, or mix.")
@@ -106,6 +110,23 @@ app = FastAPI(
     ),
     openapi_tags=OPENAPI_TAGS,
 )
+
+
+@app.exception_handler(RequestValidationError)
+async def request_validation_error_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
+    def json_safe(value):
+        if isinstance(value, float) and not math.isfinite(value):
+            return str(value)
+        if isinstance(value, dict):
+            return {key: json_safe(item) for key, item in value.items()}
+        if isinstance(value, (list, tuple)):
+            return [json_safe(item) for item in value]
+        return value
+
+    encoded_errors = jsonable_encoder(exc.errors())
+    return JSONResponse(status_code=422, content={"detail": json_safe(encoded_errors)})
+
+
 transposition_service = TranspositionService()
 _job_service: AnalysisJobService | None = None
 _submission_limiter: SubmissionRateLimiter | None = None
@@ -168,6 +189,12 @@ def get_job_service() -> AnalysisJobService:
 @app.get("/health", response_model=HealthResponse, tags=["System"], summary="Check service health")
 async def health() -> HealthResponse:
     return HealthResponse()
+
+
+@app.get("/api/v1/capabilities", tags=["System"], summary="Read configured analysis capabilities")
+async def capabilities() -> dict:
+    from .services.capabilities import analysis_capabilities
+    return analysis_capabilities(Settings.from_env())
 
 
 @app.post("/scores/transpose", response_model=SongScore, tags=["Scores"], summary="Transpose an editable score")
@@ -262,6 +289,7 @@ async def create_analysis_job(
     chord_complexity: str = Form(default="standard"),
     separate_vocals: bool = Form(default=False),
     skip_seconds: float = Form(default=0, ge=0, allow_inf_nan=False),
+    analysis_seconds: float | None = Form(default=None, gt=0, le=600, allow_inf_nan=False),
     _rate_limit: None = Depends(enforce_submission_rate_limit),
     job_service: AnalysisJobService = Depends(get_job_service),
 ) -> AnalysisJob:
@@ -279,6 +307,7 @@ async def create_analysis_job(
             separate_vocals=separate_vocals,
             chord_complexity=chord_complexity,
             skip_seconds=skip_seconds,
+            analysis_seconds=analysis_seconds,
         )
     except JobQueueFullError as exc:
         raise HTTPException(status_code=503, detail=str(exc), headers={"Retry-After": "30"}) from exc
@@ -300,7 +329,7 @@ async def create_youtube_analysis_job(
     if not request.rights_confirmed:
         raise HTTPException(status_code=400, detail="Rights must be confirmed")
     try:
-        return await job_service.submit_youtube(validate_youtube_url(request.url), request.melody_mode, request.chord_complexity, request.separate_vocals, request.skip_seconds)
+        return await job_service.submit_youtube(validate_youtube_url(request.url), request.melody_mode, request.chord_complexity, request.separate_vocals, request.skip_seconds, request.analysis_seconds)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except RuntimeError as exc:

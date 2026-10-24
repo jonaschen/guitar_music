@@ -139,6 +139,7 @@ class AnalysisJobService:
     async def submit(
         self, filename: str, content: bytes, melody_mode: str,
         chord_complexity: str, separate_vocals: bool = False, skip_seconds: float = 0,
+        analysis_seconds: float | None = None,
     ) -> AnalysisJob:
         self._ensure_queue_capacity()
         job_id = uuid4().hex
@@ -146,6 +147,7 @@ class AnalysisJobService:
         job = AnalysisJob(
             id=job_id,
             skip_seconds=skip_seconds,
+            analysis_seconds=analysis_seconds,
             melody_mode=melody_mode,
             separate_vocals=separate_vocals,
             chord_complexity=chord_complexity,
@@ -164,7 +166,11 @@ class AnalysisJobService:
         self.tasks[job_id] = asyncio.create_task(self._run(job_id))
         return job
 
-    async def submit_youtube(self, url: str, melody_mode: str, chord_complexity: str, separate_vocals: bool = False, skip_seconds: float = 0) -> AnalysisJob:
+    async def submit_youtube(
+        self, url: str, melody_mode: str, chord_complexity: str,
+        separate_vocals: bool = False, skip_seconds: float = 0,
+        analysis_seconds: float | None = None,
+    ) -> AnalysisJob:
         if self.youtube_downloader is None:
             raise RuntimeError("YouTube import is not enabled on this server")
         self._ensure_queue_capacity()
@@ -173,6 +179,7 @@ class AnalysisJobService:
         job = AnalysisJob(
             id=job_id, source_type=SourceType.YOUTUBE, source_url=url, melody_mode=melody_mode,
             skip_seconds=skip_seconds,
+            analysis_seconds=analysis_seconds,
             separate_vocals=separate_vocals, chord_complexity=chord_complexity, created_at=now, updated_at=now,
         )
         self.store.job_dir(job_id).mkdir(parents=True, exist_ok=True)
@@ -226,9 +233,12 @@ class AnalysisJobService:
                 self.store.save(current)
                 logger.info("analysis_job_stage job_id=%s stage=%s progress=%s", job_id, stage, progress)
 
-            if job.skip_seconds > 0:
+            if job.skip_seconds > 0 or job.analysis_seconds is not None:
                 await report("preprocessing")
-                input_path = await crop_analysis_audio(input_path, directory / "analysis-source.wav", job.skip_seconds)
+                input_path = await crop_analysis_audio(
+                    input_path, directory / "analysis-source.wav", job.skip_seconds,
+                    job.analysis_seconds,
+                )
 
             score = await self.pipeline_factory().run(
                 SourceRequest(source_type=job.source_type, path=input_path, url=job.source_url, rights_confirmed=True),

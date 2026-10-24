@@ -161,7 +161,7 @@ export function MelodyEditor(props: Props) {
   return <details className="melody-editor workspace-disclosure" open={props.focused || undefined}>
     <summary>旋律人工編輯 · Melody editor</summary>
     <p aria-label="Editor melody version"><strong>旋律版本：{melodyVersion(score)}</strong> · {score.melody.length} 音符。重播與合奏使用這份工作譜。</p>
-    {!isGCandidate ? <p>目前不是 G。要使用先前較好的旋律，請先恢復已保存的 G；尚未保存時可在「完整工具」產生候選。先保存重要修改，不需重新分析。</p> : null}
+    {!isGCandidate ? <p>目前不是 G。可恢復已保存的 G，或使用本編輯區上方「Contour → 可編輯音符候選」先產生、再確認套用。先保存重要修改，不需重新分析。</p> : null}
     <details className="editor-help"><summary>修譜說明與版本注意事項</summary>
     <p>聽一段 → 暫停 → 點六線譜數字修改 → 重播所選小節。上方為第 1 弦，品格相對 Capo {score.analysis.capo}；橫線尾巴表示持續時間，⌒ 表示跨小節延續。</p>
     <p><strong>時間比例六線譜草稿，尚非傳統節奏排版。</strong>弦上的數字是「品格」，不是簡譜音級；例如第 4 弦的 5，就是彈第 4 弦第 5 格。</p>

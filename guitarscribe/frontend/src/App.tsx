@@ -89,13 +89,14 @@ function semitoneDelta(from: string, to: string): number {
   return raw;
 }
 
-async function createAnalysisJob(file: File, melodyMode: string, separateVocals: boolean, chordComplexity: string, skipSeconds: number): Promise<AnalysisJob> {
+async function createAnalysisJob(file: File, melodyMode: string, separateVocals: boolean, chordComplexity: string, skipSeconds: number, analysisSeconds: number | null): Promise<AnalysisJob> {
   const formData = new FormData();
   formData.append("audio_file", file);
   formData.append("rights_confirmed", "true");
   formData.append("melody_mode", melodyMode);
   formData.append("separate_vocals", String(separateVocals));
   formData.append("chord_complexity", chordComplexity);
+  if (analysisSeconds !== null) formData.append("analysis_seconds", String(analysisSeconds));
   formData.append("skip_seconds", String(skipSeconds));
 
   const response = await fetch(`${API_BASE}/api/v1/jobs`, {
@@ -110,11 +111,11 @@ async function createAnalysisJob(file: File, melodyMode: string, separateVocals:
   return response.json();
 }
 
-async function createYouTubeAnalysisJob(url: string, melodyMode: string, separateVocals: boolean, chordComplexity: string, skipSeconds: number): Promise<AnalysisJob> {
+async function createYouTubeAnalysisJob(url: string, melodyMode: string, separateVocals: boolean, chordComplexity: string, skipSeconds: number, analysisSeconds: number | null): Promise<AnalysisJob> {
   const response = await fetch(`${API_BASE}/api/v1/youtube-jobs`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ url, rights_confirmed: true, melody_mode: melodyMode, separate_vocals: separateVocals, chord_complexity: chordComplexity, skip_seconds: skipSeconds }),
+    body: JSON.stringify({ url, rights_confirmed: true, melody_mode: melodyMode, separate_vocals: separateVocals, chord_complexity: chordComplexity, skip_seconds: skipSeconds, analysis_seconds: analysisSeconds }),
   });
   if (!response.ok) throw new Error(await response.text());
   return response.json();
@@ -212,9 +213,27 @@ export function App() {
   const [file, setFile] = useState<File | null>(null);
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [melodyMode, setMelodyMode] = useState("vocal");
-  const [separateVocals, setSeparateVocals] = useState(false);
+  const [separateVocals, setSeparateVocals] = useState(true);
   const [showRawChordSegments, setShowRawChordSegments] = useState(false);
-  const [chordComplexity, setChordComplexity] = useState("standard");
+  const [chordComplexity, setChordComplexity] = useState("full");
+  const [analysisSeconds, setAnalysisSeconds] = useState("45");
+  const [showNewSong, setShowNewSong] = useState(false);
+  const [capabilities, setCapabilities] = useState<{
+    youtube_enabled: boolean; vocal_separation_enabled: boolean; improved_accompaniment: boolean;
+    melody_available: boolean; beat_engine: string; chord_engine: string;
+  } | null>(null);
+  const [capabilitiesFailed, setCapabilitiesFailed] = useState(false);
+  const pendingAnalysisBase = useRef<SongScore | null | undefined>(undefined);
+  const submitInFlight = useRef(false);
+  useEffect(() => {
+    let disposed = false;
+    void fetch(`${API_BASE}/api/v1/capabilities`).then(response => {
+      if (!response.ok) throw new Error("Capabilities unavailable");
+      return response.json();
+    }).then(value => { if (!disposed) setCapabilities(value); })
+      .catch(() => { if (!disposed) setCapabilitiesFailed(true); });
+    return () => { disposed = true; };
+  }, []);
   const [skipSeconds, setSkipSeconds] = useState("0");
   const [score, setScore] = useState<SongScore | null>(EMPTY_SCORE);
   const scoreRef = useRef(score);
@@ -309,7 +328,7 @@ export function App() {
     if (!score) return;
     const source = sourceJobId(score);
     setWorkingJobId(source);
-    if (analysisJob && source !== analysisJob.id) {
+    if (analysisJob && source !== analysisJob.id && pendingAnalysisBase.current === undefined) {
       audioRef.current?.pause();
       setAudioUrl(null); setAnalysisJob(null);
     }
@@ -460,6 +479,7 @@ export function App() {
   }, []);
 
   useEffect(() => {
+    if (scoreRef.current) return;
     if (!file) {
       setAudioUrl(null);
       return;
@@ -480,13 +500,25 @@ export function App() {
         setAnalysisJob(nextJob);
         setError("");
         if (nextJob.status === "completed" && nextJob.score) {
+          if (pendingAnalysisBase.current !== undefined && pendingAnalysisBase.current !== scoreRef.current) {
+            setRestorePreview({ id: "", base: scoreRef.current, generation: workGenerationRef.current,
+              next: scoreFromJob(nextJob), job: nextJob });
+            setStatus("ready");
+            setSaveStatus("新曲目已完成；目前工作譜在分析期間改變，請先保存，再確認載入新結果。");
+            pendingAnalysisBase.current = undefined;
+            return;
+          }
+          pendingAnalysisBase.current = undefined;
+          audioRef.current?.pause(); stopSynth(false); referenceStopRef.current();
           replaceScore(scoreFromJob(nextJob));
           restoreWorkingJob(nextJob.id);
           setAudioUrl(`${API_BASE}/api/v1/jobs/${nextJob.id}/audio`);
           setRevisionId("");
           setSaveStatus("Analysis loaded. Save to create a revision.");
           setStatus("ready");
+          setShowNewSong(false); setFocusedWorkspace(true);
         } else if (nextJob.status === "failed" || nextJob.status === "cancelled") {
+          pendingAnalysisBase.current = undefined;
           setStatus("error");
           setError(nextJob.error ?? nextJob.message);
         }
@@ -685,37 +717,48 @@ export function App() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (submitInFlight.current || status === "queued" || (analysisJob && !["completed", "failed", "cancelled"].includes(analysisJob.status))) return;
     const useYouTube = Boolean(youtubeUrl.trim());
     if (!useYouTube && !file) {
-      setError("Choose an audio file or enter a YouTube video URL.");
+      setError("請選擇音檔或輸入 YouTube 網址。");
       return;
     }
+    if (!capabilities || (useYouTube && !capabilities.youtube_enabled)) {
+      setError("來源能力尚未就緒，請確認服務狀態。"); return;
+    }
+    if (hasUnsavedChanges && !window.confirm("目前工作譜有未保存修改。新分析完成後將切換曲目；請先取消並保存，或確認繼續分析。")) return;
 
+    submitInFlight.current = true;
+    pendingAnalysisBase.current = scoreRef.current;
     setStatus("queued");
     setError("");
     try {
       if (!skipSeconds.trim() || !Number.isFinite(Number(skipSeconds)) || Number(skipSeconds) < 0) throw new Error("略過秒數必須是大於或等於 0 的數字。");
+      audioRef.current?.pause(); stopSynth(false); referenceStopRef.current();
       workGenerationRef.current++;
       revisionRequestRef.current++;
       setIsLoadingRevision(false); setRestorePreview(null);
       const createdJob = useYouTube
-        ? await createYouTubeAnalysisJob(youtubeUrl.trim(), melodyMode, separateVocals, chordComplexity, Number(skipSeconds))
-        : await createAnalysisJob(file!, melodyMode, separateVocals, chordComplexity, Number(skipSeconds));
+        ? await createYouTubeAnalysisJob(youtubeUrl.trim(), melodyMode, capabilities.vocal_separation_enabled && separateVocals, chordComplexity, Number(skipSeconds), analysisSeconds === "full" ? null : Number(analysisSeconds))
+        : await createAnalysisJob(file!, melodyMode, capabilities.vocal_separation_enabled && separateVocals, chordComplexity, Number(skipSeconds), analysisSeconds === "full" ? null : Number(analysisSeconds));
       const url = new URL(window.location.href);
       url.searchParams.delete("revision"); url.searchParams.set("job", createdJob.id);
       window.history.replaceState({}, "", url);
       setAnalysisJob(createdJob);
       window.localStorage.setItem("guitarscribe.activeJobId", createdJob.id);
     } catch (submitError) {
+      pendingAnalysisBase.current = undefined;
       setStatus("error");
       setError(submitError instanceof Error ? submitError.message : "Analysis failed.");
-    }
+    } finally { submitInFlight.current = false; }
   }
 
   async function cancelCurrentJob() {
     if (!analysisJob) return;
     try {
-      setAnalysisJob(await cancelAnalysisJob(analysisJob.id));
+      const cancelled = await cancelAnalysisJob(analysisJob.id);
+      if (["failed", "cancelled"].includes(cancelled.status)) pendingAnalysisBase.current = undefined;
+      setAnalysisJob(cancelled);
     } catch (cancelError) {
       setError(cancelError instanceof Error ? cancelError.message : "Could not cancel analysis.");
     }
@@ -1421,7 +1464,8 @@ export function App() {
   }
 
   function selectDiagnosticAudioTrack(track: DiagnosticAudioTrack) {
-    if (!analysisJob || track === diagnosticAudioTrack) return;
+    if (!analysisJob || analysisJob.status !== "completed" ||
+        (score && sourceJobId(score) !== analysisJob.id) || track === diagnosticAudioTrack) return;
     referenceStopRef.current(); stopSynth(false);
     audioRef.current?.pause();
     setIsPlaying(false);
@@ -1722,6 +1766,17 @@ export function App() {
     if (scoreRef.current !== base || generation !== workGenerationRef.current) { setRestorePreview(null); setSaveStatus("工作譜已改變，未恢復舊預覽。請重新讀取版本。"); return; }
     audioRef.current?.pause(); stopSynth(false); referenceStopRef.current();
     if (!recordScoreChange(next)) return;
+    if (!id && job) {
+      setRestorePreview(null); setSavedSnapshot(null); cleanScoreRef.current = next;
+      setWorkingJobId(job.id); setAnalysisJob(job); setRevisionId("");
+      setAudioUrl(`${API_BASE}/api/v1/jobs/${job.id}/audio`); setDiagnosticAudioTrack("source");
+      const url = new URL(window.location.href);
+      url.searchParams.delete("revision"); url.searchParams.set("job", job.id);
+      window.history.replaceState({}, "", url);
+      setShowNewSong(false); setFocusedWorkspace(true); setStatus("ready");
+      setSaveStatus("已載入新曲目分析；可用 Undo 回復前一份工作譜，請另存版本。");
+      return;
+    }
     finishRevisionRestore(id, next, job);
   }
 
@@ -1765,32 +1820,40 @@ export function App() {
       <div className="aurora aurora-right" />
       <main className="layout">
         <div hidden={focusMode}><PlaybackReference stopRef={referenceStopRef} onStart={() => { stopSynth(false); audioRef.current?.pause(); }} /></div>
-        <section className="hero-card" hidden={focusMode}>
+        <section className="hero-card new-song-panel" aria-label="新曲目來源" hidden={focusMode && !showNewSong}>
           <div className="hero-copy">
-            <p className="eyebrow">GuitarScribe / September 4, 2026 handoff build</p>
-            <h1>Paste less. Listen once. Get a playable draft.</h1>
+            <p className="eyebrow">GuitarScribe</p>
+            <h1>選擇來源，開始修譜</h1>
             <p className="lede">
-              Upload a legal audio file, extract chords, meter, and simplified melody, then shift the
-              whole chart into a singer-friendly key without re-running analysis.
+              先分析一段，再對照原曲、試聽與修譜。
             </p>
           </div>
 
           <form className="intake-card" onSubmit={handleSubmit}>
+            <p role="status">{capabilities ? `${capabilities.improved_accompaniment ? "改善版伴奏可用" : "基本伴奏分析"} · ${capabilities.beat_engine} / ${capabilities.chord_engine}` : capabilitiesFailed ? "無法取得分析能力，請確認服務後重新整理。" : "正在確認分析能力…"}</p>
+            {capabilities && !capabilities.melody_available ? <p role="note">目前僅分析拍點與和弦，不會產生旋律；完成後可手動補音。</p> : null}
+            {capabilities?.melody_available && capabilities.vocal_separation_enabled && melodyMode === "vocal" && separateVocals ? <p>人聲旋律預設先分離；分析完成後可在專注區產生並確認套用 G 候選。</p> : null}
             <label className="field">
-              <span>Audio upload (or use YouTube below)</span>
+              <span>選擇音檔</span>
               <input type="file" accept=".wav,.mp3,.flac,.ogg,.m4a,audio/*" onChange={handleFileChange} />
             </label>
 
             <label className="field">
-              <span>YouTube video URL</span>
-              <input type="url" value={youtubeUrl} onChange={(event) => setYoutubeUrl(event.target.value)} placeholder="https://www.youtube.com/watch?v=…" />
-              <small>Use one HTTPS YouTube video you own, control, or are permitted to analyze. A URL takes priority over a local file.</small>
+              <span>YouTube 網址</span>
+              <input aria-label="YouTube video URL" type="url" disabled={!capabilities?.youtube_enabled} value={youtubeUrl} onChange={(event) => setYoutubeUrl(event.target.value)} placeholder="https://www.youtube.com/watch?v=…" />
+              <small>{capabilities?.youtube_enabled ? "同時選擇音檔與網址時，以網址為準。" : "目前服務未開啟 YouTube，請使用音檔。"}</small>
             </label>
 
+            <label className="field">分析長度<select aria-label="Analysis duration" value={analysisSeconds} onChange={event => setAnalysisSeconds(event.target.value)}>
+              {[30, 45, 60].map(seconds => <option key={seconds} value={seconds}>{seconds} 秒</option>)}
+              {analysisSeconds === "full" ? <option value="full">整首</option> : null}
+            </select></label>
+            <details><summary>進階分析設定</summary>
+            <label><input type="checkbox" checked={analysisSeconds === "full"} onChange={event => setAnalysisSeconds(event.target.checked ? "full" : "45")} />分析整首（耗時較長）</label>
             <div className="field-row">
               <label className="field">
                 <span>Melody focus (Beta)</span>
-                <select value={melodyMode} onChange={(event) => setMelodyMode(event.target.value)}>
+                <select disabled={capabilities?.melody_available === false} value={melodyMode} onChange={(event) => setMelodyMode(event.target.value)}>
                   <option value="vocal">Vocal melody (Beta)</option>
                   <option value="guitar">Guitar melody (Experimental)</option>
                   <option value="mix">Full-mix lead guess (Experimental)</option>
@@ -1800,7 +1863,7 @@ export function App() {
               <label className="field vocal-isolation-option">
                 <span>Vocal isolation</span>
                 <label className="checkbox-label">
-                  <input type="checkbox" checked={separateVocals} disabled={melodyMode !== "vocal"} onChange={(event) => setSeparateVocals(event.target.checked)} />
+                  <input type="checkbox" checked={separateVocals} disabled={melodyMode !== "vocal" || !capabilities?.vocal_separation_enabled || !capabilities?.melody_available} onChange={(event) => setSeparateVocals(event.target.checked)} />
                   Isolate vocals first (requires enabled server; slower, clearer lead line)
                 </label>
               </label>
@@ -1814,20 +1877,20 @@ export function App() {
                 </select>
               </label>
             </div>
+            </details>
 
             <div className="rights-box">
               <label className="field">
                 <span>分析前略過開頭（秒）</span>
                 <input aria-label="Skip opening seconds" type="number" min="0" step="0.01" required value={skipSeconds} onChange={(event) => setSkipSeconds(event.target.value)} />
               </label>
-              <p>例如填 19：只分析原檔 19 秒之後的內容。播放、編輯與匯出從新時間 0 秒開始；原檔保留。起點不保證是小節第一拍。</p>
-              <strong>Rights check</strong>
-              <p>You should provide only audio or YouTube videos you own, control, or have permission to analyze.</p>
+              <p>從略過位置開始分析所選長度，工作譜以 0 秒起算。請使用有權分析的來源。</p>
             </div>
 
-            <button className="primary-button" type="submit" disabled={status === "queued"}>
-              {status === "queued" ? "Analysis queued..." : "Start analysis"}
+            <button aria-label="Start analysis" className="primary-button" type="submit" disabled={!capabilities || status === "queued" || !!(analysisJob && !["completed", "failed", "cancelled"].includes(analysisJob.status))}>
+              {status === "queued" ? "正在分析…" : "開始分析"}
             </button>
+            {score ? <button type="button" className="ghost-button" onClick={() => setShowNewSong(false)}>收起來源，繼續修譜</button> : null}
           </form>
         </section>
 
@@ -1856,6 +1919,7 @@ export function App() {
 
             {score ? <nav className="workspace-mode" aria-label="工作區模式">
               <div><strong>{focusMode ? "專注修譜" : "完整工具"}</strong><p>選一段 → 對照來源 → 修譜與重播 → 保存版本</p></div>
+              <button type="button" className="ghost-button" onClick={() => { setShowNewSong(value => !value); }}>{showNewSong ? "收起新曲目" : "分析新曲目"}</button>
               <button type="button" className="ghost-button" onClick={switchWorkspace}>{focusMode ? "顯示完整工具" : "回到專注修譜"}</button>
             </nav> : null}
             <section className="revision-recovery" aria-label="工作版本">
@@ -2169,9 +2233,10 @@ export function App() {
                   <div className="rhythm-steps">{score.rhythm.display.map((stroke, index) => <span key={index} title={stroke === "A" ? "Arpeggio" : undefined} className={stroke ? "rhythm-step rhythm-step-active" : "rhythm-step"}>{stroke === "A" ? "⌁" : stroke ?? "·"}</span>)}</div>
                 </section>
 
+                </div>
+                {score.provenance.parameters?.melody_note_processing !== "bounded-source-v1" ? <p role="note">目前為原分析／其他音符版本，尚未套用 G。若要使用 G，請展開下方候選入口，先產生、再確認套用；不會自動替換旋律。</p> : null}
                 <ContourCandidate score={score} jobId={workingJobId} apiBase={API_BASE}
                   onCommit={(base, next) => { if (scoreRef.current !== base) return false; audioRef.current?.pause(); stopSynth(false); return recordScoreChange(next); }} />
-                </div>
                 <MelodyEditor score={score} jobId={workingJobId} playhead={playbackTime} apiBase={API_BASE}
                   focused={focusMode} sourceAvailable={!!audioUrl} sourceTrack={diagnosticAudioTrack}
                   melodyConnection={melodyConnection} onMelodyConnection={value => { stopSynth(false); setMelodyConnection(value); }}

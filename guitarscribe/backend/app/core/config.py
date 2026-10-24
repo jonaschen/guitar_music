@@ -67,5 +67,6 @@ class Settings(BaseModel):
             submission_rate_limit=int(os.environ.get("GUITARSCRIBE_SUBMISSION_RATE_LIMIT", "5")),
             submission_rate_window_seconds=int(os.environ.get("GUITARSCRIBE_SUBMISSION_RATE_WINDOW_SECONDS", "3600")),
             ffmpeg_binary=os.environ.get("GUITARSCRIBE_FFMPEG_BINARY"),
+            rhythm_patterns_dir=Path(os.environ.get("GUITARSCRIBE_RHYTHM_PATTERNS_DIR", "/app/rhythm-patterns")),
             log_level=os.environ.get("GUITARSCRIBE_LOG_LEVEL", "INFO"),
         )
