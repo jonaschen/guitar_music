@@ -47,7 +47,10 @@ def reference(jams, audio_path):
         raise ValueError('Chord annotation does not cover excerpt')
     if any(abs(a['end']-b['start'])>1e-6 for a,b in zip(chords,chords[1:])):raise ValueError('Annotation gaps')
     points=[r for r in beat_track['data'] if 0<=r['time']<end]
-    ann=QualityAnnotation(recording_id=audio_path.stem.removesuffix('_mic'),evaluation_tier='quality_gate',
+    # Short dataset performances remain useful diagnostics, but cannot satisfy
+    # the existing 30-second quality-gate requirement. Never pad/repeat audio.
+    tier = 'quality_gate' if 30 <= end <= 60 else 'smoke'
+    ann=QualityAnnotation(recording_id=audio_path.stem.removesuffix('_mic'),evaluation_tier=tier,
         annotation_status='reviewed',reviewed_by='GuitarSet authors; dataset performance-informed chord annotation',
         source_file=audio_path.name,source_sha256=hashlib.sha256(audio_path.read_bytes()).hexdigest(),
         rights_note='GuitarSet v1.1.0, Xi et al., Zenodo 3371780, CC BY 4.0; original audio unmodified.',

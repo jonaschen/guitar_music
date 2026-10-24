@@ -20,8 +20,9 @@ class ChordDecoderConfig:
     short_event_change_penalty: float = 0.05
     circle_fifths_bonus: float = 0.015
     tonal_prior_scale: float = 1.0
+    duration_weighted_emissions: bool = False
 
-    def parameters(self) -> dict[str, float]:
+    def parameters(self) -> dict[str, float | bool]:
         return {f"decoder_{key}": value for key, value in asdict(self).items()}
 
 def get_chord_templates():
@@ -147,7 +148,14 @@ def _decode_region_sequence(
             values[index] += tonal_bias(labels[index], key, mode) * config.tonal_prior_scale
         emissions.append(values)
 
-    path_scores = emissions[0].copy()
+    # Integrate evidence over time rather than giving a brief transient the
+    # same vote as a long sustained region. Retain unweighted emissions for
+    # confidence margins, which must not change units with region duration.
+    path_emissions = [
+        values * (max(0.0, end - start) if config.duration_weighted_emissions else 1.0)
+        for (start, end, _), values in zip(regions, emissions)
+    ]
+    path_scores = path_emissions[0].copy()
     backpointers: list[np.ndarray] = []
     for region_index in range(1, len(regions)):
         start, end, _ = regions[region_index]
@@ -163,7 +171,7 @@ def _decode_region_sequence(
                     candidates[previous_index] -= change_penalty
                     candidates[previous_index] += _transition_bonus(previous_label, current_label, config.circle_fifths_bonus)
             best_previous = int(np.argmax(candidates))
-            next_scores[current_index] = candidates[best_previous] + emissions[region_index][current_index]
+            next_scores[current_index] = candidates[best_previous] + path_emissions[region_index][current_index]
             pointers[current_index] = best_previous
         path_scores = next_scores
         backpointers.append(pointers)
@@ -327,7 +335,7 @@ class ChromagramChordAnalyzer:
         self.decoder_config = decoder_config or ChordDecoderConfig()
 
     @property
-    def parameters(self) -> dict[str, float]:
+    def parameters(self) -> dict[str, float | bool]:
         return self.decoder_config.parameters()
 
     async def analyze(self, audio: NormalizedAudio, beats: BeatAnalysis) -> ChordAnalysis:

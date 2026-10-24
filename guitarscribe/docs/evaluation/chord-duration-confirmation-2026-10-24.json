@@ -1,0 +1,11 @@
+{
+  "recordings": ["03_SS3-84-Bb_comp", "04_Rock2-142-D_comp", "05_Funk2-119-G_comp"],
+  "selection": "Previously reserved distinct progression groups in guitarset-pilot-2026-10-24.json; unopened before freezing this change.",
+  "hypothesis": "Integrating regional emission scores over duration reduces short-region overrides without removing supported changes.",
+  "control": "Chromagram 1.4 defaults, duration_weighted_emissions=false",
+  "candidate": "Same features, boundaries, thresholds, priors and transition costs; duration_weighted_emissions=true only",
+  "primary_check": "Root duration accuracy must not regress on any of the three confirmation clips; report boundary F1, fragmentation and failures even when root improves.",
+  "manual_edits_allowed": 0,
+  "timing": "Reference beats isolate chord decoding; separate Librosa run checks fully automatic analysis. No learned beat model used, avoiding its GuitarSet training overlap.",
+  "limits": "Pure guitar, three clips, no mixed-song or listening acceptance. Oracle and no-prior outputs are diagnostics, never confirmation candidates. No parameter changes after opening."
+}
