@@ -1,6 +1,8 @@
 {
   "status": "user_confirmed_improvement_on_excerpt",
   "feedback": "B 好一些  比之前的版本進步 大致貼合了",
+  "additional_feedback": "很好  而且刷和弦的聲音也變好了",
+  "sound_acceptance": "User also reports improved strummed-chord sound on this same candidate. Preserve its voicings, rhythm and rendering configuration as the comparison baseline; do not attribute the improvement to synthesis alone.",
   "scope": "User reports improved overall fit on this 29-second mixed-audio excerpt. Not an exact chord or timing annotation, whole-song acceptance, or cross-song quality gate.",
   "candidate_revision": "ef03feac5da57246",
   "score_sha256": "bb1acd1914d6eb3c496016b42b2e188664d1447bb022736912d4b7e18d15fe1a",
