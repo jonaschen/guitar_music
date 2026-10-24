@@ -1,0 +1,19 @@
+{
+  "status": "user_confirmed_improvement_on_excerpt",
+  "feedback": "B 好一些  比之前的版本進步 大致貼合了",
+  "scope": "User reports improved overall fit on this 29-second mixed-audio excerpt. Not an exact chord or timing annotation, whole-song acceptance, or cross-song quality gate.",
+  "candidate_revision": "ef03feac5da57246",
+  "score_sha256": "bb1acd1914d6eb3c496016b42b2e188664d1447bb022736912d4b7e18d15fe1a",
+  "manifest_sha256": "14e10860e43cbfb57ccb3395dd2cf9d110c1583fa4579bc21aab9c96cbe448f3",
+  "candidate_audio_sha256": "352add1caeb4f5cef321106d7301040fa66c3ee37606c06d42db4ca6a73cb08b",
+  "source_sha256": "de1978a656d0c646cbc76d1deebe7a787d63b332dca3f248507feca0b4e008f0",
+  "duration_seconds": 29.291979166666668,
+  "analysis_offset": 49.95772916666667,
+  "listening_page": "http://127.0.0.1:5173/listening/automatic-accompaniment-2026-10-25/index.html",
+  "artifact_directory": "output/evaluation/automatic-accompaniment-2026-10-24",
+  "implementation_commit": "45b6d09",
+  "manual_timing_or_chord_edits": 0,
+  "saved_revision_written": false,
+  "production_default_changed": false,
+  "next_step": "Preserve this exact accompaniment as the comparison baseline; integrate via a separately reviewable work-score candidate while retaining G and validating offset, playback and export consistency. Keep cross-source failures open."
+}
