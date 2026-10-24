@@ -1,0 +1,30 @@
+{
+  "dataset": "GuitarSet 1.1.0, Zenodo 3371780",
+  "selected_before_inference": true,
+  "recordings": [
+    "00_SS2-88-F_comp",
+    "01_Rock1-90-C#_comp",
+    "02_Funk3-112-C#_comp"
+  ],
+  "selection": "Three different progression/style groups and performers, accompaniment microphone recordings; excludes known timing-error files. No selection by measured outcome.",
+  "role": "Initial baseline diagnostic; no parameter fitting. Once inspected, these are development data, never reused as blind confirmation.",
+  "automatic": "LibrosaBeatAnalyzer defaults plus ChromagramChordAnalyzer defaults at 44100Hz",
+  "diagnostic_only": "Same chord analyzer with annotated beats, explicitly not an automatic result",
+  "metrics": [
+    "beat F1 (mir_eval default 70ms)",
+    "major/minor duration accuracy",
+    "root duration accuracy",
+    "merged-label boundary F1 at 250ms",
+    "merged-label boundary F1 at 100ms",
+    "inference wall seconds",
+    "manual per-recording timing/chord edits"
+  ],
+  "manual_per_recording_edits_allowed": 0,
+  "limits": "Three real guitar excerpts are not three commercial mixed songs. No vocal extraction, melody recognition or synthesized accompaniment quality claim. Do not tune until all results and failures are reported.",
+  "reserved_uninspected_confirmation_recordings": [
+    "03_SS3-84-Bb_comp",
+    "04_Rock2-142-D_comp",
+    "05_Funk2-119-G_comp"
+  ],
+  "reservation_note": "Reserved after first baseline inspection, before any method changes; distinct progression groups from pilot. Not downloaded or scored."
+}
