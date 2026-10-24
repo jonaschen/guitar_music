@@ -4,6 +4,11 @@ from enum import Enum
 from typing import Optional
 import os
 
+class BeatEngine(str, Enum):
+    LIBROSA = "librosa"
+    BEAT_THIS_SMALL = "beat_this_small"
+
+
 class ChordEngine(str, Enum):
     AUTO = "auto"
     CHORDINO = "chordino"
@@ -16,6 +21,7 @@ class Settings(BaseModel):
     max_queued_jobs: int = Field(default=3, ge=0)
     job_ttl_seconds: int = 24 * 60 * 60
     work_dir: Path = Path("/tmp/guitarscribe")
+    beat_engine: BeatEngine = BeatEngine.LIBROSA
     chord_engine: ChordEngine = ChordEngine.AUTO
     chord_change_threshold: float = Field(default=0.12, ge=0, le=2)
     chord_no_chord_threshold: float = Field(default=0.18, ge=0, le=1)
@@ -44,6 +50,7 @@ class Settings(BaseModel):
             max_queued_jobs=int(os.environ.get("GUITARSCRIBE_MAX_QUEUED_JOBS", "3")),
             job_ttl_seconds=int(os.environ.get("GUITARSCRIBE_JOB_TTL_SECONDS", str(24 * 60 * 60))),
             work_dir=Path(os.environ.get("GUITARSCRIBE_WORK_DIR", "/tmp/guitarscribe")),
+            beat_engine=BeatEngine(os.environ.get("GUITARSCRIBE_BEAT_ENGINE", "librosa")),
             chord_engine=ChordEngine(os.environ.get("GUITARSCRIBE_CHORD_ENGINE", "auto")),
             chord_change_threshold=float(os.environ.get("GUITARSCRIBE_CHORD_CHANGE_THRESHOLD", "0.12")),
             chord_no_chord_threshold=float(os.environ.get("GUITARSCRIBE_CHORD_NO_CHORD_THRESHOLD", "0.18")),

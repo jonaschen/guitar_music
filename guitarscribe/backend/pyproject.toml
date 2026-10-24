@@ -18,6 +18,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+timing = [
+    "beat-this==1.1.0",
+]
 melody = [
     "basic-pitch[onnx]>=0.3",
 ]

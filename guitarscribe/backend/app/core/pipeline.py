@@ -8,7 +8,7 @@ from typing import Awaitable, Callable, Dict, Any
 from ..models.audio import SourceRequest
 from ..models.score import SongScore, SongInfo, AnalysisSummary, Provenance, KeyContext, KeySignature
 from ..models.analysis import AudioFeatures, MelodyAnalysis, MelodyMode, ChordComplexity
-from .config import Settings, ChordEngine
+from .config import Settings, ChordEngine, BeatEngine
 from ..analyzers.preprocessor import DemucsMelodySeparator, FFmpegPreprocessor
 from ..analyzers.protocols import ChordCandidateAnalyzer, TimingCandidateAnalyzer
 from ..analyzers.beats.librosa_beats import LibrosaBeatAnalyzer
@@ -101,6 +101,10 @@ class AnalysisPipeline:
             beats = self.beat_analyzer.project(timing_result)
         else:
             beats = await self.beat_analyzer.analyze(normalized)
+            if options.get("_artifact_directory"):
+                (Path(options["_artifact_directory"]) / "timing-analysis.json").write_text(
+                    beats.model_dump_json(indent=2) + "\n"
+                )
         
         await report("chord_analysis")
         if timing_result is not None and isinstance(self.chord_analyzer, ChordCandidateAnalyzer):
@@ -255,9 +259,11 @@ class AnalysisPipeline:
                 chord_engine=chords.engine,
                 melody_engine=melody.engine,
                 beat_engine_version=beats.engine_version,
+                tempo_map_version="learned-downbeats-v1" if beats.engine == "beat-this" else "legacy-beat-grid-v1",
                 chord_engine_version=chords.engine_version,
                 melody_engine_version=melody.engine_version,
                 parameters={
+                    **getattr(self.beat_analyzer, "parameters", {}),
                     "melody_mode": melody_mode.value,
                     "separate_vocals_requested": separate_vocals,
                     "vocal_source_separated": source_separated,
@@ -271,7 +277,11 @@ class AnalysisPipeline:
 
 def create_pipeline(settings: Settings) -> AnalysisPipeline:
     preprocessor = FFmpegPreprocessor(ffmpeg_binary=settings.ffmpeg_binary)
-    beat_analyzer = LibrosaBeatAnalyzer()
+    if settings.beat_engine == BeatEngine.BEAT_THIS_SMALL:
+        from ..analyzers.beats.beat_this_adapter import BeatThisBeatAnalyzer
+        beat_analyzer = BeatThisBeatAnalyzer()
+    else:
+        beat_analyzer = LibrosaBeatAnalyzer()
     
     chord_analyzer = None
     if settings.chord_engine in (ChordEngine.AUTO, ChordEngine.CHORDINO):
