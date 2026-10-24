@@ -1,0 +1,596 @@
+{
+  "plugin": {
+    "source": "https://github.com/c4dm/nnls-chroma",
+    "commit": "4c5f214a75cb354f8d8c933e161377c5b4d83713",
+    "binary_sha256": "fb7d75cf816d3eab3d97da8e6df51f5642b008a49ff4ec6bc2695c42dfded998",
+    "parameters": [
+      {
+        "identifier": "useNNLS",
+        "name": "use approximate transcription (NNLS)",
+        "description": "Toggles approximate transcription (NNLS).",
+        "unit": "",
+        "minValue": 0.0,
+        "maxValue": 1.0,
+        "defaultValue": 1.0,
+        "isQuantized": true,
+        "quantizeStep": 1.0
+      },
+      {
+        "identifier": "rollon",
+        "name": "bass noise threshold",
+        "description": "Consider the cumulative energy spectrum (from low to high frequencies). All bins below the first bin whose cumulative energy exceeds the quantile [bass noise threshold] x [total energy] will be set to 0. A threshold value of 0 means that no bins will be changed.",
+        "unit": "%",
+        "minValue": 0.0,
+        "maxValue": 5.0,
+        "defaultValue": 0.0,
+        "isQuantized": true,
+        "quantizeStep": 0.5
+      },
+      {
+        "identifier": "tuningmode",
+        "name": "tuning mode",
+        "description": "Tuning can be performed locally or on the whole extraction segment. Local tuning is only advisable when the tuning is likely to change over the audio, for example in podcasts, or in a cappella singing.",
+        "unit": "",
+        "minValue": 0.0,
+        "maxValue": 1.0,
+        "defaultValue": 0.0,
+        "isQuantized": true,
+        "quantizeStep": 1.0,
+        "valueNames": [
+          "global tuning",
+          "local tuning"
+        ]
+      },
+      {
+        "identifier": "whitening",
+        "name": "spectral whitening",
+        "description": "Spectral whitening: no whitening - 0; whitening - 1.",
+        "unit": "",
+        "minValue": 0.0,
+        "maxValue": 1.0,
+        "defaultValue": 1.0,
+        "isQuantized": false
+      },
+      {
+        "identifier": "s",
+        "name": "spectral shape",
+        "description": "Determines how individual notes in the note dictionary look: higher values mean more dominant higher harmonics.",
+        "unit": "",
+        "minValue": 0.5,
+        "maxValue": 0.8999999761581421,
+        "defaultValue": 0.699999988079071,
+        "isQuantized": false
+      },
+      {
+        "identifier": "boostn",
+        "name": "boost N",
+        "description": "Boost likelihood of the N (no chord) label.",
+        "unit": "",
+        "minValue": 0.0,
+        "maxValue": 1.0,
+        "defaultValue": 0.10000000149011612,
+        "isQuantized": false
+      },
+      {
+        "identifier": "usehartesyntax",
+        "name": "use Harte syntax",
+        "description": "Use the chord syntax proposed by Harte",
+        "unit": "",
+        "minValue": 0.0,
+        "maxValue": 1.0,
+        "defaultValue": 0.0,
+        "isQuantized": true,
+        "quantizeStep": 1.0,
+        "valueNames": [
+          "no",
+          "yes"
+        ]
+      }
+    ],
+    "block_size": 16384,
+    "step_size": 2048,
+    "external_chord_dictionary": false,
+    "license": "GPL-2.0 per upstream repository",
+    "build": "make -f Makefile.linux -j2 VAMP_SDK_DIR=/usr/include BOOST_ROOT=/home/jonas/.cache/guitarscribe-chordino-diagnostic/boost/usr/include"
+  },
+  "runs": [
+    {
+      "schema_version": "1.0",
+      "protocol": {
+        "dataset": "GuitarSet 1.1.0, Zenodo 3371780",
+        "selected_before_inference": true,
+        "recordings": [
+          "00_SS2-88-F_comp",
+          "01_Rock1-90-C#_comp",
+          "02_Funk3-112-C#_comp"
+        ],
+        "selection": "Three different progression/style groups and performers, accompaniment microphone recordings; excludes known timing-error files. No selection by measured outcome.",
+        "role": "Initial baseline diagnostic; no parameter fitting. Once inspected, these are development data, never reused as blind confirmation.",
+        "automatic": "LibrosaBeatAnalyzer defaults plus ChromagramChordAnalyzer defaults at 44100Hz",
+        "diagnostic_only": "Same chord analyzer with annotated beats, explicitly not an automatic result",
+        "metrics": [
+          "beat F1 (mir_eval default 70ms)",
+          "major/minor duration accuracy",
+          "root duration accuracy",
+          "merged-label boundary F1 at 250ms",
+          "merged-label boundary F1 at 100ms",
+          "inference wall seconds",
+          "manual per-recording timing/chord edits"
+        ],
+        "manual_per_recording_edits_allowed": 0,
+        "limits": "Three real guitar excerpts are not three commercial mixed songs. No vocal extraction, melody recognition or synthesized accompaniment quality claim. Do not tune until all results and failures are reported.",
+        "reserved_uninspected_confirmation_recordings": [
+          "03_SS3-84-Bb_comp",
+          "04_Rock2-142-D_comp",
+          "05_Funk2-119-G_comp"
+        ],
+        "reservation_note": "Reserved after first baseline inspection, before any method changes; distinct progression groups from pilot. Not downloaded or scored."
+      },
+      "protocol_sha256": "5f9661276c5bbb65764d4d1ade3cdcb919f7ba63bb77760fc84f90c16b3e7cb7",
+      "dataset": "guitarscribe/output/datasets/guitarset-1.1.0/subset",
+      "runner_sha256": "851c19c32ae592c2dac4d3207b1eafbc63db11bd52fe4012759f787c236f644b",
+      "python_version": "3.12.3",
+      "package_versions": {
+        "vamp": "1.1.0",
+        "librosa": "0.11.0",
+        "numpy": "1.26.4",
+        "mir_eval": "0.8.2",
+        "soundfile": "0.14.0",
+        "pydantic": "2.14.1"
+      },
+      "analyzer": {
+        "name": "chordino",
+        "engine_version": "1.0",
+        "parameters": "ChordinoChordAnalyzer defaults; no per-recording tuning",
+        "beat_input": "empty BeatAnalysis; reference beat annotations are not supplied"
+      },
+      "records": [
+        {
+          "recording_id": "00_SS2-88-F_comp",
+          "status": "ok",
+          "audio_sha256": "2f2c5c65d86fd135a15c47d38e9d61e3748c0c31a5ca163632b36eba239811f4",
+          "inference_wall_seconds": 24.54930862598121,
+          "failure": null,
+          "duration_seconds": 43.629200000000026,
+          "evaluation_tier": "quality_gate",
+          "manual_edits": 0,
+          "engine": "chordino",
+          "engine_version": "1.0",
+          "chord_metrics": {
+            "majmin_weighted_accuracy": 0.9341410798063297,
+            "root_weighted_accuracy": 0.921548345253346,
+            "acceptable_majmin_weighted_accuracy": 0.6421740611146166,
+            "acceptable_root_weighted_accuracy": 0.921548345253346,
+            "boundary_precision": 0.6,
+            "boundary_recall": 0.9230769230769231,
+            "boundary_f_measure": 0.7272727272727274,
+            "reference_event_count": 14,
+            "estimated_event_count": 21,
+            "excess_event_count": 7,
+            "estimated_events_per_minute": 28.87974109082906,
+            "fragmentation_ratio": 1.5,
+            "over_fragmented": true,
+            "review_event_count": 0,
+            "review_event_ratio": 0.0,
+            "correct_no_chord_seconds": 0.0,
+            "false_chord_during_no_chord_seconds": 0.0,
+            "missed_chord_seconds": 0.232199546,
+            "reference_no_chord_seconds": 0.0,
+            "estimated_no_chord_seconds": 0.232199546,
+            "merged_boundary_100ms": {
+              "precision": 0.42105263157894735,
+              "recall": 0.6153846153846154,
+              "f_measure": 0.5
+            },
+            "majmin_reference_coverage": 0.687448689493192
+          },
+          "unknown_labels": {
+            "count": 0,
+            "duration_seconds": 0,
+            "events": [],
+            "note": "Labels mapped to X are unscorable/unknown, not major chords."
+          },
+          "timing_metrics": "not evaluated",
+          "artifacts": {
+            "chord_analysis": "00_SS2-88-F_comp.chord-analysis.json",
+            "score": "00_SS2-88-F_comp.score.json",
+            "metrics": "00_SS2-88-F_comp.metrics.json"
+          },
+          "wall_seconds": 28.18952852601069
+        },
+        {
+          "recording_id": "01_Rock1-90-C#_comp",
+          "status": "ok",
+          "audio_sha256": "2dc712e3457bcde208ae59bf8fab8d7f0d7335368271dd211856a13323b50bee",
+          "inference_wall_seconds": 0.8799305920256302,
+          "failure": null,
+          "duration_seconds": 31.999999999999993,
+          "evaluation_tier": "quality_gate",
+          "manual_edits": 0,
+          "engine": "chordino",
+          "engine_version": "1.0",
+          "chord_metrics": {
+            "majmin_weighted_accuracy": 0.9744444443854166,
+            "root_weighted_accuracy": 0.9744444443854166,
+            "acceptable_majmin_weighted_accuracy": 0.9744444443854168,
+            "acceptable_root_weighted_accuracy": 0.9744444443854168,
+            "boundary_precision": 0.6666666666666666,
+            "boundary_recall": 0.8,
+            "boundary_f_measure": 0.7272727272727272,
+            "reference_event_count": 6,
+            "estimated_event_count": 7,
+            "excess_event_count": 1,
+            "estimated_events_per_minute": 13.125000000000004,
+            "fragmentation_ratio": 1.1666666666666667,
+            "over_fragmented": false,
+            "review_event_count": 0,
+            "review_event_ratio": 0.0,
+            "correct_no_chord_seconds": 0.0,
+            "false_chord_during_no_chord_seconds": 0.0,
+            "missed_chord_seconds": 0.232199546,
+            "reference_no_chord_seconds": 0.0,
+            "estimated_no_chord_seconds": 0.232199546,
+            "merged_boundary_100ms": {
+              "precision": 0.4,
+              "recall": 0.4,
+              "f_measure": 0.4000000000000001
+            },
+            "majmin_reference_coverage": 1.0
+          },
+          "unknown_labels": {
+            "count": 0,
+            "duration_seconds": 0,
+            "events": [],
+            "note": "Labels mapped to X are unscorable/unknown, not major chords."
+          },
+          "timing_metrics": "not evaluated",
+          "artifacts": {
+            "chord_analysis": "01_Rock1-90-C#_comp.chord-analysis.json",
+            "score": "01_Rock1-90-C#_comp.score.json",
+            "metrics": "01_Rock1-90-C#_comp.metrics.json"
+          },
+          "wall_seconds": 1.031810388987651
+        },
+        {
+          "recording_id": "02_Funk3-112-C#_comp",
+          "status": "ok",
+          "audio_sha256": "b85381638984aafa8aff67691ccdd839c2fa4fb10bdc6f18a52810059b0a44f7",
+          "inference_wall_seconds": 0.9718971760012209,
+          "failure": null,
+          "duration_seconds": 34.284399092970524,
+          "evaluation_tier": "quality_gate",
+          "manual_edits": 0,
+          "engine": "chordino",
+          "engine_version": "1.0",
+          "chord_metrics": {
+            "majmin_weighted_accuracy": 0.8653333332333334,
+            "root_weighted_accuracy": 0.8239972166380062,
+            "acceptable_majmin_weighted_accuracy": 0.10817081606377757,
+            "acceptable_root_weighted_accuracy": 0.8239972166380062,
+            "boundary_precision": 0.5454545454545454,
+            "boundary_recall": 0.8,
+            "boundary_f_measure": 0.6486486486486486,
+            "reference_event_count": 16,
+            "estimated_event_count": 23,
+            "excess_event_count": 7,
+            "estimated_events_per_minute": 40.25154404071055,
+            "fragmentation_ratio": 1.4375,
+            "over_fragmented": true,
+            "review_event_count": 0,
+            "review_event_ratio": 0.0,
+            "correct_no_chord_seconds": 0.0,
+            "false_chord_during_no_chord_seconds": 0.0,
+            "missed_chord_seconds": 0.232199546,
+            "reference_no_chord_seconds": 0.0,
+            "estimated_no_chord_seconds": 0.232199546,
+            "merged_boundary_100ms": {
+              "precision": 0.09523809523809523,
+              "recall": 0.13333333333333333,
+              "f_measure": 0.1111111111111111
+            },
+            "majmin_reference_coverage": 0.12500479515748622
+          },
+          "unknown_labels": {
+            "count": 0,
+            "duration_seconds": 0,
+            "events": [],
+            "note": "Labels mapped to X are unscorable/unknown, not major chords."
+          },
+          "timing_metrics": "not evaluated",
+          "artifacts": {
+            "chord_analysis": "02_Funk3-112-C#_comp.chord-analysis.json",
+            "score": "02_Funk3-112-C#_comp.score.json",
+            "metrics": "02_Funk3-112-C#_comp.metrics.json"
+          },
+          "wall_seconds": 1.1477225169946905
+        }
+      ],
+      "status": "complete",
+      "timing_metrics": "not reported as quality results; this pilot evaluates chord metrics only"
+    },
+    {
+      "schema_version": "1.0",
+      "protocol": {
+        "recordings": [
+          "03_SS3-84-Bb_comp",
+          "04_Rock2-142-D_comp",
+          "05_Funk2-119-G_comp"
+        ],
+        "selection": "Previously reserved distinct progression groups in guitarset-pilot-2026-10-24.json; unopened before freezing this change.",
+        "hypothesis": "Integrating regional emission scores over duration reduces short-region overrides without removing supported changes.",
+        "control": "Chromagram 1.4 defaults, duration_weighted_emissions=false",
+        "candidate": "Same features, boundaries, thresholds, priors and transition costs; duration_weighted_emissions=true only",
+        "primary_check": "Root duration accuracy must not regress on any of the three confirmation clips; report boundary F1, fragmentation and failures even when root improves.",
+        "manual_edits_allowed": 0,
+        "timing": "Reference beats isolate chord decoding; separate Librosa run checks fully automatic analysis. No learned beat model used, avoiding its GuitarSet training overlap.",
+        "limits": "Pure guitar, three clips, no mixed-song or listening acceptance. Oracle and no-prior outputs are diagnostics, never confirmation candidates. No parameter changes after opening."
+      },
+      "protocol_sha256": "32f2eda7da4b76ae6b58bae767db9a7972dcf8a2791530f9d1428b0ae84c8df9",
+      "dataset": "guitarscribe/output/datasets/guitarset-1.1.0/confirmation",
+      "runner_sha256": "851c19c32ae592c2dac4d3207b1eafbc63db11bd52fe4012759f787c236f644b",
+      "python_version": "3.12.3",
+      "package_versions": {
+        "vamp": "1.1.0",
+        "librosa": "0.11.0",
+        "numpy": "1.26.4",
+        "mir_eval": "0.8.2",
+        "soundfile": "0.14.0",
+        "pydantic": "2.14.1"
+      },
+      "analyzer": {
+        "name": "chordino",
+        "engine_version": "1.0",
+        "parameters": "ChordinoChordAnalyzer defaults; no per-recording tuning",
+        "beat_input": "empty BeatAnalysis; reference beat annotations are not supplied"
+      },
+      "records": [
+        {
+          "recording_id": "03_SS3-84-Bb_comp",
+          "status": "ok",
+          "audio_sha256": "dcd3b1855030c613ea05b2469225ce2ce31587a6d50d7bd287a2989d0754f332",
+          "inference_wall_seconds": 26.12306773799355,
+          "failure": null,
+          "duration_seconds": 45.70759637188208,
+          "evaluation_tier": "quality_gate",
+          "manual_edits": 0,
+          "engine": "chordino",
+          "engine_version": "1.0",
+          "chord_metrics": {
+            "majmin_weighted_accuracy": 0.9419766909804639,
+            "root_weighted_accuracy": 0.9423566443281133,
+            "acceptable_majmin_weighted_accuracy": 0.8242123722299143,
+            "acceptable_root_weighted_accuracy": 0.9423566443281132,
+            "boundary_precision": 0.7,
+            "boundary_recall": 0.9333333333333333,
+            "boundary_f_measure": 0.8,
+            "reference_event_count": 16,
+            "estimated_event_count": 21,
+            "excess_event_count": 5,
+            "estimated_events_per_minute": 27.56653379338743,
+            "fragmentation_ratio": 1.3125,
+            "over_fragmented": true,
+            "review_event_count": 0,
+            "review_event_ratio": 0.0,
+            "correct_no_chord_seconds": 0.0,
+            "false_chord_during_no_chord_seconds": 0.0,
+            "missed_chord_seconds": 0.232199546,
+            "reference_no_chord_seconds": 0.0,
+            "estimated_no_chord_seconds": 0.232199546,
+            "merged_boundary_100ms": {
+              "precision": 0.47368421052631576,
+              "recall": 0.6,
+              "f_measure": 0.5294117647058824
+            },
+            "majmin_reference_coverage": 0.874981706152438
+          },
+          "unknown_labels": {
+            "count": 0,
+            "duration_seconds": 0,
+            "events": [],
+            "note": "Labels mapped to X are unscorable/unknown, not major chords."
+          },
+          "timing_metrics": "not evaluated",
+          "artifacts": {
+            "chord_analysis": "03_SS3-84-Bb_comp.chord-analysis.json",
+            "score": "03_SS3-84-Bb_comp.score.json",
+            "metrics": "03_SS3-84-Bb_comp.metrics.json"
+          },
+          "wall_seconds": 28.734663295006612
+        },
+        {
+          "recording_id": "04_Rock2-142-D_comp",
+          "status": "ok",
+          "audio_sha256": "77589eeda2dfd7a8e8652b9b0c8a002529d911786e4be29c7bafda31fa32ba99",
+          "inference_wall_seconds": 0.7077395550149959,
+          "failure": null,
+          "duration_seconds": 27.041600000000003,
+          "evaluation_tier": "smoke",
+          "manual_edits": 0,
+          "engine": "chordino",
+          "engine_version": "1.0",
+          "chord_metrics": {
+            "majmin_weighted_accuracy": 0.8518283736131638,
+            "root_weighted_accuracy": 0.8419803079459837,
+            "acceptable_majmin_weighted_accuracy": 0.6921066936200957,
+            "acceptable_root_weighted_accuracy": 0.8419803079459837,
+            "boundary_precision": 0.5714285714285714,
+            "boundary_recall": 0.6153846153846154,
+            "boundary_f_measure": 0.5925925925925927,
+            "reference_event_count": 14,
+            "estimated_event_count": 15,
+            "excess_event_count": 1,
+            "estimated_events_per_minute": 33.28205431631264,
+            "fragmentation_ratio": 1.0714285714285714,
+            "over_fragmented": false,
+            "review_event_count": 0,
+            "review_event_ratio": 0.0,
+            "correct_no_chord_seconds": 0.0,
+            "false_chord_during_no_chord_seconds": 0.0,
+            "missed_chord_seconds": 0.232199546,
+            "reference_no_chord_seconds": 0.0,
+            "estimated_no_chord_seconds": 0.232199546,
+            "merged_boundary_100ms": {
+              "precision": 0.23076923076923078,
+              "recall": 0.23076923076923078,
+              "f_measure": 0.23076923076923078
+            },
+            "majmin_reference_coverage": 0.8124954686404923
+          },
+          "unknown_labels": {
+            "count": 0,
+            "duration_seconds": 0,
+            "events": [],
+            "note": "Labels mapped to X are unscorable/unknown, not major chords."
+          },
+          "timing_metrics": "not evaluated",
+          "artifacts": {
+            "chord_analysis": "04_Rock2-142-D_comp.chord-analysis.json",
+            "score": "04_Rock2-142-D_comp.score.json",
+            "metrics": "04_Rock2-142-D_comp.metrics.json"
+          },
+          "wall_seconds": 0.8176388200081419
+        },
+        {
+          "recording_id": "05_Funk2-119-G_comp",
+          "status": "ok",
+          "audio_sha256": "d8056eeace67f5451907b7a1d779e1ea576fee79f2df73e68909c7e944ac43a2",
+          "inference_wall_seconds": 1.3240663199976552,
+          "failure": null,
+          "duration_seconds": 32.26319727891156,
+          "evaluation_tier": "quality_gate",
+          "manual_edits": 0,
+          "engine": "chordino",
+          "engine_version": "1.0",
+          "chord_metrics": {
+            "majmin_weighted_accuracy": 0.19003551110440112,
+            "root_weighted_accuracy": 0.22063957333578235,
+            "acceptable_majmin_weighted_accuracy": 0.09500093829830741,
+            "acceptable_root_weighted_accuracy": 0.22063957333578235,
+            "boundary_precision": 0.21428571428571427,
+            "boundary_recall": 0.46153846153846156,
+            "boundary_f_measure": 0.2926829268292683,
+            "reference_event_count": 14,
+            "estimated_event_count": 29,
+            "excess_event_count": 15,
+            "estimated_events_per_minute": 53.93141866746509,
+            "fragmentation_ratio": 2.0714285714285716,
+            "over_fragmented": true,
+            "review_event_count": 0,
+            "review_event_ratio": 0.0,
+            "correct_no_chord_seconds": 0.0,
+            "false_chord_during_no_chord_seconds": 0.0,
+            "missed_chord_seconds": 0.232199546,
+            "reference_no_chord_seconds": 0.0,
+            "estimated_no_chord_seconds": 0.232199546,
+            "merged_boundary_100ms": {
+              "precision": 0.07407407407407407,
+              "recall": 0.15384615384615385,
+              "f_measure": 0.1
+            },
+            "majmin_reference_coverage": 0.49991150467722895
+          },
+          "unknown_labels": {
+            "count": 0,
+            "duration_seconds": 0,
+            "events": [],
+            "note": "Labels mapped to X are unscorable/unknown, not major chords."
+          },
+          "timing_metrics": "not evaluated",
+          "artifacts": {
+            "chord_analysis": "05_Funk2-119-G_comp.chord-analysis.json",
+            "score": "05_Funk2-119-G_comp.score.json",
+            "metrics": "05_Funk2-119-G_comp.metrics.json"
+          },
+          "wall_seconds": 1.4837715509929694
+        }
+      ],
+      "status": "complete",
+      "timing_metrics": "not reported as quality results; this pilot evaluates chord metrics only"
+    }
+  ],
+  "listening_probe": {
+    "source_sha256": "de1978a656d0c646cbc76d1deebe7a787d63b332dca3f248507feca0b4e008f0",
+    "source_config_id": "48cfe91fb7eeab78af0f436df6bf0a707da828dc0750c58eeff873462e8bc2ab",
+    "duration_seconds": 29.291979166666668,
+    "analysis_offset": 49.95772916666667,
+    "manual_timing_or_chord_edits": 0,
+    "saved_revision_written": false,
+    "beat_model": "small0",
+    "device": "cpu",
+    "threads": 2,
+    "dbn": false,
+    "beat_this_version": "1.1.0",
+    "vamp_version": "1.1.0",
+    "beat_weights_sha256": "6074be2c4d490c5f6101fcc374a1ec72ae93456e23bb6019783b849f5dc7d47b",
+    "chord_engine": "Chordino built-in defaults; no external chord dictionary",
+    "rhythm": {
+      "subdivision": 8,
+      "pattern_id": "pop_4_4_8th_01",
+      "display": [
+        "D",
+        null,
+        "D",
+        "U",
+        null,
+        "U",
+        "D",
+        "U"
+      ],
+      "accents": [
+        1.0,
+        0.0,
+        0.7,
+        0.4,
+        0.0,
+        0.5,
+        0.8,
+        0.4
+      ],
+      "confidence": 0.438,
+      "label": "Basic Pop 8th Note Strum"
+    },
+    "wall_seconds": 51.41733626101632,
+    "scope": "Guitar-only candidate on original mixed audio; no new melody extraction. Listening experiment, not quality acceptance."
+  },
+  "render": {
+    "source_sha256": "de1978a656d0c646cbc76d1deebe7a787d63b332dca3f248507feca0b4e008f0",
+    "baseline_revision": "cfdcf251852e1ee5",
+    "candidate_revision": "ef03feac5da57246",
+    "duration": 29.291979166666668,
+    "results": [
+      {
+        "label": "original",
+        "peak": 0.44226446747779846,
+        "rms": 0.11460476821892206,
+        "voices": 0,
+        "seconds": 29.64199546485261,
+        "sha256": "175a442df0bbf1c75025adde8e3aa66c95a919aa6d001728087f808a877153fc"
+      },
+      {
+        "label": "before",
+        "peak": 0.5812699198722839,
+        "rms": 0.12693963657842547,
+        "voices": 543,
+        "seconds": 29.64199546485261,
+        "sha256": "e0bf855b57708a72442ded7eca532efcd0087e9d4f3545890e37da09f1a74660"
+      },
+      {
+        "label": "candidate",
+        "peak": 0.5334101319313049,
+        "rms": 0.12572367594302,
+        "voices": 530,
+        "seconds": 29.64199546485261,
+        "sha256": "352add1caeb4f5cef321106d7301040fa66c3ee37606c06d42db4ca6a73cb08b"
+      }
+    ],
+    "playback": {
+      "advanced": true,
+      "exclusive": true,
+      "durations": [
+        29.641995,
+        29.641995,
+        29.641995
+      ]
+    }
+  }
+}

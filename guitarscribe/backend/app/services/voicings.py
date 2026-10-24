@@ -19,8 +19,48 @@ COMMON_VOICINGS: dict[str, list[dict]] = {
 ROOT_PITCH = {"C": 8, "C#": 9, "Db": 9, "D": 10, "D#": 11, "Eb": 11, "E": 0, "F": 1, "F#": 2, "Gb": 2, "G": 3, "G#": 4, "Ab": 4, "A": 5, "A#": 6, "Bb": 6, "B": 7}
 ROOT_RE = re.compile(r"^([A-G](?:#|b)?)")
 TRIAD_RE = re.compile(r"^([A-G](?:#|b)?)(m)?$")
+EXTENDED_RE = re.compile(r"^([A-G](?:#|b)?)(maj7|m7b5|m7|m6|7|6)$")
+
+# Root-position E/A-family shapes; all four chord tones are present.
+# Frets are relative to the root on the sixth/fifth string respectively.
+EXTENDED_SHAPES = {
+    "7": ([0, 2, 0, 1, 0, 0], [None, 0, 2, 0, 2, 0]),
+    "maj7": ([0, 2, 1, 1, 0, 0], [None, 0, 2, 1, 2, 0]),
+    "m7": ([0, 2, 0, 0, 0, 0], [None, 0, 2, 0, 1, 0]),
+    "6": ([0, 2, 2, 1, 2, 0], [None, 0, 2, 2, 2, 2]),
+    "m6": ([0, 2, 2, 0, 2, 0], [None, 0, 2, 2, 1, 2]),
+    "m7b5": ([0, 1, 0, 0, None, None], [None, 0, 1, 0, 1, None]),
+}
+EXTENDED_FINGERS = {
+    "7": ([1, 3, 1, 2, 1, 1], [None, 1, 3, 1, 4, 1]),
+    "maj7": ([1, 4, 2, 3, 1, 1], [None, 1, 3, 2, 4, 1]),
+    "m7": ([1, 3, 1, 1, 1, 1], [None, 1, 3, 1, 2, 1]),
+    "6": ([1, 3, 3, 2, 4, 1], [None, 1, 3, 3, 3, 3]),
+    "m6": ([1, 3, 3, 1, 4, 1], [None, 1, 3, 3, 2, 4]),
+    "m7b5": ([1, 2, 1, 1, None, None], [None, 1, 2, 1, 3, None]),
+}
 
 class ChordVoicingProvider:
+    def _extended_shapes(self, symbol: str) -> list[dict]:
+        match = EXTENDED_RE.fullmatch(symbol)
+        if not match:
+            return []
+        root, quality = match.groups()
+        shapes = []
+        for index, family in enumerate(("e", "a")):
+            position = (ROOT_PITCH[root] - (5 if index else 0)) % 12
+            for base in (position, position + 12):
+                relative = EXTENDED_SHAPES[quality][index]
+                frets = [None if fret is None else base + fret for fret in relative]
+                fingers = [None if fret is None or fret == 0 else finger
+                           for fret, finger in zip(frets, EXTENDED_FINGERS[quality][index])]
+                shapes.append(dict(
+                    id=f"extended-{family}-{symbol}-{base}", frets=frets, fingers=fingers,
+                    base_fret=max(1, base), difficulty=3.5,
+                    tags=["extended", "movable", f"{family}-shape", "open" if base == 0 else "barre"],
+                ))
+        return shapes
+
     def _caged_shapes(self, symbol: str) -> list[dict]:
         match = TRIAD_RE.match(symbol)
         if not match:
@@ -74,7 +114,7 @@ class ChordVoicingProvider:
     def get(self, symbol: str, capo: int = 0, max_fret: int = 15) -> list[ChordVoicing]:
         shapes = [
             {**shape, "frets": list(shape["frets"]), "fingers": list(shape["fingers"]), "tags": list(shape["tags"])}
-            for shape in [*COMMON_VOICINGS.get(symbol, []), *self._caged_shapes(symbol)]
+            for shape in [*COMMON_VOICINGS.get(symbol, []), *self._caged_shapes(symbol), *self._extended_shapes(symbol)]
         ]
         unique_shapes = []
         seen_frets: dict[tuple, int] = {}

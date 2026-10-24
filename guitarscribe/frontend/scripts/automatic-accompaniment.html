@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="zh-Hant">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>整段伴奏比較</title>
+<style>body{font:18px/1.65 system-ui;max-width:720px;margin:32px auto;padding:0 20px;background:#f6f7f9;color:#17232a}section{background:white;padding:18px;margin:18px 0;border-radius:12px}audio{width:100%}h1{font-size:28px}h2{font-size:21px;margin:0 0 8px}</style>
+<h1>整段伴奏比較</h1>
+<p>同一段約29秒，從「我們小手拉大手」到「暖洋洋的哀愁」。先聽A，再聽B；不需要標時間或數拍子。</p>
+<section><h2>A・前次對照版</h2><audio aria-label="A 前次對照版" controls preload="metadata" src="before.wav"></audio></section>
+<section><h2>B・全自動版本</h2><audio aria-label="B 全自動版本" controls preload="metadata" src="candidate.wav"></audio></section>
+<details><summary>需要時單聽原曲</summary><audio aria-label="原曲" controls preload="metadata" src="original.wav"></audio></details>
+<p>請回報兩點：</p>
+<ol><li>B的整段合拍程度：<strong>更好／差不多／更差／無法判斷</strong>。</li><li>最後「哀愁」附近：<strong>仍搶拍／大致貼合／偏慢／無法判斷</strong>。</li></ol>
+<p>若有明顯不和諧的和弦，可以順便指出那一句。其餘不用測。</p>
+<script>const players=[...document.querySelectorAll('audio')];for(const player of players)player.addEventListener('play',()=>{for(const other of players)if(other!==player)other.pause();});</script>
+</html>
