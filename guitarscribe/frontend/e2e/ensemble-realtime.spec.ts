@@ -36,14 +36,32 @@ function wavFile(): Buffer {
 
 async function installAudioProbe(page: Page) {
   await page.addInitScript(() => {
-    const state: Array<{ frequency: number; starts: number[]; stops: number[] }> = [];
+    const state: Array<{ frequency: number; starts: number[]; stops: number[]; gains: number[] }> = [];
     (window as any).__ensembleOscillators = state;
     const prototype = AudioContext.prototype;
+    const gains = new WeakMap<GainNode, number[]>();
+    const createGain = prototype.createGain;
+    prototype.createGain = function () {
+      const gain = createGain.call(this), values: number[] = [];
+      gains.set(gain, values);
+      for (const method of ["setValueAtTime", "linearRampToValueAtTime", "exponentialRampToValueAtTime"] as const) {
+        const original = gain.gain[method].bind(gain.gain);
+        gain.gain[method] = ((value: number, time: number) => {
+          values.push(value); return original(value, time);
+        }) as typeof original;
+      }
+      return gain;
+    };
     const createOscillator = prototype.createOscillator;
     prototype.createOscillator = function () {
       const context = this;
       const oscillator = createOscillator.call(this);
-      const row = { frequency: NaN, starts: [] as number[], stops: [] as number[] };
+      const row = { frequency: NaN, starts: [] as number[], stops: [] as number[], gains: [] as number[] };
+      const connect = oscillator.connect.bind(oscillator);
+      oscillator.connect = ((target: AudioNode) => {
+        if (target instanceof GainNode) row.gains = gains.get(target) ?? [];
+        return connect(target);
+      }) as typeof oscillator.connect;
       state.push(row);
       const setFrequency = oscillator.frequency.setValueAtTime.bind(oscillator.frequency);
       oscillator.frequency.setValueAtTime = ((value: number, time: number) => {
@@ -73,14 +91,18 @@ async function setup(page: Page, barSeconds: number) {
       { id: "g1", track: "guitar", start: .02, end: .08, sustain_end: .08, pitches: [48], pitch_offsets: [0], pitch_velocities: [100], velocity: 100 },
       { id: "g2", track: "guitar", start: barSeconds * .55, end: barSeconds * .7, sustain_end: barSeconds * .7, pitches: [52], pitch_offsets: [0], pitch_velocities: [96], velocity: 96 },
       { id: "m1", track: "melody", start: .02, end: .08, pitches: [60], pitch_offsets: [0], pitch_velocities: [88], velocity: 88 },
+      { id: "click", track: "metronome", start: .03, end: .06, pitches: [84], velocity: 112 },
     ],
   };
   await installAudioProbe(page);
   await page.addInitScript(() => localStorage.setItem("guitarscribe.workspaceMode", "full"));
   await page.route("**/api/v1/jobs/ensemble", route => route.fulfill({ json: {
-    id: "ensemble", status: "completed", progress: 100, artifacts: ["source"], score,
+    id: "ensemble", status: "completed", progress: 100, artifacts: ["source", "vocal-stem"], score,
   } }));
   await page.route("**/api/v1/jobs/ensemble/audio", route => route.fulfill({
+    status: 200, contentType: "audio/wav", body: wavFile(),
+  }));
+  await page.route("**/api/v1/jobs/ensemble/artifacts/vocal-stem", route => route.fulfill({
     status: 200, contentType: "audio/wav", body: wavFile(),
   }));
   await page.route("**/rhythm-patterns?*", route => route.fulfill({ json: [] }));
@@ -96,6 +118,64 @@ async function setup(page: Page, barSeconds: number) {
 
 function frequencyFor(midi: number) {
   return 440 * 2 ** ((midi - 69) / 12);
+}
+
+test("focus buttons isolate actual guitar events and switch source back to original", async ({page}) => {
+  await setup(page, .8);
+  await page.getByRole("button", {name:"回到專注修譜",exact:true}).click();
+  for (const name of ["聽原曲", "聽旋律", "聽吉他伴奏", "聽合奏"]) {
+    await expect(page.getByRole("button",{name,exact:true})).toBeVisible();
+  }
+  await page.getByRole("button",{name:"聽吉他伴奏",exact:true}).click();
+  await expect.poll(async () => (await pitchStarts(page,48)).length).toBeGreaterThan(0);
+  expect(await pitchStarts(page,60)).toHaveLength(0);
+  expect(await pitchStarts(page,84)).toHaveLength(0);
+  await page.getByRole("button",{name:"暫停，保留位置",exact:true}).click();
+  const guitars = (await pitchStarts(page,48)).length;
+  await page.getByRole("button",{name:"聽旋律",exact:true}).click();
+  await expect.poll(async () => (await pitchStarts(page,60)).length).toBeGreaterThan(0);
+  expect(await pitchStarts(page,48)).toHaveLength(guitars);
+  await page.getByRole("button",{name:"暫停，保留位置",exact:true}).click();
+  const melodies = (await pitchStarts(page,60)).length;
+  await page.getByRole("button",{name:"聽合奏",exact:true}).click();
+  await expect.poll(async () => (await pitchStarts(page,48)).length).toBeGreaterThan(guitars);
+  await expect.poll(async () => (await pitchStarts(page,60)).length).toBeGreaterThan(melodies);
+  await page.getByRole("button",{name:"暫停，保留位置",exact:true}).click();
+  await page.getByLabel("Editor source track").selectOption("vocal-stem");
+  await expect(page.locator("audio")).toHaveAttribute("src",/artifacts\/vocal-stem$/);
+  await page.getByRole("button",{name:"聽原曲",exact:true}).click();
+  await expect(page.locator("audio")).toHaveAttribute("src",/ensemble\/audio$/);
+  await expect(page.getByLabel("Editor source track")).toHaveValue("source");
+  await expect(page.locator(".melody-editor")).toHaveCount(1);
+});
+
+for (const connection of ["connected", "separate"]) {
+  test(`editor ensemble scales only melody gain by one quarter: ${connection}`, async ({page}) => {
+    await setup(page, .8);
+    await page.getByLabel("Melody connection").selectOption(connection);
+    const peak = (midi: number) => page.evaluate(frequency => {
+      const rows = (window as any).__ensembleOscillators.filter((r: any) => Math.abs(r.frequency-frequency)<.01);
+      return Math.max(...rows.at(-1).gains);
+    }, frequencyFor(midi));
+    await page.getByRole("button",{name:"聽旋律",exact:true}).click();
+    await expect.poll(async () => (await pitchStarts(page,60)).length).toBe(1);
+    expect(await peak(60)).toBeCloseTo(.16, 8);
+    await page.getByRole("button",{name:"暫停，保留位置",exact:true}).click();
+    await page.getByRole("button",{name:"聽合奏",exact:true}).click();
+    await expect.poll(async () => (await pitchStarts(page,60)).length).toBe(2);
+    const ensemblePeak = await peak(60), guitarPeak = await peak(48);
+    expect(ensemblePeak).toBeCloseTo(.45 * 88/127 * .25,8);
+    await page.getByRole("button",{name:"暫停，保留位置",exact:true}).click();
+    await page.getByRole("button",{name:"聽吉他伴奏",exact:true}).click();
+    await expect.poll(async () => (await pitchStarts(page,48)).length).toBe(2);
+    expect(await peak(48)).toBeCloseTo(guitarPeak,8);
+    await page.getByRole("button",{name:"暫停，保留位置",exact:true}).click();
+    await page.getByRole("button",{name:"Stop",exact:true}).click();
+    await page.getByLabel("melody track",{exact:true}).check();
+    await page.getByRole("button",{name:"Play score",exact:true}).click();
+    await expect.poll(async () => (await pitchStarts(page,60)).length).toBe(3);
+    expect(await peak(60)).toBeCloseTo(ensemblePeak * 4,8);
+  });
 }
 
 async function pitchStarts(page: Page, midi: number): Promise<number[]> {

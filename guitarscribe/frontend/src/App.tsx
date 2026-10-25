@@ -1192,14 +1192,15 @@ export function App() {
     trackSynthSource(pick);
   }
 
-  async function toggleSynthPlayback(segment?: { start: number; end: number; loop: boolean; from?: number }) {
+  async function toggleSynthPlayback(segment?: { start: number; end: number; loop: boolean; from?: number; guitarOnly?: boolean }) {
     referenceStopRef.current();
     if (!score) return;
     if (isSynthPlaying && !segment) { stopSynth(false); return; }
     stopSynth(false);
     const selectedRange = segment ? clipRange(segment.start, segment.end, score) : null;
     if (selectedRange && selectedRange.end <= selectedRange.start) return;
-    const tracks = segment ? { guitar: true, melody: true, metronome: false } : synthTracks;
+    const tracks = segment ? { guitar: true, melody: !segment.guitarOnly, metronome: false } : synthTracks;
+    const editorMelodyGain = segment && !segment.guitarOnly ? 0.25 : 1;
     const solo = segment ? null : synthSoloTrack;
     const generation = synthGenerationRef.current;
     setIsSynthPreparing(true);
@@ -1301,7 +1302,8 @@ export function App() {
             oscillator.type = isGuitar || event.track === "melody" ? "triangle" : "square";
             oscillator.frequency.setValueAtTime(440 * 2 ** ((pitch - 69) / 12), startAt);
             const pitchVelocity = event.pitch_velocities[pitchIndex] ?? event.velocity;
-            const peak = Math.max(0.001, synthVolumes[event.track] * pitchVelocity / 127 / Math.max(event.pitches.length, 1));
+            const peak = Math.max(0.001, synthVolumes[event.track] * pitchVelocity / 127 / Math.max(event.pitches.length, 1))
+              * (event.track === "melody" ? editorMelodyGain : 1);
             let releaseEnd = endAt;
             if (isGuitar) {
               const envelope = guitarEnvelope(startAt, endAt, peak);
@@ -1339,7 +1341,7 @@ export function App() {
             : segmentStart + (context.currentTime + SYNTH_SCHEDULE_AHEAD_SECONDS - contextStart) * playbackRate;
           while (nextPhraseIndex < phrases.length && phrases[nextPhraseIndex][0].start < horizon) {
             const source = playMelodyPhrase(context, phrases[nextPhraseIndex], {
-              scoreStart: segmentStart, scoreEnd: segmentEnd, contextStart, rate: playbackRate, peak: synthVolumes.melody,
+              scoreStart: segmentStart, scoreEnd: segmentEnd, contextStart, rate: playbackRate, peak: synthVolumes.melody * editorMelodyGain,
             });
             if (source) trackSynthSource(source);
             nextPhraseIndex++;
@@ -2248,6 +2250,20 @@ export function App() {
                   onAudition={(start, end, loop, from) => { const range = clipRange(start, end, score); if (range.end <= range.start) return; void auditionEditedNotes(score.melody.filter((note) => note.end > range.start && note.start < range.end).map((note) => ({ midi: note.midi, start: Math.max(0, note.start - range.start), end: Math.min(range.end, note.end) - range.start })), { ...range, loop, from }); }}
                   onOriginal={(start, end) => void auditionSourceSegment(start, end)}
                   onEnsemble={(start, end, loop, from) => void toggleSynthPlayback({ start, end, loop, from })}
+                  onGuitar={(start, end, loop, from) => void toggleSynthPlayback({ start, end, loop, from, guitarOnly: true })}
+                  onListenOriginal={(start, end) => {
+                    if (diagnosticAudioTrack === "source") { void auditionSourceSegment(start, end); return; }
+                    if (!analysisJob || analysisJob.status !== "completed" || sourceJobId(score) !== analysisJob.id) {
+                      setError("目前無法切回原曲來源。"); return;
+                    }
+                    selectDiagnosticAudioTrack("source");
+                    const generation = synthGenerationRef.current;
+                    window.requestAnimationFrame(() => {
+                      if (generation !== synthGenerationRef.current) return;
+                      const expected = `${API_BASE}/api/v1/jobs/${analysisJob.id}/audio`;
+                      if (audioRef.current?.getAttribute("src") === expected) void auditionSourceSegment(start, end);
+                    });
+                  }}
                   onStop={() => { audioRef.current?.pause(); stopSynth(false); }} onUndo={undoScoreChange} onRedo={redoScoreChange}
                   canUndo={undoHistory.length > 0} canRedo={redoHistory.length > 0}
                   revisionId={revisionId} onRevisionId={setRevisionId} onSave={() => void saveRevision(true)} onLoad={() => void loadRevision()}

@@ -20,6 +20,8 @@ type Props = {
   onPitch: (midi: number) => void;
   onAudition: (start: number, end: number, loop?: boolean, from?: number) => void;
   onEnsemble: (start: number, end: number, loop: boolean, from?: number) => void;
+  onGuitar?: (start: number, end: number, loop: boolean, from?: number) => void;
+  onListenOriginal?: (start: number, end: number) => void;
   onOriginal: (start: number, end: number) => void;
   onStop: () => void;
   onUndo: () => void; onRedo: () => void; canUndo: boolean; canRedo: boolean;
@@ -44,7 +46,9 @@ export function MelodyEditor(props: Props) {
   const [newDraftTouched, setNewDraftTouched] = useState(false);
   const [barCount, setBarCount] = useState(4);
   const [loop, setLoop] = useState(false);
-  const [ensemble, setEnsemble] = useState(false);
+  const [auditionMode, setAuditionMode] = useState("melody");
+  const ensemble = auditionMode === "ensemble";
+  const guitarOnly = auditionMode === "guitar";
   const [gridQuarters, setGridQuarters] = useState(.5);
   const [targetSlot, setTargetSlot] = useState(0);
   const inFlight = useRef(false);
@@ -183,6 +187,13 @@ export function MelodyEditor(props: Props) {
       <button type="button" onClick={() => setWindowStart(props.playhead)}>顯示暫停位置</button>
       <label><input type="checkbox" aria-label="Loop edited bars" checked={loop} onChange={(e) => { props.onStop(); setLoop(e.target.checked); }} />循環修訂段落</label>
     </div>
+    <div className="editor-actions" aria-label="直接分聲部試聽">
+      <button type="button" disabled={props.sourceAvailable === false} onClick={() => (props.onListenOriginal ?? props.onOriginal)(rangeStart, rangeEnd)}>聽原曲</button>
+      <button type="button" onClick={() => { setAuditionMode("melody"); props.onAudition(rangeStart, rangeEnd, loop); }}>聽旋律</button>
+      <button type="button" disabled={!props.onGuitar} onClick={() => { setAuditionMode("guitar"); props.onGuitar?.(rangeStart, rangeEnd, loop); }}>聽吉他伴奏</button>
+      <button type="button" onClick={() => { setAuditionMode("ensemble"); props.onEnsemble(rangeStart, rangeEnd, loop); }}>聽合奏</button>
+    </div>
+    <p>合奏降低旋律音量，方便聽清伴奏。</p>
     <BarTimingEditor score={score} bars={shownBars} playhead={props.playhead} onStop={props.onStop}
       onSeek={props.onSeek} onOriginal={props.onOriginal} onCommit={props.onCommit} />
     <details className="melody-coverage" open={!props.focused || !rangeNotes.length}>
@@ -202,19 +213,19 @@ export function MelodyEditor(props: Props) {
         {[["vocal-stem", "人聲 Vocal"], ["accompaniment-stem", "伴奏（非器樂旋律）"], ["melody-contour", "Contour 音高（非工作譜）"]].map(([track, label]) => <option key={track} value={track} disabled={!props.sourceTracks?.includes(track)}>{label}</option>)}
         {["raw-melody", "final-melody"].includes(props.sourceTrack ?? "") ? <option value={props.sourceTrack}>進階診斷：{props.sourceTrack}</option> : null}
       </select></label> : null}
-      <label>試聽聲部<select aria-label="Editor audition mode" value={ensemble ? "ensemble" : "melody"} onChange={(e) => { props.onStop(); setEnsemble(e.target.value === "ensemble"); }}><option value="melody">旋律獨聽</option><option value="ensemble">旋律＋吉他合奏</option></select></label>
+      <label>試聽聲部<select aria-label="Editor audition mode" value={auditionMode} onChange={(e) => { props.onStop(); setAuditionMode(e.target.value); }}><option value="melody">旋律獨聽</option><option value="guitar" disabled={!props.onGuitar}>吉他伴奏獨聽</option><option value="ensemble">旋律＋吉他合奏</option></select></label>
       {props.onMelodyConnection ? <label>旋律銜接<select aria-label="Melody connection" value={props.melodyConnection} onChange={e => props.onMelodyConnection?.(e.target.value as "connected" | "separate")}><option value="connected">連續銜接（試用）</option><option value="separate">原逐音起奏（對照）</option></select></label> : null}
       {props.onSpeed ? <label>來源／合奏速度<select aria-label="Editor playback speed" value={props.playbackRate ?? 1} onChange={e => props.onSpeed?.(Number(e.target.value))}>{[.5, .6, .75, .9, 1, 1.1, 1.25, 1.5].map(rate => <option key={rate} value={rate}>{Math.round(rate * 100)}%</option>)}</select></label> : null}
-      <button type="button" onClick={() => ensemble ? props.onEnsemble(rangeStart, rangeEnd, loop) : props.onAudition(rangeStart, rangeEnd, loop)}>重播所選小節</button>
+      <button type="button" onClick={() => guitarOnly ? props.onGuitar?.(rangeStart, rangeEnd, loop) : ensemble ? props.onEnsemble(rangeStart, rangeEnd, loop) : props.onAudition(rangeStart, rangeEnd, loop)}>重播所選小節</button>
       <button type="button" onClick={props.onStop}>暫停，保留位置</button>
-      <button type="button" onClick={() => { const from = props.playhead >= rangeStart && props.playhead < rangeEnd ? props.playhead : rangeStart; if (ensemble) props.onEnsemble(rangeStart, rangeEnd, loop, from); else props.onAudition(rangeStart, rangeEnd, loop, from); }}>從暫停位置續播</button>
+      <button type="button" onClick={() => { const from = props.playhead >= rangeStart && props.playhead < rangeEnd ? props.playhead : rangeStart; if (guitarOnly) props.onGuitar?.(rangeStart, rangeEnd, loop, from); else if (ensemble) props.onEnsemble(rangeStart, rangeEnd, loop, from); else props.onAudition(rangeStart, rangeEnd, loop, from); }}>從暫停位置續播</button>
       <button type="button" disabled={props.sourceAvailable === false} onClick={() => props.onOriginal(rangeStart, rangeEnd)}>對照來源片段</button>
     </div>
     {props.sourceAvailable === false ? <p role="status">來源音訊目前不可用；仍可播放、編輯及保存工作譜。</p> : null}
-    <p aria-label="Editor playback status">{props.playbackStatus} · 對照：{props.sourceTrack === "source" ? "原曲 Original" : props.sourceTrack ?? "來源"} · 工作譜：{ensemble ? "旋律＋吉他" : "旋律獨聽"}</p>
-    {!ensemble ? <p>旋律獨聽固定 100% 原速；速度選擇適用來源與合奏。</p> : null}
+    <p aria-label="Editor playback status">{props.playbackStatus} · 對照：{props.sourceTrack === "source" ? "原曲 Original" : props.sourceTrack ?? "來源"} · 工作譜：{guitarOnly ? "吉他伴奏獨聽" : ensemble ? "旋律＋吉他" : "旋律獨聽"}</p>
+    {!ensemble && !guitarOnly ? <p>旋律獨聽固定 100% 原速；速度選擇適用來源與合奏。</p> : null}
     {props.melodyConnection === "connected" ? <p>連續銜接只連接原本相接的不同音高，不填休止、不改音符長度；同音重奏保留起音。</p> : null}
-    <p aria-label="Tab transport position">位置 {props.playhead.toFixed(2)}s · 所選 {rangeStart.toFixed(2)}–{rangeEnd.toFixed(2)}s · 原檔 {(props.playhead + (score.song.source_start_seconds ?? 0)).toFixed(2)}s。{ensemble ? "合奏使用目前工作譜；吉他為建議伴奏。" : "修訂播放只有旋律、原速。"}</p>
+    <p aria-label="Tab transport position">位置 {props.playhead.toFixed(2)}s · 所選 {rangeStart.toFixed(2)}–{rangeEnd.toFixed(2)}s · 原檔 {(props.playhead + (score.song.source_start_seconds ?? 0)).toFixed(2)}s。{guitarOnly ? "只播放目前工作譜的吉他伴奏。" : ensemble ? "合奏使用目前工作譜；吉他為建議伴奏。" : "修訂播放只有旋律、原速。"}</p>
     <p>格線只吸附「點空白弦線新增」的位置，不移動既有音符；依目前拍點換算，不是固定毫秒。選錯位置可用下方前／後移一格。音長若碰到原音尾端仍需確認，不自動截短或覆蓋。</p>
     <EditableTab score={score} bars={shownBars} selectedId={selectedId} playhead={props.playhead} onSelect={selectNote} onInsert={insertOnTab} gridQuarters={gridQuarters} />
     <details className="phrase-shift"><summary>移除段落前方空白（整段前移）</summary>
