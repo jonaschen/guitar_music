@@ -1,0 +1,74 @@
+{
+  "status": "exploratory_not_quality_gate_passed",
+  "mapping": {
+    "A": "existing_G",
+    "B": "ROSVOT_official_defaults_CPU"
+  },
+  "tone": "same product connectedMelody triangle",
+  "peak_per_voice": 0.12,
+  "velocity": "constant",
+  "lead_removed_seconds": 0.01,
+  "notes_filtered": false,
+  "time_warp": false,
+  "limits": [
+    "Harmonic nine-note control failed: repeats/rests/short notes not reliably preserved.",
+    "Real-song correctness awaits listening; less fragmentation is not accuracy.",
+    "Pretrained training-song overlap is not ruled out."
+  ],
+  "results": [
+    {
+      "file": "baseline-1.wav",
+      "notes": 112,
+      "peak": 0.11967834830284119,
+      "rms": 0.06022894570992492,
+      "voices": 13,
+      "frames": 886410,
+      "sha256": "58437f55be7164bb9e903c1285e01ae36515cee76578d3ffd36819db0a8f54bd"
+    },
+    {
+      "file": "model-1.wav",
+      "notes": 49,
+      "peak": 0.1196589395403862,
+      "rms": 0.062017576469900915,
+      "voices": 17,
+      "frames": 886410,
+      "sha256": "233ae9780a7e508712fef8a60e9d6fa13991a44bbf730bc44132b85ee40db1cd"
+    },
+    {
+      "file": "baseline-2.wav",
+      "notes": 109,
+      "peak": 0.11953584849834442,
+      "rms": 0.062407971203745916,
+      "voices": 17,
+      "frames": 886410,
+      "sha256": "fd71e9b1da39bd00be257cbde24b23df540dfa91196fa607df7f2440352b0217"
+    },
+    {
+      "file": "model-2.wav",
+      "notes": 55,
+      "peak": 0.11947175115346909,
+      "rms": 0.06461479744349807,
+      "voices": 17,
+      "frames": 886410,
+      "sha256": "9afb6b4bb95f745a7534513f5956d5b0888b764d20608f6e96b515d314282d01"
+    },
+    {
+      "file": "baseline-3.wav",
+      "notes": 67,
+      "peak": 0.1193586066365242,
+      "rms": 0.06299793766318901,
+      "voices": 14,
+      "frames": 642362,
+      "sha256": "ad50279f10d65ff7701dedd9468b634e2cc2ef61ed5ba3d45103c46fbec6896a"
+    },
+    {
+      "file": "model-3.wav",
+      "notes": 43,
+      "peak": 0.11933077871799469,
+      "rms": 0.06463930395527964,
+      "voices": 10,
+      "frames": 642362,
+      "sha256": "e7d036c819e2f90b3ce6848dbc9e1c77bd6509651fe469971e195276efccdc25"
+    }
+  ]
+}

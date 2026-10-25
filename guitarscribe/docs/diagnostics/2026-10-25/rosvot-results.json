@@ -1,0 +1,396 @@
+{
+  "status": "engineering_only_not_human_accepted",
+  "method": "ROSVOT official defaults, automatic RWBD, CPU device patch",
+  "cases": [
+    {
+      "id": "third-1",
+      "input_seconds": 20.0,
+      "output_seconds": 20.0,
+      "raw_stats": {
+        "notes": 49,
+        "under_100ms": 0,
+        "under_10ms": 0,
+        "voiced_seconds": 16.213333333333335,
+        "median_duration": 0.293333333333333
+      },
+      "rest_intervals": [
+        {
+          "start": 1.7226666666666666,
+          "end": 2.784,
+          "midi": 0
+        },
+        {
+          "start": 4.789333333333333,
+          "end": 5.168,
+          "midi": 0
+        },
+        {
+          "start": 5.168,
+          "end": 5.264,
+          "midi": 0
+        },
+        {
+          "start": 7.312,
+          "end": 7.744,
+          "midi": 0
+        },
+        {
+          "start": 10.72,
+          "end": 11.450666666666667,
+          "midi": 0
+        },
+        {
+          "start": 15.205333333333334,
+          "end": 16.176,
+          "midi": 0
+        },
+        {
+          "start": 19.882666666666665,
+          "end": 20.0,
+          "midi": 0
+        }
+      ],
+      "midi_parity": true,
+      "midi_max_error": 0.0011212121212125226,
+      "source_sha256": "cfa4c48ddddb0c006d56849b988f0b94ad072badf069f93affcfbb19454736ff",
+      "G_stats": {
+        "notes": 112,
+        "under_100ms": 59,
+        "under_10ms": 0,
+        "voiced_seconds": 15.271111111111107,
+        "median_duration": 0.09287981859410621
+      },
+      "comparison_not_accuracy": {
+        "both_voiced_seconds": 15.09,
+        "pitch_equal_seconds": 9.68,
+        "octave_difference_seconds": 0.0,
+        "G_only_seconds": 0.19,
+        "model_only_seconds": 1.12
+      }
+    },
+    {
+      "id": "third-2",
+      "input_seconds": 20.0,
+      "output_seconds": 20.0,
+      "raw_stats": {
+        "notes": 55,
+        "under_100ms": 0,
+        "under_10ms": 0,
+        "voiced_seconds": 17.589333333333332,
+        "median_duration": 0.27733333333333476
+      },
+      "rest_intervals": [
+        {
+          "start": 0.0,
+          "end": 0.976,
+          "midi": 0
+        },
+        {
+          "start": 2.8266666666666667,
+          "end": 3.2586666666666666,
+          "midi": 0
+        },
+        {
+          "start": 4.874666666666666,
+          "end": 5.168,
+          "midi": 0
+        },
+        {
+          "start": 9.077333333333334,
+          "end": 9.429333333333334,
+          "midi": 0
+        },
+        {
+          "start": 15.269333333333334,
+          "end": 15.493333333333334,
+          "midi": 0
+        },
+        {
+          "start": 19.866666666666667,
+          "end": 20.0,
+          "midi": 0
+        }
+      ],
+      "midi_parity": true,
+      "midi_max_error": 0.0011212121212116344,
+      "source_sha256": "2e91315530bc2fe5312eb0ebb23aac5e2c2ab5e96542b91cf68c39575c916d1a",
+      "G_stats": {
+        "notes": 109,
+        "under_100ms": 57,
+        "under_10ms": 0,
+        "voiced_seconds": 16.416145124716557,
+        "median_duration": 0.09287981859410621
+      },
+      "comparison_not_accuracy": {
+        "both_voiced_seconds": 15.530000000000001,
+        "pitch_equal_seconds": 10.05,
+        "octave_difference_seconds": 0.48,
+        "G_only_seconds": 0.89,
+        "model_only_seconds": 2.06
+      }
+    },
+    {
+      "id": "saved-G",
+      "input_seconds": 14.466031746031746,
+      "output_seconds": 14.464,
+      "raw_stats": {
+        "notes": 43,
+        "under_100ms": 0,
+        "under_10ms": 0,
+        "voiced_seconds": 12.741333333333333,
+        "median_duration": 0.23466666666666747
+      },
+      "rest_intervals": [
+        {
+          "start": 0.0,
+          "end": 0.42133333333333334,
+          "midi": 0
+        },
+        {
+          "start": 0.42133333333333334,
+          "end": 0.6453333333333333,
+          "midi": 0
+        },
+        {
+          "start": 4.128,
+          "end": 4.341333333333333,
+          "midi": 0
+        },
+        {
+          "start": 5.978666666666666,
+          "end": 6.16,
+          "midi": 0
+        },
+        {
+          "start": 7.685333333333333,
+          "end": 8.010666666666667,
+          "midi": 0
+        },
+        {
+          "start": 11.904,
+          "end": 12.165333333333333,
+          "midi": 0
+        },
+        {
+          "start": 14.368,
+          "end": 14.464,
+          "midi": 0
+        }
+      ],
+      "midi_parity": true,
+      "midi_max_error": 0.0011212121212125226,
+      "source_sha256": "3ae457c1f7c467f04f321987e45ec76844cc6f3d529e824ec5d98bd49636a872",
+      "G_stats": {
+        "notes": 67,
+        "under_100ms": 26,
+        "under_10ms": 0,
+        "voiced_seconds": 12.132426303854885,
+        "median_duration": 0.13931972789115576
+      },
+      "comparison_not_accuracy": {
+        "both_voiced_seconds": 11.53,
+        "pitch_equal_seconds": 9.33,
+        "octave_difference_seconds": 0.0,
+        "G_only_seconds": 0.61,
+        "model_only_seconds": 1.2
+      }
+    },
+    {
+      "id": "live",
+      "input_seconds": 17.94,
+      "output_seconds": 17.936,
+      "raw_stats": {
+        "notes": 43,
+        "under_100ms": 0,
+        "under_10ms": 0,
+        "voiced_seconds": 15.306666666666667,
+        "median_duration": 0.29866666666666664
+      },
+      "rest_intervals": [
+        {
+          "start": 0.8533333333333334,
+          "end": 0.9546666666666667,
+          "midi": 0
+        },
+        {
+          "start": 0.9546666666666667,
+          "end": 1.6266666666666667,
+          "midi": 0
+        },
+        {
+          "start": 5.392,
+          "end": 6.069333333333334,
+          "midi": 0
+        },
+        {
+          "start": 8.394666666666666,
+          "end": 8.650666666666666,
+          "midi": 0
+        },
+        {
+          "start": 10.682666666666666,
+          "end": 11.061333333333334,
+          "midi": 0
+        },
+        {
+          "start": 14.309333333333333,
+          "end": 14.741333333333333,
+          "midi": 0
+        },
+        {
+          "start": 17.824,
+          "end": 17.936,
+          "midi": 0
+        }
+      ],
+      "midi_parity": true,
+      "midi_max_error": 0.0011212121212116344,
+      "source_sha256": "131e7a573223ce168ff9cc34d4d27d4ee8d4babb3d85803225e21c6eeca4b2a5",
+      "G_stats": {
+        "notes": 88,
+        "under_100ms": 45,
+        "under_10ms": 0,
+        "voiced_seconds": 14.712426303854873,
+        "median_duration": 0.09287981859410621
+      },
+      "comparison_not_accuracy": {
+        "both_voiced_seconds": 13.88,
+        "pitch_equal_seconds": 10.16,
+        "octave_difference_seconds": 0.0,
+        "G_only_seconds": 0.84,
+        "model_only_seconds": 1.43
+      }
+    },
+    {
+      "id": "control-harmonic",
+      "input_seconds": 8.0,
+      "output_seconds": 8.0,
+      "raw_stats": {
+        "notes": 7,
+        "under_100ms": 0,
+        "under_10ms": 0,
+        "voiced_seconds": 6.154666666666667,
+        "median_duration": 0.5333333333333334
+      },
+      "rest_intervals": [
+        {
+          "start": 0.0,
+          "end": 0.464,
+          "midi": 0
+        },
+        {
+          "start": 2.528,
+          "end": 2.965333333333333,
+          "midi": 0
+        },
+        {
+          "start": 7.056,
+          "end": 8.0,
+          "midi": 0
+        }
+      ],
+      "midi_parity": true,
+      "midi_max_error": 0.001030303030302937,
+      "source_sha256": "b2b78d561583eaa94f2685bcb9112069684fa91be7e1bf313a178bd22ff3d370",
+      "independent_control": {
+        "metrics": {
+          "reference_count": 9,
+          "predicted_count": 7,
+          "matched": 3,
+          "missing": 6,
+          "extra": 4,
+          "pairs": [
+            [
+              0,
+              0
+            ],
+            [
+              3,
+              2
+            ],
+            [
+              4,
+              3
+            ]
+          ],
+          "onset_errors_seconds": [
+            -0.035999999999999976,
+            -0.005333333333333412,
+            -0.034666666666666845
+          ],
+          "offset_errors_seconds": [
+            0.5146666666666666,
+            0.028000000000000025,
+            0.0076666666666667105
+          ],
+          "onset_abs_p95": 0.035866666666666665,
+          "offset_abs_p95": 0.4659999999999999,
+          "offset_within_100ms": 2,
+          "short_under_100ms": 0
+        },
+        "passed": false,
+        "failure_reasons": [
+          "missing_or_extra_notes",
+          "offset_error_over_50ms",
+          "75ms_note_duration_outside_50_to_100ms"
+        ]
+      },
+      "control_limit": "Synthetic tones are out of vocal training domain; report strict failures without tuning."
+    },
+    {
+      "id": "control-vibrato",
+      "input_seconds": 8.0,
+      "output_seconds": 8.0,
+      "raw_stats": {
+        "notes": 1,
+        "under_100ms": 0,
+        "under_10ms": 0,
+        "voiced_seconds": 6.005333333333333,
+        "median_duration": 6.005333333333333
+      },
+      "rest_intervals": [
+        {
+          "start": 0.0,
+          "end": 0.6186666666666667,
+          "midi": 0
+        },
+        {
+          "start": 6.624,
+          "end": 8.0,
+          "midi": 0
+        }
+      ],
+      "midi_parity": true,
+      "midi_max_error": 0.001000000000000334,
+      "source_sha256": "f9b038d87c187929bc374342006191e81b3156d2180c9c08962c4b9fbdfa4779",
+      "independent_control": {
+        "metrics": {
+          "reference_count": 1,
+          "predicted_count": 1,
+          "matched": 1,
+          "missing": 0,
+          "extra": 0,
+          "pairs": [
+            [
+              0,
+              0
+            ]
+          ],
+          "onset_errors_seconds": [
+            -0.031333333333333324
+          ],
+          "offset_errors_seconds": [
+            0.02400000000000002
+          ],
+          "onset_abs_p95": 0.031333333333333324,
+          "offset_abs_p95": 0.02400000000000002,
+          "offset_within_100ms": 1,
+          "short_under_100ms": 0
+        },
+        "passed": true,
+        "failure_reasons": []
+      },
+      "control_limit": "Synthetic tones are out of vocal training domain; report strict failures without tuning."
+    }
+  ]
+}

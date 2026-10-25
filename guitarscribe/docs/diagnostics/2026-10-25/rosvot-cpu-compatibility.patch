@@ -1,0 +1,10 @@
+diff --git a/inference/rosvot.py b/inference/rosvot.py
+index d98093f..c1cd4d1 100644
+--- a/inference/rosvot.py
++++ b/inference/rosvot.py
+@@ -251 +251 @@ class RosvotInfer:
+-        device = torch.device(f"cuda:{int(rank)}")
++        device = torch.device("cpu")  # Isolated evaluation: device-only compatibility
+@@ -278 +278 @@ class RosvotInfer:
+-                batch = move_to_cuda(batch, int(rank))
++                pass  # DataLoader tensors already on CPU; no device transfer

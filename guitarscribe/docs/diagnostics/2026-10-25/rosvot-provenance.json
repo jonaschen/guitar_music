@@ -1,0 +1,47 @@
+{
+  "upstream": "https://github.com/RickyL-2000/ROSVOT",
+  "commit": "3c8332bf43adae35f6e4d64971862f2f6139b310",
+  "weights_source": "https://drive.google.com/file/d/1JNtNT37KiLq9uFQqHk7JFs-3trxd3bRh/view",
+  "weights_zip_sha256": "b6055e81315b93415c9bd7fc48e10a28a3da1bea960cab7385483bd7443ba852",
+  "files": {
+    "checkpoints/rmvpe/model.pt": "19dc1809cf4cdb0a18db93441816bc327e14e5644b72eeaae5220560c6736fe2",
+    "checkpoints/rosvot/model.pt": "7501fb5f913d971c2f51bcb3063b930027b03206581820a4d2bfdc394c9c3fcb",
+    "checkpoints/rosvot/config.yaml": "2ad2cb756623418c471b7dc2f56175cce88b69a70b4a2c354fa1a78525aa54e2",
+    "checkpoints/rwbd/model.pt": "0bc2d42a6d4b7a05436deb937e2deda1c12de49e5687cfda0bdf6a430120dcd2",
+    "checkpoints/rwbd/config.yaml": "3bb41f1d9eaa85aa1b3e5b6d94fff4ab4affb39719028ab69b4505974b9a1bc7"
+  },
+  "configuration": {
+    "note_threshold": 0.85,
+    "word_threshold": 0.5,
+    "automatic_RWBD": true,
+    "batch_size": 1,
+    "dataset_workers": 0,
+    "device": "cpu",
+    "user_lyrics_or_timestamps": false
+  },
+  "dependency_target": "/home/jonas/.cache/guitarscribe-rosvot-evaluation/deps",
+  "isolated_dependencies": {
+    "kiwisolver": "1.5.1",
+    "python-dateutil": "3.0.0",
+    "pyworld": "0.3.5",
+    "contourpy": "1.4.0",
+    "fonttools": "4.67.0",
+    "six": "1.17.0",
+    "cycler": "0.12.1",
+    "matplotlib": "3.11.2",
+    "pyparsing": "3.3.3",
+    "pillow": "13.0.0"
+  },
+  "quality_status": "not_passed_harmonic_event_control",
+  "model_loop_seconds": 24.6,
+  "loop_seconds_excludes_model_loading": true,
+  "runtime": {
+    "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+    "torch": "2.5.1+cpu",
+    "torchaudio": "2.5.1+cpu",
+    "numpy": "1.26.4",
+    "librosa": "0.11.0",
+    "pretty_midi": "0.2.11.post0",
+    "einops": "0.8.2"
+  }
+}
