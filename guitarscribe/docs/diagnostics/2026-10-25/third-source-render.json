@@ -1,0 +1,31 @@
+{
+  "status": "awaiting_human_comparison",
+  "job_id": "f303ec8a86834633b060920fa85430af",
+  "decoder_sha256": "cbfc58b99ee1d00e599cb9a4204a2fdac9f3c34b7d05c6cd66c051c01d508c4f",
+  "tone": "same product connectedMelody triangle as previous A",
+  "peak_per_voice": 0.12,
+  "velocity": "constant",
+  "lead_removed_seconds": 0.01,
+  "notes_filtered": false,
+  "time_warp": false,
+  "results": [
+    {
+      "file": "g-1.wav",
+      "notes": 112,
+      "peak": 0.11967834830284119,
+      "rms": 0.060379330327817726,
+      "voices": 13,
+      "frames": 882000,
+      "sha256": "52915174902a67a13adbbeba78bd7af734a5c559b448a892b1a974c046c904cb"
+    },
+    {
+      "file": "g-2.wav",
+      "notes": 109,
+      "peak": 0.11953584849834442,
+      "rms": 0.06256379659288923,
+      "voices": 17,
+      "frames": 882000,
+      "sha256": "1b732aa36fbbfcc358a18ec680d1bdac2f8c341ca8074f8f2bff6d4d329dcd1e"
+    }
+  ]
+}
