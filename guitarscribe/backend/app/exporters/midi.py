@@ -53,7 +53,7 @@ def compile_playback_manifest(score: SongScore) -> PlaybackManifest:
     for note in score.melody:
         events.append(PlaybackEvent(
             id=f"melody:{note.id}", track="melody", start=max(0, note.start),
-            end=max(note.start + 0.01, note.end), pitches=(note.midi,),
+            end=note.end if note.end > note.start else note.start + 0.01, pitches=(note.midi,),
             velocity=96, source_id=note.id,
         ))
 
@@ -119,7 +119,7 @@ def compile_playback_manifest(score: SongScore) -> PlaybackManifest:
 
     events.sort(key=lambda event: (event.start, event.track, event.id))
     revision_payload = {
-        "compiler_version": "7-independent-string-resonance",
+        "compiler_version": "8-faithful-positive-note-duration",
         "beats": [(beat.time, beat.beat, beat.measure) for beat in score.beats],
         "duration_seconds": score.song.duration_seconds,
         "bpm": score.analysis.bpm, "meter": score.analysis.time_signature,

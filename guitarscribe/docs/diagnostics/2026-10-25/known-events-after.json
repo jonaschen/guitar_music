@@ -1,0 +1,78 @@
+{
+  "cases": [
+    {
+      "name": "rests_repeats_short_note",
+      "internal_tolerance_seconds": 0.001,
+      "export_tolerance_ticks": 1,
+      "manifest_errors": [],
+      "midi_errors": [],
+      "midi_seconds_errors": [],
+      "midi_parse_errors": [],
+      "score_unchanged": true,
+      "passed": true
+    },
+    {
+      "name": "cross_bar_sustain",
+      "internal_tolerance_seconds": 0.001,
+      "export_tolerance_ticks": 1,
+      "manifest_errors": [],
+      "midi_errors": [],
+      "midi_seconds_errors": [],
+      "midi_parse_errors": [],
+      "score_unchanged": true,
+      "passed": true
+    },
+    {
+      "name": "pickup_offbeat",
+      "internal_tolerance_seconds": 0.001,
+      "export_tolerance_ticks": 1,
+      "manifest_errors": [],
+      "midi_errors": [],
+      "midi_seconds_errors": [],
+      "midi_parse_errors": [],
+      "score_unchanged": true,
+      "passed": true
+    },
+    {
+      "name": "variable_beat_spacing",
+      "internal_tolerance_seconds": 0.001,
+      "export_tolerance_ticks": 1,
+      "manifest_errors": [],
+      "midi_errors": [],
+      "midi_seconds_errors": [],
+      "midi_parse_errors": [],
+      "score_unchanged": true,
+      "passed": true
+    },
+    {
+      "name": "whole_half_crossbar_harmony",
+      "internal_tolerance_seconds": 0.001,
+      "export_tolerance_ticks": 1,
+      "manifest_errors": [],
+      "midi_errors": [],
+      "midi_seconds_errors": [],
+      "midi_parse_errors": [],
+      "score_unchanged": true,
+      "passed": true
+    },
+    {
+      "name": "source_offset_transpose_capo",
+      "internal_tolerance_seconds": 0.001,
+      "export_tolerance_ticks": 1,
+      "manifest_errors": [],
+      "midi_errors": [],
+      "midi_seconds_errors": [],
+      "midi_parse_errors": [],
+      "score_unchanged": true,
+      "passed": true
+    }
+  ],
+  "passed": 6,
+  "failed": 0,
+  "limitations": [
+    "Synthetic event controls do not establish recognition quality.",
+    "MIDI omits metronome by existing export contract; compared only in manifest.",
+    "Capo/transpose case starts from already-transposed score, not the transpose API.",
+    "No WebAudio envelope or device timing validation."
+  ]
+}

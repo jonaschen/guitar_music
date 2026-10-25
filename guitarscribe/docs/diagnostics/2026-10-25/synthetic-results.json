@@ -1,0 +1,618 @@
+{
+  "scope": "Mechanism fixtures only: additive sine/harmonics, not realistic vocals or guitar. No Demucs. No musical quality acceptance.",
+  "renderer": "Independent NumPy additive oscillators, fixed phase reset, no randomness, 5ms linear attack/release, zero additional latency",
+  "sample_rate": 22050,
+  "matching": "One-to-one exact MIDI + onset within100ms, offsets reported independently",
+  "frame_pitch_rule": "within50cents, excluding50ms around all reference edges",
+  "commit": "e55bfbb38f5d1237097ae489d68374a1dac4d29f",
+  "cases": {
+    "B01-sine": {
+      "source_sha256": "82c000283766d68803cae71afa67c2c05d0ee14bcf32210c99c20605db6d292b",
+      "sample_rate": 22050,
+      "duration": 8.0,
+      "source_offset": 0,
+      "contour": {
+        "reference_voiced": 191,
+        "correctly_pitched": 191,
+        "missing_voicing": 0,
+        "wrong_pitch": 0,
+        "octave_errors": 0,
+        "reference_rest": 95,
+        "voiced_in_rest": 0
+      },
+      "raw_notes": {
+        "reference_count": 9,
+        "predicted_count": 8,
+        "matched": 8,
+        "missing": 1,
+        "extra": 0,
+        "pairs": [
+          [
+            0,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            5,
+            4
+          ],
+          [
+            6,
+            5
+          ],
+          [
+            7,
+            6
+          ],
+          [
+            8,
+            7
+          ]
+        ],
+        "onset_errors_seconds": [
+          -0.012380952380952381,
+          -0.008503401360544283,
+          0.0201360544217688,
+          -0.02784580498866207,
+          -0.022426303854875318,
+          0.05265306122448976,
+          0.0402721088435376,
+          -0.021632653061224083
+        ],
+        "offset_errors_seconds": [
+          0.5557369614512473,
+          -0.003083900226757308,
+          0.054195011337868415,
+          0.05969387755102051,
+          0.05265306122448976,
+          -0.006167800453514616,
+          0.04260770975056705,
+          0.058866213151927305
+        ],
+        "onset_abs_p95": 0.0483197278911565,
+        "offset_abs_p95": 0.38212188208616765,
+        "offset_within_100ms": 7,
+        "short_under_100ms": 0
+      },
+      "G_notes": {
+        "reference_count": 9,
+        "predicted_count": 10,
+        "matched": 8,
+        "missing": 1,
+        "extra": 2,
+        "pairs": [
+          [
+            0,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            5
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            8,
+            9
+          ]
+        ],
+        "onset_errors_seconds": [
+          -0.012380952380952381,
+          -0.03172335600907017,
+          0.0201360544217688,
+          -0.02784580498866207,
+          -0.022426303854875318,
+          0.05265306122448976,
+          0.0402721088435376,
+          -0.021632653061224083
+        ],
+        "offset_errors_seconds": [
+          0.5557369614512473,
+          -0.026303854875283417,
+          0.054195011337868415,
+          0.05969387755102051,
+          0.0062131519274375435,
+          -0.006167800453514616,
+          0.04260770975056705,
+          0.058866213151927305
+        ],
+        "onset_abs_p95": 0.0483197278911565,
+        "offset_abs_p95": 0.38212188208616765,
+        "offset_within_100ms": 7,
+        "short_under_100ms": 2
+      }
+    },
+    "B02-harmonic": {
+      "source_sha256": "b2b78d561583eaa94f2685bcb9112069684fa91be7e1bf313a178bd22ff3d370",
+      "sample_rate": 22050,
+      "duration": 8.0,
+      "source_offset": 0,
+      "contour": {
+        "reference_voiced": 191,
+        "correctly_pitched": 191,
+        "missing_voicing": 0,
+        "wrong_pitch": 0,
+        "octave_errors": 0,
+        "reference_rest": 95,
+        "voiced_in_rest": 0
+      },
+      "raw_notes": {
+        "reference_count": 9,
+        "predicted_count": 8,
+        "matched": 8,
+        "missing": 1,
+        "extra": 0,
+        "pairs": [
+          [
+            0,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            5,
+            4
+          ],
+          [
+            6,
+            5
+          ],
+          [
+            7,
+            6
+          ],
+          [
+            8,
+            7
+          ]
+        ],
+        "onset_errors_seconds": [
+          -0.012380952380952381,
+          -0.03172335600907017,
+          0.0201360544217688,
+          -0.02784580498866207,
+          -0.022426303854875318,
+          0.05265306122448976,
+          0.0402721088435376,
+          -0.021632653061224083
+        ],
+        "offset_errors_seconds": [
+          0.5557369614512473,
+          -0.003083900226757308,
+          0.054195011337868415,
+          0.05969387755102051,
+          0.05265306122448976,
+          -0.006167800453514616,
+          0.04260770975056705,
+          0.058866213151927305
+        ],
+        "onset_abs_p95": 0.0483197278911565,
+        "offset_abs_p95": 0.38212188208616765,
+        "offset_within_100ms": 7,
+        "short_under_100ms": 0
+      },
+      "G_notes": {
+        "reference_count": 9,
+        "predicted_count": 10,
+        "matched": 8,
+        "missing": 1,
+        "extra": 2,
+        "pairs": [
+          [
+            0,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            5
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            8,
+            9
+          ]
+        ],
+        "onset_errors_seconds": [
+          -0.012380952380952381,
+          -0.03172335600907017,
+          0.0201360544217688,
+          -0.02784580498866207,
+          -0.022426303854875318,
+          0.05265306122448976,
+          0.0402721088435376,
+          -0.021632653061224083
+        ],
+        "offset_errors_seconds": [
+          0.5557369614512473,
+          -0.003083900226757308,
+          0.054195011337868415,
+          0.05969387755102051,
+          0.0062131519274375435,
+          -0.006167800453514616,
+          0.04260770975056705,
+          0.058866213151927305
+        ],
+        "onset_abs_p95": 0.0483197278911565,
+        "offset_abs_p95": 0.38212188208616765,
+        "offset_within_100ms": 7,
+        "short_under_100ms": 2
+      }
+    },
+    "B03-chords": {
+      "source_sha256": "97d50d0df2800cb629cfc073b96b95d3c6f84e66aadb69e1b2fc9f40a208ba5b",
+      "sample_rate": 22050,
+      "duration": 8.0,
+      "source_offset": 0,
+      "chords": {
+        "exact_label_duration_fraction": 0.909433106875,
+        "events": 4,
+        "boundary_errors_seconds": [
+          0.04335600900000003,
+          0.17959183600000017,
+          0.03718820799999989
+        ],
+        "boundary_rule": "nearest predicted change to each internal reference change; extra changes separately visible in event count; not F1"
+      }
+    },
+    "B04-pulses": {
+      "source_sha256": "f407c9ae1ba8147295186be69939f82002ef680d5d6e09a12e6b6334a1e2d2f8",
+      "sample_rate": 22050,
+      "duration": 8.0,
+      "source_offset": 0,
+      "beat_error": "Inconsistent meter or missing beats/downbeats; explicit review required"
+    },
+    "B05-mixture": {
+      "source_sha256": "69512a58c961f1a1e99ef048001a2f4dfddb1591757736d3d075009e955390fd",
+      "sample_rate": 22050,
+      "duration": 8.0,
+      "source_offset": 0,
+      "contour": {
+        "reference_voiced": 191,
+        "correctly_pitched": 0,
+        "missing_voicing": 153,
+        "wrong_pitch": 38,
+        "octave_errors": 0,
+        "reference_rest": 95,
+        "voiced_in_rest": 0
+      },
+      "raw_notes": {
+        "reference_count": 9,
+        "predicted_count": 1,
+        "matched": 0,
+        "missing": 9,
+        "extra": 1,
+        "pairs": [],
+        "onset_errors_seconds": [],
+        "offset_errors_seconds": [],
+        "onset_abs_p95": null,
+        "offset_abs_p95": null,
+        "offset_within_100ms": 0,
+        "short_under_100ms": 0
+      },
+      "G_notes": {
+        "reference_count": 9,
+        "predicted_count": 1,
+        "matched": 0,
+        "missing": 9,
+        "extra": 1,
+        "pairs": [],
+        "onset_errors_seconds": [],
+        "offset_errors_seconds": [],
+        "onset_abs_p95": null,
+        "offset_abs_p95": null,
+        "offset_within_100ms": 0,
+        "short_under_100ms": 0
+      },
+      "chords": {
+        "exact_label_duration_fraction": 0.68111111125,
+        "events": 4,
+        "boundary_errors_seconds": [
+          0.049523809999999946,
+          0.006167801000000139,
+          0.03718820799999989
+        ],
+        "boundary_rule": "nearest predicted change to each internal reference change; extra changes separately visible in event count; not F1"
+      },
+      "beat_error": "Inconsistent meter or missing beats/downbeats; explicit review required"
+    },
+    "B06-normalized": {
+      "source_sha256": "dd3d8a4f74f01fa612a35647feaa561f94f0913652d1192dba52a0c70f282537",
+      "sample_rate": 44100,
+      "duration": 7.999954648526077,
+      "source_offset": 1.25,
+      "contour": {
+        "reference_voiced": 191,
+        "correctly_pitched": 191,
+        "missing_voicing": 0,
+        "wrong_pitch": 0,
+        "octave_errors": 0,
+        "reference_rest": 95,
+        "voiced_in_rest": 0
+      },
+      "raw_notes": {
+        "reference_count": 9,
+        "predicted_count": 8,
+        "matched": 8,
+        "missing": 1,
+        "extra": 0,
+        "pairs": [
+          [
+            0,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            5,
+            4
+          ],
+          [
+            6,
+            5
+          ],
+          [
+            7,
+            6
+          ],
+          [
+            8,
+            7
+          ]
+        ],
+        "onset_errors_seconds": [
+          -0.012380952380952381,
+          -0.03172335600907017,
+          0.0201360544217688,
+          -0.02784580498866207,
+          -0.022426303854875318,
+          0.05265306122448976,
+          0.0402721088435376,
+          -0.021632653061224083
+        ],
+        "offset_errors_seconds": [
+          0.5557369614512473,
+          -0.003083900226757308,
+          0.054195011337868415,
+          0.05969387755102051,
+          0.05265306122448976,
+          -0.006167800453514616,
+          0.04260770975056705,
+          0.058866213151927305
+        ],
+        "onset_abs_p95": 0.0483197278911565,
+        "offset_abs_p95": 0.38212188208616765,
+        "offset_within_100ms": 7,
+        "short_under_100ms": 0
+      },
+      "G_notes": {
+        "reference_count": 9,
+        "predicted_count": 10,
+        "matched": 8,
+        "missing": 1,
+        "extra": 2,
+        "pairs": [
+          [
+            0,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            5
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            8,
+            9
+          ]
+        ],
+        "onset_errors_seconds": [
+          -0.012380952380952381,
+          -0.03172335600907017,
+          0.0201360544217688,
+          -0.02784580498866207,
+          -0.022426303854875318,
+          0.05265306122448976,
+          0.0402721088435376,
+          -0.021632653061224083
+        ],
+        "offset_errors_seconds": [
+          0.5557369614512473,
+          -0.003083900226757308,
+          0.054195011337868415,
+          0.05969387755102051,
+          0.0062131519274375435,
+          -0.006167800453514616,
+          0.04260770975056705,
+          0.058866213151927305
+        ],
+        "onset_abs_p95": 0.0483197278911565,
+        "offset_abs_p95": 0.38212188208616765,
+        "offset_within_100ms": 7,
+        "short_under_100ms": 2
+      }
+    }
+  },
+  "diagnostic_sha256": "42c45975f6f9cf1cd6d86a1dff214ee8df42c71d0b26775a93e8c61cc2f9a862",
+  "versions": {
+    "librosa": "0.11.0",
+    "numpy": "1.26.4",
+    "scipy": "1.17.1",
+    "soundfile": "0.14.0",
+    "beat-this": "1.1.0",
+    "torch": "2.5.1+cpu"
+  },
+  "implementation_sha256": {
+    "app/analyzers/melody/pyin_adapter.py": "a44d7c1564b0888726a269319023f96eb1f494696e9db51cfd951b0c83295e8c",
+    "app/evaluation/conservative_notes.py": "cbfc58b99ee1d00e599cb9a4204a2fdac9f3c34b7d05c6cd66c051c01d508c4f",
+    "app/analyzers/chords/chordino.py": "14470cb1fb1b444b06587c0888804bea45b697e83c7afd7178e5bc1f2b792efb",
+    "app/analyzers/beats/beat_this_adapter.py": "e4c2b9df6cd5e7bdd5afb7dfddc0cdf7adbd42f3e67686dc22d7d8c45b04a835",
+    "app/analyzers/preprocessor.py": "827f6b74bbbfbd178e26971a49d9fb50eed535a0945752e8ca7f18631424121c",
+    "app/services/audio_crop.py": "7fc88218c1c816c066a3e9bc9c2ed8ace5f9a0891b756439020f878701654fe8"
+  },
+  "pyin_parameters": {
+    "sample_rate": 22050,
+    "hop_length": 512,
+    "frame_length": 2048,
+    "resolution": 0.5,
+    "n_thresholds": 32
+  },
+  "ideal_contour_control": {
+    "reference_count": 9,
+    "predicted_count": 8,
+    "matched": 8,
+    "missing": 1,
+    "extra": 0,
+    "pairs": [
+      [
+        0,
+        0
+      ],
+      [
+        2,
+        1
+      ],
+      [
+        3,
+        2
+      ],
+      [
+        4,
+        3
+      ],
+      [
+        5,
+        4
+      ],
+      [
+        6,
+        5
+      ],
+      [
+        7,
+        6
+      ],
+      [
+        8,
+        7
+      ]
+    ],
+    "onset_errors_seconds": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "offset_errors_seconds": [
+      0.5,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "onset_abs_p95": 0.0,
+    "offset_abs_p95": 0.32499999999999973,
+    "offset_within_100ms": 7,
+    "short_under_100ms": 1
+  },
+  "crop_control": {
+    "prefix_seconds": 1.25,
+    "original_frames": 176400,
+    "cropped_frames": 176399,
+    "max_sample_error": null
+  },
+  "wall_seconds": 25.4478847119899
+}

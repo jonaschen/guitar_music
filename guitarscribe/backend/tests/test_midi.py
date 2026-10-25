@@ -3,6 +3,35 @@ from app.models.analysis import BeatInfo, ChordEvent, ChordVoicing, MelodyNote, 
 from app.models.score import AnalysisSummary, SongInfo, SongScore
 
 
+def test_short_positive_melody_duration_preserves_rest_and_repeated_note_boundary():
+    from io import BytesIO
+    import mido
+
+    score = SongScore(song=SongInfo(duration_seconds=1), analysis=AnalysisSummary(bpm=120), melody=[
+        MelodyNote(id="short", start=.5, end=.505, midi=62, note="D4"),
+        MelodyNote(id="repeat", start=.505, end=.75, midi=62, note="D4"),
+    ])
+    before = score.model_dump_json()
+    events = [e for e in compile_playback_manifest(score).events if e.track == "melody"]
+    assert [(e.start, e.end) for e in events] == [(.5, .505), (.505, .75)]
+    ticks, messages = 0, []
+    for message in mido.merge_tracks(mido.MidiFile(file=BytesIO(export_midi(score))).tracks):
+        ticks += message.time
+        if message.type in ("note_on", "note_off"):
+            messages.append((message.type, message.note, ticks))
+    assert [m[:2] for m in messages] == [("note_on", 62), ("note_off", 62), ("note_on", 62), ("note_off", 62)]
+    assert all(abs(actual[2] - expected) <= 1 for actual, expected in zip(messages, [480, 484.8, 484.8, 720]))
+    assert score.model_dump_json() == before
+
+
+def test_nonpositive_melody_duration_retains_legacy_ten_millisecond_fallback():
+    for end in (.5, .49):
+        score = SongScore(melody=[MelodyNote(id="invalid", start=.5, end=end, midi=60, note="C4")])
+        event = next(e for e in compile_playback_manifest(score).events if e.track == "melody")
+        assert event.start == .5
+        assert event.end == .51
+
+
 def test_missing_voicings_produce_guitar_without_mutating_saved_score():
     score = SongScore(
         song=SongInfo(duration_seconds=3),
