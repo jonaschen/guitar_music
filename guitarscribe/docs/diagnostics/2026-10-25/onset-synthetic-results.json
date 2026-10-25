@@ -1,0 +1,878 @@
+{
+  "commit": "6db3c14d180668f34d79588448b15b29aa6bb2f3",
+  "candidate_sha256": "03733a05234dfa97091e17d1c1a3d811eb7fc9c86c70c12458d3bd270bf58d4a",
+  "evaluator_sha256": "bb49a0e94a8e962069b3a3cdd2c06ccd7c57a833188161884194459b69f0d127",
+  "scope": "Controlled mechanism checks; no real-song accuracy or listening acceptance.",
+  "gate": "One-to-one exact pitch/onset100ms matching; zero missing/extra; all paired onsets/offsets <=50ms; 75ms note length 50..100ms. Mixed-audio negative control excluded.",
+  "cases": {
+    "ideal-F0-with-audio": {
+      "source_sha256": "82c000283766d68803cae71afa67c2c05d0ee14bcf32210c99c20605db6d292b",
+      "baseline": {
+        "metrics": {
+          "reference_count": 9,
+          "predicted_count": 8,
+          "matched": 8,
+          "missing": 1,
+          "extra": 0,
+          "pairs": [
+            [
+              0,
+              0
+            ],
+            [
+              2,
+              1
+            ],
+            [
+              3,
+              2
+            ],
+            [
+              4,
+              3
+            ],
+            [
+              5,
+              4
+            ],
+            [
+              6,
+              5
+            ],
+            [
+              7,
+              6
+            ],
+            [
+              8,
+              7
+            ]
+          ],
+          "onset_errors_seconds": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "offset_errors_seconds": [
+            0.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "onset_abs_p95": 0.0,
+          "offset_abs_p95": 0.32499999999999973,
+          "offset_within_100ms": 7,
+          "short_under_100ms": 1
+        },
+        "passed": false,
+        "failure_reasons": [
+          "missing_or_extra_notes",
+          "offset_error_over_50ms"
+        ]
+      },
+      "candidate": {
+        "metrics": {
+          "reference_count": 9,
+          "predicted_count": 9,
+          "matched": 9,
+          "missing": 0,
+          "extra": 0,
+          "pairs": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              2,
+              2
+            ],
+            [
+              3,
+              3
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              5,
+              5
+            ],
+            [
+              6,
+              6
+            ],
+            [
+              7,
+              7
+            ],
+            [
+              8,
+              8
+            ]
+          ],
+          "onset_errors_seconds": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "offset_errors_seconds": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "onset_abs_p95": 0.0,
+          "offset_abs_p95": 0.0,
+          "offset_within_100ms": 9,
+          "short_under_100ms": 1
+        },
+        "passed": true,
+        "failure_reasons": []
+      },
+      "required": true
+    },
+    "B01-sine": {
+      "source_sha256": "82c000283766d68803cae71afa67c2c05d0ee14bcf32210c99c20605db6d292b",
+      "baseline": {
+        "metrics": {
+          "reference_count": 9,
+          "predicted_count": 10,
+          "matched": 8,
+          "missing": 1,
+          "extra": 2,
+          "pairs": [
+            [
+              0,
+              0
+            ],
+            [
+              2,
+              1
+            ],
+            [
+              3,
+              3
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              5,
+              5
+            ],
+            [
+              6,
+              7
+            ],
+            [
+              7,
+              8
+            ],
+            [
+              8,
+              9
+            ]
+          ],
+          "onset_errors_seconds": [
+            -0.012380952380952381,
+            -0.03172335600907017,
+            0.0201360544217688,
+            -0.02784580498866207,
+            -0.022426303854875318,
+            0.05265306122448976,
+            0.0402721088435376,
+            -0.021632653061224083
+          ],
+          "offset_errors_seconds": [
+            0.5557369614512473,
+            -0.026303854875283417,
+            0.054195011337868415,
+            0.05969387755102051,
+            0.0062131519274375435,
+            -0.006167800453514616,
+            0.04260770975056705,
+            0.058866213151927305
+          ],
+          "onset_abs_p95": 0.0483197278911565,
+          "offset_abs_p95": 0.38212188208616765,
+          "offset_within_100ms": 7,
+          "short_under_100ms": 2
+        },
+        "passed": false,
+        "failure_reasons": [
+          "missing_or_extra_notes",
+          "onset_error_over_50ms",
+          "offset_error_over_50ms",
+          "75ms_note_duration_outside_50_to_100ms"
+        ]
+      },
+      "candidate": {
+        "metrics": {
+          "reference_count": 9,
+          "predicted_count": 9,
+          "matched": 9,
+          "missing": 0,
+          "extra": 0,
+          "pairs": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              2,
+              2
+            ],
+            [
+              3,
+              3
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              5,
+              5
+            ],
+            [
+              6,
+              6
+            ],
+            [
+              7,
+              7
+            ],
+            [
+              8,
+              8
+            ]
+          ],
+          "onset_errors_seconds": [
+            -0.001995464852607709,
+            0.0,
+            -0.002018140589569173,
+            0.0,
+            -0.001995464852607931,
+            -0.002018140589568951,
+            0.0,
+            0.0402721088435376,
+            -0.001995464852607931
+          ],
+          "offset_errors_seconds": [
+            0.0,
+            0.003995464852607711,
+            0.0,
+            0.003995464852607711,
+            0.003009070294784255,
+            0.0,
+            -0.006167800453514616,
+            0.0040181405895687305,
+            0.003995464852607711
+          ],
+          "onset_abs_p95": 0.024970521541950216,
+          "offset_abs_p95": 0.005307936507936261,
+          "offset_within_100ms": 9,
+          "short_under_100ms": 1
+        },
+        "passed": true,
+        "failure_reasons": []
+      },
+      "required": true
+    },
+    "B02-harmonic": {
+      "source_sha256": "b2b78d561583eaa94f2685bcb9112069684fa91be7e1bf313a178bd22ff3d370",
+      "baseline": {
+        "metrics": {
+          "reference_count": 9,
+          "predicted_count": 10,
+          "matched": 8,
+          "missing": 1,
+          "extra": 2,
+          "pairs": [
+            [
+              0,
+              0
+            ],
+            [
+              2,
+              1
+            ],
+            [
+              3,
+              3
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              5,
+              5
+            ],
+            [
+              6,
+              7
+            ],
+            [
+              7,
+              8
+            ],
+            [
+              8,
+              9
+            ]
+          ],
+          "onset_errors_seconds": [
+            -0.012380952380952381,
+            -0.03172335600907017,
+            0.0201360544217688,
+            -0.02784580498866207,
+            -0.022426303854875318,
+            0.05265306122448976,
+            0.0402721088435376,
+            -0.021632653061224083
+          ],
+          "offset_errors_seconds": [
+            0.5557369614512473,
+            -0.003083900226757308,
+            0.054195011337868415,
+            0.05969387755102051,
+            0.0062131519274375435,
+            -0.006167800453514616,
+            0.04260770975056705,
+            0.058866213151927305
+          ],
+          "onset_abs_p95": 0.0483197278911565,
+          "offset_abs_p95": 0.38212188208616765,
+          "offset_within_100ms": 7,
+          "short_under_100ms": 2
+        },
+        "passed": false,
+        "failure_reasons": [
+          "missing_or_extra_notes",
+          "onset_error_over_50ms",
+          "offset_error_over_50ms",
+          "75ms_note_duration_outside_50_to_100ms"
+        ]
+      },
+      "candidate": {
+        "metrics": {
+          "reference_count": 9,
+          "predicted_count": 9,
+          "matched": 9,
+          "missing": 0,
+          "extra": 0,
+          "pairs": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              2,
+              2
+            ],
+            [
+              3,
+              3
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              5,
+              5
+            ],
+            [
+              6,
+              6
+            ],
+            [
+              7,
+              7
+            ],
+            [
+              8,
+              8
+            ]
+          ],
+          "onset_errors_seconds": [
+            -0.001995464852607709,
+            0.0,
+            -0.002018140589569173,
+            0.0,
+            -0.001995464852607931,
+            -0.002018140589568951,
+            0.0,
+            0.0402721088435376,
+            -0.001995464852607931
+          ],
+          "offset_errors_seconds": [
+            0.0,
+            0.003995464852607711,
+            0.0,
+            0.003995464852607711,
+            0.005004535147391742,
+            0.0,
+            -0.006167800453514616,
+            0.0040181405895687305,
+            0.003995464852607711
+          ],
+          "onset_abs_p95": 0.024970521541950216,
+          "offset_abs_p95": 0.005702494331065466,
+          "offset_within_100ms": 9,
+          "short_under_100ms": 1
+        },
+        "passed": true,
+        "failure_reasons": []
+      },
+      "required": true
+    },
+    "B06-normalized": {
+      "source_sha256": "dd3d8a4f74f01fa612a35647feaa561f94f0913652d1192dba52a0c70f282537",
+      "baseline": {
+        "metrics": {
+          "reference_count": 9,
+          "predicted_count": 10,
+          "matched": 8,
+          "missing": 1,
+          "extra": 2,
+          "pairs": [
+            [
+              0,
+              0
+            ],
+            [
+              2,
+              1
+            ],
+            [
+              3,
+              3
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              5,
+              5
+            ],
+            [
+              6,
+              7
+            ],
+            [
+              7,
+              8
+            ],
+            [
+              8,
+              9
+            ]
+          ],
+          "onset_errors_seconds": [
+            -0.012380952380952381,
+            -0.03172335600907017,
+            0.0201360544217688,
+            -0.02784580498866207,
+            -0.022426303854875318,
+            0.05265306122448976,
+            0.0402721088435376,
+            -0.021632653061224083
+          ],
+          "offset_errors_seconds": [
+            0.5557369614512473,
+            -0.003083900226757308,
+            0.054195011337868415,
+            0.05969387755102051,
+            0.0062131519274375435,
+            -0.006167800453514616,
+            0.04260770975056705,
+            0.058866213151927305
+          ],
+          "onset_abs_p95": 0.0483197278911565,
+          "offset_abs_p95": 0.38212188208616765,
+          "offset_within_100ms": 7,
+          "short_under_100ms": 2
+        },
+        "passed": false,
+        "failure_reasons": [
+          "missing_or_extra_notes",
+          "onset_error_over_50ms",
+          "offset_error_over_50ms",
+          "75ms_note_duration_outside_50_to_100ms"
+        ]
+      },
+      "candidate": {
+        "metrics": {
+          "reference_count": 9,
+          "predicted_count": 9,
+          "matched": 9,
+          "missing": 0,
+          "extra": 0,
+          "pairs": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              2,
+              2
+            ],
+            [
+              3,
+              3
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              5,
+              5
+            ],
+            [
+              6,
+              6
+            ],
+            [
+              7,
+              7
+            ],
+            [
+              8,
+              8
+            ]
+          ],
+          "onset_errors_seconds": [
+            -0.001995464852607709,
+            0.0,
+            -0.001995464852607709,
+            0.0,
+            -0.001995464852607931,
+            -0.001995464852607931,
+            0.0,
+            0.0402721088435376,
+            -0.001995464852607931
+          ],
+          "offset_errors_seconds": [
+            0.0,
+            0.003995464852607711,
+            0.0,
+            0.003995464852607711,
+            0.003009070294784255,
+            0.0,
+            -0.006167800453514616,
+            0.003995464852607711,
+            0.003995464852607711
+          ],
+          "onset_abs_p95": 0.02496145124716572,
+          "offset_abs_p95": 0.005298866213151853,
+          "offset_within_100ms": 9,
+          "short_under_100ms": 1
+        },
+        "passed": true,
+        "failure_reasons": []
+      },
+      "required": true
+    },
+    "B05-mixture": {
+      "source_sha256": "69512a58c961f1a1e99ef048001a2f4dfddb1591757736d3d075009e955390fd",
+      "baseline": {
+        "metrics": {
+          "reference_count": 9,
+          "predicted_count": 1,
+          "matched": 0,
+          "missing": 9,
+          "extra": 1,
+          "pairs": [],
+          "onset_errors_seconds": [],
+          "offset_errors_seconds": [],
+          "onset_abs_p95": null,
+          "offset_abs_p95": null,
+          "offset_within_100ms": 0,
+          "short_under_100ms": 0
+        },
+        "passed": false,
+        "failure_reasons": [
+          "missing_or_extra_notes"
+        ]
+      },
+      "candidate": {
+        "metrics": {
+          "reference_count": 9,
+          "predicted_count": 12,
+          "matched": 0,
+          "missing": 9,
+          "extra": 12,
+          "pairs": [],
+          "onset_errors_seconds": [],
+          "offset_errors_seconds": [],
+          "onset_abs_p95": null,
+          "offset_abs_p95": null,
+          "offset_within_100ms": 0,
+          "short_under_100ms": 10
+        },
+        "passed": false,
+        "failure_reasons": [
+          "missing_or_extra_notes"
+        ]
+      },
+      "required": false
+    },
+    "C01-shifted-transposed": {
+      "source_sha256": "8e92faebeb713e084d65c0bea761169db846bc66b420e8c2aee77f154a8c05e4",
+      "baseline": {
+        "metrics": {
+          "reference_count": 9,
+          "predicted_count": 10,
+          "matched": 8,
+          "missing": 1,
+          "extra": 2,
+          "pairs": [
+            [
+              0,
+              0
+            ],
+            [
+              2,
+              1
+            ],
+            [
+              3,
+              3
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              5,
+              5
+            ],
+            [
+              6,
+              7
+            ],
+            [
+              7,
+              8
+            ],
+            [
+              8,
+              9
+            ]
+          ],
+          "onset_errors_seconds": [
+            -0.03328117913832196,
+            -0.02940362811791375,
+            0.022455782312925,
+            -0.02552607709750543,
+            -0.020106575963718676,
+            0.0549727891156464,
+            0.0425918367346938,
+            -0.019312925170068773
+          ],
+          "offset_errors_seconds": [
+            0.5580566893424037,
+            -0.0007641723356006658,
+            0.05651473922902506,
+            0.06201360544217671,
+            0.008532879818594186,
+            -0.0038480725623584178,
+            0.044927437641723245,
+            0.0611859410430835
+          ],
+          "onset_abs_p95": 0.050639455782312985,
+          "offset_abs_p95": 0.384441609977324,
+          "offset_within_100ms": 7,
+          "short_under_100ms": 2
+        },
+        "passed": false,
+        "failure_reasons": [
+          "missing_or_extra_notes",
+          "onset_error_over_50ms",
+          "offset_error_over_50ms",
+          "75ms_note_duration_outside_50_to_100ms"
+        ]
+      },
+      "candidate": {
+        "metrics": {
+          "reference_count": 9,
+          "predicted_count": 9,
+          "matched": 9,
+          "missing": 0,
+          "extra": 0,
+          "pairs": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              2,
+              2
+            ],
+            [
+              3,
+              3
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              5,
+              5
+            ],
+            [
+              6,
+              6
+            ],
+            [
+              7,
+              7
+            ],
+            [
+              8,
+              8
+            ]
+          ],
+          "onset_errors_seconds": [
+            -0.0029863945578231244,
+            0.0010045351473921826,
+            -0.0030090702947846992,
+            0.0010045351473921826,
+            -0.0009909297052153043,
+            -0.0030090702947846992,
+            0.0010045351473921826,
+            0.0425918367346938,
+            -0.0009909297052157484
+          ],
+          "offset_errors_seconds": [
+            0.0010045351473921826,
+            0.0030045351473921844,
+            0.0010045351473921826,
+            0.004999999999999893,
+            0.004013605442176438,
+            0.0010045351473921826,
+            -0.0038480725623584178,
+            0.005022675736960913,
+            0.004999999999999005
+          ],
+          "onset_abs_p95": 0.026758730158730145,
+          "offset_abs_p95": 0.0050136054421765055,
+          "offset_within_100ms": 9,
+          "short_under_100ms": 1
+        },
+        "passed": true,
+        "failure_reasons": []
+      },
+      "required": true
+    },
+    "C02-sustained-vibrato": {
+      "source_sha256": "f9b038d87c187929bc374342006191e81b3156d2180c9c08962c4b9fbdfa4779",
+      "baseline": {
+        "metrics": {
+          "reference_count": 1,
+          "predicted_count": 1,
+          "matched": 1,
+          "missing": 0,
+          "extra": 0,
+          "pairs": [
+            [
+              0,
+              0
+            ]
+          ],
+          "onset_errors_seconds": [
+            -0.023061224489795973
+          ],
+          "offset_errors_seconds": [
+            0.06412698412698425
+          ],
+          "onset_abs_p95": 0.023061224489795973,
+          "offset_abs_p95": 0.06412698412698425,
+          "offset_within_100ms": 1,
+          "short_under_100ms": 0
+        },
+        "passed": false,
+        "failure_reasons": [
+          "offset_error_over_50ms"
+        ]
+      },
+      "candidate": {
+        "metrics": {
+          "reference_count": 1,
+          "predicted_count": 1,
+          "matched": 1,
+          "missing": 0,
+          "extra": 0,
+          "pairs": [
+            [
+              0,
+              0
+            ]
+          ],
+          "onset_errors_seconds": [
+            -0.002018140589569173
+          ],
+          "offset_errors_seconds": [
+            0.003995464852607711
+          ],
+          "onset_abs_p95": 0.002018140589569173,
+          "offset_abs_p95": 0.003995464852607711,
+          "offset_within_100ms": 1,
+          "short_under_100ms": 0
+        },
+        "passed": true,
+        "failure_reasons": []
+      },
+      "required": true
+    }
+  },
+  "passed": true,
+  "wall_seconds": 1.9125116460199933
+}

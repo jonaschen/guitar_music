@@ -1,0 +1,100 @@
+{
+  "status": "engineering_comparison_not_human_accepted",
+  "candidate_sha256": "03733a05234dfa97091e17d1c1a3d811eb7fc9c86c70c12458d3bd270bf58d4a",
+  "checkpoint_sha256": "ea6ce62633773895a7d1646691dc2744cdd229809d9ca9b4b81266926be1eaa3",
+  "cases": [
+    {
+      "id": "new-song",
+      "job_id": "db79e1145ea046088b8aa5ef421d0e3f",
+      "saved_revision": null,
+      "bars": [
+        8,
+        15
+      ],
+      "analysis_seconds": [
+        16.62,
+        34.56
+      ],
+      "original_seconds": [
+        16.62,
+        34.56
+      ],
+      "stem_sha256": "1d57f3aefe1a2dc202f75f05990487609ca58fc32563d6f10ca67c6dbfb5d7f5",
+      "contour_sha256": "b5e102b960403d6a57d1d6ecde07eca2bd1381873c8bd9f4ad7e69f06dda4305",
+      "final_zero_padding_samples": 0,
+      "source_excerpt_sha256": "6473ac705cad6c20bb48feeb852108a4dd2850e90f2e11924e4dd50ae01568cd",
+      "baseline": {
+        "events": 88,
+        "under_100ms": 45,
+        "under_10ms": 0,
+        "voiced_seconds": 14.712426303854873
+      },
+      "candidate": {
+        "events": 145,
+        "under_100ms": 96,
+        "under_10ms": 10,
+        "voiced_seconds": 14.712426303854873
+      },
+      "frame_difference_vs_contour": {
+        "voiced": 634,
+        "dropped": 0,
+        "changed_pitch": 73,
+        "invented_voicing": 0
+      },
+      "compiler_preserves_candidate": true,
+      "caution": "Changes and frame differences are not accuracy estimates; inward trimming deliberately removes smeared F0 tails."
+    },
+    {
+      "id": "saved-G",
+      "job_id": "3ba648f12cb74dd59a45c1b2d4bc83ab",
+      "saved_revision": "db8c657e-62a5-4fad-a33e-cde25a9e1c0d",
+      "bars": [
+        28,
+        35
+      ],
+      "analysis_seconds": [
+        49.957732426303856,
+        64.4237641723356
+      ],
+      "original_seconds": [
+        67.95773242630386,
+        82.4237641723356
+      ],
+      "stem_sha256": "032aca39aaef3359855468508e92d204e1a65754183beb3a7104fea2803d5eda",
+      "contour_sha256": "91b273a4af87ea6c93a2cb5e30b8e8d86dd26c97d1018df17576a7b6b0083b3c",
+      "final_zero_padding_samples": 1,
+      "source_excerpt_sha256": "3af41e7a9200270ef59f439ab20f8666edb5404338bdaadd3e8ba681b4aae991",
+      "baseline": {
+        "events": 67,
+        "under_100ms": 26,
+        "under_10ms": 0,
+        "voiced_seconds": 12.132426303854885
+      },
+      "candidate": {
+        "events": 102,
+        "under_100ms": 61,
+        "under_10ms": 12,
+        "voiced_seconds": 12.108662131519282
+      },
+      "frame_difference_vs_contour": {
+        "voiced": 522,
+        "dropped": 2,
+        "changed_pitch": 39,
+        "invented_voicing": 0
+      },
+      "compiler_preserves_candidate": true,
+      "caution": "Changes and frame differences are not accuracy estimates; inward trimming deliberately removes smeared F0 tails."
+    }
+  ],
+  "harmony_caution": [
+    {
+      "start": 31.950657596,
+      "end": 32.833015873,
+      "symbol": "F/G",
+      "pitches": [
+        41
+      ]
+    }
+  ],
+  "wall_seconds": 5.118873304018052
+}

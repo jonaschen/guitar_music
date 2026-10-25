@@ -1,0 +1,162 @@
+{
+  "anthem-1": {
+    "note_count": 43,
+    "first_onset": 0.013541666666666667,
+    "last_note_end": 19.865624999999998,
+    "file_end_seconds": 19.865624999999998,
+    "duration_min": 0.13541666666666607,
+    "duration_median": 0.2890625,
+    "maximum_polyphony": 3,
+    "source_duration_seconds": 17.94,
+    "notes_starting_at_or_after_source_end": 0,
+    "notes_ending_after_source_end": 1,
+    "onset_alignment_to_CSV_beat_quarter_subdivisions": {
+      "within_10_microseconds": 43,
+      "total": 43,
+      "interpretation": "Output-internal grid coincidence, not independent evidence of acoustic onset accuracy or export quantization."
+    },
+    "ambiguous_repeated_note_ons": [
+      {
+        "track": 2,
+        "channel": 1,
+        "pitch": 52,
+        "seconds": 13.222916666666665
+      }
+    ],
+    "csv_comparison": {
+      "csv_sha256": "9ac23b66364122f899a154133d081dfb191b2bd0a7232ae01f16904d2beeb0e6",
+      "csv_note_count": 43,
+      "csv_pitch_counts": {
+        "50": 8,
+        "48": 7,
+        "60": 2,
+        "58": 1,
+        "52": 8,
+        "56": 1,
+        "59": 2,
+        "57": 4,
+        "55": 3,
+        "72": 1,
+        "71": 1,
+        "67": 1,
+        "53": 4
+      },
+      "midi_pitch_counts": {
+        "50": 8,
+        "48": 7,
+        "60": 2,
+        "58": 1,
+        "52": 8,
+        "56": 1,
+        "59": 2,
+        "57": 4,
+        "55": 3,
+        "72": 1,
+        "71": 1,
+        "67": 1,
+        "53": 4
+      },
+      "pitch_counts_equal": true,
+      "paired": 43,
+      "within_one_tick": 43,
+      "median_signed_error_seconds": 5.000000005139782e-07,
+      "max_absolute_error_seconds": 0.00025650000000254636
+    }
+  },
+  "anthem-2": {
+    "note_count": 47,
+    "first_onset": 0.01614583333333333,
+    "last_note_end": 14.948958333333334,
+    "file_end_seconds": 14.948958333333334,
+    "duration_min": 0.11406249999999929,
+    "duration_median": 0.234375,
+    "maximum_polyphony": 2,
+    "source_duration_seconds": 14.466031746031746,
+    "notes_starting_at_or_after_source_end": 0,
+    "notes_ending_after_source_end": 1,
+    "onset_alignment_to_CSV_beat_quarter_subdivisions": {
+      "within_10_microseconds": 47,
+      "total": 47,
+      "interpretation": "Output-internal grid coincidence, not independent evidence of acoustic onset accuracy or export quantization."
+    },
+    "ambiguous_repeated_note_ons": [
+      {
+        "track": 1,
+        "channel": 1,
+        "pitch": 72,
+        "seconds": 9.22291666666667
+      }
+    ],
+    "csv_comparison": {
+      "csv_sha256": "8c1dee64fc78d1238d96fff6b02a2eb8679fbf4ad0539d0e66408d0905053086",
+      "csv_note_count": 47,
+      "csv_pitch_counts": {
+        "62": 7,
+        "64": 8,
+        "66": 2,
+        "69": 6,
+        "67": 9,
+        "65": 8,
+        "71": 1,
+        "72": 2,
+        "60": 3,
+        "63": 1
+      },
+      "midi_pitch_counts": {
+        "62": 7,
+        "64": 8,
+        "66": 2,
+        "67": 9,
+        "69": 6,
+        "65": 8,
+        "71": 1,
+        "72": 2,
+        "60": 3,
+        "63": 1
+      },
+      "pitch_counts_equal": true,
+      "paired": 47,
+      "within_one_tick": 47,
+      "median_signed_error_seconds": -6.299999999725969e-05,
+      "max_absolute_error_seconds": 0.00025933333333338915
+    }
+  },
+  "limitations": [
+    "CSV has no note-offs, so MIDI duration fidelity cannot be checked against CSV.",
+    "CSV/MIDI parity does not rule out upstream beat snapping or time warping.",
+    "No audio timestamps or manual edits were used to align exports."
+  ],
+  "gui_log_evidence": {
+    "file": "anthem-gui.log",
+    "sha256": "2aa8fdb93b96d597d307c59f573c860b31f95a715d4d9bcfa50abdfdd0be7a8a",
+    "entries": [
+      {
+        "line": 22,
+        "text": "RhythmQuantize: beat repair region 9.00-11.20s: 4 -> 4 beats (1 -> 1 measures of 4), objective gain +4.2 -- REPAIRED"
+      },
+      {
+        "line": 23,
+        "text": "RhythmQuantize: 43 notes, 0 drums, grid 8/beat; beats 37 -> 37 (1 repaired, 0 retracked); swing 0.000; 0 triplet notes; post-pass moved 0, rolled 0; 0.03 s"
+      },
+      {
+        "line": 26,
+        "text": "RhythmQuantize: beat repair region 11.10-13.14s: 4 -> 4 beats (1 -> 1 measures of 4), objective gain +2.5 -- REPAIRED"
+      },
+      {
+        "line": 27,
+        "text": "RhythmQuantize: 47 notes, 0 drums, grid 8/beat; beats 33 -> 33 (1 repaired, 0 retracked); swing 0.000; 0 triplet notes; post-pass moved 0, rolled 0; 0.02 s"
+      }
+    ],
+    "interpretation": "GUI explicitly reports internal rhythm quantization and beat repair for both exports. MIDI/CSV agreement is export consistency, not raw acoustic timing fidelity."
+  },
+  "artifact_sha256": {
+    "anthem-1.mid": "04065fba4ce65d5ee5b691e2e4b8deba70c829c0d2e6bae212ea54d76b55ac95",
+    "anthem-2.mid": "a45ff07363c869bd872e69f956a50ef0cc7e81e1b7a2a0a5e623b1bb0502b6e6",
+    "anthem-1.csv": "9ac23b66364122f899a154133d081dfb191b2bd0a7232ae01f16904d2beeb0e6",
+    "anthem-2.csv": "8c1dee64fc78d1238d96fff6b02a2eb8679fbf4ad0539d0e66408d0905053086",
+    "anthem-1.json": "69e59c61a310f3ade81cc05e535ec8c352bb0153b1fa2c6f68c003dc89a9f112",
+    "anthem-2.json": "be0861483b255eadcc4f65dafa4b6ad328b4fd2323bbe85d833399d9333ee1b5",
+    "anthem-gui.log": "2aa8fdb93b96d597d307c59f573c860b31f95a715d4d9bcfa50abdfdd0be7a8a",
+    "raw-midi-export-options.png": "56b03fc45a7e56a45023f392b6f2def38d4c92c5c518eef3d6db7514cf9928f8"
+  }
+}

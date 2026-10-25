@@ -14,6 +14,12 @@
 
 ---
 
+## 2026-10-25 固定起音實驗已停止，轉入免費本機外部比較
+
+起音候選合成控制6/6通過，但兩個真實片段新增22個無證據支持的10ms以下碎片，已拒絕且不升級。保留原G／已認可B，沒有繼續逐曲微調。見 [固定實驗結果](docs/Onset_Checkpoint_2026-10-25.md)。
+
+AnthemScore 6.3.0本機免費試用已完成相同兩段的轉譜及MIDI／CSV匯出，未付費或上傳音訊。工具內部有節奏量化、重疊聲部及超長尾音，不能預設較準。兩組相同音色的A/B供一次集中聽感判斷；未整合產品，伴奏仍未解決。見 [比較證據及限制](docs/External_Comparison_Readiness_2026-10-25.md) 及 [最新決策](docs/Next_Decision.md)。
+
 ## 2026-10-25 顧問後首輪診斷：已定位兩種旋律切分限制
 
 目前以 [顧問後完成計畫](../GuitarScribe_Completion_Plan_After_Consultation_2026-10-25.md) 與 [診斷紀錄](docs/Diagnostic_Findings.md) 為準；下方較早的「下一步新曲試聽」已由本檢查點取代。

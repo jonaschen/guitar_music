@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>外部版本比較</title>
+  <style>
+    :root { color-scheme: light; font: 17px/1.55 system-ui, sans-serif; color: #252d32; background: #f6f5ef; }
+    body { max-width: 760px; margin: 36px auto; padding: 0 18px; }
+    h1 { font-size: 27px; }
+    section { margin: 18px 0; padding: 18px 20px; background: #fff; border: 1px solid #d5d8d0; border-radius: 12px; }
+    h2 { margin: 0 0 8px; font-size: 21px; }
+    p { margin: 8px 0 14px; }
+    .tracks { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+    button { padding: 9px 14px; border: 0; border-radius: 8px; background: #245d50; color: white; font: inherit; cursor: pointer; }
+    button.secondary { background: #596469; }
+    button:disabled { opacity: .55; cursor: wait; }
+    audio { display: block; width: 100%; margin-top: 12px; }
+    .note { color: #53605b; font-size: 15px; }
+    #status { min-height: 1.6em; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>外部版本比較</h1>
+    <p>比較現有旋律與外部工具的結果，尚未驗收；不會修改或保存樂譜。</p>
+    <p>兩版使用相同音色；外部輸出含重疊音與超出原人聲的尾音，均原樣保留。</p>
+    <button id="stop-all" class="secondary" type="button">全部停止</button>
+    <p id="status" role="status" aria-live="polite">載入試聽清單…</p>
+  </header>
+  <main id="groups"></main>
+  <p class="note">回報每組的比較結論即可，不需標註音符。</p>
+
+  <script>
+    const groupsRoot = document.querySelector("#groups");
+    const status = document.querySelector("#status");
+    const stopAllButton = document.querySelector("#stop-all");
+    const players = new Set();
+    const playRequests = new WeakMap();
+    let playbackGeneration = 0;
+
+    function stopAll(reset = false) {
+      playbackGeneration += 1;
+      for (const player of players) {
+        player.pause();
+        if (reset) {
+          try { player.currentTime = 0; } catch { /* Metadata may not be loaded. */ }
+        }
+      }
+    }
+
+    function safeTrackUrl(file) {
+      if (typeof file !== "string" || !file.trim() || file.includes("\\")) {
+        throw new Error("音檔路徑格式無效。");
+      }
+      let decoded;
+      try { decoded = decodeURIComponent(file); } catch { throw new Error("音檔路徑格式無效。"); }
+      if (decoded.startsWith("/") || decoded.split("/").some(part => part === "..") || /^[a-z][a-z0-9+.-]*:/i.test(decoded)) {
+        throw new Error("音檔必須位於此試聽資料夾內。");
+      }
+      const url = new URL(file, window.location.href);
+      const folder = new URL(".", window.location.href);
+      if (url.origin !== folder.origin || !url.pathname.startsWith(folder.pathname)) {
+        throw new Error("音檔必須位於此試聽資料夾內。");
+      }
+      return url.href;
+    }
+
+    function renderGroup(group) {
+      const section = document.createElement("section");
+      section.dataset.groupId = group.id;
+      const heading = document.createElement("h2");
+      heading.textContent = group.title;
+      section.append(heading);
+
+      const question = document.createElement("p");
+      question.textContent = group.question;
+      section.append(question);
+
+      const tracks = document.createElement("div");
+      tracks.className = "tracks";
+      const audio = document.createElement("audio");
+      audio.controls = true;
+      audio.preload = "none";
+      audio.setAttribute("aria-label", `${group.title} 音訊播放器`);
+      players.add(audio);
+
+      audio.addEventListener("play", () => {
+        const request = playRequests.get(audio);
+        if (request !== undefined && request !== playbackGeneration) {
+          audio.pause();
+          return;
+        }
+        if (request === undefined) playbackGeneration += 1;
+        for (const other of players) if (other !== audio) other.pause();
+        status.textContent = `播放中：${group.title}／${audio.dataset.trackLabel ?? "所選音軌"}`;
+      });
+      audio.addEventListener("ended", () => { status.textContent = `播放完成：${group.title}`; });
+      audio.addEventListener("error", () => {
+        if (audio.dataset.activeSource && audio.currentSrc && audio.currentSrc !== audio.dataset.activeSource) return;
+        status.textContent = `音檔載入或播放失敗：${group.title}。請確認 packet.json 的檔名與音檔。`;
+      });
+
+      for (const track of group.tracks) {
+        let source;
+        try { source = safeTrackUrl(track.file); }
+        catch (error) {
+          status.textContent = error instanceof Error ? error.message : "音檔路徑格式無效。";
+          continue;
+        }
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = `播放：${track.label}`;
+        button.dataset.sourceFile = track.file;
+        button.addEventListener("click", async () => {
+          stopAll();
+          const request = ++playbackGeneration;
+          playRequests.set(audio, request);
+          audio.dataset.trackLabel = track.label;
+          audio.dataset.activeSource = source;
+          audio.src = source;
+          audio.load();
+          try {
+            await audio.play();
+            if (request !== playbackGeneration && playRequests.get(audio) === request) audio.pause();
+          } catch {
+            if (request === playbackGeneration) {
+              status.textContent = `播放失敗：${group.title}／${track.label}。可使用播放器控制列重試。`;
+            }
+          } finally {
+            if (playRequests.get(audio) === request) playRequests.delete(audio);
+          }
+        });
+        tracks.append(button);
+      }
+
+      section.append(tracks, audio);
+      groupsRoot.append(section);
+    }
+
+    stopAllButton.addEventListener("click", () => {
+      stopAll(true);
+      status.textContent = "已全部停止。";
+    });
+
+    fetch("packet.json")
+      .then(response => {
+        if (!response.ok) throw new Error(`試聽清單載入失敗（HTTP ${response.status}）。`);
+        return response.json();
+      })
+      .then(packet => {
+        if (!packet || !Array.isArray(packet.groups) || packet.groups.length < 1 || packet.groups.length > 3) {
+          throw new Error("packet.json 必須包含 1 至 3 組試聽資料。");
+        }
+        for (const group of packet.groups) {
+          if (!group || typeof group.id !== "string" || typeof group.title !== "string" || typeof group.question !== "string"
+            || !Array.isArray(group.tracks) || group.tracks.length < 1
+            || group.tracks.some(track => !track || typeof track.label !== "string" || typeof track.file !== "string")) {
+            throw new Error("packet.json 的組別或音軌資料格式無效。");
+          }
+          renderGroup(group);
+        }
+        status.textContent = "試聽清單已載入。";
+      })
+      .catch(error => {
+        status.textContent = error instanceof Error ? error.message : "試聽清單載入失敗。";
+      });
+  </script>
+</body>
+</html>

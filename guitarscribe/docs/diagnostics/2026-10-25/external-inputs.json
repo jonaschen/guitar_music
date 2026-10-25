@@ -1,0 +1,36 @@
+{
+  "status": "prepared_locally_not_uploaded",
+  "purpose": "Vocal melody comparison; baseline is not ground truth",
+  "files": [
+    {
+      "file": "vocal-1.wav",
+      "bytes": 3164660,
+      "sha256": "131e7a573223ce168ff9cc34d4d27d4ee8d4babb3d85803225e21c6eeca4b2a5",
+      "duration": 17.94,
+      "analysis_seconds": [
+        16.62,
+        34.56
+      ],
+      "original_seconds": [
+        16.62,
+        34.56
+      ],
+      "source_job": "db79e1145ea046088b8aa5ef421d0e3f"
+    },
+    {
+      "file": "vocal-2.wav",
+      "bytes": 2551852,
+      "sha256": "3ae457c1f7c467f04f321987e45ec76844cc6f3d529e824ec5d98bd49636a872",
+      "duration": 14.466031746031746,
+      "analysis_seconds": [
+        49.957732426303856,
+        64.4237641723356
+      ],
+      "original_seconds": [
+        67.95773242630386,
+        82.4237641723356
+      ],
+      "source_job": "3ba648f12cb74dd59a45c1b2d4bc83ab"
+    }
+  ]
+}

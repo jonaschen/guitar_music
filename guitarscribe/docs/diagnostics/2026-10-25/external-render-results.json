@@ -1,0 +1,57 @@
+{
+  "status": "awaiting_human_comparison",
+  "mapping": {
+    "A": "existing_G",
+    "B": "AnthemScore_6.3.0_exported_MIDI"
+  },
+  "tone": "same product connectedMelody triangle",
+  "peak_per_voice": 0.12,
+  "velocity": "constant",
+  "lead_removed_seconds": 0.01,
+  "notes_filtered": false,
+  "time_warp": false,
+  "limits": [
+    "Existing G used full-song context; external used short vocal clips.",
+    "No ground truth; external result is not presumed better.",
+    "All external overlapping pitches and overhanging tails retained; both synthesized tracks padded to same duration.",
+    "Rounded timing option disabled, but CSV grid alignment means unquantized acoustic timing is not established."
+  ],
+  "results": [
+    {
+      "file": "baseline-1.wav",
+      "notes": 88,
+      "peak": 0.11967853456735611,
+      "rms": 0.05933543821256394,
+      "voices": 11,
+      "frames": 880484,
+      "sha256": "f1f151476aac6e91c9c9fa63b74ab89157b30bdc4519d510678ace81dfa2306e"
+    },
+    {
+      "file": "anthem-1.wav",
+      "notes": 43,
+      "peak": 0.3553876280784607,
+      "rms": 0.08084586837006298,
+      "voices": 20,
+      "frames": 880484,
+      "sha256": "62661c2b9f508ab780ca3813b6ab9732f52e809fabeb48628689baaafb67f03e"
+    },
+    {
+      "file": "baseline-2.wav",
+      "notes": 67,
+      "peak": 0.1193586066365242,
+      "rms": 0.06197888500049797,
+      "voices": 14,
+      "frames": 663659,
+      "sha256": "df2294b9bfe626ca0909dd4e125241933436e6197df25ffa83ed3b37432578b3"
+    },
+    {
+      "file": "anthem-2.wav",
+      "notes": 47,
+      "peak": 0.2378198653459549,
+      "rms": 0.06880862250214992,
+      "voices": 19,
+      "frames": 663659,
+      "sha256": "38b8f3755f836395bedac457968da39e6374ab30d261018c777f5c2d87d76df6"
+    }
+  ]
+}
