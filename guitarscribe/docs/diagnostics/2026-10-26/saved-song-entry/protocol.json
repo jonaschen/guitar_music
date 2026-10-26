@@ -1,0 +1,11 @@
+{
+  "song": "小手拉大手",
+  "duration": 29.291979166666668,
+  "analysis_start": 49.95772916666667,
+  "original_source_start": 67.95772916666667,
+  "basis": "Previously preferred automatic accompaniment packet; not the older Librosa/chromagram job",
+  "A": "Frozen previously accepted candidate.wav, unchanged",
+  "B": "Same score/beat grid/voicings/rhythm and product voice; opt-in continuous entry performance",
+  "fixed": "No reanalysis, offsets, parameters, score edits or per-variant gain normalization",
+  "decision": "If B is worse, retain A and investigate arrangement; do not tune this song. If comparable/better, retain bounded evidence for this second song, not whole-song accuracy."
+}

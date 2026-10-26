@@ -1,0 +1,11 @@
+<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>小手拉大手 · 演奏對照</title>
+<style>body{font:18px/1.7 system-ui;max-width:700px;margin:35px auto;padding:0 20px;color:#243246;background:#f7f8fb}section{background:white;padding:18px;margin:18px 0;border-radius:12px}audio{width:100%}#error{color:#a21b26}</style>
+<h1>小手拉大手：新演奏方案是否仍順？</h1>
+<p>各約 29 秒，原唱＋吉他，不需要拿吉他。兩版使用同一份和弦、拍格與指型，只比較演奏安排。</p>
+<section><h2>A · 之前較好的伴奏</h2><p>保留你先前認為「大致貼合」的原音檔。</p><audio controls preload="metadata" src="A.wav"></audio></section>
+<section><h2>B · 新的換和弦演奏方案</h2><audio controls preload="metadata" src="B.wav"></audio></section>
+<p>各聽一次即可，回覆：<strong>B 較順／差不多，都可以／A 較順／兩個都不對／聽不清楚</strong>。</p>
+<p>若有明顯搶拍或拖拍，補一句即可，不必找秒數或逐個判斷和弦。</p>
+<p id="error" role="alert"></p>
+<script>const players=[...document.querySelectorAll('audio')];for(const player of players){player.addEventListener('play',()=>players.forEach(p=>{if(p!==player)p.pause();}));player.addEventListener('error',()=>document.querySelector('#error').textContent='音檔載入失敗，請回報。');}</script></html>

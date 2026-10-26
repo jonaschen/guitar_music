@@ -1,0 +1,124 @@
+{
+  "window": [
+    0,
+    29.291979166666668
+  ],
+  "source_sha256": "de1978a656d0c646cbc76d1deebe7a787d63b332dca3f248507feca0b4e008f0",
+  "reference_A_sha256": "352add1caeb4f5cef321106d7301040fa66c3ee37606c06d42db4ca6a73cb08b",
+  "frozen_guitar_gain": 1.0,
+  "score_sha256": "bb1acd1914d6eb3c496016b42b2e188664d1447bb022736912d4b7e18d15fe1a",
+  "changes": [
+    {
+      "chord_id": "chord-2",
+      "original_first_attack": 0.46,
+      "first_attack": 0.232199546,
+      "original_attacks": 5,
+      "candidate_attacks": 5
+    },
+    {
+      "chord_id": "chord-3",
+      "original_first_attack": 1.82,
+      "first_attack": 1.718276643,
+      "original_attacks": 9,
+      "candidate_attacks": 9
+    },
+    {
+      "chord_id": "chord-4",
+      "original_first_attack": 4.85,
+      "first_attack": 4.59755102,
+      "original_attacks": 3,
+      "candidate_attacks": 3
+    },
+    {
+      "chord_id": "chord-5",
+      "original_first_attack": 5.54,
+      "first_attack": 5.479909297,
+      "original_attacks": 6,
+      "candidate_attacks": 6
+    },
+    {
+      "chord_id": "chord-6",
+      "original_first_attack": 7.38,
+      "first_attack": 7.24462585,
+      "original_attacks": 6,
+      "candidate_attacks": 6
+    },
+    {
+      "chord_id": "chord-8",
+      "original_first_attack": 11.54,
+      "first_attack": 11.099138321,
+      "original_attacks": 5,
+      "candidate_attacks": 5
+    },
+    {
+      "chord_id": "chord-9",
+      "original_first_attack": 12.92,
+      "first_attack": 12.910294784,
+      "original_attacks": 6,
+      "candidate_attacks": 6
+    },
+    {
+      "chord_id": "chord-10",
+      "original_first_attack": 14.76,
+      "first_attack": 14.675011337,
+      "original_attacks": 6,
+      "candidate_attacks": 6
+    },
+    {
+      "chord_id": "chord-11",
+      "original_first_attack": 16.58,
+      "first_attack": 16.532607709,
+      "original_attacks": 5,
+      "candidate_attacks": 5
+    },
+    {
+      "chord_id": "chord-12",
+      "original_first_attack": 18.21,
+      "first_attack": 18.158004535,
+      "original_attacks": 7,
+      "candidate_attacks": 7
+    },
+    {
+      "chord_id": "chord-13",
+      "original_first_attack": 20.28,
+      "first_attack": 20.201360544,
+      "original_attacks": 6,
+      "candidate_attacks": 6
+    },
+    {
+      "chord_id": "chord-15",
+      "original_first_attack": 24.44,
+      "first_attack": 24.009433106,
+      "original_attacks": 5,
+      "candidate_attacks": 5
+    },
+    {
+      "chord_id": "chord-16",
+      "original_first_attack": 25.84,
+      "first_attack": 25.820589569,
+      "original_attacks": 6,
+      "candidate_attacks": 6
+    },
+    {
+      "chord_id": "chord-17",
+      "original_first_attack": 27.68,
+      "first_attack": 27.631746031,
+      "original_attacks": 6,
+      "candidate_attacks": 6
+    }
+  ],
+  "skipped": [
+    {
+      "chord_id": "chord-7",
+      "reason": "insufficient_room_for_strings"
+    },
+    {
+      "chord_id": "chord-14",
+      "reason": "insufficient_room_for_strings"
+    }
+  ],
+  "original_event_parity": true,
+  "score_unchanged": true,
+  "non_guitar_events_unchanged": true,
+  "prior_reference": "automatic-accompaniment-2026-10-25/candidate.wav"
+}
