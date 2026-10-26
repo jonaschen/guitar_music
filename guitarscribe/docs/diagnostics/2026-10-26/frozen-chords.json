@@ -1,0 +1,102 @@
+{
+  "job": "db79e1145ea046088b8aa5ef421d0e3f",
+  "window": [
+    10,
+    40
+  ],
+  "capo": 0,
+  "audio_sha256": "b8881424cc1fe6e6c7c0db14cf3bec13e3f05a6a839df1caad9354baa4b5e4b4",
+  "method": "Original labels and original boundaries, clipped and rebased only; no snapping or simplification",
+  "chords": [
+    {
+      "start": 0,
+      "end": 4.164172335,
+      "symbol": "C"
+    },
+    {
+      "start": 4.164172335,
+      "end": 4.675011337000001,
+      "symbol": "F"
+    },
+    {
+      "start": 4.675011337000001,
+      "end": 6.346848072,
+      "symbol": "C"
+    },
+    {
+      "start": 6.346848072,
+      "end": 8.993922902000001,
+      "symbol": "G"
+    },
+    {
+      "start": 8.993922902000001,
+      "end": 10.897959183000001,
+      "symbol": "Am"
+    },
+    {
+      "start": 10.897959183000001,
+      "end": 12.755555555,
+      "symbol": "Em"
+    },
+    {
+      "start": 12.755555555,
+      "end": 13.498594103999999,
+      "symbol": "C"
+    },
+    {
+      "start": 13.498594103999999,
+      "end": 13.916553287,
+      "symbol": "F6"
+    },
+    {
+      "start": 13.916553287,
+      "end": 15.774149658999999,
+      "symbol": "F"
+    },
+    {
+      "start": 15.774149658999999,
+      "end": 17.817505668,
+      "symbol": "Em"
+    },
+    {
+      "start": 17.817505668,
+      "end": 19.860861678,
+      "symbol": "Fmaj7"
+    },
+    {
+      "start": 19.860861678,
+      "end": 21.346938775,
+      "symbol": "G"
+    },
+    {
+      "start": 21.346938775,
+      "end": 21.950657596,
+      "symbol": "Em"
+    },
+    {
+      "start": 21.950657596,
+      "end": 22.833015873,
+      "symbol": "F/G"
+    },
+    {
+      "start": 22.833015873,
+      "end": 24.226213151000003,
+      "symbol": "C6"
+    },
+    {
+      "start": 24.226213151000003,
+      "end": 26.780408162999997,
+      "symbol": "G"
+    },
+    {
+      "start": 26.780408162999997,
+      "end": 29.241723356,
+      "symbol": "Am7"
+    },
+    {
+      "start": 29.241723356,
+      "end": 30,
+      "symbol": "Em"
+    }
+  ]
+}

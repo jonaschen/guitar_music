@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>跟著拍點刷和弦</title>
+<style>body{font:18px/1.6 system-ui;max-width:760px;margin:30px auto;padding:0 18px;color:#233047;background:#f7f8fb}audio{width:100%}.card{background:white;padding:18px;border-radius:12px;margin:16px 0}#current{font-size:64px;font-weight:700}#next{font-size:24px}.hint{color:#526077}table{width:100%;border-collapse:collapse}td,th{text-align:left;border-bottom:1px solid #ddd;padding:7px}tr.active{background:#d7f3df}#error{color:#a21b26}</style>
+<h1>跟著拍點刷和弦</h1>
+<p>沿用你剛才確認的原曲＋答答聲。標準調弦，Capo 0；以下是原辨識和弦，尚未驗證。</p>
+<audio controls preload="metadata" src="../frozen-click-2026-10-26/original-plus-click.wav"></audio>
+<div class="card"><div id="position">準備中</div><div id="current">—</div><div id="next"></div></div>
+<p>先每拍輕刷一次即可。遇到不合理的和弦或換得太急，不用硬追；記下播放器秒數。只需回報「大致可搭配」或「約幾秒不對」，能分辨和弦不對或換得早／晚再補充。</p>
+<p class="hint">這次沒有改和弦名稱、切換時刻或音訊，也沒有加入合成吉他。畫面提示沿用原辨識時間，可能不在第一拍換和弦。</p>
+<p id="error" role="alert"></p><table><thead><tr><th>播放器秒數</th><th>和弦</th><th>持續秒數</th></tr></thead><tbody></tbody></table>
+<script>
+const audio=document.querySelector('audio');let chords=[],rows=[];
+audio.addEventListener('error',()=>document.querySelector('#error').textContent='音檔載入失敗，請回報。');
+fetch('chords.json').then(r=>{if(!r.ok)throw Error();return r.json();}).then(data=>{
+chords=data.chords;const body=document.querySelector('tbody');
+for(const c of chords){const row=document.createElement('tr');for(const value of [c.start.toFixed(2),c.symbol,(c.end-c.start).toFixed(2)]){const td=document.createElement('td');td.textContent=value;row.append(td);}body.append(row);rows.push(row);}
+}).catch(()=>document.querySelector('#error').textContent='和弦資料載入失敗，請回報。');
+function update(){const t=audio.currentTime;const i=chords.findIndex(c=>c.start<=t&&t<c.end);
+document.querySelector('#position').textContent=`播放器 ${t.toFixed(1)} 秒`;
+document.querySelector('#current').textContent=i>=0?chords[i].symbol:'—';
+document.querySelector('#next').textContent=i>=0&&i+1<chords.length?`下一個：${chords[i+1].symbol}（${Math.max(0,chords[i].end-t).toFixed(1)} 秒後）`:'片段結束';
+rows.forEach((r,j)=>r.classList.toggle('active',j===i));requestAnimationFrame(update);}update();
+</script></html>
