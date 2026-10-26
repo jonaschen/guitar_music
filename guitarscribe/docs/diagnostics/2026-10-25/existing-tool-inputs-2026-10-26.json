@@ -1,0 +1,34 @@
+{
+  "status": "prepared_locally_not_uploaded",
+  "purpose": "Klangio Basic maximum15s preflight; no API credentials or account application submitted",
+  "selection": "First15seconds of previously fixed thirdsource windows, plus full earlier saved-G clip; no quality-based selection",
+  "files": [
+    {
+      "file": "third-20-35.wav",
+      "duration_seconds": 15.0,
+      "original_start_seconds": 20,
+      "source_file": "/home/jonas/gemini-home/music_analysis/guitarscribe/output/evaluation/third-source-2026-10-25/vocal-1.wav",
+      "source_sha256": "cfa4c48ddddb0c006d56849b988f0b94ad072badf069f93affcfbb19454736ff",
+      "sha256": "479977e28c3eb528a074fdf80c29219f7afc2c49ecb0ee36a70a6a961e9dd459",
+      "bytes": 2646044
+    },
+    {
+      "file": "third-40-55.wav",
+      "duration_seconds": 15.0,
+      "original_start_seconds": 40,
+      "source_file": "/home/jonas/gemini-home/music_analysis/guitarscribe/output/evaluation/third-source-2026-10-25/vocal-2.wav",
+      "source_sha256": "2e91315530bc2fe5312eb0ebb23aac5e2c2ab5e96542b91cf68c39575c916d1a",
+      "sha256": "efc8f0799b9c7a7e2a39e82afe4d3057c3f8f8bb92dc92a590f3c6b0ea7e799c",
+      "bytes": 2646044
+    },
+    {
+      "file": "saved-G.wav",
+      "duration_seconds": 14.466031746031746,
+      "original_start_seconds": 67.95773242630386,
+      "source_file": "/home/jonas/gemini-home/music_analysis/guitarscribe/output/evaluation/external-comparison-2026-10-25/vocal-2.wav",
+      "source_sha256": "3ae457c1f7c467f04f321987e45ec76844cc6f3d529e824ec5d98bd49636a872",
+      "sha256": "3ae457c1f7c467f04f321987e45ec76844cc6f3d529e824ec5d98bd49636a872",
+      "bytes": 2551852
+    }
+  ]
+}
