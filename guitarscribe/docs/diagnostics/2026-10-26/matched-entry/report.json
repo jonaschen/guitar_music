@@ -1,0 +1,77 @@
+{
+  "window": [
+    0,
+    20
+  ],
+  "source_sha256": "649f3017919849386aac925fcdbca076f009f9ee7bf6c238c0912830dbf55c18",
+  "reference_A_sha256": "b4c140b8caf17f409b8a285bedb67f03b211251f9a8414dafa894740fa7a470d",
+  "frozen_guitar_gain": 0.5656880026468217,
+  "attacks": [
+    10,
+    54
+  ],
+  "rows": [
+    {
+      "symbol": "Am",
+      "boundary": 0.213333333,
+      "end": 1.120000000000001,
+      "additional_attacks": 2
+    },
+    {
+      "symbol": "Em",
+      "boundary": 1.120000000000001,
+      "end": 3.455999999,
+      "additional_attacks": 6
+    },
+    {
+      "symbol": "F",
+      "boundary": 3.455999999,
+      "end": 5.620000000000001,
+      "additional_attacks": 4
+    },
+    {
+      "symbol": "Em",
+      "boundary": 5.620000000000001,
+      "end": 8.063999999,
+      "additional_attacks": 6
+    },
+    {
+      "symbol": "F",
+      "boundary": 8.063999999,
+      "end": 10.111999999,
+      "additional_attacks": 4
+    },
+    {
+      "symbol": "G",
+      "boundary": 10.111999999,
+      "end": 12.245333333,
+      "additional_attacks": 5
+    },
+    {
+      "symbol": "C",
+      "boundary": 12.245333333,
+      "end": 14.549333333,
+      "additional_attacks": 5
+    },
+    {
+      "symbol": "G",
+      "boundary": 14.549333333,
+      "end": 16.82,
+      "additional_attacks": 5
+    },
+    {
+      "symbol": "Am",
+      "boundary": 16.82,
+      "end": 19.08,
+      "additional_attacks": 5
+    },
+    {
+      "symbol": "Em7",
+      "boundary": 19.08,
+      "end": 20.0,
+      "additional_attacks": 2
+    }
+  ],
+  "preserved_sparse_events": true,
+  "unchanged_score_sha256": "d52b00ee95561f90a736197fd5387842165585a87b15dcf655a27093c9e950fa"
+}

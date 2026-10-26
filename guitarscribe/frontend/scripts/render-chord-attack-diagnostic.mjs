@@ -1,4 +1,4 @@
-// Same product voice and rhythm; only chord-boundary assignment differs.
+// Render diagnostic manifests with the product voice and shared mix gains.
 import {chromium} from '@playwright/test';
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
@@ -23,7 +23,9 @@ const browser=await chromium.launch({executablePath:'/usr/bin/google-chrome',hea
 let rendered;
 try {
  const page=await browser.newPage();await page.goto('http://localhost:5173/');
- rendered=await page.evaluate(async({events,start,end,duration,rate,frames,slug})=>{
+ const frozenGuitarGain=audit.frozen_guitar_gain;
+ if(frozenGuitarGain!==undefined)assert.ok(Number.isFinite(frozenGuitarGain)&&frozenGuitarGain>0);
+ rendered=await page.evaluate(async({events,start,end,duration,rate,frames,slug,frozenGuitarGain})=>{
   const {preparePluckedBuffers,createPluckedVoice}=await import('/src/pluckedTone.ts');
   const waves=[],timings=[];
   for(const list of events){
@@ -42,12 +44,12 @@ try {
   const rms=x=>Math.sqrt(x.slice(0,Math.round(duration*rate)).reduce((s,v)=>s+v*v,0)/(duration*rate));
   const originalRms=rms(original),guitarRms=waves.map(rms);
   // One common gain for both candidates, to keep guitar audible against the mix.
-  const guitarGain=.75*originalRms/Math.max(...guitarRms);
+  const guitarGain=frozenGuitarGain??.75*originalRms/Math.max(...guitarRms);
   const mixed=waves.map(w=>Float32Array.from(w,(v,i)=>original[i]+v*guitarGain));
   let peak=0;for(const w of mixed)for(const v of w)peak=Math.max(peak,Math.abs(v));
   const commonGain=Math.min(1,.95/Math.max(peak,1e-12));
   return {samples:mixed.map(w=>Array.from(w,v=>v*commonGain)),timings,sourceGain:.45,guitarGain,commonGain,originalRms,guitarRms};
- },{events,start,end,duration,rate,frames,slug});
+ },{events,start,end,duration,rate,frames,slug,frozenGuitarGain});
 }finally{await browser.close();}
 const outputs=[];
 for(let i=0;i<2;i++){

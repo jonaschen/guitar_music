@@ -1,0 +1,36 @@
+{
+  "outputs": [
+    {
+      "label": "A",
+      "frames": 448718,
+      "voices": 57,
+      "peak": 0.29469412565231323,
+      "sha256": "b4c140b8caf17f409b8a285bedb67f03b211251f9a8414dafa894740fa7a470d",
+      "reusedFrozenReference": true
+    },
+    {
+      "label": "B",
+      "frames": 448718,
+      "voices": 309,
+      "peak": 0.29806578159332275,
+      "sha256": "64867ffe7827b62ab5169be6cb8e16820cb091a726bc60e11ad0356023f34f26",
+      "reusedFrozenReference": false
+    }
+  ],
+  "levels": {
+    "sourceGain": 0.45,
+    "guitarGain": 0.5656880026468217,
+    "commonGain": 1,
+    "originalRms": 0.039024551865691655,
+    "guitarRms": [
+      0.031810757074186055,
+      0.048197802003765916
+    ]
+  },
+  "rate": 22050,
+  "duration": 20,
+  "tail": 0.35,
+  "voice": "product pluckedTone",
+  "timingParity": true,
+  "onlyGuitarAndOriginal": true
+}

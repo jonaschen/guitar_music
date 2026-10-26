@@ -1,0 +1,12 @@
+{
+  "feedback": "B 好像變好了 — tentative preference, not quality acceptance",
+  "source_window": [
+    20,
+    40
+  ],
+  "A": "Exact previously preferred sparse B audio/manifest",
+  "B": "Same sparse attacks, plus original subsequent attacks within each chord; all sustain ends equal unchanged chord end",
+  "fixed": "Chord labels/boundaries, first attack pitches/offsets/velocity/direction, voice/release tail, source, original mix gains",
+  "variable": "Additional attacks and their resulting resonance/density only",
+  "decision": "If B retains improvement, matched entries may allow continuous playing; if A remains better, retain sparse baseline and investigate density/resonance. Neither result proves chord accuracy or cross-source quality."
+}
