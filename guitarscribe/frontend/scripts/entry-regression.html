@@ -1,0 +1,11 @@
+<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>另一來源的演奏確認</title>
+<style>body{font:18px/1.7 system-ui;max-width:700px;margin:35px auto;padding:0 20px;color:#243246;background:#f7f8fb}section{background:white;padding:18px;margin:18px 0;border-radius:12px}audio{width:100%}#error{color:#a21b26}</style>
+<h1>換一段來源，是否仍順？</h1>
+<p>這是之前測過的現場來源，各 30 秒，不需要拿吉他。兩版和弦與拍格相同，只比較演奏安排。</p>
+<section><h2>A · 之前較合拍的版本</h2><audio controls preload="metadata" src="A.wav"></audio></section>
+<section><h2>B · 新的換和弦演奏方案</h2><audio controls preload="metadata" src="B.wav"></audio></section>
+<p>各聽一次，回覆：<strong>B 較順／差不多／A 較順／兩個都不對／聽不清楚</strong>。</p>
+<p>不必找秒數或重判每個和弦；這次只確認新方案換到另一來源後，是否出現不自然的換奏。</p>
+<p id="error" role="alert"></p>
+<script>const players=[...document.querySelectorAll('audio')];for(const player of players){player.addEventListener('play',()=>players.forEach(p=>{if(p!==player)p.pause();}));player.addEventListener('error',()=>document.querySelector('#error').textContent='音檔載入失敗，請回報。');}</script></html>

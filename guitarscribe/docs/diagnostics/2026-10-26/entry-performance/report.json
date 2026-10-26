@@ -1,0 +1,151 @@
+{
+  "window": [
+    10,
+    40
+  ],
+  "source_sha256": "19f8f03ff283edee0e0f6412e5e9be599c3d419f53975bae5567c6376cb5daf2",
+  "reference_A_sha256": "0a1bd70974b8edcb8512f799c26ee650c10763dc0a23ba7f0139a07fb7db2749",
+  "frozen_guitar_gain": 0.88929955445293,
+  "changes": [
+    {
+      "chord_id": "stem-chord-1",
+      "original_first_attack": 0.92,
+      "first_attack": 0.853333333,
+      "original_attacks": 6,
+      "candidate_attacks": 6
+    },
+    {
+      "chord_id": "stem-chord-3",
+      "original_first_attack": 4.5600000000000005,
+      "first_attack": 4.053333333,
+      "original_attacks": 2,
+      "candidate_attacks": 2
+    },
+    {
+      "chord_id": "stem-chord-4",
+      "original_first_attack": 5.12,
+      "first_attack": 4.949333333,
+      "original_attacks": 4,
+      "candidate_attacks": 4
+    },
+    {
+      "chord_id": "stem-chord-5",
+      "original_first_attack": 6.8100000000000005,
+      "first_attack": 6.741333333,
+      "original_attacks": 4,
+      "candidate_attacks": 4
+    },
+    {
+      "chord_id": "stem-chord-6",
+      "original_first_attack": 8.2,
+      "first_attack": 7.722666666,
+      "original_attacks": 1,
+      "candidate_attacks": 1
+    },
+    {
+      "chord_id": "stem-chord-7",
+      "original_first_attack": 8.489999999999998,
+      "first_attack": 8.405333333,
+      "original_attacks": 4,
+      "candidate_attacks": 4
+    },
+    {
+      "chord_id": "stem-chord-8",
+      "original_first_attack": 9.9,
+      "first_attack": 9.855999999,
+      "original_attacks": 18,
+      "candidate_attacks": 18
+    },
+    {
+      "chord_id": "stem-chord-9",
+      "original_first_attack": 16.62,
+      "first_attack": 16.62,
+      "original_attacks": 6,
+      "candidate_attacks": 6
+    },
+    {
+      "chord_id": "stem-chord-10",
+      "original_first_attack": 18.86,
+      "first_attack": 18.86,
+      "original_attacks": 6,
+      "candidate_attacks": 6
+    },
+    {
+      "chord_id": "stem-chord-11",
+      "original_first_attack": 21.1,
+      "first_attack": 21.1,
+      "original_attacks": 6,
+      "candidate_attacks": 6
+    },
+    {
+      "chord_id": "stem-chord-12",
+      "original_first_attack": 23.34,
+      "first_attack": 23.34,
+      "original_attacks": 6,
+      "candidate_attacks": 6
+    },
+    {
+      "chord_id": "stem-chord-13",
+      "original_first_attack": 25.6,
+      "first_attack": 25.6,
+      "original_attacks": 6,
+      "candidate_attacks": 6
+    },
+    {
+      "chord_id": "stem-chord-14",
+      "original_first_attack": 27.82,
+      "first_attack": 27.82,
+      "original_attacks": 6,
+      "candidate_attacks": 6
+    },
+    {
+      "chord_id": "stem-chord-15",
+      "original_first_attack": 30.08,
+      "first_attack": 30.08,
+      "original_attacks": 6,
+      "candidate_attacks": 6
+    },
+    {
+      "chord_id": "stem-chord-16",
+      "original_first_attack": 32.3,
+      "first_attack": 32.3,
+      "original_attacks": 6,
+      "candidate_attacks": 6
+    },
+    {
+      "chord_id": "stem-chord-17",
+      "original_first_attack": 34.56,
+      "first_attack": 34.56,
+      "original_attacks": 6,
+      "candidate_attacks": 6
+    },
+    {
+      "chord_id": "stem-chord-18",
+      "original_first_attack": 36.8,
+      "first_attack": 36.8,
+      "original_attacks": 6,
+      "candidate_attacks": 6
+    },
+    {
+      "chord_id": "stem-chord-21",
+      "original_first_attack": 43.52,
+      "first_attack": 43.306666666,
+      "original_attacks": 4,
+      "candidate_attacks": 4
+    }
+  ],
+  "skipped": [
+    {
+      "chord_id": "stem-chord-2",
+      "reason": "insufficient_room_for_strings"
+    },
+    {
+      "chord_id": "stem-chord-19",
+      "reason": "insufficient_room_for_strings"
+    },
+    {
+      "chord_id": "stem-chord-20",
+      "reason": "insufficient_room_for_strings"
+    }
+  ]
+}

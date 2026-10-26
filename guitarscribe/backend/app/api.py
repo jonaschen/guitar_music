@@ -397,6 +397,28 @@ async def build_contour_candidate(job_id: str, score: SongScore,
     return candidate
 
 
+class ChordEntryPerformanceRequest(BaseModel):
+    score: SongScore
+    mode: Literal['sparse', 'continuous']
+    output: Literal['preview', 'midi'] = 'preview'
+
+
+@app.post('/scores/chord-entry-performance', tags=['Scores'])
+async def chord_entry_performance(request: ChordEntryPerformanceRequest):
+    from .services.chord_entry_performance import build_entry_performance, POLICY
+    from .exporters.midi import export_manifest_midi
+    try:
+        original, candidate, changes, skipped = await asyncio.to_thread(build_entry_performance, request.score, request.mode)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    if request.output == 'midi':
+        return Response(export_manifest_midi(candidate), media_type='audio/midi',
+                        headers={'X-Playback-Revision': candidate.revision})
+    return dict(policy=POLICY, original=original, candidate=candidate, changes=changes,
+                skipped=skipped, applied=False, saved=False,
+                warning='Experimental performance only. Chord accuracy and cross-source quality are unverified; restore by selecting original. MIDI note durations do not reproduce browser acoustic release tails.')
+
+
 @app.post('/scores/chord-timing-candidate', tags=['Scores'])
 async def chord_timing_candidate(request: ChordTimingCandidateRequest):
     from .services.chord_timing_candidate import build_timing_candidate

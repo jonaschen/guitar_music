@@ -1,0 +1,48 @@
+[
+  {
+    "source": "third",
+    "changed": 10,
+    "skipped": [],
+    "midi_events": 710,
+    "max_midi_error_seconds": 0.001000000000000778,
+    "original_revision": "87843b1932c96789",
+    "candidate_revision": "1ba876f1c3e4e23e",
+    "preferred_acoustic_events_identical": true
+  },
+  {
+    "source": "live",
+    "changed": 18,
+    "skipped": [
+      {
+        "chord_id": "stem-chord-2",
+        "reason": "insufficient_room_for_strings"
+      },
+      {
+        "chord_id": "stem-chord-19",
+        "reason": "insufficient_room_for_strings"
+      },
+      {
+        "chord_id": "stem-chord-20",
+        "reason": "insufficient_room_for_strings"
+      }
+    ],
+    "midi_events": 1480,
+    "max_midi_error_seconds": 0.0010000003333363594,
+    "original_revision": "8da34c1f869bb691",
+    "candidate_revision": "8d057956115c5709"
+  },
+  {
+    "source": "saved",
+    "changed": 6,
+    "skipped": [
+      {
+        "chord_id": "stem-chord-3",
+        "reason": "insufficient_room_for_strings"
+      }
+    ],
+    "midi_events": 610,
+    "max_midi_error_seconds": 0.0008756100833302582,
+    "original_revision": "ea5e447997fe3a48",
+    "candidate_revision": "4dfa3bb7b53180ef"
+  }
+]

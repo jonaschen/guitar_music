@@ -1,0 +1,6 @@
+{
+  "policy": "chord-entry-performance-v1",
+  "restriction": "No new inference, threshold fitting, beat/score edits or default change",
+  "listening": "Previously preferred live-source B vs explicit entry performance, fixed original 10–40 seconds; judge regression, not complete chord accuracy",
+  "limits": "Structural checks on three existing sources are not human quality acceptance"
+}
