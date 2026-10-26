@@ -1,0 +1,7 @@
+{
+  "parent_revision": "bc41b274-69d4-430f-8dda-52bd0759119d",
+  "reported_transition": "Bar 6 to Bar 7",
+  "feedback": "No obvious overall ensemble displacement under a lenient judgment given existing fragmented melody; local chord change feels late",
+  "action": "One explicit candidate: move only the shared Am/Em edge to existing Bar 7 downbeat; retain labels, grid and stroke times. No global snap or reanalysis.",
+  "scope": "User located the transition, not an exact timestamp or confirmed correction. Human acceptance still required."
+}

@@ -1,0 +1,19 @@
+{
+  "parent_revision": "bc41b274-69d4-430f-8dda-52bd0759119d",
+  "candidate_revision": "3188712c-bfb9-461d-a19b-d45b10466efe",
+  "bar": 7,
+  "downbeat": 11.08,
+  "detected_boundary": 11.099138321,
+  "detector_lateness_ms": 19.13832099999979,
+  "previous_first_attack": 11.54,
+  "candidate_first_attack": 11.08,
+  "eliminated_wait_seconds": 0.4599999999999991,
+  "stroke_count": 95,
+  "changed_pitch_assignments": 1,
+  "melody_and_beats_unchanged": true,
+  "other_chord_boundaries_unchanged": true,
+  "parent_unchanged": true,
+  "first_attack_original_file": 79.49772916666666,
+  "first_attack_candidate_original_file": 79.03772916666667,
+  "url": "http://localhost:5173/?revision=3188712c-bfb9-461d-a19b-d45b10466efe"
+}
