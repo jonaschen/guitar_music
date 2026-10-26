@@ -13,6 +13,33 @@ const score = {
   provenance: { beat_engine: "test", chord_engine: "test", melody_engine: "test" },
 };
 
+test("Accompaniment candidate preserves melody, is undoable and rejects stale work", async ({ page }) => {
+  let held: Route | undefined; let delay = false;
+  const candidate = { ...score, chords: [{ id: "stem-1", start: 0, end: 8, symbol: "G", confidence: 0,
+    origin: "model", edited: false, available_voicings: [], needs_review: true, review_reasons: [] }],
+    provenance: { ...score.provenance, parameters: { chord_input_source: "existing-accompaniment-stem-v1" } } };
+  await page.route("**/jobs/editor/accompaniment-candidate", r => {
+    if (delay) { held = r; return; }
+    return r.fulfill({ json: candidate });
+  });
+  await setup(page);
+  await page.getByText("從伴奏重新辨識和弦（實驗性）", { exact: true }).click();
+  const generate = page.getByRole("button", { name: "產生伴奏和弦候選", exact: true });
+  const apply = page.getByRole("button", { name: "套用伴奏和弦（可 Undo）", exact: true });
+  await generate.click(); await expect(apply).toBeVisible();
+  await expect(page.getByText(/目前使用伴奏音軌和弦候選/)).toHaveCount(0);
+  await apply.click();
+  await expect(page.getByText(/目前使用伴奏音軌和弦候選/)).toBeVisible();
+  await expect(page.getByRole("button", { name: "C4 · 0.00–0.50s", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Undo melody edit", exact: true }).click();
+  await expect(page.getByText(/目前使用伴奏音軌和弦候選/)).toHaveCount(0);
+  delay = true; await generate.click(); await expect.poll(() => Boolean(held)).toBe(true);
+  await page.getByRole("button", { name: "Redo melody edit", exact: true }).click();
+  await held!.fulfill({ json: candidate });
+  await expect(page.getByText("工作譜或來源已變更，未套用舊和弦候選。", { exact: true })).toBeVisible();
+  await expect(apply).toHaveCount(0);
+});
+
 test("Contour candidate is explicit, undoable and cannot apply after work changes", async ({ page }) => {
   let held: Route | undefined;
   let delay = false;

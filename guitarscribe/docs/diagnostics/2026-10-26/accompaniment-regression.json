@@ -1,0 +1,73 @@
+[
+  {
+    "id": "third",
+    "job": "f303ec8a86834633b060920fa85430af",
+    "window": [
+      20.0,
+      40.0
+    ],
+    "chords": 10,
+    "melody_and_beats_unchanged": true,
+    "source_unchanged": true,
+    "seconds": 3.07107035300578,
+    "quality": "Not evaluated by ear",
+    "provenance": {
+      "beat_this_checkpoint": "small0",
+      "beat_this_device": "cpu",
+      "beat_this_dbn": false,
+      "beat_this_weights_sha256": "6074be2c4d490c5f6101fcc374a1ec72ae93456e23bb6019783b849f5dc7d47b",
+      "melody_mode": "vocal",
+      "separate_vocals_requested": true,
+      "vocal_source_separated": true,
+      "melody_note_processing": "source-timed-semitone-v2",
+      "chord_complexity": "standard",
+      "vamp_version": "1.1.0",
+      "chordino_library_sha256": "fb7d75cf816d3eab3d97da8e6df51f5642b008a49ff4ec6bc2695c42dfded998",
+      "chord_postprocess_version": "2-preserve-decoder-events",
+      "chord_candidate_source_job_id": "f303ec8a86834633b060920fa85430af",
+      "chord_source_audio_sha256": "649f3017919849386aac925fcdbca076f009f9ee7bf6c238c0912830dbf55c18",
+      "chord_accompaniment_sha256": "604acadd709b0faa28cad52c6420d6df22d36911b6f3762c2c88a8a779019eb2",
+      "chord_candidate_sample_rate": 48000,
+      "chord_candidate_parameters": "vamp.collect defaults",
+      "chord_input_source": "existing-accompaniment-stem-v1",
+      "chord_candidate_unsaved": true
+    }
+  },
+  {
+    "id": "saved",
+    "job": "3ba648f12cb74dd59a45c1b2d4bc83ab",
+    "window": [
+      49.957732426303856,
+      64.4237641723356
+    ],
+    "chords": 7,
+    "melody_and_beats_unchanged": true,
+    "source_unchanged": true,
+    "seconds": 1.3660007700091228,
+    "quality": "Not evaluated by ear",
+    "provenance": {
+      "melody_mode": "vocal",
+      "separate_vocals_requested": true,
+      "vocal_source_separated": true,
+      "melody_note_processing": "source-timed-semitone-v2",
+      "chord_complexity": "standard",
+      "timing_engine": "librosa",
+      "timing_candidate_index": 0,
+      "decoder_change_threshold": 0.12,
+      "decoder_no_chord_threshold": 0.18,
+      "decoder_base_change_penalty": 0.04,
+      "decoder_short_event_change_penalty": 0.05,
+      "decoder_circle_fifths_bonus": 0.015,
+      "decoder_tonal_prior_scale": 1.0,
+      "chord_postprocess_version": "2-preserve-decoder-events",
+      "chord_candidate_source_job_id": "3ba648f12cb74dd59a45c1b2d4bc83ab",
+      "chord_source_audio_sha256": "52579858d84e3a5f3eedfaa669390decf42db186b88ff637ef4569536f2355e3",
+      "chord_accompaniment_sha256": "955d3ff0e8f3472ddd2957f9e0a2fe84ee7ec86225a103c84e3dee53960cd4b2",
+      "chordino_library_sha256": "fb7d75cf816d3eab3d97da8e6df51f5642b008a49ff4ec6bc2695c42dfded998",
+      "chord_candidate_sample_rate": 48000,
+      "chord_candidate_parameters": "vamp.collect defaults",
+      "chord_input_source": "existing-accompaniment-stem-v1",
+      "chord_candidate_unsaved": true
+    }
+  }
+]

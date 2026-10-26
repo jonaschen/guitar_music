@@ -1,0 +1,39 @@
+{
+  "job": "db79e1145ea046088b8aa5ef421d0e3f",
+  "accepted_window_exact_match": true,
+  "source_unchanged": true,
+  "melody_unchanged": true,
+  "beats_unchanged": true,
+  "chords": 21,
+  "seconds": 4.484803844999988,
+  "provenance": {
+    "beat_engine": "beat-this",
+    "chord_engine": "chordino",
+    "melody_engine": "pyin_vocal",
+    "beat_engine_version": "1.1.0",
+    "chord_engine_version": "1.1-provenance",
+    "melody_engine_version": "0.11.0",
+    "tempo_map_version": "learned-downbeats-v1",
+    "parameters": {
+      "beat_this_checkpoint": "small0",
+      "beat_this_device": "cpu",
+      "beat_this_dbn": false,
+      "beat_this_weights_sha256": "6074be2c4d490c5f6101fcc374a1ec72ae93456e23bb6019783b849f5dc7d47b",
+      "melody_mode": "vocal",
+      "separate_vocals_requested": true,
+      "vocal_source_separated": true,
+      "melody_note_processing": "source-timed-semitone-v2",
+      "chord_complexity": "full",
+      "vamp_version": "1.1.0",
+      "chordino_library_sha256": "fb7d75cf816d3eab3d97da8e6df51f5642b008a49ff4ec6bc2695c42dfded998",
+      "chord_postprocess_version": "2-preserve-decoder-events",
+      "chord_candidate_source_job_id": "db79e1145ea046088b8aa5ef421d0e3f",
+      "chord_source_audio_sha256": "09ab077783f23ddcb226e13ad6c14bb41bf0b89f865d7a729d890ee3c2f2402d",
+      "chord_accompaniment_sha256": "214a88059816d870c2096d6d1fe2ef803aa9fbfb5e7f5b20567ad2e459c3664b",
+      "chord_candidate_sample_rate": 48000,
+      "chord_candidate_parameters": "vamp.collect defaults",
+      "chord_input_source": "existing-accompaniment-stem-v1",
+      "chord_candidate_unsaved": true
+    }
+  }
+}

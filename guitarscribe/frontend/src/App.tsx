@@ -13,6 +13,7 @@ import { measureLayout } from "./measureLayout";
 import { MelodyEditor } from "./MelodyEditor";
 import { melodyVersion, sourceJobId, scoreFromJob, readSavedVersion, type SavedVersion } from "./scoreVersion";
 import { ContourCandidate } from "./ContourCandidate";
+import { AccompanimentCandidate } from "./AccompanimentCandidate";
 import { SongRangeEditor } from "./SongRangeEditor";
 import { PlaybackRangeEditor } from "./PlaybackRangeEditor";
 import { songBounds, clipRange } from "./songRange";
@@ -2238,6 +2239,8 @@ export function App() {
                 </div>
                 {score.provenance.parameters?.melody_note_processing !== "bounded-source-v1" ? <p role="note">目前為原分析／其他音符版本，尚未套用 G。若要使用 G，請展開下方候選入口，先產生、再確認套用；不會自動替換旋律。</p> : null}
                 <ContourCandidate score={score} jobId={workingJobId} apiBase={API_BASE}
+                  onCommit={(base, next) => { if (scoreRef.current !== base) return false; audioRef.current?.pause(); stopSynth(false); return recordScoreChange(next); }} />
+                <AccompanimentCandidate score={score} jobId={workingJobId} apiBase={API_BASE}
                   onCommit={(base, next) => { if (scoreRef.current !== base) return false; audioRef.current?.pause(); stopSynth(false); return recordScoreChange(next); }} />
                 <MelodyEditor score={score} jobId={workingJobId} playhead={playbackTime} apiBase={API_BASE}
                   focused={focusMode} sourceAvailable={!!audioUrl} sourceTrack={diagnosticAudioTrack}

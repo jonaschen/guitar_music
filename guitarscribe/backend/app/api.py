@@ -389,6 +389,37 @@ async def build_contour_candidate(job_id: str, score: SongScore,
     return candidate
 
 
+@app.post("/api/v1/jobs/{job_id}/accompaniment-candidate", response_model=SongScore, tags=["Scores"])
+async def accompaniment_candidate(job_id: str, score: SongScore,
+                                  job_service: AnalysisJobService = Depends(get_job_service)) -> SongScore:
+    from .services.accompaniment_candidate import analyze_existing_stem
+    from .analyzers.worker import run_blocking_analysis
+    try:
+        job = job_service.get(job_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(404, 'Analysis job not found') from exc
+    if job.status != JobStatus.COMPLETED or job.score is None:
+        raise HTTPException(409, 'Requires a completed analysis')
+    original = job.score
+    if (score.song.duration_seconds != original.song.duration_seconds
+            or score.song.source_start_seconds != original.song.source_start_seconds
+            or score.key_context != original.key_context or score.chords != original.chords
+            or any(c.edited for c in score.chords) or score.key_context.transpose_semitones
+            or score.analysis.capo or score.guitar.capo):
+        raise HTTPException(409, 'Use original unedited chords at Capo 0; preserve existing revisions first')
+    if not original.provenance.parameters.get('vocal_source_separated'):
+        raise HTTPException(409, 'Requires an existing verified separated source')
+    directory = job_service.store.job_dir(job_id)
+    if not all((directory/name).is_file() for name in ('analysis-source.wav', 'accompaniment-stem.wav')):
+        raise HTTPException(404, 'Saved accompaniment is unavailable; no separation was started')
+    try:
+        return await run_blocking_analysis(analyze_existing_stem, score, directory, job_id)
+    except (ImportError, OSError) as exc:
+        raise HTTPException(503, 'Existing accompaniment or Chordino runtime unavailable') from exc
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+
+
 @app.get("/api/v1/jobs/{job_id}/audio", tags=["Analysis jobs"], summary="Download normalized source audio for a completed job")
 async def get_job_audio(job_id: str, job_service: AnalysisJobService = Depends(get_job_service)) -> FileResponse:
     try:

@@ -1,0 +1,17 @@
+{
+  "cases": [
+    [
+      "third",
+      "f303ec8a86834633b060920fa85430af",
+      20.0,
+      40.0
+    ],
+    [
+      "saved",
+      "3ba648f12cb74dd59a45c1b2d4bc83ab",
+      49.957732426303856,
+      64.4237641723356
+    ]
+  ],
+  "rule": "Fixed prior listening windows. Same stem analyzer defaults. No tuning, no database writes, no separation. Structural checks only."
+}
