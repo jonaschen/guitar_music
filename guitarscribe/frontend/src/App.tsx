@@ -1,3 +1,4 @@
+import { AccompanimentReview, type ReviewMode } from "./AccompanimentReview";
 import { ChangeEvent, FormEvent, lazy, Suspense, useEffect, useRef, useState } from "react";
 import { ChordEntryAudit } from "./ChordEntryAudit";
 import { ChordGridCandidate } from "./ChordGridCandidate";
@@ -259,6 +260,8 @@ export function App() {
   const pendingAudioTrackSeekRef = useRef<number | null>(null);
   const metronomeContextRef = useRef<AudioContext | null>(null);
   const synthContextRef = useRef<AudioContext | null>(null);
+  const reviewSourceCacheRef = useRef<{url: string; buffer: AudioBuffer} | null>(null);
+  const [activeReview, setActiveReview] = useState<ReviewMode | null>(null);
   const melodyAuditionRef = useRef<MelodyAudition | null>(null);
   useEffect(() => () => { melodyAuditionRef.current?.stop(); }, []);
   const synthGenerationRef = useRef(0);
@@ -313,7 +316,9 @@ export function App() {
   const [chordEndDraft, setChordEndDraft] = useState("");
   const [candidateVoicings, setCandidateVoicings] = useState<ScoreChord["available_voicings"]>([]);
   const [revisionId, setRevisionId] = useState("");
+  const [accompanimentView, setAccompanimentView] = useState(() => new URLSearchParams(window.location.search).get("view") === "accompaniment");
   const [focusedWorkspace, setFocusedWorkspace] = useState(() => {
+    if (new URLSearchParams(window.location.search).get("view") === "accompaniment") return true;
     try { return localStorage.getItem("guitarscribe.workspaceMode") !== "full"; } catch { return true; }
   });
   const focusMode = !!score && focusedWorkspace;
@@ -1116,6 +1121,7 @@ export function App() {
   }
 
   function stopSynth(reset = false) {
+    setActiveReview(null);
     melodyAuditionRef.current?.stop(); melodyAuditionRef.current = null;
     sourceLoadAbortRef.current?.abort(); sourceLoadAbortRef.current = null;
     setIsSourcePreparing(false);
@@ -1239,14 +1245,17 @@ export function App() {
     trackSynthSource(pick);
   }
 
-  async function toggleSynthPlayback(segment?: { start: number; end: number; loop: boolean; from?: number; guitarOnly?: boolean }) {
+  async function toggleSynthPlayback(segment?: { start: number; end: number; loop: boolean; from?: number; guitarOnly?: boolean; reviewMode?: ReviewMode }) {
     referenceStopRef.current();
     if (!score) return;
     if (isSynthPlaying && !segment) { stopSynth(false); return; }
     stopSynth(false);
     const selectedRange = segment ? clipRange(segment.start, segment.end, score) : null;
     if (selectedRange && selectedRange.end <= selectedRange.start) return;
-    const tracks = segment ? { guitar: true, melody: !segment.guitarOnly, metronome: false } : synthTracks;
+    const reviewMode = segment?.reviewMode;
+    const rate = reviewMode ? 1 : playbackRate;
+    const tone = reviewMode ? "pluck" : guitarTone;
+    const tracks = reviewMode ? { guitar: reviewMode !== "source", melody: false, metronome: false } : segment ? { guitar: true, melody: !segment.guitarOnly, metronome: false } : synthTracks;
     const editorMelodyGain = segment && !segment.guitarOnly ? 0.25 : 1;
     const solo = segment ? null : synthSoloTrack;
     const generation = synthGenerationRef.current;
@@ -1256,14 +1265,33 @@ export function App() {
       const context = synthContextRef.current ?? new AudioContext();
       synthContextRef.current = context;
       await context.resume();
+      if (generation !== synthGenerationRef.current) return;
+      let originalBuffer: AudioBuffer | null = null;
+      if (reviewMode && reviewMode !== "guitar") {
+        if (!analysisJob || analysisJob.status !== "completed" || sourceJobId(score) !== analysisJob.id) throw new Error("此版本沒有相符的原曲來源。");
+        if (reviewMode === "mix" && !score.key_context.audio_matches_notation) throw new Error("工作譜已移調，不能直接與原曲合奏。");
+        const url = `${API_BASE}/api/v1/jobs/${analysisJob.id}/audio`;
+        const cached = reviewSourceCacheRef.current;
+        if (cached?.url === url) originalBuffer = cached.buffer;
+        else {
+          const abort = new AbortController(); sourceLoadAbortRef.current = abort;
+          const response = await fetch(url, {signal: abort.signal});
+          if (!response.ok) throw new Error("原曲載入失敗，請稍後重試。");
+          originalBuffer = await context.decodeAudioData(await response.arrayBuffer());
+          if (generation !== synthGenerationRef.current) return;
+          reviewSourceCacheRef.current = {url, buffer: originalBuffer};
+        }
+        if (originalBuffer.duration + .01 < (selectedRange?.end ?? bounds.end)) throw new Error("原曲長度不足以涵蓋所選小節。");
+      }
       const { manifest, notice } = await compilePlayback(score, chordPerformance);
       if (generation !== synthGenerationRef.current) return;
       setPerformanceNotice(notice);
-      const buffers = guitarTone === "pluck" && tracks.guitar && (solo === null || solo === "guitar")
+      const buffers = tone === "pluck" && tracks.guitar && (solo === null || solo === "guitar")
         ? await preparePluckedBuffers(context, manifest.events.filter((event) => event.track === "guitar").flatMap((event) => event.pitches), () => generation !== synthGenerationRef.current)
         : new Map<number, AudioBuffer>();
       if (generation !== synthGenerationRef.current) return;
       setIsSynthPreparing(false);
+      setActiveReview(reviewMode ?? null);
       setSynthSnapshot({ manifest, chords: score.chords });
       const rawLoop = selectedRange ? (segment?.loop ? [selectedRange.start, selectedRange.end] as [number, number] : null) : loopStart !== null && loopEnd !== null && loopEnd > loopStart
         ? [loopStart, loopEnd] as [number, number]
@@ -1275,7 +1303,7 @@ export function App() {
         ? requestedLoop[0]
         : playhead;
       const countInBeats = segment ? 0 : (Number(score.analysis.time_signature.charAt(0)) || 4) * countInMeasures;
-      const beatSeconds = 60 / Math.max(score.analysis.bpm, 1) / playbackRate;
+      const beatSeconds = 60 / Math.max(score.analysis.bpm, 1) / rate;
       const countInStart = context.currentTime + 0.06;
       if (countInBeats > 0) {
         setIsCountingIn(true);
@@ -1289,14 +1317,29 @@ export function App() {
       }
       const initialContextStart = countInStart + countInBeats * beatSeconds;
       const acousticEnd = (event: PlaybackManifest["events"][number]) =>
-        event.track === "guitar" && guitarTone === "pluck" ? event.sustain_end ?? event.end : event.end;
+        event.track === "guitar" && tone === "pluck" ? event.sustain_end ?? event.end : event.end;
       const segmentEnd = selectedRange?.end ?? requestedLoop?.[1] ?? bounds.end;
-      const firstEnd = initialContextStart + (segmentEnd - scoreStart) / playbackRate;
-      const loopDuration = requestedLoop ? (requestedLoop[1] - requestedLoop[0]) / playbackRate : 0;
+      const firstEnd = initialContextStart + (segmentEnd - scoreStart) / rate;
+      const loopDuration = requestedLoop ? (requestedLoop[1] - requestedLoop[0]) / rate : 0;
       if (requestedLoop && (!Number.isFinite(loopDuration) || loopDuration < .01 || firstEnd + loopDuration <= firstEnd)) {
         throw new Error("循環範圍過短，請擴大選取範圍。");
       }
       const createSegmentScheduler = (segmentStart: number, contextStart: number) => {
+        if (originalBuffer) {
+          const at = Math.max(context.currentTime + .005, contextStart);
+          const offset = segmentStart + Math.max(0, at - contextStart) * rate;
+          const duration = Math.min(segmentEnd, originalBuffer.duration) - offset;
+          if (duration > 0) {
+            const source = context.createBufferSource(), gain = context.createGain();
+            source.buffer = originalBuffer; source.playbackRate.value = rate;
+            const until = at + duration / rate, fade = Math.min(.005, duration / rate / 4);
+            gain.gain.setValueAtTime(0, at); gain.gain.linearRampToValueAtTime(.45, at + fade);
+            gain.gain.setValueAtTime(.45, until - fade); gain.gain.linearRampToValueAtTime(0, until);
+            source.connect(gain).connect(context.destination);
+            source.start(at, offset, duration); source.stop(until); trackSynthSource(source);
+          }
+        }
+
         const connected = melodyConnection === "connected" && tracks.melody && synthVolumes.melody > 0 && (solo === null || solo === "melody");
         const phrases = connected ? melodyPhrases(manifest.events.filter(event => event.track === "melody" && event.pitches.length === 1 && event.end > segmentStart && event.start < segmentEnd)
           .map(event => ({ start: event.start, end: event.end, midi: event.pitches[0], velocity: event.pitch_velocities?.[0] ?? event.velocity }))) : [];
@@ -1318,19 +1361,19 @@ export function App() {
           if (eventEnd <= eventStart) return;
           if (event.track === "metronome") {
             const source = createMetronomeVoice(context,
-              Math.max(context.currentTime + 0.005, contextStart + (eventStart - segmentStart) / playbackRate),
+              Math.max(context.currentTime + 0.005, contextStart + (eventStart - segmentStart) / rate),
               event.velocity > 100, synthVolumes.metronome);
             if (source) trackSynthSource(source);
             return;
           }
           event.pitches.forEach((pitch, pitchIndex) => {
             const compiledOffset = event.pitch_offsets[pitchIndex];
-            if (event.track === "guitar" && guitarTone === "pluck") {
+            if (event.track === "guitar" && tone === "pluck") {
               const onset = event.start + (compiledOffset ?? pitchIndex * 0.012);
               const startAt = Math.max(context.currentTime + 0.005,
-                contextStart + (Math.max(onset, segmentStart, resumeScoreTime) - segmentStart) / playbackRate);
-              const endAt = contextStart + (eventEnd - segmentStart) / playbackRate;
-              const age = Math.max(0, (segmentStart - onset) / playbackRate + (startAt - contextStart));
+                contextStart + (Math.max(onset, segmentStart, resumeScoreTime) - segmentStart) / rate);
+              const endAt = contextStart + (eventEnd - segmentStart) / rate;
+              const age = Math.max(0, (segmentStart - onset) / rate + (startAt - contextStart));
               const buffer = buffers.get(pitch);
               if (buffer) {
                 const source = createPluckedVoice(context, buffer, startAt, endAt,
@@ -1339,9 +1382,9 @@ export function App() {
               }
               return;
             }
-            const strumDelay = event.track === "guitar" ? (compiledOffset ?? pitchIndex * 0.012) / playbackRate : 0;
-            const startAt = Math.max(context.currentTime + 0.005, contextStart + (eventStart - segmentStart) / playbackRate + strumDelay);
-            const writtenEnd = contextStart + (eventEnd - segmentStart) / playbackRate;
+            const strumDelay = event.track === "guitar" ? (compiledOffset ?? pitchIndex * 0.012) / rate : 0;
+            const startAt = Math.max(context.currentTime + 0.005, contextStart + (eventStart - segmentStart) / rate + strumDelay);
+            const writtenEnd = contextStart + (eventEnd - segmentStart) / rate;
             const endAt = event.track === "melody" ? writtenEnd : Math.max(startAt + 0.025, writtenEnd);
             if (endAt <= startAt) return;
             const oscillator = context.createOscillator();
@@ -1384,12 +1427,12 @@ export function App() {
           });
         };
         return () => {
-          const elapsedScoreTime = Math.max(0, (context.currentTime - contextStart) * playbackRate);
+          const elapsedScoreTime = Math.max(0, (context.currentTime - contextStart) * rate);
           const horizon = scheduleWholeSelection ? segmentEnd
-            : segmentStart + (context.currentTime + SYNTH_SCHEDULE_AHEAD_SECONDS - contextStart) * playbackRate;
+            : segmentStart + (context.currentTime + SYNTH_SCHEDULE_AHEAD_SECONDS - contextStart) * rate;
           while (nextPhraseIndex < phrases.length && phrases[nextPhraseIndex][0].start < horizon) {
             const source = playMelodyPhrase(context, phrases[nextPhraseIndex], {
-              scoreStart: segmentStart, scoreEnd: segmentEnd, contextStart, rate: playbackRate, peak: synthVolumes.melody * editorMelodyGain,
+              scoreStart: segmentStart, scoreEnd: segmentEnd, contextStart, rate, peak: synthVolumes.melody * editorMelodyGain,
             });
             if (source) trackSynthSource(source);
             nextPhraseIndex++;
@@ -1429,8 +1472,8 @@ export function App() {
         if (generation !== synthGenerationRef.current) return;
         const now = context.currentTime;
         const time = requestedLoop && now >= firstEnd
-          ? requestedLoop[0] + ((now - firstEnd) % loopDuration) * playbackRate
-          : Math.min(segmentEnd, scoreStart + Math.max(0, now - initialContextStart) * playbackRate);
+          ? requestedLoop[0] + ((now - firstEnd) % loopDuration) * rate
+          : Math.min(segmentEnd, scoreStart + Math.max(0, now - initialContextStart) * rate);
         setPlaybackTime(time);
         synthAnimationRef.current = window.requestAnimationFrame(updatePlayhead);
       };
@@ -1968,16 +2011,18 @@ export function App() {
             </div>
 
             {score ? <nav className="workspace-mode" aria-label="工作區模式">
-              <div><strong>{focusMode ? "專注修譜" : "完整工具"}</strong><p>選一段 → 對照來源 → 修譜與重播 → 保存版本</p></div>
+              <div><strong>{focusMode ? accompanimentView ? "和弦核對" : "專注修譜" : "完整工具"}</strong><p>選一段 → 對照來源 → 修譜與重播 → 保存版本</p></div>
               <button type="button" className="ghost-button" onClick={() => { setShowNewSong(value => !value); }}>{showNewSong ? "收起新曲目" : "分析新曲目"}</button>
-              <button type="button" className="ghost-button" onClick={switchWorkspace}>{focusMode ? "顯示完整工具" : "回到專注修譜"}</button>
-              <button type="button" className="ghost-button" onClick={openPerformanceControls}>伴奏演奏</button>
+              <button type="button" className="ghost-button" onClick={switchWorkspace}>{focusMode ? "顯示完整工具" : accompanimentView ? "回到和弦核對" : "回到專注修譜"}</button>
+              <button type="button" hidden={accompanimentView && focusMode} className="ghost-button" onClick={openPerformanceControls}>伴奏演奏</button>
+              <button type="button" className="ghost-button" onClick={() => { audioRef.current?.pause(); stopSynth(false); setFocusedWorkspace(true); setAccompanimentView(value => !value); }}>{accompanimentView ? "旋律編輯（實驗）" : "簡潔和弦頁"}</button>
             </nav> : null}
             <section className="revision-recovery" aria-label="工作版本">
               <h3>工作版本</h3>
-              <p aria-label="Current working version">{score ? `${melodyVersion(score)} · ${score.melody.length} 音符` : "尚未載入樂譜"} · {savedSnapshot?.score === score ? `已保存／載入：${savedSnapshot.id}` : hasUnsavedChanges ? "有未保存修改" : "目前為原分析／未保存初稿"}</p>
+              <p aria-label="Current working version">{score ? accompanimentView && focusMode ? `伴奏工作譜 · ${score.chords.length} 段和弦` : `${melodyVersion(score)} · ${score.melody.length} 音符` : "尚未載入樂譜"} · {savedSnapshot?.score === score ? accompanimentView && focusMode ? "已保存／載入" : `已保存／載入：${savedSnapshot.id}` : hasUnsavedChanges ? "有未保存修改" : "目前為原分析／未保存初稿"}</p>
               {score ? <button type="button" disabled={isSavingRevision || isLoadingRevision} onClick={() => void saveRevision(true)}>保存目前工作版本</button> : null}
-              {rememberedVersion ? <div>
+              {score && accompanimentView && focusMode ? <button type="button" disabled={!undoHistory.length} title="還原這個工作階段最近一次修改" onClick={undoScoreChange}>還原上一步</button> : null}
+              {rememberedVersion ? <div hidden={accompanimentView && focusMode && savedSnapshot?.score === score && rememberedVersion.id === savedSnapshot.id}>
                 <p>可恢復：{rememberedVersion.label} · {rememberedVersion.id}。此記錄不代表目前已載入。</p>
                 <button type="button" disabled={isLoadingRevision || isSavingRevision} onClick={() => void loadRevision(rememberedVersion.id)}>恢復上次保存版本</button>
               </div> : <p>尚無此分析的保存記錄。G 候選套用後請保存；保存後可用版本網址重新開啟同一份譜。</p>}
@@ -1989,7 +2034,7 @@ export function App() {
                 <button type="button" disabled={isSavingRevision || restorePreview.generation !== workGenerationRef.current} onClick={applyRestoredVersion}>確認恢復版本（可 Undo）</button>
                 <button type="button" onClick={() => setRestorePreview(null)}>保留目前工作譜</button>
               </div> : null}
-              <p role="status">{saveStatus}</p>
+              <p role="status" hidden={accompanimentView && focusMode && saveStatus.startsWith("Loaded revision")}>{saveStatus}</p>
             </section>
 
             {!score ? <section className="revision-recovery" aria-label="載入已保存修訂">
@@ -2001,6 +2046,12 @@ export function App() {
 
             {score ? (
               <>
+                <AccompanimentReview score={score} sourceAvailable={!!analysisJob && analysisJob.status === "completed" && sourceJobId(score) === analysisJob.id}
+                  playing={activeReview !== null && isSynthPlaying} preparing={isSynthPreparing}
+                  playhead={playbackTime} guitarVolume={synthVolumes.guitar} onVolume={value => setSynthVolumes(v => ({...v, guitar: value}))}
+                  performanceLabel={chordPerformance === "original" ? "原版刷奏" : chordPerformance === "continuous" ? "換和弦即彈・連續刷奏" : "換和弦只彈一下"}
+                  onStop={() => { audioRef.current?.pause(); stopSynth(false); }} onTools={openPerformanceControls}
+                  onPlay={(mode, start, end, loop, from) => void toggleSynthPlayback({start, end, loop, from, reviewMode: mode})} />
                 <div hidden={focusMode} className="advanced-workspace">
                 {(score.song.source_start_seconds ?? 0) > 0 ? <p role="status">分析前已略過 {score.song.source_start_seconds} 秒；樂譜／播放 0 秒 = 原檔 {score.song.source_start_seconds} 秒。請勿再次略過同一段開場。</p> : null}
                 <SongRangeEditor score={score} playhead={playbackTime}
@@ -2300,6 +2351,7 @@ export function App() {
                 </section>
 
                 </div>
+                <div hidden={accompanimentView && focusMode}>
                 {score.provenance.parameters?.melody_note_processing !== "bounded-source-v1" ? <p role="note">目前為原分析／其他音符版本，尚未套用 G。若要使用 G，請展開下方候選入口，先產生、再確認套用；不會自動替換旋律。</p> : null}
                 <ContourCandidate score={score} jobId={workingJobId} apiBase={API_BASE}
                   onCommit={(base, next) => { if (scoreRef.current !== base) return false; audioRef.current?.pause(); stopSynth(false); return recordScoreChange(next); }} />
@@ -2334,6 +2386,7 @@ export function App() {
                   canUndo={undoHistory.length > 0} canRedo={redoHistory.length > 0}
                   revisionId={revisionId} onRevisionId={setRevisionId} onSave={() => void saveRevision(true)} onLoad={() => void loadRevision()}
                   saving={isSavingRevision || isLoadingRevision} saveStatus={saveStatus} />
+                </div>
 
                 <div hidden={focusMode} className="advanced-workspace">
                 {score.melody.length > 0 ? <details className="melody-workspace workspace-disclosure">

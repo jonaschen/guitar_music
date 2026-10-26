@@ -968,3 +968,15 @@ h2 {
 .bar-timing-editor td, .bar-timing-editor th { padding: .4rem; border-bottom: 1px solid #555; }
 .bar-timing-editor input[type=number] { width: 7rem; }
 .bar-timing-editor button { margin: .15rem; }
+
+.accompaniment-review { margin: 1rem 0; padding: 1rem; border: 1px solid var(--border); border-radius: 12px; }
+.accompaniment-review h3 { margin-top: 0; }
+.review-controls { display: flex; flex-wrap: wrap; align-items: center; gap: .65rem; margin: .7rem 0; }
+.review-controls label { display: flex; align-items: center; gap: .4rem; }
+.review-controls button[aria-pressed="true"] { outline: 2px solid #c66032; outline-offset: 2px; }
+.review-chords { overflow-wrap: anywhere; }
+.accompaniment-review button { padding: .55rem .8rem; border: 1px solid var(--border); border-radius: .6rem; color: inherit; background: rgba(255,255,255,.06); cursor: pointer; }
+.accompaniment-review button:hover:not(:disabled), .accompaniment-review button[aria-pressed="true"] { background: rgba(241,143,59,.16); border-color: var(--accent); }
+.accompaniment-review button:disabled { opacity: .45; cursor: default; }
+.accompaniment-review select { padding: .4rem; border: 1px solid var(--border); border-radius: .4rem; color: inherit; background: #202329; }
+.accompaniment-review input[type="range"] { accent-color: var(--accent); max-width: 100%; }
