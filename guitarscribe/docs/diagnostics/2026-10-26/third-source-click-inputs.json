@@ -1,0 +1,229 @@
+{
+  "job": "f303ec8a86834633b060920fa85430af",
+  "window": [
+    20,
+    40
+  ],
+  "score_sha256": "db586c96bc169c4241416b5ff6dfc119e85306d58cee8975f3f6acad2f27efdc",
+  "source_sha256": "649f3017919849386aac925fcdbca076f009f9ee7bf6c238c0912830dbf55c18",
+  "beats": [
+    {
+      "time": 0.019999999999999574,
+      "beat": 3,
+      "measure": 9,
+      "confidence": 0.0
+    },
+    {
+      "time": 0.5799999999999983,
+      "beat": 4,
+      "measure": 9,
+      "confidence": 0.0
+    },
+    {
+      "time": 1.120000000000001,
+      "beat": 1,
+      "measure": 10,
+      "confidence": 0.0
+    },
+    {
+      "time": 1.6799999999999997,
+      "beat": 2,
+      "measure": 10,
+      "confidence": 0.0
+    },
+    {
+      "time": 2.2399999999999984,
+      "beat": 3,
+      "measure": 10,
+      "confidence": 0.0
+    },
+    {
+      "time": 2.8200000000000003,
+      "beat": 4,
+      "measure": 10,
+      "confidence": 0.0
+    },
+    {
+      "time": 3.379999999999999,
+      "beat": 1,
+      "measure": 11,
+      "confidence": 0.0
+    },
+    {
+      "time": 3.9400000000000013,
+      "beat": 2,
+      "measure": 11,
+      "confidence": 0.0
+    },
+    {
+      "time": 4.5,
+      "beat": 3,
+      "measure": 11,
+      "confidence": 0.0
+    },
+    {
+      "time": 5.059999999999999,
+      "beat": 4,
+      "measure": 11,
+      "confidence": 0.0
+    },
+    {
+      "time": 5.620000000000001,
+      "beat": 1,
+      "measure": 12,
+      "confidence": 0.0
+    },
+    {
+      "time": 6.18,
+      "beat": 2,
+      "measure": 12,
+      "confidence": 0.0
+    },
+    {
+      "time": 6.739999999999998,
+      "beat": 3,
+      "measure": 12,
+      "confidence": 0.0
+    },
+    {
+      "time": 7.32,
+      "beat": 4,
+      "measure": 12,
+      "confidence": 0.0
+    },
+    {
+      "time": 7.879999999999999,
+      "beat": 1,
+      "measure": 13,
+      "confidence": 0.0
+    },
+    {
+      "time": 8.440000000000001,
+      "beat": 2,
+      "measure": 13,
+      "confidence": 0.0
+    },
+    {
+      "time": 9.0,
+      "beat": 3,
+      "measure": 13,
+      "confidence": 0.0
+    },
+    {
+      "time": 9.54,
+      "beat": 4,
+      "measure": 13,
+      "confidence": 0.0
+    },
+    {
+      "time": 10.120000000000001,
+      "beat": 1,
+      "measure": 14,
+      "confidence": 0.0
+    },
+    {
+      "time": 10.68,
+      "beat": 2,
+      "measure": 14,
+      "confidence": 0.0
+    },
+    {
+      "time": 11.239999999999998,
+      "beat": 3,
+      "measure": 14,
+      "confidence": 0.0
+    },
+    {
+      "time": 11.8,
+      "beat": 4,
+      "measure": 14,
+      "confidence": 0.0
+    },
+    {
+      "time": 12.380000000000003,
+      "beat": 1,
+      "measure": 15,
+      "confidence": 0.0
+    },
+    {
+      "time": 12.920000000000002,
+      "beat": 2,
+      "measure": 15,
+      "confidence": 0.0
+    },
+    {
+      "time": 13.479999999999997,
+      "beat": 3,
+      "measure": 15,
+      "confidence": 0.0
+    },
+    {
+      "time": 14.04,
+      "beat": 4,
+      "measure": 15,
+      "confidence": 0.0
+    },
+    {
+      "time": 14.600000000000001,
+      "beat": 1,
+      "measure": 16,
+      "confidence": 0.0
+    },
+    {
+      "time": 15.14,
+      "beat": 2,
+      "measure": 16,
+      "confidence": 0.0
+    },
+    {
+      "time": 15.719999999999999,
+      "beat": 3,
+      "measure": 16,
+      "confidence": 0.0
+    },
+    {
+      "time": 16.259999999999998,
+      "beat": 4,
+      "measure": 16,
+      "confidence": 0.0
+    },
+    {
+      "time": 16.82,
+      "beat": 1,
+      "measure": 17,
+      "confidence": 0.0
+    },
+    {
+      "time": 17.380000000000003,
+      "beat": 2,
+      "measure": 17,
+      "confidence": 0.0
+    },
+    {
+      "time": 17.939999999999998,
+      "beat": 3,
+      "measure": 17,
+      "confidence": 0.0
+    },
+    {
+      "time": 18.5,
+      "beat": 4,
+      "measure": 17,
+      "confidence": 0.0
+    },
+    {
+      "time": 19.08,
+      "beat": 1,
+      "measure": 18,
+      "confidence": 0.0
+    },
+    {
+      "time": 19.619999999999997,
+      "beat": 2,
+      "measure": 18,
+      "confidence": 0.0
+    }
+  ],
+  "reason": "Existing fixed regression window; verify unconfirmed downbeats before timing candidate",
+  "timing_changed": false
+}

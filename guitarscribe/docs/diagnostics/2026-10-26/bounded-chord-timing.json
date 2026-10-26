@@ -1,0 +1,183 @@
+[
+  {
+    "id": "accepted",
+    "changes": [
+      {
+        "left_id": "stem-chord-13",
+        "right_id": "stem-chord-14",
+        "detected": 27.861333333,
+        "performance": 27.82,
+        "previous_first_attack": 28.38,
+        "local_beat_seconds": 0.5599999999999987
+      },
+      {
+        "left_id": "stem-chord-15",
+        "right_id": "stem-chord-16",
+        "detected": 32.341333333,
+        "performance": 32.3,
+        "previous_first_attack": 32.86,
+        "local_beat_seconds": 0.5600000000000023
+      },
+      {
+        "left_id": "stem-chord-17",
+        "right_id": "stem-chord-18",
+        "detected": 36.821333333,
+        "performance": 36.8,
+        "previous_first_attack": 37.36,
+        "local_beat_seconds": 0.5600000000000023
+      }
+    ],
+    "skipped": [
+      {
+        "right_id": "stem-chord-9",
+        "detected": 16.554666666,
+        "reason": "not_within_50ms_after_downbeat"
+      },
+      {
+        "right_id": "stem-chord-10",
+        "detected": 18.858666666,
+        "reason": "not_within_50ms_after_downbeat"
+      },
+      {
+        "right_id": "stem-chord-11",
+        "detected": 20.991999999,
+        "reason": "not_within_50ms_after_downbeat"
+      },
+      {
+        "right_id": "stem-chord-12",
+        "detected": 23.338666666,
+        "reason": "not_within_50ms_after_downbeat"
+      },
+      {
+        "right_id": "stem-chord-13",
+        "detected": 25.514666666,
+        "reason": "not_within_50ms_after_downbeat"
+      },
+      {
+        "right_id": "stem-chord-15",
+        "detected": 29.909333333,
+        "reason": "not_within_50ms_after_downbeat"
+      },
+      {
+        "right_id": "stem-chord-17",
+        "detected": 34.474666666,
+        "reason": "not_within_50ms_after_downbeat"
+      },
+      {
+        "right_id": "stem-chord-19",
+        "detected": 39.039999999,
+        "reason": "not_within_50ms_after_downbeat"
+      }
+    ],
+    "restoration_verified": true,
+    "accepted_playback_exact_match": true
+  },
+  {
+    "id": "third",
+    "changes": [
+      {
+        "left_id": "stem-chord-1",
+        "right_id": "stem-chord-2",
+        "detected": 1.152,
+        "performance": 1.120000000000001,
+        "previous_first_attack": 1.6799999999999997,
+        "local_beat_seconds": 0.5599999999999987
+      },
+      {
+        "left_id": "stem-chord-3",
+        "right_id": "stem-chord-4",
+        "detected": 5.631999999,
+        "performance": 5.620000000000001,
+        "previous_first_attack": 6.18,
+        "local_beat_seconds": 0.5599999999999987
+      },
+      {
+        "left_id": "stem-chord-8",
+        "right_id": "stem-chord-9",
+        "detected": 16.853333333,
+        "performance": 16.82,
+        "previous_first_attack": 17.380000000000003,
+        "local_beat_seconds": 0.5600000000000023
+      },
+      {
+        "left_id": "stem-chord-9",
+        "right_id": "stem-chord-10",
+        "detected": 19.114666666,
+        "performance": 19.08,
+        "previous_first_attack": 19.619999999999997,
+        "local_beat_seconds": 0.5399999999999991
+      }
+    ],
+    "skipped": [
+      {
+        "right_id": "stem-chord-3",
+        "detected": 3.455999999,
+        "reason": "not_within_50ms_after_downbeat"
+      },
+      {
+        "right_id": "stem-chord-5",
+        "detected": 8.063999999,
+        "reason": "not_within_50ms_after_downbeat"
+      },
+      {
+        "right_id": "stem-chord-6",
+        "detected": 10.111999999,
+        "reason": "not_within_50ms_after_downbeat"
+      },
+      {
+        "right_id": "stem-chord-7",
+        "detected": 12.245333333,
+        "reason": "not_within_50ms_after_downbeat"
+      },
+      {
+        "right_id": "stem-chord-8",
+        "detected": 14.549333333,
+        "reason": "not_within_50ms_after_downbeat"
+      }
+    ],
+    "restoration_verified": true,
+    "accepted_playback_exact_match": false
+  },
+  {
+    "id": "saved",
+    "changes": [
+      {
+        "left_id": "stem-chord-3",
+        "right_id": "stem-chord-4",
+        "detected": 7.210666666,
+        "performance": 7.1633560090702915,
+        "previous_first_attack": 7.639365079365078,
+        "local_beat_seconds": 0.47600907029478634
+      }
+    ],
+    "skipped": [
+      {
+        "right_id": "stem-chord-2",
+        "detected": 1.663999999,
+        "reason": "not_within_50ms_after_downbeat"
+      },
+      {
+        "right_id": "stem-chord-3",
+        "detected": 5.461333333,
+        "reason": "not_within_50ms_after_downbeat"
+      },
+      {
+        "right_id": "stem-chord-5",
+        "detected": 9.173333333,
+        "reason": "not_within_50ms_after_downbeat"
+      },
+      {
+        "right_id": "stem-chord-6",
+        "detected": 11.050666666,
+        "reason": "not_within_50ms_after_downbeat"
+      },
+      {
+        "right_id": "stem-chord-7",
+        "detected": 12.885333333,
+        "reason": "not_within_50ms_after_downbeat"
+      }
+    ],
+    "restoration_verified": true,
+    "accepted_playback_exact_match": false
+  }
+]

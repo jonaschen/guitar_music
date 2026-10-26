@@ -61,6 +61,13 @@ class SaveRevisionResponse(BaseModel):
     revision_id: str
 
 
+class ChordTimingCandidateRequest(BaseModel):
+    score: SongScore
+    start: float = Field(ge=0, allow_inf_nan=False)
+    end: float = Field(gt=0, allow_inf_nan=False)
+    downbeats_confirmed: bool = False
+
+
 class LyricsReplaceRequest(BaseModel):
     lyrics: LyricsTrack
 
@@ -387,6 +394,27 @@ async def build_contour_candidate(job_id: str, score: SongScore,
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     candidate.provenance.parameters["candidate_source_job_id"] = job_id
     return candidate
+
+
+@app.post('/scores/chord-timing-candidate', tags=['Scores'])
+async def chord_timing_candidate(request: ChordTimingCandidateRequest):
+    from .services.chord_timing_candidate import build_timing_candidate
+    if not request.downbeats_confirmed:
+        raise HTTPException(409, 'Confirm the downbeats in this range before requesting a timing candidate')
+    try:
+        candidate, changes, skipped = await asyncio.to_thread(build_timing_candidate, request.score, request.start, request.end)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    return {'score': candidate, 'changes': changes, 'skipped': skipped, 'applied': False, 'saved': False}
+
+
+@app.post('/scores/chord-timing-restore', response_model=SongScore, tags=['Scores'])
+async def chord_timing_restore(score: SongScore):
+    from .services.chord_timing_candidate import restore_detected_timing
+    try:
+        return restore_detected_timing(score)
+    except ValueError as exc:
+        raise HTTPException(409, str(exc)) from exc
 
 
 @app.post("/api/v1/jobs/{job_id}/accompaniment-candidate", response_model=SongScore, tags=["Scores"])

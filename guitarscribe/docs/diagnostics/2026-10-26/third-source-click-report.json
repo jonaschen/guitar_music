@@ -1,0 +1,191 @@
+{
+  "events": [
+    {
+      "sample": 960,
+      "accent": false,
+      "time": 0.019999999999999574
+    },
+    {
+      "sample": 27840,
+      "accent": false,
+      "time": 0.5799999999999983
+    },
+    {
+      "sample": 53760,
+      "accent": true,
+      "time": 1.120000000000001
+    },
+    {
+      "sample": 80640,
+      "accent": false,
+      "time": 1.6799999999999997
+    },
+    {
+      "sample": 107520,
+      "accent": false,
+      "time": 2.2399999999999984
+    },
+    {
+      "sample": 135360,
+      "accent": false,
+      "time": 2.8200000000000003
+    },
+    {
+      "sample": 162240,
+      "accent": true,
+      "time": 3.379999999999999
+    },
+    {
+      "sample": 189120,
+      "accent": false,
+      "time": 3.9400000000000013
+    },
+    {
+      "sample": 216000,
+      "accent": false,
+      "time": 4.5
+    },
+    {
+      "sample": 242880,
+      "accent": false,
+      "time": 5.059999999999999
+    },
+    {
+      "sample": 269760,
+      "accent": true,
+      "time": 5.620000000000001
+    },
+    {
+      "sample": 296640,
+      "accent": false,
+      "time": 6.18
+    },
+    {
+      "sample": 323520,
+      "accent": false,
+      "time": 6.739999999999998
+    },
+    {
+      "sample": 351360,
+      "accent": false,
+      "time": 7.32
+    },
+    {
+      "sample": 378240,
+      "accent": true,
+      "time": 7.879999999999999
+    },
+    {
+      "sample": 405120,
+      "accent": false,
+      "time": 8.440000000000001
+    },
+    {
+      "sample": 432000,
+      "accent": false,
+      "time": 9.0
+    },
+    {
+      "sample": 457920,
+      "accent": false,
+      "time": 9.54
+    },
+    {
+      "sample": 485760,
+      "accent": true,
+      "time": 10.120000000000001
+    },
+    {
+      "sample": 512640,
+      "accent": false,
+      "time": 10.68
+    },
+    {
+      "sample": 539520,
+      "accent": false,
+      "time": 11.239999999999998
+    },
+    {
+      "sample": 566400,
+      "accent": false,
+      "time": 11.8
+    },
+    {
+      "sample": 594240,
+      "accent": true,
+      "time": 12.380000000000003
+    },
+    {
+      "sample": 620160,
+      "accent": false,
+      "time": 12.920000000000002
+    },
+    {
+      "sample": 647040,
+      "accent": false,
+      "time": 13.479999999999997
+    },
+    {
+      "sample": 673920,
+      "accent": false,
+      "time": 14.04
+    },
+    {
+      "sample": 700800,
+      "accent": true,
+      "time": 14.600000000000001
+    },
+    {
+      "sample": 726720,
+      "accent": false,
+      "time": 15.14
+    },
+    {
+      "sample": 754560,
+      "accent": false,
+      "time": 15.719999999999999
+    },
+    {
+      "sample": 780480,
+      "accent": false,
+      "time": 16.259999999999998
+    },
+    {
+      "sample": 807360,
+      "accent": true,
+      "time": 16.82
+    },
+    {
+      "sample": 834240,
+      "accent": false,
+      "time": 17.380000000000003
+    },
+    {
+      "sample": 861120,
+      "accent": false,
+      "time": 17.939999999999998
+    },
+    {
+      "sample": 888000,
+      "accent": false,
+      "time": 18.5
+    },
+    {
+      "sample": 915840,
+      "accent": true,
+      "time": 19.08
+    },
+    {
+      "sample": 941760,
+      "accent": false,
+      "time": 19.619999999999997
+    }
+  ],
+  "samplerate": 48000,
+  "frames": 960000,
+  "peak": 0.838134765625,
+  "source_gain": 0.7156989247311828,
+  "common_gain": 1.0,
+  "audio_sha256": "7c24c2512391bf8e15266c7c96bda08fd58b0b5075df73f60e781dd459a1594a",
+  "musical_verdict": "pending"
+}
