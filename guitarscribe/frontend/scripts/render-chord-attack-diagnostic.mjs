@@ -1,20 +1,23 @@
 // Same product voice and rhythm; only chord-boundary assignment differs.
 import {chromium} from '@playwright/test';
-import {readFile,writeFile,mkdir,copyFile} from 'node:fs/promises';
+import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const input=path.join(root,'../output/evaluation/chord-attack-diagnostic-2026-10-26-verified');
-const slug='chord-attack-2026-10-26',output=path.join(root,'public/listening',slug);
+const input=process.argv[2]?path.resolve(process.argv[2]):path.join(root,'../output/evaluation/chord-attack-diagnostic-2026-10-26-verified');
+const slug=process.argv[3]??'chord-attack-2026-10-26';
+assert.match(slug,/^[a-z0-9-]+$/);
+const output=path.join(root,'public/listening',slug);
 await mkdir(output,{recursive:false});
 const audit=JSON.parse(await readFile(path.join(input,'report.json'),'utf8'));
 const source=await readFile(path.join(input,'source.wav'));
 assert.equal(createHash('sha256').update(source).digest('hex'),audit.source_sha256);
 await writeFile(path.join(output,'source.wav'),source);
 const manifests=await Promise.all(['A','B'].map(async label=>JSON.parse(await readFile(path.join(input,`${label}-manifest.json`),'utf8'))));
-const start=10,end=40,duration=30,rate=22050,frames=Math.round((duration+.35)*rate);
+const [start,end]=audit.window,duration=end-start,rate=22050,frames=Math.round((duration+.35)*rate);
+assert.ok(Number.isFinite(duration)&&duration>0);
 const events=manifests.map(m=>m.events.filter(e=>e.track==='guitar'&&(e.sustain_end??e.end)>start&&e.start<end));
 const browser=await chromium.launch({executablePath:'/usr/bin/google-chrome',headless:true,args:['--no-sandbox']});
 let rendered;
@@ -65,5 +68,6 @@ for(let i=0;i<2;i++){
 assert.notEqual(outputs[0].sha256,outputs[1].sha256);
 const {samples,timings,...levels}=rendered;
 await writeFile(path.join(input,'render-report.json'),JSON.stringify({outputs,levels,rate,duration,tail:.35,voice:'product pluckedTone',timingParity:true,onlyGuitarAndOriginal:true},null,2));
-await copyFile(path.join(root,'scripts/chord-attack.html'),path.join(output,'index.html'));
+const html=(await readFile(path.join(root,'scripts/chord-attack.html'),'utf8')).replace('每段 30 秒，後面約 18–28 秒較值得留意。',audit.listening_hint??'每段 30 秒，後面約 18–28 秒較值得留意。');
+await writeFile(path.join(output,'index.html'),html);
 console.log(JSON.stringify({outputs,levels}));

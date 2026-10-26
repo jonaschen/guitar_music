@@ -65,6 +65,7 @@ class ChordTimingCandidateRequest(BaseModel):
     score: SongScore
     start: float = Field(ge=0, allow_inf_nan=False)
     end: float = Field(gt=0, allow_inf_nan=False)
+    time_basis: Literal['score_local', 'original_source']
     downbeats_confirmed: bool = False
 
 
@@ -401,11 +402,13 @@ async def chord_timing_candidate(request: ChordTimingCandidateRequest):
     from .services.chord_timing_candidate import build_timing_candidate
     if not request.downbeats_confirmed:
         raise HTTPException(409, 'Confirm the downbeats in this range before requesting a timing candidate')
+    offset = request.score.song.source_start_seconds if request.time_basis == 'original_source' else 0
     try:
-        candidate, changes, skipped = await asyncio.to_thread(build_timing_candidate, request.score, request.start, request.end)
+        candidate, changes, skipped = await asyncio.to_thread(build_timing_candidate, request.score, request.start-offset, request.end-offset)
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
-    return {'score': candidate, 'changes': changes, 'skipped': skipped, 'applied': False, 'saved': False}
+    return {'score': candidate, 'changes': changes, 'skipped': skipped,
+            'score_local_range': [request.start-offset, request.end-offset], 'applied': False, 'saved': False}
 
 
 @app.post('/scores/chord-timing-restore', response_model=SongScore, tags=['Scores'])

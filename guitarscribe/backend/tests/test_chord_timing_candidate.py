@@ -82,15 +82,33 @@ def test_invalid_inputs(kind):
 async def test_preview_requires_confirmed_range_and_restore_is_exact():
     from httpx import AsyncClient, ASGITransport
     from app.api import app
-    score=source();body=dict(score=score.model_dump(mode='json'),start=0,end=6)
+    score=source();body=dict(score=score.model_dump(mode='json'),start=0,end=6,time_basis='score_local')
     async with AsyncClient(transport=ASGITransport(app=app),base_url='http://test') as client:
         assert (await client.post('/scores/chord-timing-candidate',json=body)).status_code==409
         body['downbeats_confirmed']=True
         response=await client.post('/scores/chord-timing-candidate',json=body)
         assert response.status_code==200,response.text
         packet=response.json()
+        assert packet['score_local_range']==[0,6]
         assert not packet['applied'] and not packet['saved'] and len(packet['changes'])==1
         restored=await client.post('/scores/chord-timing-restore',json=packet['score'])
         assert restored.status_code==200 and restored.json()==score.model_dump(mode='json')
         packet['score']['chords'][1]['edited']=True
         assert (await client.post('/scores/chord-timing-restore',json=packet['score'])).status_code==409
+
+
+@pytest.mark.asyncio
+async def test_api_requires_explicit_time_basis_and_converts_original_seconds():
+    from httpx import AsyncClient, ASGITransport
+    from app.api import app
+    score=source();body=dict(score=score.model_dump(mode='json'),start=18,end=24,downbeats_confirmed=True)
+    async with AsyncClient(transport=ASGITransport(app=app),base_url='http://test') as client:
+        path='/scores/chord-timing-candidate'
+        assert (await client.post(path,json=body)).status_code==422
+        body['time_basis']='original_source'
+        result=await client.post(path,json=body)
+        assert result.status_code==200,result.text
+        assert result.json()['score_local_range']==[0,6]
+        assert len(result.json()['changes'])==1
+        body['time_basis']='score_local'
+        assert (await client.post(path,json=body)).status_code==422

@@ -1,15 +1,23 @@
 # Codex：有界、可還原的換和弦時間候選
 
+## 後續：第三來源拍格已確認
+
+使用者回覆「答答聲：在拍上」「較高的重音：像小節第一拍」。記錄此固定 20 秒範圍已獲人耳支持；沒有獨立回覆半速／倍速選項，不捏造該項評分。不再請使用者重測 click。
+
+已用完全相同的 `late-downbeat-v1` 規則建立四處入口的實際刷奏比較，原 54 次刷弦起點／方向保持，無辨識重跑。尚待 A／B 音樂判斷；拍格通過不等於時間候選通過。詳見 `Confirmed_Third_Timing_2026-10-26.md`。下方待 click 的內容為歷史。
+
 日期：2026-10-26。承接「A 約 22 秒不合、B 較合拍」的驗收。沒有繼續微調該片段，也沒有將最近拍點吸附套用到所有歌曲。
 
 ## 本輪完成
 
 新增 `backend/app/services/chord_timing_candidate.py` 與兩個明確呼叫的 API。既有主 UI、來源選擇、正式 compiler、預設分析與資料庫內容不變。
 
-- `POST /scores/chord-timing-candidate`：送入 score、start、end、downbeats_confirmed。未明確確認範圍內第一拍時回 409；產生只回傳候選／改動／略過原因，不套用或保存。
+- `POST /scores/chord-timing-candidate`：送入 score、start、end、必要的 time_basis（score_local 或 original_source）、downbeats_confirmed。API 依宣告的座標轉換原曲秒數，回傳 score_local_range；缺少時間座標類型會拒絕。未明確聲明確認範圍內第一拍時回 409；產生只回傳候選／改動／略過原因，不套用或保存。
 - `POST /scores/chord-timing-restore`：以保存的 receipt 還原原辨識邊界。和弦在套用後又有修改時拒絕覆蓋，保留人工工作；單獨修改旋律仍可還原和弦時間。
 
 這是後端與工程產物，不宣稱使用者介面已加入時間修正按鈕。既有伴奏和弦候選入口也不會自動呼叫它。
+
+`downbeats_confirmed` 是呼叫者對本次範圍的聲明，不是系統驗證過人耳判決的證書。receipt 保存拍格／範圍等資訊以追溯生成條件，但不會替任意呼叫者保證拍點正確。後續 UI 接入仍需將確認綁定到實際來源與拍格，不得跨來源沿用。
 
 ## 固定規則與界線
 

@@ -1,0 +1,95 @@
+{
+  "window": [
+    0,
+    20
+  ],
+  "source_sha256": "649f3017919849386aac925fcdbca076f009f9ee7bf6c238c0912830dbf55c18",
+  "changes": [
+    {
+      "left_id": "stem-chord-1",
+      "right_id": "stem-chord-2",
+      "detected": 1.152,
+      "performance": 1.120000000000001,
+      "previous_first_attack": 1.6799999999999997,
+      "local_beat_seconds": 0.5599999999999987
+    },
+    {
+      "left_id": "stem-chord-3",
+      "right_id": "stem-chord-4",
+      "detected": 5.631999999,
+      "performance": 5.620000000000001,
+      "previous_first_attack": 6.18,
+      "local_beat_seconds": 0.5599999999999987
+    },
+    {
+      "left_id": "stem-chord-8",
+      "right_id": "stem-chord-9",
+      "detected": 16.853333333,
+      "performance": 16.82,
+      "previous_first_attack": 17.380000000000003,
+      "local_beat_seconds": 0.5600000000000023
+    },
+    {
+      "left_id": "stem-chord-9",
+      "right_id": "stem-chord-10",
+      "detected": 19.114666666,
+      "performance": 19.08,
+      "previous_first_attack": 19.619999999999997,
+      "local_beat_seconds": 0.5399999999999991
+    }
+  ],
+  "skipped": [
+    {
+      "right_id": "stem-chord-3",
+      "detected": 3.455999999,
+      "reason": "not_within_50ms_after_downbeat"
+    },
+    {
+      "right_id": "stem-chord-5",
+      "detected": 8.063999999,
+      "reason": "not_within_50ms_after_downbeat"
+    },
+    {
+      "right_id": "stem-chord-6",
+      "detected": 10.111999999,
+      "reason": "not_within_50ms_after_downbeat"
+    },
+    {
+      "right_id": "stem-chord-7",
+      "detected": 12.245333333,
+      "reason": "not_within_50ms_after_downbeat"
+    },
+    {
+      "right_id": "stem-chord-8",
+      "detected": 14.549333333,
+      "reason": "not_within_50ms_after_downbeat"
+    }
+  ],
+  "changed_attacks": [
+    {
+      "time": 1.120000000000001,
+      "A": "stem-chord-1",
+      "B": "stem-chord-2"
+    },
+    {
+      "time": 5.620000000000001,
+      "A": "stem-chord-3",
+      "B": "stem-chord-4"
+    },
+    {
+      "time": 16.82,
+      "A": "stem-chord-8",
+      "B": "stem-chord-9"
+    },
+    {
+      "time": 19.08,
+      "A": "stem-chord-9",
+      "B": "stem-chord-10"
+    }
+  ],
+  "stroke_count": 54,
+  "identical_rhythm": true,
+  "identical_non_guitar_events": true,
+  "exact_restoration": true,
+  "listening_hint": "每段 20 秒。這是剛才已確認拍格的第三來源，只比較實際刷奏的換和弦時機。"
+}

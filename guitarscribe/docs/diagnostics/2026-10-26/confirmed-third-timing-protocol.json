@@ -1,0 +1,22 @@
+{
+  "score_sha256": "db586c96bc169c4241416b5ff6dfc119e85306d58cee8975f3f6acad2f27efdc",
+  "source_sha256": "649f3017919849386aac925fcdbca076f009f9ee7bf6c238c0912830dbf55c18",
+  "policy": "late-downbeat-v1 unchanged",
+  "source_window": [
+    20,
+    40
+  ],
+  "local_window": [
+    0,
+    20
+  ],
+  "user_feedback": [
+    "答答聲：在拍上",
+    "較高的重音：像小節第一拍"
+  ],
+  "mapping": {
+    "A": "original detected boundaries",
+    "B": "bounded late-downbeat candidate"
+  },
+  "action": "Independent preview only; no job or revision writes"
+}

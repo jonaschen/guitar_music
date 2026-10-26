@@ -1,0 +1,14 @@
+[
+  {
+    "label": "A",
+    "events": 708,
+    "max_error_seconds": 0.001000000000000778,
+    "midi_parity": true
+  },
+  {
+    "label": "B",
+    "events": 710,
+    "max_error_seconds": 0.001000000000000778,
+    "midi_parity": true
+  }
+]
