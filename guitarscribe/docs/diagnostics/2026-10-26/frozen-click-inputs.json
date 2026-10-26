@@ -1,0 +1,353 @@
+{
+  "job": "db79e1145ea046088b8aa5ef421d0e3f",
+  "original_bars": [
+    8,
+    15
+  ],
+  "original_window": [
+    16.62,
+    34.56
+  ],
+  "window": [
+    10.0,
+    40.0
+  ],
+  "reason": "30-second context enclosing the fixed failed bars; no audition-based selection",
+  "source_start_seconds": 0.0,
+  "source_sha256": "09ab077783f23ddcb226e13ad6c14bb41bf0b89f865d7a729d890ee3c2f2402d",
+  "timing_sha256": "ed8634091c3f2009e715fa5fb73b5a9dc664379d0fc757755a956e2c575b2d6e",
+  "beats": [
+    {
+      "time": 10.44,
+      "beat": 2,
+      "measure": 5,
+      "confidence": 0.0
+    },
+    {
+      "time": 11.02,
+      "beat": 3,
+      "measure": 5,
+      "confidence": 0.0
+    },
+    {
+      "time": 11.58,
+      "beat": 4,
+      "measure": 5,
+      "confidence": 0.0
+    },
+    {
+      "time": 12.14,
+      "beat": 1,
+      "measure": 6,
+      "confidence": 0.0
+    },
+    {
+      "time": 12.7,
+      "beat": 2,
+      "measure": 6,
+      "confidence": 0.0
+    },
+    {
+      "time": 13.26,
+      "beat": 3,
+      "measure": 6,
+      "confidence": 0.0
+    },
+    {
+      "time": 13.82,
+      "beat": 4,
+      "measure": 6,
+      "confidence": 0.0
+    },
+    {
+      "time": 14.38,
+      "beat": 1,
+      "measure": 7,
+      "confidence": 0.0
+    },
+    {
+      "time": 14.94,
+      "beat": 2,
+      "measure": 7,
+      "confidence": 0.0
+    },
+    {
+      "time": 15.5,
+      "beat": 3,
+      "measure": 7,
+      "confidence": 0.0
+    },
+    {
+      "time": 16.06,
+      "beat": 4,
+      "measure": 7,
+      "confidence": 0.0
+    },
+    {
+      "time": 16.62,
+      "beat": 1,
+      "measure": 8,
+      "confidence": 0.0
+    },
+    {
+      "time": 17.18,
+      "beat": 2,
+      "measure": 8,
+      "confidence": 0.0
+    },
+    {
+      "time": 17.74,
+      "beat": 3,
+      "measure": 8,
+      "confidence": 0.0
+    },
+    {
+      "time": 18.3,
+      "beat": 4,
+      "measure": 8,
+      "confidence": 0.0
+    },
+    {
+      "time": 18.86,
+      "beat": 1,
+      "measure": 9,
+      "confidence": 0.0
+    },
+    {
+      "time": 19.42,
+      "beat": 2,
+      "measure": 9,
+      "confidence": 0.0
+    },
+    {
+      "time": 20.0,
+      "beat": 3,
+      "measure": 9,
+      "confidence": 0.0
+    },
+    {
+      "time": 20.54,
+      "beat": 4,
+      "measure": 9,
+      "confidence": 0.0
+    },
+    {
+      "time": 21.1,
+      "beat": 1,
+      "measure": 10,
+      "confidence": 0.0
+    },
+    {
+      "time": 21.66,
+      "beat": 2,
+      "measure": 10,
+      "confidence": 0.0
+    },
+    {
+      "time": 22.24,
+      "beat": 3,
+      "measure": 10,
+      "confidence": 0.0
+    },
+    {
+      "time": 22.78,
+      "beat": 4,
+      "measure": 10,
+      "confidence": 0.0
+    },
+    {
+      "time": 23.34,
+      "beat": 1,
+      "measure": 11,
+      "confidence": 0.0
+    },
+    {
+      "time": 23.92,
+      "beat": 2,
+      "measure": 11,
+      "confidence": 0.0
+    },
+    {
+      "time": 24.48,
+      "beat": 3,
+      "measure": 11,
+      "confidence": 0.0
+    },
+    {
+      "time": 25.04,
+      "beat": 4,
+      "measure": 11,
+      "confidence": 0.0
+    },
+    {
+      "time": 25.6,
+      "beat": 1,
+      "measure": 12,
+      "confidence": 0.0
+    },
+    {
+      "time": 26.16,
+      "beat": 2,
+      "measure": 12,
+      "confidence": 0.0
+    },
+    {
+      "time": 26.7,
+      "beat": 3,
+      "measure": 12,
+      "confidence": 0.0
+    },
+    {
+      "time": 27.26,
+      "beat": 4,
+      "measure": 12,
+      "confidence": 0.0
+    },
+    {
+      "time": 27.82,
+      "beat": 1,
+      "measure": 13,
+      "confidence": 0.0
+    },
+    {
+      "time": 28.38,
+      "beat": 2,
+      "measure": 13,
+      "confidence": 0.0
+    },
+    {
+      "time": 28.94,
+      "beat": 3,
+      "measure": 13,
+      "confidence": 0.0
+    },
+    {
+      "time": 29.5,
+      "beat": 4,
+      "measure": 13,
+      "confidence": 0.0
+    },
+    {
+      "time": 30.08,
+      "beat": 1,
+      "measure": 14,
+      "confidence": 0.0
+    },
+    {
+      "time": 30.64,
+      "beat": 2,
+      "measure": 14,
+      "confidence": 0.0
+    },
+    {
+      "time": 31.2,
+      "beat": 3,
+      "measure": 14,
+      "confidence": 0.0
+    },
+    {
+      "time": 31.74,
+      "beat": 4,
+      "measure": 14,
+      "confidence": 0.0
+    },
+    {
+      "time": 32.3,
+      "beat": 1,
+      "measure": 15,
+      "confidence": 0.0
+    },
+    {
+      "time": 32.86,
+      "beat": 2,
+      "measure": 15,
+      "confidence": 0.0
+    },
+    {
+      "time": 33.42,
+      "beat": 3,
+      "measure": 15,
+      "confidence": 0.0
+    },
+    {
+      "time": 34.0,
+      "beat": 4,
+      "measure": 15,
+      "confidence": 0.0
+    },
+    {
+      "time": 34.56,
+      "beat": 1,
+      "measure": 16,
+      "confidence": 0.0
+    },
+    {
+      "time": 35.12,
+      "beat": 2,
+      "measure": 16,
+      "confidence": 0.0
+    },
+    {
+      "time": 35.68,
+      "beat": 3,
+      "measure": 16,
+      "confidence": 0.0
+    },
+    {
+      "time": 36.24,
+      "beat": 4,
+      "measure": 16,
+      "confidence": 0.0
+    },
+    {
+      "time": 36.8,
+      "beat": 1,
+      "measure": 17,
+      "confidence": 0.0
+    },
+    {
+      "time": 37.36,
+      "beat": 2,
+      "measure": 17,
+      "confidence": 0.0
+    },
+    {
+      "time": 37.92,
+      "beat": 3,
+      "measure": 17,
+      "confidence": 0.0
+    },
+    {
+      "time": 38.48,
+      "beat": 4,
+      "measure": 17,
+      "confidence": 0.0
+    },
+    {
+      "time": 39.04,
+      "beat": 1,
+      "measure": 18,
+      "confidence": 0.0
+    },
+    {
+      "time": 39.6,
+      "beat": 2,
+      "measure": 18,
+      "confidence": 0.0
+    }
+  ],
+  "diagnostic_only": true,
+  "beat_engine": "beat-this",
+  "warnings": [
+    "Model confidence is not calibrated. Only consistent 3/4 or 4/4 projections supported; quarter-note beat unit assumed.",
+    "Measure 0 contains pickup beats before the first detected downbeat."
+  ],
+  "second_pitch_estimator": "No independently saved frame F0 found in inspected ROSVOT output; no inference run",
+  "second_beat_estimator": "No independent same-source beat track used; no inference run",
+  "low_energy_rule": {
+    "frame_ms": 20,
+    "relative_to_peak_rms_db": -40,
+    "minimum_seconds": 0.3,
+    "interpretation": "diagnostic only, not verified rests"
+  }
+}

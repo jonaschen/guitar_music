@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>拍點確認 · 30 秒</title>
+<style>body{font:18px/1.7 system-ui;max-width:700px;margin:40px auto;padding:0 20px;color:#233047;background:#f7f8fb}audio{width:100%}li{margin:16px 0}.hint{color:#526077}#error{color:#a21b26}</style>
+<h1>只確認拍點 · 30 秒</h1>
+<p>這次沒有新增旋律或和弦。請聽原曲上的答答聲；較高、較響的一聲代表系統判定的小節第一拍。</p>
+<audio controls preload="metadata" src="original-plus-click.wav"></audio>
+<p id="error" role="alert"></p>
+<p class="hint">原曲 10–40 秒，包含先前 Bar 8–15 的問題片段。不是修正版。</p>
+<ol>
+<li>答答聲：在拍上／偏早／偏晚／越後面越偏／無法判斷。</li>
+<li>跟自然打拍子相比：差不多／快一倍／慢一半／無法判斷。</li>
+<li>較高的重音：像小節第一拍／不像／無法判斷。歌詞與換和弦入口可以參考，但不一定就是第一拍。</li>
+</ol>
+<p>直接在對話中回覆三項即可。如果答答聲聽不清楚，請回「聽不清楚」，不用勉強判斷。</p>
+<script>document.querySelector('audio').addEventListener('error',()=>{document.querySelector('#error').textContent='音檔載入失敗，請回報此訊息。';});</script>
+</html>
