@@ -1,0 +1,447 @@
+{
+  "metadata": {
+    "analysis-source.wav": {
+      "sha256": "892470bbc60e5401bd3c632aa169f2e7c948fc553a04996325ff28e1ffb9111d",
+      "rate": 48000,
+      "seconds": 60.0
+    },
+    "vocal-stem.wav": {
+      "sha256": "b7fd25590abc742bbf93eadd9e38a6262c7b0ee635fddba780c099d3ee47994f",
+      "rate": 44100,
+      "seconds": 60.0
+    },
+    "accompaniment-stem.wav": {
+      "sha256": "d5c129e3e9a638f262143350d7e92adc0c9777ae7385b2ea2de39626a0bcab8b",
+      "rate": 44100,
+      "seconds": 60.0
+    }
+  },
+  "alignment": [
+    {
+      "window": [
+        0,
+        20
+      ],
+      "lag_seconds": 0.0,
+      "correlation": 0.999727667397991,
+      "zero_lag_correlation": 0.999727667397991
+    },
+    {
+      "window": [
+        20,
+        40
+      ],
+      "lag_seconds": 0.0,
+      "correlation": 0.9997786251923902,
+      "zero_lag_correlation": 0.9997786251923902
+    },
+    {
+      "window": [
+        40,
+        60
+      ],
+      "lag_seconds": 0.0,
+      "correlation": 0.9998343323980579,
+      "zero_lag_correlation": 0.9998343323980579
+    }
+  ],
+  "lag_control": {
+    "lag_seconds": 0.56,
+    "correlation": 0.9999999999999971,
+    "zero_lag_correlation": 0.0017688284787279994
+  },
+  "transitions": [
+    {
+      "old": "Am",
+      "new": "Em",
+      "detected": 1.152,
+      "B_boundary": 1.120000000000001,
+      "A_first_attack": 1.6799999999999997,
+      "B_first_attack": 1.120000000000001,
+      "local_beat": 0.5599999999999987,
+      "acoustic_bands": [
+        {
+          "relative_beats": [
+            -2,
+            -1
+          ],
+          "mean_new_minus_old": -0.33411543595279564,
+          "frames": 24
+        },
+        {
+          "relative_beats": [
+            -1,
+            0
+          ],
+          "mean_new_minus_old": -0.18984681685586705,
+          "frames": 24
+        },
+        {
+          "relative_beats": [
+            0,
+            1
+          ],
+          "mean_new_minus_old": 0.35641424313902453,
+          "frames": 25
+        },
+        {
+          "relative_beats": [
+            1,
+            2
+          ],
+          "mean_new_minus_old": 0.37502686344963926,
+          "frames": 24
+        }
+      ]
+    },
+    {
+      "old": "Em",
+      "new": "F",
+      "detected": 3.455999999,
+      "B_boundary": 3.455999999,
+      "A_first_attack": 3.9400000000000013,
+      "B_first_attack": 3.9400000000000013,
+      "local_beat": 0.5600000000000023,
+      "acoustic_bands": [
+        {
+          "relative_beats": [
+            -2,
+            -1
+          ],
+          "mean_new_minus_old": -0.5191360596321725,
+          "frames": 25
+        },
+        {
+          "relative_beats": [
+            -1,
+            0
+          ],
+          "mean_new_minus_old": -0.27678244917319333,
+          "frames": 24
+        },
+        {
+          "relative_beats": [
+            0,
+            1
+          ],
+          "mean_new_minus_old": 0.44179704726701846,
+          "frames": 24
+        },
+        {
+          "relative_beats": [
+            1,
+            2
+          ],
+          "mean_new_minus_old": 0.3223845128741293,
+          "frames": 24
+        }
+      ]
+    },
+    {
+      "old": "F",
+      "new": "Em",
+      "detected": 5.631999999,
+      "B_boundary": 5.620000000000001,
+      "A_first_attack": 6.18,
+      "B_first_attack": 5.620000000000001,
+      "local_beat": 0.5599999999999987,
+      "acoustic_bands": [
+        {
+          "relative_beats": [
+            -2,
+            -1
+          ],
+          "mean_new_minus_old": -0.4631121393651177,
+          "frames": 24
+        },
+        {
+          "relative_beats": [
+            -1,
+            0
+          ],
+          "mean_new_minus_old": -0.219862958248738,
+          "frames": 24
+        },
+        {
+          "relative_beats": [
+            0,
+            1
+          ],
+          "mean_new_minus_old": 0.3301183065226528,
+          "frames": 24
+        },
+        {
+          "relative_beats": [
+            1,
+            2
+          ],
+          "mean_new_minus_old": 0.21301826347969183,
+          "frames": 25
+        }
+      ]
+    },
+    {
+      "old": "Em",
+      "new": "F",
+      "detected": 8.063999999,
+      "B_boundary": 8.063999999,
+      "A_first_attack": 8.440000000000001,
+      "B_first_attack": 8.440000000000001,
+      "local_beat": 0.5600000000000023,
+      "acoustic_bands": [
+        {
+          "relative_beats": [
+            -2,
+            -1
+          ],
+          "mean_new_minus_old": -0.37289662762612547,
+          "frames": 24
+        },
+        {
+          "relative_beats": [
+            -1,
+            0
+          ],
+          "mean_new_minus_old": -0.30505364479471714,
+          "frames": 24
+        },
+        {
+          "relative_beats": [
+            0,
+            1
+          ],
+          "mean_new_minus_old": 0.2859007945243935,
+          "frames": 24
+        },
+        {
+          "relative_beats": [
+            1,
+            2
+          ],
+          "mean_new_minus_old": 0.4172613780920737,
+          "frames": 24
+        }
+      ]
+    },
+    {
+      "old": "F",
+      "new": "G",
+      "detected": 10.111999999,
+      "B_boundary": 10.111999999,
+      "A_first_attack": 10.120000000000001,
+      "B_first_attack": 10.120000000000001,
+      "local_beat": 0.5599999999999987,
+      "acoustic_bands": [
+        {
+          "relative_beats": [
+            -2,
+            -1
+          ],
+          "mean_new_minus_old": -0.56264465953562,
+          "frames": 24
+        },
+        {
+          "relative_beats": [
+            -1,
+            0
+          ],
+          "mean_new_minus_old": -0.32994869061036414,
+          "frames": 24
+        },
+        {
+          "relative_beats": [
+            0,
+            1
+          ],
+          "mean_new_minus_old": 0.36357288456640297,
+          "frames": 24
+        },
+        {
+          "relative_beats": [
+            1,
+            2
+          ],
+          "mean_new_minus_old": 0.24854566245227894,
+          "frames": 25
+        }
+      ]
+    },
+    {
+      "old": "G",
+      "new": "C",
+      "detected": 12.245333333,
+      "B_boundary": 12.245333333,
+      "A_first_attack": 12.380000000000003,
+      "B_first_attack": 12.380000000000003,
+      "local_beat": 0.5399999999999991,
+      "acoustic_bands": [
+        {
+          "relative_beats": [
+            -2,
+            -1
+          ],
+          "mean_new_minus_old": -0.26027485431215,
+          "frames": 23
+        },
+        {
+          "relative_beats": [
+            -1,
+            0
+          ],
+          "mean_new_minus_old": -0.10790518499380741,
+          "frames": 23
+        },
+        {
+          "relative_beats": [
+            0,
+            1
+          ],
+          "mean_new_minus_old": 0.06980701988622394,
+          "frames": 23
+        },
+        {
+          "relative_beats": [
+            1,
+            2
+          ],
+          "mean_new_minus_old": -0.16004804043765322,
+          "frames": 24
+        }
+      ]
+    },
+    {
+      "old": "C",
+      "new": "G",
+      "detected": 14.549333333,
+      "B_boundary": 14.549333333,
+      "A_first_attack": 14.600000000000001,
+      "B_first_attack": 14.600000000000001,
+      "local_beat": 0.5399999999999991,
+      "acoustic_bands": [
+        {
+          "relative_beats": [
+            -2,
+            -1
+          ],
+          "mean_new_minus_old": -0.17124856044621609,
+          "frames": 23
+        },
+        {
+          "relative_beats": [
+            -1,
+            0
+          ],
+          "mean_new_minus_old": 0.19137101629933528,
+          "frames": 23
+        },
+        {
+          "relative_beats": [
+            0,
+            1
+          ],
+          "mean_new_minus_old": 0.2922465333310405,
+          "frames": 24
+        },
+        {
+          "relative_beats": [
+            1,
+            2
+          ],
+          "mean_new_minus_old": 0.2612187330997321,
+          "frames": 23
+        }
+      ]
+    },
+    {
+      "old": "G",
+      "new": "Am",
+      "detected": 16.853333333,
+      "B_boundary": 16.82,
+      "A_first_attack": 17.380000000000003,
+      "B_first_attack": 16.82,
+      "local_beat": 0.5600000000000023,
+      "acoustic_bands": [
+        {
+          "relative_beats": [
+            -2,
+            -1
+          ],
+          "mean_new_minus_old": -0.23866187927855065,
+          "frames": 25
+        },
+        {
+          "relative_beats": [
+            -1,
+            0
+          ],
+          "mean_new_minus_old": -0.10076697130472118,
+          "frames": 24
+        },
+        {
+          "relative_beats": [
+            0,
+            1
+          ],
+          "mean_new_minus_old": 0.39292177047361115,
+          "frames": 24
+        },
+        {
+          "relative_beats": [
+            1,
+            2
+          ],
+          "mean_new_minus_old": 0.40081233292133805,
+          "frames": 24
+        }
+      ]
+    },
+    {
+      "old": "Am",
+      "new": "Em7",
+      "detected": 19.114666666,
+      "B_boundary": 19.08,
+      "A_first_attack": 19.619999999999997,
+      "B_first_attack": 19.08,
+      "local_beat": 0.5399999999999991,
+      "acoustic_bands": [
+        {
+          "relative_beats": [
+            -2,
+            -1
+          ],
+          "mean_new_minus_old": -0.24545338364780872,
+          "frames": 23
+        },
+        {
+          "relative_beats": [
+            -1,
+            0
+          ],
+          "mean_new_minus_old": -0.20262858510812937,
+          "frames": 23
+        },
+        {
+          "relative_beats": [
+            0,
+            1
+          ],
+          "mean_new_minus_old": 0.2336388316561321,
+          "frames": 23
+        },
+        {
+          "relative_beats": [
+            1,
+            2
+          ],
+          "mean_new_minus_old": 0.2323821714791682,
+          "frames": 24
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Sum-of-stems alignment does not prove either stem is artifact-free.",
+    "Chroma-template agreement is not harmonic truth; shared notes and harmonics can bias it.",
+    "One beat late remains a subjective observation, not a fitted shift."
+  ]
+}

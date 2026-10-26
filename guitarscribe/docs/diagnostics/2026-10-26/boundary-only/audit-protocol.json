@@ -1,0 +1,10 @@
+{
+  "job": "f303ec8a86834633b060920fa85430af",
+  "window": [
+    20,
+    40
+  ],
+  "alignment": "8kHz mono cross-correlation; original vs sum of existing stems, +/-1s; fixed 0–20/20–40/40–60 windows; positive lag means stems later",
+  "evidence": "Existing accompaniment chroma STFT 22050Hz/2048FFT/512hop tuning=0. Binary selected-voicing pitch-class templates. Compare old/new in four one-beat bands around each saved boundary.",
+  "restriction": "No candidate, offset correction, model inference, parameter sweep or musical ground truth."
+}

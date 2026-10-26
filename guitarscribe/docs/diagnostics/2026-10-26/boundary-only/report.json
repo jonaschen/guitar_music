@@ -1,0 +1,75 @@
+{
+  "window": [
+    0,
+    20
+  ],
+  "source_sha256": "649f3017919849386aac925fcdbca076f009f9ee7bf6c238c0912830dbf55c18",
+  "rows": [
+    {
+      "symbol": "Am",
+      "boundary": 0.213333333,
+      "previous_attack": 0.29999999999999893,
+      "removed_wait": 0.08666666699999892
+    },
+    {
+      "symbol": "Em",
+      "boundary": 1.120000000000001,
+      "previous_attack": 1.120000000000001,
+      "removed_wait": 0.0
+    },
+    {
+      "symbol": "F",
+      "boundary": 3.455999999,
+      "previous_attack": 3.9400000000000013,
+      "removed_wait": 0.4840000010000014
+    },
+    {
+      "symbol": "Em",
+      "boundary": 5.620000000000001,
+      "previous_attack": 5.620000000000001,
+      "removed_wait": 0.0
+    },
+    {
+      "symbol": "F",
+      "boundary": 8.063999999,
+      "previous_attack": 8.440000000000001,
+      "removed_wait": 0.3760000010000013
+    },
+    {
+      "symbol": "G",
+      "boundary": 10.111999999,
+      "previous_attack": 10.120000000000001,
+      "removed_wait": 0.008000001000000978
+    },
+    {
+      "symbol": "C",
+      "boundary": 12.245333333,
+      "previous_attack": 12.380000000000003,
+      "removed_wait": 0.13466666700000296
+    },
+    {
+      "symbol": "G",
+      "boundary": 14.549333333,
+      "previous_attack": 14.600000000000001,
+      "removed_wait": 0.05066666700000155
+    },
+    {
+      "symbol": "Am",
+      "boundary": 16.82,
+      "previous_attack": 16.82,
+      "removed_wait": 0.0
+    },
+    {
+      "symbol": "Em7",
+      "boundary": 19.08,
+      "previous_attack": 19.08,
+      "removed_wait": 0.0
+    }
+  ],
+  "reference_A_sha256": "5059811538aea23591bf70d205fb0410173518bf06a2a42bb932d57266726654",
+  "attacks": [
+    54,
+    10
+  ],
+  "unchanged_score_sha256": "d52b00ee95561f90a736197fd5387842165585a87b15dcf655a27093c9e950fa"
+}

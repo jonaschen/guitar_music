@@ -1,0 +1,11 @@
+<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>換和弦聽感對照</title>
+<style>body{font:18px/1.7 system-ui;max-width:700px;margin:35px auto;padding:0 20px;color:#243246;background:#f7f8fb}section{background:white;padding:18px;margin:18px 0;border-radius:12px}audio{width:100%}#error{color:#a21b26}</style>
+<h1>換和弦時，哪個較自然？</h1>
+<p>各 20 秒，不需要拿吉他。兩版用同一段原曲、同一份和弦與切換時間。</p>
+<section><h2>A · 連續刷奏</h2><p>上一輪的 B，作為對照。</p><audio controls preload="metadata" src="A.wav"></audio></section>
+<section><h2>B · 每次換和弦只彈一下</h2><p>讓和弦自然衰減，中間不加刷奏。</p><audio controls preload="metadata" src="B.wav"></audio></section>
+<p>各聽一次，只需回覆：<strong>A 較自然／B 較自然／差不多／都不對／聽不清楚</strong>。</p>
+<p>若方便，再補一句：B 是否仍有「晚一拍換和弦」的感覺？不用找精確秒數。</p>
+<p id="error" role="alert"></p>
+<script>const players=[...document.querySelectorAll('audio')];for(const player of players){player.addEventListener('play',()=>players.forEach(p=>{if(p!==player)p.pause();}));player.addEventListener('error',()=>document.querySelector('#error').textContent='音檔載入失敗，請回報。');}</script></html>

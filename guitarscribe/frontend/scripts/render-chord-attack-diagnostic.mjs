@@ -61,13 +61,24 @@ for(let i=0;i<2;i++){
  assert.ok(values.slice(-500).every(v=>Math.abs(v)<1/32767));
  const wav=Buffer.alloc(44+2*frames);wav.write('RIFF');wav.writeUInt32LE(wav.length-8,4);wav.write('WAVEfmt ',8);wav.writeUInt32LE(16,16);wav.writeUInt16LE(1,20);wav.writeUInt16LE(1,22);wav.writeUInt32LE(rate,24);wav.writeUInt32LE(rate*2,28);wav.writeUInt16LE(2,32);wav.writeUInt16LE(16,34);wav.write('data',36);wav.writeUInt32LE(frames*2,40);
  values.forEach((v,j)=>wav.writeInt16LE(Math.round(v*32767),44+j*2));
- const label=['A','B'][i];await writeFile(path.join(output,`${label}.wav`),wav);
+ let published=wav;
+ if(i===0&&audit.reference_A_sha256){
+  const reference=await readFile(path.join(input,'A-reference.wav'));
+  assert.equal(createHash('sha256').update(reference).digest('hex'),audit.reference_A_sha256);
+  assert.equal(reference.length,wav.length);assert.deepEqual(reference.subarray(0,44),wav.subarray(0,44));
+  // Browser float arithmetic may change final PCM rounding by one unit.
+  // Require numerical parity before reusing the exact human-reviewed control.
+  for(let j=44;j<wav.length;j+=2)assert.ok(Math.abs(reference.readInt16LE(j)-wav.readInt16LE(j))<=1);
+  published=reference;
+ }
+ const label=['A','B'][i];await writeFile(path.join(output,`${label}.wav`),published);
  let peak=0;for(const v of values)peak=Math.max(peak,Math.abs(v));
- outputs.push({label,frames,voices:expected.length,peak,sha256:createHash('sha256').update(wav).digest('hex')});
+ outputs.push({label,frames,voices:expected.length,peak,sha256:createHash('sha256').update(published).digest('hex'),reusedFrozenReference:published!==wav});
 }
 assert.notEqual(outputs[0].sha256,outputs[1].sha256);
 const {samples,timings,...levels}=rendered;
 await writeFile(path.join(input,'render-report.json'),JSON.stringify({outputs,levels,rate,duration,tail:.35,voice:'product pluckedTone',timingParity:true,onlyGuitarAndOriginal:true},null,2));
-const html=(await readFile(path.join(root,'scripts/chord-attack.html'),'utf8')).replace('每段 30 秒，後面約 18–28 秒較值得留意。',audit.listening_hint??'每段 30 秒，後面約 18–28 秒較值得留意。');
+const template=process.argv[4]?path.resolve(process.argv[4]):path.join(root,'scripts/chord-attack.html');
+const html=(await readFile(template,'utf8')).replace('每段 30 秒，後面約 18–28 秒較值得留意。',audit.listening_hint??'每段 30 秒，後面約 18–28 秒較值得留意。');
 await writeFile(path.join(output,'index.html'),html);
 console.log(JSON.stringify({outputs,levels}));
