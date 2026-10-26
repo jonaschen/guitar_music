@@ -1,0 +1,17 @@
+{
+  "job_id": "ffa4697903394eb8a93f159b23487ff5",
+  "revision_id": "bc41b274-69d4-430f-8dda-52bd0759119d",
+  "parent_revision": "db8c657e-62a5-4fad-a33e-cde25a9e1c0d",
+  "parent_revision_unchanged": true,
+  "guitar_manifest_exact": true,
+  "source_samples_exact": true,
+  "source_sha256": "de1978a656d0c646cbc76d1deebe7a787d63b332dca3f248507feca0b4e008f0",
+  "source_start_seconds": 67.95772916666667,
+  "duration": 29.291979166666668,
+  "melody_notes": 131,
+  "melody_pitch_changes": 0,
+  "melody_timing": "Subtract fixed crop offset; clip notes only at excerpt edges",
+  "original_G_notes": 1072,
+  "default_performance": "original (preferred A)",
+  "url": "http://localhost:5173/?revision=bc41b274-69d4-430f-8dda-52bd0759119d"
+}

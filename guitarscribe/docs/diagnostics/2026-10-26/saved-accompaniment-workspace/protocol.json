@@ -1,0 +1,6 @@
+{
+  "parent_job": "3ba648f12cb74dd59a45c1b2d4bc83ab",
+  "parent_revision": "db8c657e-62a5-4fad-a33e-cde25a9e1c0d",
+  "policy": "Use preferred A accompaniment unchanged; crop saved G by absolute time, without quantization. Copy exact matching source audio into independent derived job. Save new revision only.",
+  "limitation": "One 29-second excerpt, not whole-song processing or improved melody. No UI persistence/default change."
+}
