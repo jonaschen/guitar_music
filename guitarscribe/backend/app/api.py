@@ -397,6 +397,18 @@ async def build_contour_candidate(job_id: str, score: SongScore,
     return candidate
 
 
+@app.post('/scores/chord-grid-candidate', tags=['Scores'])
+async def chord_grid_candidate(score: SongScore):
+    from .services.chord_grid_candidate import build_chord_grid_candidate
+    if score.provenance.parameters.get('chord_grid_candidate'):
+        raise HTTPException(409, 'Restore the original score before generating another chord-grid candidate')
+    try:
+        candidate, report = await asyncio.to_thread(build_chord_grid_candidate, score)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    return dict(score=candidate, report=report, applied=False, saved=False)
+
+
 class ChordEntryAuditRequest(BaseModel):
     score: SongScore
     mode: Literal['original', 'sparse', 'continuous'] = 'original'

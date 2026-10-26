@@ -127,3 +127,54 @@ test('entry audit is read-only, uses active mode and clears stale findings',asyn
   expect(bodies.map(b=>b.mode)).toEqual(['original','continuous']);
   expect(bodies[0].score).toEqual(bodies[1].score);
 });
+
+test('grid preview applies explicitly to playback and MIDI and Undo restores score',async({page})=>{
+  let original:any;let candidate:any;let saves=0;
+  page.on('request',r=>{if(r.method()==='POST' && /\/revisions$/.test(r.url())) saves++;});
+  await page.route('**/scores/chord-grid-candidate',r=>{
+    original=r.request().postDataJSON();candidate=structuredClone(original);
+    candidate.chords[0].end=7.5;candidate.provenance.parameters.chord_grid_candidate='nearest-eighth-v1';
+    return r.fulfill({json:{score:candidate,report:{changes:[{}],protected:[],unquantized_edges:[]}}});
+  });
+  await page.route('**/scores/chord-entry-performance',r=>r.fulfill({json:preview}));
+  await page.getByLabel('吉他演奏方案').selectOption('continuous');
+  await page.getByText('整理伴奏拍長（八分拍格・實驗）',{exact:true}).click();
+  await page.getByRole('button',{name:'預覽拍長整理',exact:true}).click();
+  await expect(page.getByText(/預計調整 1 段和弦/)).toBeVisible();
+  await expect(page.getByRole('button',{name:'Undo',exact:true})).toBeDisabled();
+  await expect(page.getByLabel('吉他演奏方案')).toHaveValue('continuous');
+  await page.getByRole('button',{name:'Play score',exact:true}).click();
+  await expect(page.getByRole('button',{name:'Pause score',exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'套用拍長整理（可 Undo）',exact:true}).click();
+  await expect(page.getByLabel('吉他演奏方案')).toHaveValue('original');
+  await expect(page.getByRole('button',{name:'Pause score',exact:true})).toHaveCount(0);
+  const playback=page.waitForRequest('**/scores/playback/manifest');
+  await page.getByRole('button',{name:'Play score',exact:true}).click();
+  expect((await playback).postDataJSON()).toEqual(candidate);
+  await page.getByRole('button',{name:'Stop score',exact:true}).click();
+  const midi=page.waitForRequest('**/scores/midi');const download=page.waitForEvent('download');
+  await page.getByRole('button',{name:'Download MIDI',exact:true}).click();
+  expect((await midi).postDataJSON()).toEqual(candidate);await download;
+  await page.getByRole('button',{name:'Undo',exact:true}).click();
+  const restored=page.waitForRequest('**/scores/playback/manifest');
+  await page.getByRole('button',{name:'Play score',exact:true}).click();
+  expect((await restored).postDataJSON()).toEqual(original);expect(saves).toBe(0);
+});
+
+test('grid rejects stale responses and displays failures without changing score',async({page})=>{
+  let held:Route|undefined;
+  await page.route('**/scores/chord-grid-candidate',r=>{held=r;});
+  await page.getByText('整理伴奏拍長（八分拍格・實驗）',{exact:true}).click();
+  await page.getByRole('button',{name:'預覽拍長整理',exact:true}).click();
+  await expect.poll(()=>!!held).toBe(true);
+  await page.locator('details').evaluateAll(nodes=>nodes.forEach(n=>(n as HTMLDetailsElement).open=true));
+  await page.getByLabel('First detected beat in bar').selectOption('2');
+  await held!.fulfill({json:{score,report:{changes:[{}],protected:[],unquantized_edges:[]}}});
+  await expect(page.getByRole('button',{name:'套用拍長整理（可 Undo）',exact:true})).toHaveCount(0);
+  await page.getByRole('button',{name:'Undo',exact:true}).click();
+  await page.unroute('**/scores/chord-grid-candidate');
+  await page.route('**/scores/chord-grid-candidate',r=>r.fulfill({status:422,body:'invalid'}));
+  await page.getByRole('button',{name:'預覽拍長整理',exact:true}).click();
+  await expect(page.getByRole('alert').filter({hasText:'無法整理這份譜'})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Undo',exact:true})).toBeDisabled();
+});

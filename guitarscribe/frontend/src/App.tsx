@@ -1,5 +1,6 @@
 import { ChangeEvent, FormEvent, lazy, Suspense, useEffect, useRef, useState } from "react";
 import { ChordEntryAudit } from "./ChordEntryAudit";
+import { ChordGridCandidate } from "./ChordGridCandidate";
 import type { AccidentalPreference, AnalysisJob, PlaybackManifest, PlaybackTrack, SongScore } from "./types";
 import { ChordDiagram } from "./ChordDiagram";
 import { createMediaTransportClock } from "./transportClock";
@@ -2208,6 +2209,10 @@ export function App() {
                   {performanceNotice ? <p role="status">{performanceNotice}</p> : null}
                   <ChordEntryAudit score={score} mode={chordPerformance} apiBase={API_BASE}
                     onSeek={(time) => { stopSynth(false); setFollowPlayhead(false); seekTo(time); }} />
+                  <ChordGridCandidate score={score} apiBase={API_BASE} onCommit={(base, next) => {
+                    if (scoreRef.current !== base) return false;
+                    return recordScoreChange(next);
+                  }} />
                   <div className="synth-controls">
                     <label>吉他演奏 <select aria-label="吉他演奏方案" value={chordPerformance} onChange={(event) => selectChordPerformance(event.target.value as ChordPerformanceMode)}>
                       <option value="original">原版刷奏</option>

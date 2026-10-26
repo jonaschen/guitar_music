@@ -42,3 +42,20 @@ def test_invalid_inputs(case):
     if case=='overlap':s.chords[1].start=1
     if case=='beats':s.beats[1].time=0
     with pytest.raises(ValueError):build_chord_grid_candidate(s)
+
+
+@pytest.mark.asyncio
+async def test_api_preview_preserves_source_and_rejects_repeat():
+    from httpx import AsyncClient,ASGITransport
+    from app.api import app
+    s=source();before=s.model_dump_json()
+    async with AsyncClient(transport=ASGITransport(app=app),base_url='http://test') as client:
+        response=await client.post('/scores/chord-grid-candidate',json=s.model_dump(mode='json'))
+        assert response.status_code==200,response.text
+        body=response.json();assert not body['applied'] and not body['saved']
+        assert body['score']['chords'][1]['start']==2
+        assert body['score']['melody']==s.model_dump(mode='json')['melody']
+        assert (await client.post('/scores/chord-grid-candidate',json=body['score'])).status_code==409
+        s.analysis.time_signature='3/4'
+        assert (await client.post('/scores/chord-grid-candidate',json=s.model_dump(mode='json'))).status_code==422
+    s.analysis.time_signature='4/4';assert s.model_dump_json()==before
