@@ -1,0 +1,27 @@
+{
+  "status": "ready_locally_waiting_for_external_access_and_upload_authorization",
+  "provider": "Klangio vocal API",
+  "inputs": [
+    "third-20-35.wav",
+    "third-40-55.wav",
+    "saved-G.wav"
+  ],
+  "input_manifest": "output/evaluation/existing-tool-integration-2026-10-26/manifest.json",
+  "budget": {
+    "paid_spend_usd": 0,
+    "max_submissions": 3,
+    "max_total_requests": 21,
+    "min_seconds_between_requests": 60,
+    "max_poll_requests_per_job": 5
+  },
+  "output": "unquantized MIDI only",
+  "comparison": "Same source windows, tone, gain, and time origin as saved G. Preserve tempo map, explicit voice selection; no auto correction or shifting.",
+  "stops": [
+    "Missing free API access: stop, do not subscribe",
+    "API rejection or uncertain charge: stop",
+    "Missing MIDI or unknown time origin/voice: do not manufacture a listening result",
+    "Major reconstruction remains in any clip: do not integrate as a production engine"
+  ],
+  "human_review": "Only after output integrity checks: three fixed short comparisons, no annotation required",
+  "privacy": "No account registration, provider contact or audio upload performed in this checkpoint"
+}

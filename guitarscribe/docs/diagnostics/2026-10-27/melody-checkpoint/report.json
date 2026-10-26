@@ -1,0 +1,55 @@
+{
+  "scope": "Read-only lineage and transport checks, not melody accuracy",
+  "stats": [
+    {
+      "name": "saved_G",
+      "notes": 1072,
+      "under_100ms": 471,
+      "median_seconds": 0.13931972789114866,
+      "positive_gaps": 205,
+      "gap_seconds": 45.139591836734844,
+      "manifest_exact": true
+    },
+    {
+      "name": "excerpt",
+      "notes": 131,
+      "under_100ms": 52,
+      "median_seconds": 0.13931972789116287,
+      "positive_gaps": 26,
+      "gap_seconds": 4.992290249433076,
+      "manifest_exact": true
+    },
+    {
+      "name": "grid_excerpt",
+      "notes": 131,
+      "under_100ms": 52,
+      "median_seconds": 0.13931972789116287,
+      "positive_gaps": 26,
+      "gap_seconds": 4.992290249433076,
+      "manifest_exact": true
+    }
+  ],
+  "excerpt_matches_saved_G": true,
+  "grid_preserves_melody": true,
+  "external_packet": [
+    {
+      "file": "third-20-35.wav",
+      "sha256": "479977e28c3eb528a074fdf80c29219f7afc2c49ecb0ee36a70a6a961e9dd459",
+      "duration_seconds": 15.0,
+      "bytes": 2646044
+    },
+    {
+      "file": "third-40-55.wav",
+      "sha256": "efc8f0799b9c7a7e2a39e82afe4d3057c3f8f8bb92dc92a590f3c6b0ea7e799c",
+      "duration_seconds": 15.0,
+      "bytes": 2646044
+    },
+    {
+      "file": "saved-G.wav",
+      "sha256": "3ae457c1f7c467f04f321987e45ec76844cc6f3d529e824ec5d98bd49636a872",
+      "duration_seconds": 14.466031746031746,
+      "bytes": 2551852
+    }
+  ],
+  "uploaded": false
+}
