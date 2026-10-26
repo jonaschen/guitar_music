@@ -1,0 +1,11 @@
+<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>系統刷奏 · 換和弦時機</title>
+<style>body{font:18px/1.7 system-ui;max-width:700px;margin:35px auto;padding:0 20px;color:#243246;background:#f7f8fb}section{background:#fff;padding:18px;margin:18px 0;border-radius:12px}audio{width:100%}#error{color:#a21b26}</style>
+<h1>這次直接聽系統刷奏</h1>
+<p>同一段原曲、同一組和弦與刷奏型，只比較換和弦時機。這次不用拿吉他。</p>
+<section><h2>A · 原曲＋系統吉他</h2><audio controls preload="metadata" src="A.wav"></audio></section>
+<section><h2>B · 原曲＋系統吉他</h2><audio controls preload="metadata" src="B.wav"></audio></section>
+<p>各聽一次，回覆：<strong>A 較合拍／B 較合拍／差不多／都不對</strong>。若有特別明顯的位置，再補秒數即可。</p>
+<p>每段 30 秒，後面約 18–28 秒較值得留意。若吉他聽不清楚或差異聽不出來，直接告訴我，不用勉強判斷。</p>
+<p id="error" role="alert"></p>
+<script>const players=[...document.querySelectorAll('audio')];for(const player of players){player.addEventListener('play',()=>players.forEach(p=>{if(p!==player)p.pause();}));player.addEventListener('error',()=>document.querySelector('#error').textContent='音檔載入失敗，請回報。');}</script></html>

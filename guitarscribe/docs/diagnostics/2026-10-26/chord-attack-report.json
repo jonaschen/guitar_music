@@ -1,0 +1,181 @@
+{
+  "window": [
+    10.0,
+    40.0
+  ],
+  "changes": [
+    {
+      "original": 16.554666666,
+      "aligned": 16.62,
+      "shift": 0.06533333400000174,
+      "symbol": "G"
+    },
+    {
+      "original": 18.858666666,
+      "aligned": 18.86,
+      "shift": 0.001333333999998132,
+      "symbol": "Am"
+    },
+    {
+      "original": 20.991999999,
+      "aligned": 21.1,
+      "shift": 0.10800000100000062,
+      "symbol": "Em"
+    },
+    {
+      "original": 23.338666666,
+      "aligned": 23.34,
+      "shift": 0.001333333999998132,
+      "symbol": "F"
+    },
+    {
+      "original": 25.514666666,
+      "aligned": 25.6,
+      "shift": 0.08533333400000132,
+      "symbol": "Em"
+    },
+    {
+      "original": 27.861333333,
+      "aligned": 27.82,
+      "shift": -0.04133333300000075,
+      "symbol": "F"
+    },
+    {
+      "original": 29.909333333,
+      "aligned": 30.08,
+      "shift": 0.170666666999999,
+      "symbol": "G"
+    },
+    {
+      "original": 32.341333333,
+      "aligned": 32.3,
+      "shift": -0.0413333330000043,
+      "symbol": "C"
+    },
+    {
+      "original": 34.474666666,
+      "aligned": 34.56,
+      "shift": 0.08533333400000487,
+      "symbol": "G"
+    },
+    {
+      "original": 36.821333333,
+      "aligned": 36.8,
+      "shift": -0.021333333000001176,
+      "symbol": "Am"
+    },
+    {
+      "original": 39.039999999,
+      "aligned": 39.04,
+      "shift": 9.999965300266922e-10,
+      "symbol": "Em"
+    }
+  ],
+  "attack_delays": [
+    {
+      "symbol": "G",
+      "original_change": 6.554666665999999,
+      "aligned_change": 6.620000000000001,
+      "original_first_attack": 6.620000000000001,
+      "aligned_first_attack": 6.620000000000001,
+      "original_delay": 0.06533333400000174,
+      "aligned_delay": 0.0
+    },
+    {
+      "symbol": "Am",
+      "original_change": 8.858666666000001,
+      "aligned_change": 8.86,
+      "original_first_attack": 8.86,
+      "aligned_first_attack": 8.86,
+      "original_delay": 0.001333333999998132,
+      "aligned_delay": 0.0
+    },
+    {
+      "symbol": "Em",
+      "original_change": 10.991999999,
+      "aligned_change": 11.100000000000001,
+      "original_first_attack": 11.100000000000001,
+      "aligned_first_attack": 11.100000000000001,
+      "original_delay": 0.10800000100000062,
+      "aligned_delay": 0.0
+    },
+    {
+      "symbol": "F",
+      "original_change": 13.338666666000002,
+      "aligned_change": 13.34,
+      "original_first_attack": 13.34,
+      "aligned_first_attack": 13.34,
+      "original_delay": 0.001333333999998132,
+      "aligned_delay": 0.0
+    },
+    {
+      "symbol": "Em",
+      "original_change": 15.514666666,
+      "aligned_change": 15.600000000000001,
+      "original_first_attack": 15.600000000000001,
+      "aligned_first_attack": 15.600000000000001,
+      "original_delay": 0.08533333400000132,
+      "aligned_delay": 0.0
+    },
+    {
+      "symbol": "F",
+      "original_change": 17.861333333,
+      "aligned_change": 17.82,
+      "original_first_attack": 18.38,
+      "aligned_first_attack": 17.82,
+      "original_delay": 0.518666666999998,
+      "aligned_delay": 0.0
+    },
+    {
+      "symbol": "G",
+      "original_change": 19.909333333,
+      "aligned_change": 20.08,
+      "original_first_attack": 20.08,
+      "aligned_first_attack": 20.08,
+      "original_delay": 0.170666666999999,
+      "aligned_delay": 0.0
+    },
+    {
+      "symbol": "C",
+      "original_change": 22.341333333,
+      "aligned_change": 22.299999999999997,
+      "original_first_attack": 22.86,
+      "aligned_first_attack": 22.299999999999997,
+      "original_delay": 0.518666666999998,
+      "aligned_delay": 0.0
+    },
+    {
+      "symbol": "G",
+      "original_change": 24.474666665999997,
+      "aligned_change": 24.560000000000002,
+      "original_first_attack": 24.560000000000002,
+      "aligned_first_attack": 24.560000000000002,
+      "original_delay": 0.08533333400000487,
+      "aligned_delay": 0.0
+    },
+    {
+      "symbol": "Am",
+      "original_change": 26.821333333,
+      "aligned_change": 26.799999999999997,
+      "original_first_attack": 27.36,
+      "aligned_first_attack": 26.799999999999997,
+      "original_delay": 0.5386666670000011,
+      "aligned_delay": 0.0
+    },
+    {
+      "symbol": "Em",
+      "original_change": 29.039999999000003,
+      "aligned_change": 29.04,
+      "original_first_attack": 29.04,
+      "aligned_first_attack": 29.04,
+      "original_delay": 9.999965300266922e-10,
+      "aligned_delay": 0.0
+    }
+  ],
+  "stroke_count": 118,
+  "stroke_times_identical": true,
+  "non_guitar_events_identical": true,
+  "labels_and_voicings_identical": true,
+  "source_sha256": "19f8f03ff283edee0e0f6412e5e9be599c3d419f53975bae5567c6376cb5daf2",
+  "status": "Engineering checks passed; audible improvement not established"
+}

@@ -1,0 +1,21 @@
+{
+  "strokes": 80,
+  "expected_from_beat_midpoints": true,
+  "changes": [
+    {
+      "time": 17.82,
+      "A": "stem-chord-13",
+      "B": "stem-chord-14"
+    },
+    {
+      "time": 22.299999999999997,
+      "A": "stem-chord-15",
+      "B": "stem-chord-16"
+    },
+    {
+      "time": 26.799999999999997,
+      "A": "stem-chord-17",
+      "B": "stem-chord-18"
+    }
+  ]
+}

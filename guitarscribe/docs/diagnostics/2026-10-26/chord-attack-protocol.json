@@ -1,0 +1,13 @@
+{
+  "window": [
+    10.0,
+    40.0
+  ],
+  "score_sha256": "762b32faccd89e38efba6a71f78b074f6784730362b3a847c497667134988b09",
+  "method": "Within the accepted 10–40s window only, move shared internal chord boundaries to nearest existing beat (ties choose earlier). Preserve first start, final end, labels/order, voicings, rhythm, beats, melody. Reject collapsed or reordered spans. No production integration.",
+  "mapping": {
+    "A": "original detected boundaries",
+    "B": "nearest accepted beat boundaries"
+  },
+  "warning": "Timing ablation, not proof that every change should occur on a quarter-note beat."
+}
