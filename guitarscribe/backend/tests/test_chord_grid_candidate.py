@@ -59,3 +59,22 @@ async def test_api_preview_preserves_source_and_rejects_repeat():
         s.analysis.time_signature='3/4'
         assert (await client.post('/scores/chord-grid-candidate',json=s.model_dump(mode='json'))).status_code==422
     s.analysis.time_signature='4/4';assert s.model_dump_json()==before
+
+
+def test_saved_candidate_reload_preserves_playback_midi_and_original(tmp_path):
+    from app.services.revisions import RevisionStore
+    from app.exporters.midi import compile_playback_manifest, export_midi
+    original = source()
+    store = RevisionStore(tmp_path)
+    parent = store.save(original)
+    candidate, _ = build_chord_grid_candidate(original)
+    expected_manifest = compile_playback_manifest(candidate)
+    expected_midi = export_midi(candidate)
+    successor = store.fork(parent, candidate)
+    reopened = RevisionStore(tmp_path)
+    restored = reopened.load(successor)
+    assert restored == candidate
+    assert reopened.load(parent) == original
+    assert restored.melody == original.melody
+    assert compile_playback_manifest(restored) == expected_manifest
+    assert export_midi(restored) == expected_midi

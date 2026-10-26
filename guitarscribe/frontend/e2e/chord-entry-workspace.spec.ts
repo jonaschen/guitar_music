@@ -155,10 +155,11 @@ test('grid preview applies explicitly to playback and MIDI and Undo restores sco
   const midi=page.waitForRequest('**/scores/midi');const download=page.waitForEvent('download');
   await page.getByRole('button',{name:'Download MIDI',exact:true}).click();
   expect((await midi).postDataJSON()).toEqual(candidate);await download;
-  await page.getByRole('button',{name:'Undo',exact:true}).click();
+  await page.getByRole('button',{name:'還原上一步（Undo）',exact:true}).click();
   const restored=page.waitForRequest('**/scores/playback/manifest');
   await page.getByRole('button',{name:'Play score',exact:true}).click();
   expect((await restored).postDataJSON()).toEqual(original);expect(saves).toBe(0);
+  await expect(page.getByRole('button',{name:'還原上一步（Undo）',exact:true})).toBeDisabled();
 });
 
 test('grid rejects stale responses and displays failures without changing score',async({page})=>{
@@ -171,10 +172,21 @@ test('grid rejects stale responses and displays failures without changing score'
   await page.getByLabel('First detected beat in bar').selectOption('2');
   await held!.fulfill({json:{score,report:{changes:[{}],protected:[],unquantized_edges:[]}}});
   await expect(page.getByRole('button',{name:'套用拍長整理（可 Undo）',exact:true})).toHaveCount(0);
-  await page.getByRole('button',{name:'Undo',exact:true}).click();
+  await page.getByRole('button',{name:'還原上一步（Undo）',exact:true}).click();
   await page.unroute('**/scores/chord-grid-candidate');
   await page.route('**/scores/chord-grid-candidate',r=>r.fulfill({status:422,body:'invalid'}));
   await page.getByRole('button',{name:'預覽拍長整理',exact:true}).click();
   await expect(page.getByRole('alert').filter({hasText:'無法整理這份譜'})).toBeVisible();
   await expect(page.getByRole('button',{name:'Undo',exact:true})).toBeDisabled();
+});
+
+
+test('loaded grid revision has no misleading Undo action',async({page})=>{
+  const saved=structuredClone(score);saved.provenance.parameters={chord_grid_candidate:'nearest-eighth-v1'};
+  await page.route('**/api/v1/jobs/entry-job',r=>r.fulfill({json:{id:'entry-job',status:'completed',progress:100,artifacts:[],score:saved}}));
+  await page.reload();await page.getByText('Compiled score playback',{exact:true}).click();
+  await page.getByText('整理伴奏拍長（八分拍格・實驗）',{exact:true}).click();
+  await expect(page.getByRole('button',{name:'還原上一步（Undo）',exact:true})).toBeDisabled();
+  await expect(page.getByRole('button',{name:'預覽拍長整理',exact:true})).toBeDisabled();
+  await expect(page.getByText(/若要回到整理前，請載入原修訂/)).toBeVisible();
 });

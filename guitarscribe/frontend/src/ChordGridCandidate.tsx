@@ -3,8 +3,8 @@ import type { SongScore } from "./types";
 
 type Preview = { base: SongScore; next: SongScore; changes: number; protected: number; unresolved: number };
 
-export function ChordGridCandidate({score, apiBase, onCommit}: {
-  score: SongScore; apiBase: string; onCommit: (base: SongScore, next: SongScore) => boolean;
+export function ChordGridCandidate({score, apiBase, onCommit, canUndo, onUndo}: {
+  score: SongScore; apiBase: string; canUndo: boolean; onUndo: () => void; onCommit: (base: SongScore, next: SongScore) => boolean;
 }) {
   const current = useRef(score); current.current = score;
   const request = useRef<AbortController | null>(null);
@@ -44,7 +44,9 @@ export function ChordGridCandidate({score, apiBase, onCommit}: {
         if (!onCommit(ready.base, ready.next)) setMessage("工作譜已改變，未套用舊預覽；請重新產生。");
       }}>套用拍長整理（可 Undo）</button> : <p>目前沒有可調整的和弦時值。</p>}
     </div> : null}
-    {applied ? <p role="status">目前已使用八分拍格伴奏譜。本次操作可用 Undo 還原；若是載入已保存的整理版，請另行載入原修訂。旋律時值沒有整理。</p> : null}
+    <button type="button" disabled={!canUndo} onClick={onUndo}>還原上一步（Undo）</button>
+    <p>剛套用後可在這裡還原；若之後另有編輯，每按一次會還原最近一步。重新載入後不保留 Undo 紀錄。</p>
+    {applied ? <p role="status">目前已使用八分拍格伴奏譜。旋律時值沒有整理。{!canUndo ? "若要回到整理前，請載入原修訂。" : ""}</p> : null}
     <p>套用後圖表、播放與 MIDI 使用同一份譜，演奏選項會回到「原版刷奏」。不會自動保存；請試聽後再決定是否保存。</p>
     {message ? <p role="alert">{message}</p> : null}
   </details>;

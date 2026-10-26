@@ -1,0 +1,35 @@
+{
+  "scope": "Three existing recordings / two songs; structural checks only, no listening quality pass",
+  "results": [
+    {
+      "input": "output/evaluation/entry-workspace-2026-10-26/score.json",
+      "sha256": "04c22b62c8c2aac964192e0272788828d44d8d41a6cd293fd98eff8ad792be8c",
+      "chords": 21,
+      "changed": 11,
+      "protected": 0,
+      "unquantized_edges": 0,
+      "max_boundary_shift_seconds": 0.10933333300000037,
+      "structure_and_revision_roundtrip_pass": true
+    },
+    {
+      "input": "output/evaluation/confirmed-third-timing-2026-10-26/B-score.json",
+      "sha256": "d52b00ee95561f90a736197fd5387842165585a87b15dcf655a27093c9e950fa",
+      "chords": 10,
+      "changed": 8,
+      "protected": 0,
+      "unquantized_edges": 0,
+      "max_boundary_shift_seconds": 0.13466666700000296,
+      "structure_and_revision_roundtrip_pass": true
+    },
+    {
+      "input": "output/evaluation/saved-accompaniment-workspace-2026-10-26/score.json",
+      "sha256": "265c0e567da396c97a220fa811764aebffff51a4d2115e2532415613127e0d1b",
+      "chords": 16,
+      "changed": 16,
+      "protected": 0,
+      "unquantized_edges": 0,
+      "max_boundary_shift_seconds": 0.10172335700000001,
+      "structure_and_revision_roundtrip_pass": true
+    }
+  ]
+}

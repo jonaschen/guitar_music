@@ -2209,7 +2209,7 @@ export function App() {
                   {performanceNotice ? <p role="status">{performanceNotice}</p> : null}
                   <ChordEntryAudit score={score} mode={chordPerformance} apiBase={API_BASE}
                     onSeek={(time) => { stopSynth(false); setFollowPlayhead(false); seekTo(time); }} />
-                  <ChordGridCandidate score={score} apiBase={API_BASE} onCommit={(base, next) => {
+                  <ChordGridCandidate score={score} apiBase={API_BASE} canUndo={undoHistory.length > 0} onUndo={undoScoreChange} onCommit={(base, next) => {
                     if (scoreRef.current !== base) return false;
                     return recordScoreChange(next);
                   }} />
