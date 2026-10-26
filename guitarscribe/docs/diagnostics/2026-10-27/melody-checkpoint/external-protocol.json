@@ -1,5 +1,5 @@
 {
-  "status": "ready_locally_waiting_for_external_access_and_upload_authorization",
+  "status": "cancelled_by_user_independent_local_only",
   "provider": "Klangio vocal API",
   "inputs": [
     "third-20-35.wav",
@@ -23,5 +23,7 @@
     "Major reconstruction remains in any clip: do not integrate as a production engine"
   ],
   "human_review": "Only after output integrity checks: three fixed short comparisons, no annotation required",
-  "privacy": "No account registration, provider contact or audio upload performed in this checkpoint"
+  "privacy": "No account registration, provider contact or audio upload performed in this checkpoint",
+  "cancelled_on": "2026-10-27",
+  "cancellation_reason": "User rejects external transcription integration; no account application or upload authorized."
 }
