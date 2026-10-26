@@ -2367,6 +2367,9 @@ export function App() {
 
                 <label><input type="checkbox" checked={showRawChordSegments} onChange={(event) => setShowRawChordSegments(event.target.checked)} />顯示原始分析區段（逐段編輯）</label>
                 <p>和弦寬度依拍長排列：兩和弦不一定各半小節。相鄰同和弦／指型合併顯示；刷奏型不會自動校正小節線。</p>
+                <p>{score.provenance.parameters?.chord_grid_candidate
+                  ? "目前伴奏是八分拍格候選：依現有拍點整理成整拍或半拍位置，旋律未改。片段首尾可能是不完整小節。"
+                  : "這裡依工作譜的實際時間繪製；尚未整理的辨識時間可能帶有零碎拍長，片段首尾也可能不滿小節。"}</p>
                 {score.analysis.warnings.filter((warning) => /downbeat|first detected pulse/i.test(warning)).length ? <p role="note">小節起點尚未確認：分析以第一個偵測拍點作為第 1 拍，Bar 可能未對準原曲。</p> : null}
                 <div className="chord-sheet">
                   {measureGroups.map((group) => (

@@ -1,0 +1,23 @@
+{
+  "midi_events": 1324,
+  "max_midi_error_seconds": 0.0008749999999997371,
+  "same_95_stroke_onsets": true,
+  "melody_and_click_events_unchanged": true,
+  "changed_pitch_assignments": [
+    {
+      "time": 7.15,
+      "old_chord_id": "chord-5",
+      "new_chord_id": "chord-6"
+    },
+    {
+      "time": 11.08,
+      "old_chord_id": "chord-7",
+      "new_chord_id": "chord-8"
+    },
+    {
+      "time": 23.98,
+      "old_chord_id": "chord-14",
+      "new_chord_id": "chord-15"
+    }
+  ]
+}

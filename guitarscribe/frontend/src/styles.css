@@ -523,8 +523,11 @@ h2 {
 .measure-beat-ruler { position: relative; height: 1.5rem; border-bottom: 1px solid var(--border); font-size: 0.75rem; color: var(--text-muted); }
 .measure-beat-ruler > span { position: absolute; border-left: 1px solid var(--border); padding-left: 0.25rem; }
 .measure-beat-ruler > .measure-beat-active { color: var(--accent-2); border-color: var(--accent-2); font-weight: 700; }
-.measure-chords > .chord-block { grid-row: 1; min-width: 0; overflow: hidden; padding: 0.4rem 0.3rem; border-radius: 4px; }
-.measure-chords > .chord-block > span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.measure-chords > .chord-block { grid-row: 1; min-width: 0; overflow: hidden; padding: 0; border: 0; border-radius: 4px; box-shadow: inset 0 0 0 1px var(--border); }
+.measure-chords > .chord-block-selected { box-shadow: inset 0 0 0 1px rgba(241, 143, 59, 0.72); }
+.measure-chords > .chord-block > span { box-sizing: border-box; max-width: 100%; padding-inline: 0.3rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.measure-chords > .chord-block > span:first-child { padding-top: 0.4rem; }
+.measure-chords > .chord-block > span:last-child { margin-bottom: 0.4rem; }
 .chord-beat-length { font-size: 0.8rem; color: var(--accent-2); }
 
 .chord-block {

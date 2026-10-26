@@ -1,0 +1,6 @@
+{
+  "policy": "nearest-eighth-v1",
+  "basis": "Unedited saved A accompaniment with original G, independent preview",
+  "purpose": "One shared beat-grid score for display, default playback and MIDI; no melody quantization, inference or global default change",
+  "stopping": "If unnatural, preserve original; do not tune per-song rounding thresholds"
+}

@@ -1,0 +1,191 @@
+{
+  "policy": "nearest-eighth-v1",
+  "changes": [
+    {
+      "chord_id": "chord-2",
+      "original": [
+        0.232199546,
+        1.718276643
+      ],
+      "candidate": [
+        0.23,
+        1.82
+      ]
+    },
+    {
+      "chord_id": "chord-3",
+      "original": [
+        1.718276643,
+        4.59755102
+      ],
+      "candidate": [
+        1.82,
+        4.62
+      ]
+    },
+    {
+      "chord_id": "chord-4",
+      "original": [
+        4.59755102,
+        5.479909297
+      ],
+      "candidate": [
+        4.62,
+        5.54
+      ]
+    },
+    {
+      "chord_id": "chord-5",
+      "original": [
+        5.479909297,
+        7.24462585
+      ],
+      "candidate": [
+        5.54,
+        7.15
+      ]
+    },
+    {
+      "chord_id": "chord-6",
+      "original": [
+        7.24462585,
+        9.19510204
+      ],
+      "candidate": [
+        7.15,
+        9.22
+      ]
+    },
+    {
+      "chord_id": "chord-7",
+      "original": [
+        9.19510204,
+        11.099138321
+      ],
+      "candidate": [
+        9.22,
+        11.08
+      ]
+    },
+    {
+      "chord_id": "chord-8",
+      "original": [
+        11.099138321,
+        12.910294784
+      ],
+      "candidate": [
+        11.08,
+        12.92
+      ]
+    },
+    {
+      "chord_id": "chord-9",
+      "original": [
+        12.910294784,
+        14.675011337
+      ],
+      "candidate": [
+        12.92,
+        14.76
+      ]
+    },
+    {
+      "chord_id": "chord-10",
+      "original": [
+        14.675011337,
+        16.532607709
+      ],
+      "candidate": [
+        14.76,
+        16.58
+      ]
+    },
+    {
+      "chord_id": "chord-11",
+      "original": [
+        16.532607709,
+        18.158004535
+      ],
+      "candidate": [
+        16.58,
+        18.21
+      ]
+    },
+    {
+      "chord_id": "chord-12",
+      "original": [
+        18.158004535,
+        20.201360544
+      ],
+      "candidate": [
+        18.21,
+        20.28
+      ]
+    },
+    {
+      "chord_id": "chord-13",
+      "original": [
+        20.201360544,
+        22.105396825
+      ],
+      "candidate": [
+        20.28,
+        22.14
+      ]
+    },
+    {
+      "chord_id": "chord-14",
+      "original": [
+        22.105396825,
+        24.009433106
+      ],
+      "candidate": [
+        22.14,
+        23.98
+      ]
+    },
+    {
+      "chord_id": "chord-15",
+      "original": [
+        24.009433106,
+        25.820589569
+      ],
+      "candidate": [
+        23.98,
+        25.84
+      ]
+    },
+    {
+      "chord_id": "chord-16",
+      "original": [
+        25.820589569,
+        27.631746031
+      ],
+      "candidate": [
+        25.84,
+        27.68
+      ]
+    },
+    {
+      "chord_id": "chord-17",
+      "original": [
+        27.631746031,
+        29.291979166666668
+      ],
+      "candidate": [
+        27.68,
+        29.291979166666668
+      ]
+    }
+  ],
+  "protected": [],
+  "unquantized_edges": [],
+  "applied": false,
+  "saved": false,
+  "melody_changed": false,
+  "parent_revision": "bc41b274-69d4-430f-8dda-52bd0759119d",
+  "revision_id": "4384c826-a4f0-4442-b1d4-ef7bbc7888f4",
+  "url": "http://localhost:5173/?revision=4384c826-a4f0-4442-b1d4-ef7bbc7888f4",
+  "bar7_improved_entry_preserved": true,
+  "source_start_seconds": 67.95772916666667
+}

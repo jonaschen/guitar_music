@@ -1,0 +1,123 @@
+{
+  "geometry": [
+    {
+      "bar": 1,
+      "lengths": [
+        "0.5 拍",
+        "3.5 拍"
+      ],
+      "maxOverflow": 0
+    },
+    {
+      "bar": 2,
+      "lengths": [
+        "4 拍"
+      ],
+      "maxOverflow": 0
+    },
+    {
+      "bar": 3,
+      "lengths": [
+        "2 拍",
+        "2 拍"
+      ],
+      "maxOverflow": 0
+    },
+    {
+      "bar": 4,
+      "lengths": [
+        "3.5 拍",
+        "0.5 拍"
+      ],
+      "maxOverflow": 0
+    },
+    {
+      "bar": 5,
+      "lengths": [
+        "4 拍"
+      ],
+      "maxOverflow": 0
+    },
+    {
+      "bar": 6,
+      "lengths": [
+        "4 拍"
+      ],
+      "maxOverflow": 0
+    },
+    {
+      "bar": 7,
+      "lengths": [
+        "4 拍"
+      ],
+      "maxOverflow": 0
+    },
+    {
+      "bar": 8,
+      "lengths": [
+        "4 拍"
+      ],
+      "maxOverflow": 0
+    },
+    {
+      "bar": 9,
+      "lengths": [
+        "4 拍"
+      ],
+      "maxOverflow": 0
+    },
+    {
+      "bar": 10,
+      "lengths": [
+        "3.5 拍",
+        "0.5 拍"
+      ],
+      "maxOverflow": 0
+    },
+    {
+      "bar": 11,
+      "lengths": [
+        "4 拍"
+      ],
+      "maxOverflow": 0
+    },
+    {
+      "bar": 12,
+      "lengths": [
+        "4 拍"
+      ],
+      "maxOverflow": 0
+    },
+    {
+      "bar": 13,
+      "lengths": [
+        "4 拍"
+      ],
+      "maxOverflow": 0
+    },
+    {
+      "bar": 14,
+      "lengths": [
+        "4 拍"
+      ],
+      "maxOverflow": 0
+    },
+    {
+      "bar": 15,
+      "lengths": [
+        "4 拍"
+      ],
+      "maxOverflow": 0
+    },
+    {
+      "bar": 16,
+      "lengths": [
+        "約 3.53 拍"
+      ],
+      "maxOverflow": 0
+    }
+  ],
+  "playbackManifestExact": true,
+  "midiDownloaded": true,
+  "pageErrors": []
+}
