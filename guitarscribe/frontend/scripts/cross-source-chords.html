@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>兩個來源 · 和弦跟奏比較</title>
+<style>body{font:18px/1.6 system-ui;max-width:760px;margin:30px auto;padding:0 18px;color:#233047;background:#f7f8fb}section{background:#fff;border-radius:12px;padding:18px;margin:18px 0}audio{width:100%}button{font:inherit;padding:8px 18px;margin:6px;border:1px solid #738779;border-radius:8px;background:#fff}button[aria-pressed=true]{background:#225c43;color:white}.current{font-size:52px;font-weight:bold}.next{font-size:22px}.error{color:#a21b26}h2{font-size:23px}</style>
+<h1>兩個來源 · 和弦跟奏比較</h1>
+<p>標準調弦、Capo 0。每組先選 A 跟著原曲輕刷，再選 B 比較；也可以播放中切換提示。</p>
+<p><strong>A／B 只切換和弦提示，原曲音檔相同。</strong>以原曲節奏跟刷，不需評旋律或逐個改和弦。</p>
+<div id="groups"></div><p id="error" role="alert" class="error"></p>
+<p>回覆兩項即可：「第 1 組：A／B／差不多／都不對；第 2 組：…」。無法判斷也可以；若方便，再補哪個位置不自然。</p>
+<script>
+const players=[];
+fetch('packet.json').then(r=>{if(!r.ok)throw Error();return r.json();}).then(packet=>{
+for(const [index,g] of packet.groups.entries()){
+ const section=document.createElement('section'),title=document.createElement('h2');title.textContent=`第 ${index+1} 組 · ${g.title}`;section.append(title);
+ const audio=document.createElement('audio');audio.controls=true;audio.preload='metadata';audio.src=g.audio;players.push(audio);section.append(audio);
+ audio.addEventListener('play',()=>players.forEach(p=>{if(p!==audio)p.pause();}));
+ audio.addEventListener('error',()=>{document.querySelector('#error').textContent='音訊載入失敗，請回報。';});
+ const options=document.createElement('div'),clock=document.createElement('div'),current=document.createElement('div'),next=document.createElement('div');
+ current.className='current';next.className='next';let selected='A';const buttons={};
+ for(const key of ['A','B']){const button=document.createElement('button');button.type='button';button.textContent=key;button.setAttribute('aria-label',`第 ${index+1} 組 ${key}`);button.addEventListener('click',()=>{selected=key;update();});buttons[key]=button;options.append(button);}
+ section.append(options,clock,current,next);document.querySelector('#groups').append(section);
+ function update(){const t=audio.currentTime,events=g[selected],i=events.findIndex(c=>c.start<=t&&t<c.end);
+  clock.textContent=`${selected} · ${t.toFixed(1)} 秒 / ${g.duration.toFixed(1)} 秒`;
+  current.textContent=i>=0?(events[i].symbol==='N'?'休止':events[i].symbol):'休止／結束';
+  next.textContent=i>=0&&i+1<events.length?`下一個：${events[i+1].symbol}（${Math.max(0,events[i].end-t).toFixed(1)} 秒後）`:'';
+  for(const key of ['A','B'])buttons[key].setAttribute('aria-pressed',String(key===selected));}
+ function frame(){update();requestAnimationFrame(frame);}frame();
+}
+}).catch(()=>document.querySelector('#error').textContent='比較資料載入失敗，請回報。');
+</script></html>

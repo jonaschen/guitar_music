@@ -1,0 +1,28 @@
+[
+  {
+    "id": "third",
+    "mapping": {
+      "A": "mix",
+      "B": "stem"
+    },
+    "frames": 960000,
+    "samplerate": 48000,
+    "original_peak": 0.908203125,
+    "shared_audio_gain": 0.9909677419354839,
+    "peak": 0.9000244140625,
+    "sha256": "bfaec006fbb4faa55605b3f1364b1e4dfa33a98d834d039849e4d0826746bdad"
+  },
+  {
+    "id": "saved",
+    "mapping": {
+      "A": "stem",
+      "B": "mix"
+    },
+    "frames": 694370,
+    "samplerate": 48000,
+    "original_peak": 1.0,
+    "shared_audio_gain": 0.9,
+    "peak": 0.9000244140625,
+    "sha256": "df2550c77f75b2537630811d820e272f17a294dad8aa6b8ab9cb6c852aed9a93"
+  }
+]
