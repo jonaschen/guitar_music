@@ -108,3 +108,22 @@ test('focused workspace has a direct accompaniment entry',async({page})=>{
   await expect(page.getByLabel('吉他演奏方案')).toBeVisible();
   await expect(page.getByLabel('吉他演奏方案')).toBeFocused();
 });
+
+test('entry audit is read-only, uses active mode and clears stale findings',async({page})=>{
+  const bodies:any[]=[];
+  const issues=[{right_id:'c',measure:7,old_chord:'Am',new_chord:'Em',downbeat_seconds:4,
+    boundary_lag_seconds:.019,wait_after_downbeat_seconds:.46,previous_beat_seconds:3.5,contains_manual_edit:false}];
+  await page.route('**/scores/chord-entry-audit',r=>{bodies.push(r.request().postDataJSON());return r.fulfill({json:{issues}});});
+  await page.getByText('換和弦入口檢查',{exact:true}).click();
+  await page.getByRole('button',{name:'檢查目前演奏',exact:true}).click();
+  await expect(page.getByText(/第一拍後 0.46 秒/)).toBeVisible();
+  await page.getByRole('button',{name:'定位 Bar 7 前一拍',exact:true}).click();
+  await expect(page.getByLabel('Playback position',{exact:true})).toHaveValue('3.5');
+  await expect(page.getByRole('button',{name:'Undo',exact:true})).toBeDisabled();
+  await page.getByLabel('吉他演奏方案').selectOption('continuous');
+  await expect(page.getByText(/第一拍後 0.46 秒/)).toHaveCount(0);
+  await page.getByRole('button',{name:'檢查目前演奏',exact:true}).click();
+  await expect.poll(()=>bodies.length).toBe(2);
+  expect(bodies.map(b=>b.mode)).toEqual(['original','continuous']);
+  expect(bodies[0].score).toEqual(bodies[1].score);
+});

@@ -1,0 +1,318 @@
+[
+  {
+    "case": "saved_parent",
+    "score_path": "guitarscribe/output/evaluation/saved-accompaniment-workspace-2026-10-26/score.json",
+    "report": {
+      "policy": "late-boundary-audit-v1",
+      "mode": "original",
+      "playback_revision": "92a401cde3fd6bbb",
+      "time_basis": "score_local",
+      "source_start_seconds": 67.95772916666667,
+      "issues": [
+        {
+          "kind": "late_boundary_missed_downbeat",
+          "left_id": "chord-7",
+          "right_id": "chord-8",
+          "old_chord": "Am",
+          "new_chord": "Em",
+          "measure": 7,
+          "downbeat_seconds": 11.08,
+          "detected_boundary_seconds": 11.099138321,
+          "first_attack_seconds": 11.54,
+          "boundary_lag_seconds": 0.01913832099999979,
+          "wait_after_boundary_seconds": 0.4408616789999993,
+          "wait_after_downbeat_seconds": 0.4599999999999991,
+          "local_beat_seconds": 0.4599999999999991,
+          "previous_beat_seconds": 10.6,
+          "original_source_downbeat_seconds": 79.03772916666667,
+          "original_source_first_attack_seconds": 79.49772916666666,
+          "contains_manual_edit": false
+        },
+        {
+          "kind": "late_boundary_missed_downbeat",
+          "left_id": "chord-14",
+          "right_id": "chord-15",
+          "old_chord": "G",
+          "new_chord": "Am",
+          "measure": 14,
+          "downbeat_seconds": 23.98,
+          "detected_boundary_seconds": 24.009433106,
+          "first_attack_seconds": 24.44,
+          "boundary_lag_seconds": 0.029433105999999043,
+          "wait_after_boundary_seconds": 0.4305668940000018,
+          "wait_after_downbeat_seconds": 0.46000000000000085,
+          "local_beat_seconds": 0.46000000000000085,
+          "previous_beat_seconds": 23.54,
+          "original_source_downbeat_seconds": 91.93772916666667,
+          "original_source_first_attack_seconds": 92.39772916666666,
+          "contains_manual_edit": false
+        }
+      ],
+      "applied": false,
+      "saved": false,
+      "limitation": "Scheduling evidence only. No findings does not establish musical correctness; beat phase and intended microtiming require listening. Nothing is edited."
+    }
+  },
+  {
+    "case": "saved_parent",
+    "score_path": "guitarscribe/output/evaluation/saved-accompaniment-workspace-2026-10-26/score.json",
+    "report": {
+      "policy": "late-boundary-audit-v1",
+      "mode": "continuous",
+      "playback_revision": "3a219136ffcf91d2",
+      "time_basis": "score_local",
+      "source_start_seconds": 67.95772916666667,
+      "issues": [],
+      "applied": false,
+      "saved": false,
+      "limitation": "Scheduling evidence only. No findings does not establish musical correctness; beat phase and intended microtiming require listening. Nothing is edited."
+    }
+  },
+  {
+    "case": "saved_bar7_candidate",
+    "score_path": "guitarscribe/output/evaluation/reported-bar7-entry-2026-10-26/score.json",
+    "report": {
+      "policy": "late-boundary-audit-v1",
+      "mode": "original",
+      "playback_revision": "f5cad15f7d8f6694",
+      "time_basis": "score_local",
+      "source_start_seconds": 67.95772916666667,
+      "issues": [
+        {
+          "kind": "late_boundary_missed_downbeat",
+          "left_id": "chord-14",
+          "right_id": "chord-15",
+          "old_chord": "G",
+          "new_chord": "Am",
+          "measure": 14,
+          "downbeat_seconds": 23.98,
+          "detected_boundary_seconds": 24.009433106,
+          "first_attack_seconds": 24.44,
+          "boundary_lag_seconds": 0.029433105999999043,
+          "wait_after_boundary_seconds": 0.4305668940000018,
+          "wait_after_downbeat_seconds": 0.46000000000000085,
+          "local_beat_seconds": 0.46000000000000085,
+          "previous_beat_seconds": 23.54,
+          "original_source_downbeat_seconds": 91.93772916666667,
+          "original_source_first_attack_seconds": 92.39772916666666,
+          "contains_manual_edit": false
+        }
+      ],
+      "applied": false,
+      "saved": false,
+      "limitation": "Scheduling evidence only. No findings does not establish musical correctness; beat phase and intended microtiming require listening. Nothing is edited."
+    }
+  },
+  {
+    "case": "saved_bar7_candidate",
+    "score_path": "guitarscribe/output/evaluation/reported-bar7-entry-2026-10-26/score.json",
+    "report": {
+      "policy": "late-boundary-audit-v1",
+      "mode": "continuous",
+      "playback_revision": "44a972a697fbb734",
+      "time_basis": "score_local",
+      "source_start_seconds": 67.95772916666667,
+      "issues": [],
+      "applied": false,
+      "saved": false,
+      "limitation": "Scheduling evidence only. No findings does not establish musical correctness; beat phase and intended microtiming require listening. Nothing is edited."
+    }
+  },
+  {
+    "case": "third_before",
+    "score_path": "guitarscribe/output/evaluation/confirmed-third-timing-2026-10-26/A-score.json",
+    "report": {
+      "policy": "late-boundary-audit-v1",
+      "mode": "original",
+      "playback_revision": "43cf6878433ea554",
+      "time_basis": "score_local",
+      "source_start_seconds": 20.0,
+      "issues": [
+        {
+          "kind": "late_boundary_missed_downbeat",
+          "left_id": "stem-chord-1",
+          "right_id": "stem-chord-2",
+          "old_chord": "Am",
+          "new_chord": "Em",
+          "measure": 10,
+          "downbeat_seconds": 1.120000000000001,
+          "detected_boundary_seconds": 1.152,
+          "first_attack_seconds": 1.6799999999999997,
+          "boundary_lag_seconds": 0.03199999999999892,
+          "wait_after_boundary_seconds": 0.5279999999999998,
+          "wait_after_downbeat_seconds": 0.5599999999999987,
+          "local_beat_seconds": 0.5599999999999987,
+          "previous_beat_seconds": 0.5799999999999983,
+          "original_source_downbeat_seconds": 21.12,
+          "original_source_first_attack_seconds": 21.68,
+          "contains_manual_edit": false
+        },
+        {
+          "kind": "late_boundary_missed_downbeat",
+          "left_id": "stem-chord-3",
+          "right_id": "stem-chord-4",
+          "old_chord": "F",
+          "new_chord": "Em",
+          "measure": 12,
+          "downbeat_seconds": 5.620000000000001,
+          "detected_boundary_seconds": 5.631999999,
+          "first_attack_seconds": 6.18,
+          "boundary_lag_seconds": 0.011999998999998596,
+          "wait_after_boundary_seconds": 0.5480000010000001,
+          "wait_after_downbeat_seconds": 0.5599999999999987,
+          "local_beat_seconds": 0.5599999999999987,
+          "previous_beat_seconds": 5.059999999999999,
+          "original_source_downbeat_seconds": 25.62,
+          "original_source_first_attack_seconds": 26.18,
+          "contains_manual_edit": false
+        },
+        {
+          "kind": "late_boundary_missed_downbeat",
+          "left_id": "stem-chord-8",
+          "right_id": "stem-chord-9",
+          "old_chord": "G",
+          "new_chord": "Am",
+          "measure": 17,
+          "downbeat_seconds": 16.82,
+          "detected_boundary_seconds": 16.853333333,
+          "first_attack_seconds": 17.380000000000003,
+          "boundary_lag_seconds": 0.03333333299999808,
+          "wait_after_boundary_seconds": 0.5266666670000042,
+          "wait_after_downbeat_seconds": 0.5600000000000023,
+          "local_beat_seconds": 0.5600000000000023,
+          "previous_beat_seconds": 16.259999999999998,
+          "original_source_downbeat_seconds": 36.82,
+          "original_source_first_attack_seconds": 37.38,
+          "contains_manual_edit": false
+        },
+        {
+          "kind": "late_boundary_missed_downbeat",
+          "left_id": "stem-chord-9",
+          "right_id": "stem-chord-10",
+          "old_chord": "Am",
+          "new_chord": "Em7",
+          "measure": 18,
+          "downbeat_seconds": 19.08,
+          "detected_boundary_seconds": 19.114666666,
+          "first_attack_seconds": 19.619999999999997,
+          "boundary_lag_seconds": 0.03466666600000323,
+          "wait_after_boundary_seconds": 0.5053333339999959,
+          "wait_after_downbeat_seconds": 0.5399999999999991,
+          "local_beat_seconds": 0.5399999999999991,
+          "previous_beat_seconds": 18.5,
+          "original_source_downbeat_seconds": 39.08,
+          "original_source_first_attack_seconds": 39.62,
+          "contains_manual_edit": false
+        }
+      ],
+      "applied": false,
+      "saved": false,
+      "limitation": "Scheduling evidence only. No findings does not establish musical correctness; beat phase and intended microtiming require listening. Nothing is edited."
+    }
+  },
+  {
+    "case": "third_before",
+    "score_path": "guitarscribe/output/evaluation/confirmed-third-timing-2026-10-26/A-score.json",
+    "report": {
+      "policy": "late-boundary-audit-v1",
+      "mode": "continuous",
+      "playback_revision": "ba76271cb5c21bd9",
+      "time_basis": "score_local",
+      "source_start_seconds": 20.0,
+      "issues": [
+        {
+          "kind": "late_boundary_missed_downbeat",
+          "left_id": "stem-chord-8",
+          "right_id": "stem-chord-9",
+          "old_chord": "G",
+          "new_chord": "Am",
+          "measure": 17,
+          "downbeat_seconds": 16.82,
+          "detected_boundary_seconds": 16.853333333,
+          "first_attack_seconds": 17.380000000000003,
+          "boundary_lag_seconds": 0.03333333299999808,
+          "wait_after_boundary_seconds": 0.5266666670000042,
+          "wait_after_downbeat_seconds": 0.5600000000000023,
+          "local_beat_seconds": 0.5600000000000023,
+          "previous_beat_seconds": 16.259999999999998,
+          "original_source_downbeat_seconds": 36.82,
+          "original_source_first_attack_seconds": 37.38,
+          "contains_manual_edit": false
+        }
+      ],
+      "applied": false,
+      "saved": false,
+      "limitation": "Scheduling evidence only. No findings does not establish musical correctness; beat phase and intended microtiming require listening. Nothing is edited."
+    }
+  },
+  {
+    "case": "live",
+    "score_path": "guitarscribe/output/evaluation/chord-attack-diagnostic-2026-10-26-verified/B-score.json",
+    "report": {
+      "policy": "late-boundary-audit-v1",
+      "mode": "original",
+      "playback_revision": "8da34c1f869bb691",
+      "time_basis": "score_local",
+      "source_start_seconds": 0.0,
+      "issues": [
+        {
+          "kind": "late_boundary_missed_downbeat",
+          "left_id": "stem-chord-19",
+          "right_id": "stem-chord-20",
+          "old_chord": "Em",
+          "new_chord": "F",
+          "measure": 19,
+          "downbeat_seconds": 41.28,
+          "detected_boundary_seconds": 41.301333333,
+          "first_attack_seconds": 41.84,
+          "boundary_lag_seconds": 0.021333333000001176,
+          "wait_after_boundary_seconds": 0.5386666670000011,
+          "wait_after_downbeat_seconds": 0.5600000000000023,
+          "local_beat_seconds": 0.5600000000000023,
+          "previous_beat_seconds": 40.72,
+          "original_source_downbeat_seconds": 41.28,
+          "original_source_first_attack_seconds": 41.84,
+          "contains_manual_edit": false
+        }
+      ],
+      "applied": false,
+      "saved": false,
+      "limitation": "Scheduling evidence only. No findings does not establish musical correctness; beat phase and intended microtiming require listening. Nothing is edited."
+    }
+  },
+  {
+    "case": "live",
+    "score_path": "guitarscribe/output/evaluation/chord-attack-diagnostic-2026-10-26-verified/B-score.json",
+    "report": {
+      "policy": "late-boundary-audit-v1",
+      "mode": "continuous",
+      "playback_revision": "8d057956115c5709",
+      "time_basis": "score_local",
+      "source_start_seconds": 0.0,
+      "issues": [
+        {
+          "kind": "late_boundary_missed_downbeat",
+          "left_id": "stem-chord-19",
+          "right_id": "stem-chord-20",
+          "old_chord": "Em",
+          "new_chord": "F",
+          "measure": 19,
+          "downbeat_seconds": 41.28,
+          "detected_boundary_seconds": 41.301333333,
+          "first_attack_seconds": 41.84,
+          "boundary_lag_seconds": 0.021333333000001176,
+          "wait_after_boundary_seconds": 0.5386666670000011,
+          "wait_after_downbeat_seconds": 0.5600000000000023,
+          "local_beat_seconds": 0.5600000000000023,
+          "previous_beat_seconds": 40.72,
+          "original_source_downbeat_seconds": 41.28,
+          "original_source_first_attack_seconds": 41.84,
+          "contains_manual_edit": false
+        }
+      ],
+      "applied": false,
+      "saved": false,
+      "limitation": "Scheduling evidence only. No findings does not establish musical correctness; beat phase and intended microtiming require listening. Nothing is edited."
+    }
+  }
+]

@@ -1,4 +1,5 @@
 import { ChangeEvent, FormEvent, lazy, Suspense, useEffect, useRef, useState } from "react";
+import { ChordEntryAudit } from "./ChordEntryAudit";
 import type { AccidentalPreference, AnalysisJob, PlaybackManifest, PlaybackTrack, SongScore } from "./types";
 import { ChordDiagram } from "./ChordDiagram";
 import { createMediaTransportClock } from "./transportClock";
@@ -2205,6 +2206,8 @@ export function App() {
                   <p>Guitar plays a suggested strumming pattern on the detected beat grid, not the original recording's arrangement. To compare, click the same bar's chord before using Original / Play and Play score. Short chords between strums may not sound; inspect the chord sheet for all detected changes.</p>
                   <p>「吉他演奏」同時用於 Play score 與 Download MIDI。這是本次工作階段的選擇，不寫入樂譜；改譜、載入版本或重新整理後回到原版。實驗方案不會自動校正錯誤和弦。</p>
                   {performanceNotice ? <p role="status">{performanceNotice}</p> : null}
+                  <ChordEntryAudit score={score} mode={chordPerformance} apiBase={API_BASE}
+                    onSeek={(time) => { stopSynth(false); setFollowPlayhead(false); seekTo(time); }} />
                   <div className="synth-controls">
                     <label>吉他演奏 <select aria-label="吉他演奏方案" value={chordPerformance} onChange={(event) => selectChordPerformance(event.target.value as ChordPerformanceMode)}>
                       <option value="original">原版刷奏</option>

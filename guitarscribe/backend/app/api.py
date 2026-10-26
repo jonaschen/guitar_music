@@ -397,6 +397,20 @@ async def build_contour_candidate(job_id: str, score: SongScore,
     return candidate
 
 
+class ChordEntryAuditRequest(BaseModel):
+    score: SongScore
+    mode: Literal['original', 'sparse', 'continuous'] = 'original'
+
+
+@app.post('/scores/chord-entry-audit', tags=['Scores'])
+async def chord_entry_audit(request: ChordEntryAuditRequest):
+    from .services.chord_entry_audit import audit_chord_entries
+    try:
+        return await asyncio.to_thread(audit_chord_entries, request.score, request.mode)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+
+
 class ChordEntryPerformanceRequest(BaseModel):
     score: SongScore
     mode: Literal['sparse', 'continuous']

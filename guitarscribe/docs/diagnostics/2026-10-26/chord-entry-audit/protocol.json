@@ -1,0 +1,8 @@
+{
+  "policy": "late-boundary-audit-v1",
+  "maximum_boundary_lag_seconds": 0.05,
+  "maximum_boundary_lag_local_beats": 0.125,
+  "minimum_wait_after_boundary_local_beats": 0.5,
+  "inputs": "four existing frozen scores, original and continuous modes",
+  "restriction": "Read-only scheduling evidence. No source-type requirement, no edits, no inference, no musical ranking. Source seconds explicitly offset from score-local seconds."
+}
