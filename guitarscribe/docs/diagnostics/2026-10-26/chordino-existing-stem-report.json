@@ -1,0 +1,421 @@
+{
+  "seconds": 3.1923169030051213,
+  "events": [
+    {
+      "start": 0.170666666,
+      "end": 0.853333333,
+      "symbol": "N"
+    },
+    {
+      "start": 0.853333333,
+      "end": 3.114666666,
+      "symbol": "C"
+    },
+    {
+      "start": 3.114666666,
+      "end": 4.053333333,
+      "symbol": "G"
+    },
+    {
+      "start": 4.053333333,
+      "end": 4.949333333,
+      "symbol": "Am"
+    },
+    {
+      "start": 4.949333333,
+      "end": 6.741333333,
+      "symbol": "F"
+    },
+    {
+      "start": 6.741333333,
+      "end": 7.722666666,
+      "symbol": "Em7"
+    },
+    {
+      "start": 7.722666666,
+      "end": 8.405333333,
+      "symbol": "F"
+    },
+    {
+      "start": 8.405333333,
+      "end": 9.855999999,
+      "symbol": "G"
+    },
+    {
+      "start": 9.855999999,
+      "end": 16.554666666,
+      "symbol": "C"
+    },
+    {
+      "start": 16.554666666,
+      "end": 18.858666666,
+      "symbol": "G"
+    },
+    {
+      "start": 18.858666666,
+      "end": 20.991999999,
+      "symbol": "Am"
+    },
+    {
+      "start": 20.991999999,
+      "end": 23.338666666,
+      "symbol": "Em"
+    },
+    {
+      "start": 23.338666666,
+      "end": 25.514666666,
+      "symbol": "F"
+    },
+    {
+      "start": 25.514666666,
+      "end": 27.861333333,
+      "symbol": "Em"
+    },
+    {
+      "start": 27.861333333,
+      "end": 29.909333333,
+      "symbol": "F"
+    },
+    {
+      "start": 29.909333333,
+      "end": 32.341333333,
+      "symbol": "G"
+    },
+    {
+      "start": 32.341333333,
+      "end": 34.474666666,
+      "symbol": "C"
+    },
+    {
+      "start": 34.474666666,
+      "end": 36.821333333,
+      "symbol": "G"
+    },
+    {
+      "start": 36.821333333,
+      "end": 39.039999999,
+      "symbol": "Am"
+    },
+    {
+      "start": 39.039999999,
+      "end": 41.301333333,
+      "symbol": "Em"
+    },
+    {
+      "start": 41.301333333,
+      "end": 43.306666666,
+      "symbol": "F"
+    },
+    {
+      "start": 43.306666666,
+      "end": 45.141333333,
+      "symbol": "Em"
+    }
+  ],
+  "rows": [
+    {
+      "start": 0,
+      "end": 4.164172335,
+      "symbol": "C",
+      "target": "C",
+      "omitted": false,
+      "stem_overlaps": [
+        {
+          "symbol": "C",
+          "seconds": 4.164172335
+        }
+      ],
+      "target_overlap_seconds": 4.164172335
+    },
+    {
+      "start": 4.164172335,
+      "end": 4.675011337000001,
+      "symbol": "F",
+      "target": "C",
+      "omitted": true,
+      "stem_overlaps": [
+        {
+          "symbol": "C",
+          "seconds": 0.5108390020000009
+        }
+      ],
+      "target_overlap_seconds": 0.5108390020000009
+    },
+    {
+      "start": 4.675011337000001,
+      "end": 6.346848072,
+      "symbol": "C",
+      "target": "C",
+      "omitted": false,
+      "stem_overlaps": [
+        {
+          "symbol": "C",
+          "seconds": 1.6718367349999994
+        }
+      ],
+      "target_overlap_seconds": 1.6718367349999994
+    },
+    {
+      "start": 6.346848072,
+      "end": 8.993922902000001,
+      "symbol": "G",
+      "target": "G",
+      "omitted": false,
+      "stem_overlaps": [
+        {
+          "symbol": "C",
+          "seconds": 0.20781859399999902
+        },
+        {
+          "symbol": "G",
+          "seconds": 2.304000000000002
+        },
+        {
+          "symbol": "Am",
+          "seconds": 0.13525623600000003
+        }
+      ],
+      "target_overlap_seconds": 2.304000000000002
+    },
+    {
+      "start": 8.993922902000001,
+      "end": 10.897959183000001,
+      "symbol": "Am",
+      "target": "Am",
+      "omitted": false,
+      "stem_overlaps": [
+        {
+          "symbol": "Am",
+          "seconds": 1.9040362809999998
+        }
+      ],
+      "target_overlap_seconds": 1.9040362809999998
+    },
+    {
+      "start": 10.897959183000001,
+      "end": 12.755555555,
+      "symbol": "Em",
+      "target": "Em",
+      "omitted": false,
+      "stem_overlaps": [
+        {
+          "symbol": "Am",
+          "seconds": 0.0940408159999997
+        },
+        {
+          "symbol": "Em",
+          "seconds": 1.763555556
+        }
+      ],
+      "target_overlap_seconds": 1.763555556
+    },
+    {
+      "start": 12.755555555,
+      "end": 13.498594103999999,
+      "symbol": "C",
+      "target": "Em",
+      "omitted": true,
+      "stem_overlaps": [
+        {
+          "symbol": "Em",
+          "seconds": 0.5831111110000009
+        },
+        {
+          "symbol": "F",
+          "seconds": 0.15992743799999687
+        }
+      ],
+      "target_overlap_seconds": 0.5831111110000009
+    },
+    {
+      "start": 13.498594103999999,
+      "end": 13.916553287,
+      "symbol": "F6",
+      "target": "Em",
+      "omitted": true,
+      "stem_overlaps": [
+        {
+          "symbol": "F",
+          "seconds": 0.4179591830000007
+        }
+      ],
+      "target_overlap_seconds": 0
+    },
+    {
+      "start": 13.916553287,
+      "end": 15.774149658999999,
+      "symbol": "F",
+      "target": "F",
+      "omitted": false,
+      "stem_overlaps": [
+        {
+          "symbol": "F",
+          "seconds": 1.5981133790000008
+        },
+        {
+          "symbol": "Em",
+          "seconds": 0.2594829929999989
+        }
+      ],
+      "target_overlap_seconds": 1.5981133790000008
+    },
+    {
+      "start": 15.774149658999999,
+      "end": 17.817505668,
+      "symbol": "Em",
+      "target": "Em",
+      "omitted": false,
+      "stem_overlaps": [
+        {
+          "symbol": "Em",
+          "seconds": 2.043356009
+        }
+      ],
+      "target_overlap_seconds": 2.043356009
+    },
+    {
+      "start": 17.817505668,
+      "end": 19.860861678,
+      "symbol": "Fmaj7",
+      "target": "Fmaj7",
+      "omitted": false,
+      "stem_overlaps": [
+        {
+          "symbol": "Em",
+          "seconds": 0.043827665000002014
+        },
+        {
+          "symbol": "F",
+          "seconds": 1.999528344999998
+        }
+      ],
+      "target_overlap_seconds": 0
+    },
+    {
+      "start": 19.860861678,
+      "end": 21.346938775,
+      "symbol": "G",
+      "target": "G",
+      "omitted": false,
+      "stem_overlaps": [
+        {
+          "symbol": "F",
+          "seconds": 0.04847165500000017
+        },
+        {
+          "symbol": "G",
+          "seconds": 1.4376054420000024
+        }
+      ],
+      "target_overlap_seconds": 1.4376054420000024
+    },
+    {
+      "start": 21.346938775,
+      "end": 21.950657596,
+      "symbol": "Em",
+      "target": "G",
+      "omitted": true,
+      "stem_overlaps": [
+        {
+          "symbol": "G",
+          "seconds": 0.6037188209999975
+        }
+      ],
+      "target_overlap_seconds": 0.6037188209999975
+    },
+    {
+      "start": 21.950657596,
+      "end": 22.833015873,
+      "symbol": "F/G",
+      "target": "G",
+      "omitted": true,
+      "stem_overlaps": [
+        {
+          "symbol": "G",
+          "seconds": 0.39067573700000224
+        },
+        {
+          "symbol": "C",
+          "seconds": 0.49168253999999934
+        }
+      ],
+      "target_overlap_seconds": 0.39067573700000224
+    },
+    {
+      "start": 22.833015873,
+      "end": 24.226213151000003,
+      "symbol": "C6",
+      "target": "C6",
+      "omitted": false,
+      "stem_overlaps": [
+        {
+          "symbol": "C",
+          "seconds": 1.3931972780000024
+        }
+      ],
+      "target_overlap_seconds": 0
+    },
+    {
+      "start": 24.226213151000003,
+      "end": 26.780408162999997,
+      "symbol": "G",
+      "target": "G",
+      "omitted": false,
+      "stem_overlaps": [
+        {
+          "symbol": "C",
+          "seconds": 0.24845351499999424
+        },
+        {
+          "symbol": "G",
+          "seconds": 2.3057414969999996
+        }
+      ],
+      "target_overlap_seconds": 2.3057414969999996
+    },
+    {
+      "start": 26.780408162999997,
+      "end": 29.241723356,
+      "symbol": "Am7",
+      "target": "Am7",
+      "omitted": false,
+      "stem_overlaps": [
+        {
+          "symbol": "G",
+          "seconds": 0.04092517000000129
+        },
+        {
+          "symbol": "Am",
+          "seconds": 2.2186666660000043
+        },
+        {
+          "symbol": "Em",
+          "seconds": 0.20172335699999877
+        }
+      ],
+      "target_overlap_seconds": 0
+    },
+    {
+      "start": 29.241723356,
+      "end": 30,
+      "symbol": "Em",
+      "target": "Em",
+      "omitted": false,
+      "stem_overlaps": [
+        {
+          "symbol": "Em",
+          "seconds": 0.7582766439999986
+        }
+      ],
+      "target_overlap_seconds": 0.7582766439999986
+    }
+  ],
+  "terminal_markers": [
+    {
+      "start": 45.141333333,
+      "end": 45.0,
+      "symbol": "N"
+    }
+  ],
+  "caution": "Agreement with human-guided accompaniment is not transcription accuracy; retained chords are not independent ground truth"
+}

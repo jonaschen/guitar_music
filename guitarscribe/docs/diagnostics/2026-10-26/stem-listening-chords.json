@@ -1,0 +1,71 @@
+{
+  "job": "db79e1145ea046088b8aa5ef421d0e3f",
+  "window": [
+    10,
+    40
+  ],
+  "capo": 0,
+  "method": "Same Chordino defaults on existing accompaniment stem; raw labels/times, no human omission list applied",
+  "chords": [
+    {
+      "start": 0,
+      "end": 6.554666665999999,
+      "symbol": "C"
+    },
+    {
+      "start": 6.554666665999999,
+      "end": 8.858666666000001,
+      "symbol": "G"
+    },
+    {
+      "start": 8.858666666000001,
+      "end": 10.991999999,
+      "symbol": "Am"
+    },
+    {
+      "start": 10.991999999,
+      "end": 13.338666666000002,
+      "symbol": "Em"
+    },
+    {
+      "start": 13.338666666000002,
+      "end": 15.514666666,
+      "symbol": "F"
+    },
+    {
+      "start": 15.514666666,
+      "end": 17.861333333,
+      "symbol": "Em"
+    },
+    {
+      "start": 17.861333333,
+      "end": 19.909333333,
+      "symbol": "F"
+    },
+    {
+      "start": 19.909333333,
+      "end": 22.341333333,
+      "symbol": "G"
+    },
+    {
+      "start": 22.341333333,
+      "end": 24.474666665999997,
+      "symbol": "C"
+    },
+    {
+      "start": 24.474666665999997,
+      "end": 26.821333333,
+      "symbol": "G"
+    },
+    {
+      "start": 26.821333333,
+      "end": 29.039999999000003,
+      "symbol": "Am"
+    },
+    {
+      "start": 29.039999999000003,
+      "end": 30,
+      "symbol": "Em"
+    }
+  ]
+}

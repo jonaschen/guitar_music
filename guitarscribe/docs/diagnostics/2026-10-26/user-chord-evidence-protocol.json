@@ -1,0 +1,17 @@
+{
+  "job": "db79e1145ea046088b8aa5ef421d0e3f",
+  "window": [
+    10,
+    40
+  ],
+  "sample_rate": 22050,
+  "hop": 512,
+  "feature": "librosa chroma_stft, n_fft=2048, norm=2, tuning=0",
+  "sources": [
+    "analysis-source.wav",
+    "accompaniment-stem.wav"
+  ],
+  "comparison": "mean cosine similarity of binary chord pitch-class sets; original versus preceding accepted chord",
+  "restriction": "Descriptive only; no calibrated threshold, no causal claim, no new model; all 18 original events included",
+  "known_limit": "Chroma loses octave/bass voicing and contains melody/harmonics; slash bass counted as a pitch class only"
+}

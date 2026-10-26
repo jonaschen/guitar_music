@@ -1,0 +1,9 @@
+{
+  "job": "db79e1145ea046088b8aa5ef421d0e3f",
+  "input_sha256": "214a88059816d870c2096d6d1fe2ef803aa9fbfb5e7f5b20567ad2e459c3664b",
+  "library_sha256": "fb7d75cf816d3eab3d97da8e6df51f5642b008a49ff4ec6bc2695c42dfded998",
+  "samplerate": 48000,
+  "parameters": "vamp.collect defaults, same as saved analyzer",
+  "hypothesis": "Vocal contribution may create transient chord labels; change only input from original mix to already separated accompaniment",
+  "decision": "Inspect all original intervals and preservation of retained labels. No automatic integration or quality claim. Stop after this one source run."
+}

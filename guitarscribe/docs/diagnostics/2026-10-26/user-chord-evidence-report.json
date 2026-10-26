@@ -1,0 +1,481 @@
+{
+  "protocol": {
+    "job": "db79e1145ea046088b8aa5ef421d0e3f",
+    "window": [
+      10,
+      40
+    ],
+    "sample_rate": 22050,
+    "hop": 512,
+    "feature": "librosa chroma_stft, n_fft=2048, norm=2, tuning=0",
+    "sources": [
+      "analysis-source.wav",
+      "accompaniment-stem.wav"
+    ],
+    "comparison": "mean cosine similarity of binary chord pitch-class sets; original versus preceding accepted chord",
+    "restriction": "Descriptive only; no calibrated threshold, no causal claim, no new model; all 18 original events included",
+    "known_limit": "Chroma loses octave/bass voicing and contains melody/harmonics; slash bass counted as a pitch class only"
+  },
+  "source_sha256": {
+    "analysis-source.wav": "09ab077783f23ddcb226e13ad6c14bb41bf0b89f865d7a729d890ee3c2f2402d",
+    "accompaniment-stem.wav": "214a88059816d870c2096d6d1fe2ef803aa9fbfb5e7f5b20567ad2e459c3664b"
+  },
+  "librosa_version": "0.11.0",
+  "rows": [
+    {
+      "start": 0,
+      "end": 4.164172335,
+      "symbol": "C",
+      "full_event_duration": 4.272471655,
+      "user_named_omission": false,
+      "accepted_followalong_symbol": "C",
+      "confidence": 0.9,
+      "review_reasons": [],
+      "raw_matches_score": true,
+      "acoustic": {
+        "analysis-source.wav": {
+          "frames": 179,
+          "original_similarity": 0.6296449794801493,
+          "accepted_similarity": 0.6296449794801493,
+          "accepted_minus_original": 0.0
+        },
+        "accompaniment-stem.wav": {
+          "frames": 179,
+          "original_similarity": 0.6913684150724936,
+          "accepted_similarity": 0.6913684150724936,
+          "accepted_minus_original": 0.0
+        }
+      }
+    },
+    {
+      "start": 4.164172335,
+      "end": 4.675011337000001,
+      "symbol": "F",
+      "full_event_duration": 0.5108390020000009,
+      "user_named_omission": true,
+      "accepted_followalong_symbol": "C",
+      "confidence": 0.9,
+      "review_reasons": [
+        "isolated_outlier"
+      ],
+      "raw_matches_score": true,
+      "acoustic": {
+        "analysis-source.wav": {
+          "frames": 22,
+          "original_similarity": 0.5591781819752062,
+          "accepted_similarity": 0.3238081398812924,
+          "accepted_minus_original": -0.23537004209391377
+        },
+        "accompaniment-stem.wav": {
+          "frames": 22,
+          "original_similarity": 0.5262587108795266,
+          "accepted_similarity": 0.6466666458312678,
+          "accepted_minus_original": 0.12040793495174108
+        }
+      }
+    },
+    {
+      "start": 4.675011337000001,
+      "end": 6.346848072,
+      "symbol": "C",
+      "full_event_duration": 1.6718367349999994,
+      "user_named_omission": false,
+      "accepted_followalong_symbol": "C",
+      "confidence": 0.9,
+      "review_reasons": [],
+      "raw_matches_score": true,
+      "acoustic": {
+        "analysis-source.wav": {
+          "frames": 72,
+          "original_similarity": 0.47981664113334804,
+          "accepted_similarity": 0.47981664113334804,
+          "accepted_minus_original": 0.0
+        },
+        "accompaniment-stem.wav": {
+          "frames": 72,
+          "original_similarity": 0.6568915540756812,
+          "accepted_similarity": 0.6568915540756812,
+          "accepted_minus_original": 0.0
+        }
+      }
+    },
+    {
+      "start": 6.346848072,
+      "end": 8.993922902000001,
+      "symbol": "G",
+      "full_event_duration": 2.647074830000001,
+      "user_named_omission": false,
+      "accepted_followalong_symbol": "G",
+      "confidence": 0.9,
+      "review_reasons": [],
+      "raw_matches_score": true,
+      "acoustic": {
+        "analysis-source.wav": {
+          "frames": 114,
+          "original_similarity": 0.568963773117991,
+          "accepted_similarity": 0.568963773117991,
+          "accepted_minus_original": 0.0
+        },
+        "accompaniment-stem.wav": {
+          "frames": 114,
+          "original_similarity": 0.6276448307253244,
+          "accepted_similarity": 0.6276448307253244,
+          "accepted_minus_original": 0.0
+        }
+      }
+    },
+    {
+      "start": 8.993922902000001,
+      "end": 10.897959183000001,
+      "symbol": "Am",
+      "full_event_duration": 1.9040362809999998,
+      "user_named_omission": false,
+      "accepted_followalong_symbol": "Am",
+      "confidence": 0.9,
+      "review_reasons": [],
+      "raw_matches_score": true,
+      "acoustic": {
+        "analysis-source.wav": {
+          "frames": 82,
+          "original_similarity": 0.5066268356988533,
+          "accepted_similarity": 0.5066268356988533,
+          "accepted_minus_original": 0.0
+        },
+        "accompaniment-stem.wav": {
+          "frames": 82,
+          "original_similarity": 0.6317180422991546,
+          "accepted_similarity": 0.6317180422991546,
+          "accepted_minus_original": 0.0
+        }
+      }
+    },
+    {
+      "start": 10.897959183000001,
+      "end": 12.755555555,
+      "symbol": "Em",
+      "full_event_duration": 1.8575963719999997,
+      "user_named_omission": false,
+      "accepted_followalong_symbol": "Em",
+      "confidence": 0.9,
+      "review_reasons": [],
+      "raw_matches_score": true,
+      "acoustic": {
+        "analysis-source.wav": {
+          "frames": 80,
+          "original_similarity": 0.614087982860301,
+          "accepted_similarity": 0.614087982860301,
+          "accepted_minus_original": 0.0
+        },
+        "accompaniment-stem.wav": {
+          "frames": 80,
+          "original_similarity": 0.6531287988654018,
+          "accepted_similarity": 0.6531287988654018,
+          "accepted_minus_original": 0.0
+        }
+      }
+    },
+    {
+      "start": 12.755555555,
+      "end": 13.498594103999999,
+      "symbol": "C",
+      "full_event_duration": 0.7430385489999978,
+      "user_named_omission": true,
+      "accepted_followalong_symbol": "Em",
+      "confidence": 0.9,
+      "review_reasons": [],
+      "raw_matches_score": true,
+      "acoustic": {
+        "analysis-source.wav": {
+          "frames": 32,
+          "original_similarity": 0.6537285673547021,
+          "accepted_similarity": 0.4647376228023756,
+          "accepted_minus_original": -0.18899094455232646
+        },
+        "accompaniment-stem.wav": {
+          "frames": 32,
+          "original_similarity": 0.5113173791429788,
+          "accepted_similarity": 0.5240507058678343,
+          "accepted_minus_original": 0.012733326724855453
+        }
+      }
+    },
+    {
+      "start": 13.498594103999999,
+      "end": 13.916553287,
+      "symbol": "F6",
+      "full_event_duration": 0.4179591830000007,
+      "user_named_omission": true,
+      "accepted_followalong_symbol": "Em",
+      "confidence": 0.9,
+      "review_reasons": [],
+      "raw_matches_score": true,
+      "acoustic": {
+        "analysis-source.wav": {
+          "frames": 18,
+          "original_similarity": 0.5997666177443333,
+          "accepted_similarity": 0.18042805615430915,
+          "accepted_minus_original": -0.4193385615900241
+        },
+        "accompaniment-stem.wav": {
+          "frames": 18,
+          "original_similarity": 0.6169177919315795,
+          "accepted_similarity": 0.38236717561477473,
+          "accepted_minus_original": -0.2345506163168048
+        }
+      }
+    },
+    {
+      "start": 13.916553287,
+      "end": 15.774149658999999,
+      "symbol": "F",
+      "full_event_duration": 1.8575963719999997,
+      "user_named_omission": false,
+      "accepted_followalong_symbol": "F",
+      "confidence": 0.9,
+      "review_reasons": [],
+      "raw_matches_score": true,
+      "acoustic": {
+        "analysis-source.wav": {
+          "frames": 80,
+          "original_similarity": 0.5585758374343623,
+          "accepted_similarity": 0.5585758374343623,
+          "accepted_minus_original": 0.0
+        },
+        "accompaniment-stem.wav": {
+          "frames": 80,
+          "original_similarity": 0.6191421208369674,
+          "accepted_similarity": 0.6191421208369674,
+          "accepted_minus_original": 0.0
+        }
+      }
+    },
+    {
+      "start": 15.774149658999999,
+      "end": 17.817505668,
+      "symbol": "Em",
+      "full_event_duration": 2.043356009,
+      "user_named_omission": false,
+      "accepted_followalong_symbol": "Em",
+      "confidence": 0.9,
+      "review_reasons": [],
+      "raw_matches_score": true,
+      "acoustic": {
+        "analysis-source.wav": {
+          "frames": 88,
+          "original_similarity": 0.4463426615681289,
+          "accepted_similarity": 0.4463426615681289,
+          "accepted_minus_original": 0.0
+        },
+        "accompaniment-stem.wav": {
+          "frames": 88,
+          "original_similarity": 0.6340871402304553,
+          "accepted_similarity": 0.6340871402304553,
+          "accepted_minus_original": 0.0
+        }
+      }
+    },
+    {
+      "start": 17.817505668,
+      "end": 19.860861678,
+      "symbol": "Fmaj7",
+      "full_event_duration": 2.04335601,
+      "user_named_omission": false,
+      "accepted_followalong_symbol": "Fmaj7",
+      "confidence": 0.9,
+      "review_reasons": [],
+      "raw_matches_score": true,
+      "acoustic": {
+        "analysis-source.wav": {
+          "frames": 88,
+          "original_similarity": 0.5470425025030802,
+          "accepted_similarity": 0.5470425025030802,
+          "accepted_minus_original": 0.0
+        },
+        "accompaniment-stem.wav": {
+          "frames": 88,
+          "original_similarity": 0.674885062199213,
+          "accepted_similarity": 0.674885062199213,
+          "accepted_minus_original": 0.0
+        }
+      }
+    },
+    {
+      "start": 19.860861678,
+      "end": 21.346938775,
+      "symbol": "G",
+      "full_event_duration": 1.4860770970000026,
+      "user_named_omission": false,
+      "accepted_followalong_symbol": "G",
+      "confidence": 0.9,
+      "review_reasons": [],
+      "raw_matches_score": true,
+      "acoustic": {
+        "analysis-source.wav": {
+          "frames": 64,
+          "original_similarity": 0.4577029603062972,
+          "accepted_similarity": 0.4577029603062972,
+          "accepted_minus_original": 0.0
+        },
+        "accompaniment-stem.wav": {
+          "frames": 64,
+          "original_similarity": 0.5089627375136249,
+          "accepted_similarity": 0.5089627375136249,
+          "accepted_minus_original": 0.0
+        }
+      }
+    },
+    {
+      "start": 21.346938775,
+      "end": 21.950657596,
+      "symbol": "Em",
+      "full_event_duration": 0.6037188209999975,
+      "user_named_omission": true,
+      "accepted_followalong_symbol": "G",
+      "confidence": 0.9,
+      "review_reasons": [],
+      "raw_matches_score": true,
+      "acoustic": {
+        "analysis-source.wav": {
+          "frames": 26,
+          "original_similarity": 0.49817954195624536,
+          "accepted_similarity": 0.2718584049242335,
+          "accepted_minus_original": -0.2263211370320119
+        },
+        "accompaniment-stem.wav": {
+          "frames": 26,
+          "original_similarity": 0.5322411489666521,
+          "accepted_similarity": 0.5153794437192091,
+          "accepted_minus_original": -0.01686170524744294
+        }
+      }
+    },
+    {
+      "start": 21.950657596,
+      "end": 22.833015873,
+      "symbol": "F/G",
+      "full_event_duration": 0.8823582770000016,
+      "user_named_omission": true,
+      "accepted_followalong_symbol": "G",
+      "confidence": 0.9,
+      "review_reasons": [],
+      "raw_matches_score": true,
+      "acoustic": {
+        "analysis-source.wav": {
+          "frames": 38,
+          "original_similarity": 0.5663880144098872,
+          "accepted_similarity": 0.28819702008247533,
+          "accepted_minus_original": -0.27819099432741184
+        },
+        "accompaniment-stem.wav": {
+          "frames": 38,
+          "original_similarity": 0.40896184827617715,
+          "accepted_similarity": 0.6410126724139428,
+          "accepted_minus_original": 0.2320508241377658
+        }
+      }
+    },
+    {
+      "start": 22.833015873,
+      "end": 24.226213151000003,
+      "symbol": "C6",
+      "full_event_duration": 1.3931972780000024,
+      "user_named_omission": false,
+      "accepted_followalong_symbol": "C6",
+      "confidence": 0.9,
+      "review_reasons": [],
+      "raw_matches_score": true,
+      "acoustic": {
+        "analysis-source.wav": {
+          "frames": 60,
+          "original_similarity": 0.47933967006392775,
+          "accepted_similarity": 0.47933967006392775,
+          "accepted_minus_original": 0.0
+        },
+        "accompaniment-stem.wav": {
+          "frames": 60,
+          "original_similarity": 0.5083988054422661,
+          "accepted_similarity": 0.5083988054422661,
+          "accepted_minus_original": 0.0
+        }
+      }
+    },
+    {
+      "start": 24.226213151000003,
+      "end": 26.780408162999997,
+      "symbol": "G",
+      "full_event_duration": 2.554195011999994,
+      "user_named_omission": false,
+      "accepted_followalong_symbol": "G",
+      "confidence": 0.9,
+      "review_reasons": [],
+      "raw_matches_score": true,
+      "acoustic": {
+        "analysis-source.wav": {
+          "frames": 110,
+          "original_similarity": 0.5737123816563969,
+          "accepted_similarity": 0.5737123816563969,
+          "accepted_minus_original": 0.0
+        },
+        "accompaniment-stem.wav": {
+          "frames": 110,
+          "original_similarity": 0.6511703233343767,
+          "accepted_similarity": 0.6511703233343767,
+          "accepted_minus_original": 0.0
+        }
+      }
+    },
+    {
+      "start": 26.780408162999997,
+      "end": 29.241723356,
+      "symbol": "Am7",
+      "full_event_duration": 2.4613151930000043,
+      "user_named_omission": false,
+      "accepted_followalong_symbol": "Am7",
+      "confidence": 0.9,
+      "review_reasons": [],
+      "raw_matches_score": true,
+      "acoustic": {
+        "analysis-source.wav": {
+          "frames": 106,
+          "original_similarity": 0.5340903683242669,
+          "accepted_similarity": 0.5340903683242669,
+          "accepted_minus_original": 0.0
+        },
+        "accompaniment-stem.wav": {
+          "frames": 106,
+          "original_similarity": 0.5785814692477151,
+          "accepted_similarity": 0.5785814692477151,
+          "accepted_minus_original": 0.0
+        }
+      }
+    },
+    {
+      "start": 29.241723356,
+      "end": 30,
+      "symbol": "Em",
+      "full_event_duration": 2.229115645999997,
+      "user_named_omission": false,
+      "accepted_followalong_symbol": "Em",
+      "confidence": 0.9,
+      "review_reasons": [],
+      "raw_matches_score": true,
+      "acoustic": {
+        "analysis-source.wav": {
+          "frames": 33,
+          "original_similarity": 0.5556426038570028,
+          "accepted_similarity": 0.5556426038570028,
+          "accepted_minus_original": 0.0
+        },
+        "accompaniment-stem.wav": {
+          "frames": 33,
+          "original_similarity": 0.5295018241169855,
+          "accepted_similarity": 0.5295018241169855,
+          "accepted_minus_original": 0.0
+        }
+      }
+    }
+  ],
+  "script_sha256": "22ec0209fde2303f54e3145d290945255fecfe159e86392b2aeed8e4cf72359e",
+  "seconds": 12.76102636998985,
+  "decision": "No automatic candidate produced; interpret descriptors with user feedback, never as ground truth"
+}
