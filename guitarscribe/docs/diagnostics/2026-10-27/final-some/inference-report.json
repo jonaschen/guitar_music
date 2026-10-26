@@ -1,0 +1,56 @@
+{
+  "model_sha256": "3a246c7063ec2856097004dcefa2093a8b6ccff7a6cde1cd49e8f3f227ede50e",
+  "config_sha256": "9465cc99e3f9ebb47f30dca1327d21a250820ccc23049a9f4771632ae261d022",
+  "source_commit": "e523eef70777c1370199363de03eb37d66dce76e",
+  "torch": "2.5.1+cpu",
+  "librosa": "0.11.0",
+  "device": "cpu",
+  "threads": 2,
+  "trained": false,
+  "uploaded": false,
+  "postprocessing": "Official slicer, inference and MIDI export; no pitch or timing corrections",
+  "results": [
+    {
+      "id": "third-1",
+      "input_sha256": "cfa4c48ddddb0c006d56849b988f0b94ad072badf069f93affcfbb19454736ff",
+      "duration": 20.0,
+      "notes": 49,
+      "seconds": 18.486460343003273,
+      "midi_sha256": "d8b082e452e876f82084fe3ce77ff566c3e4951b6c69b48b756afa741d81792d",
+      "raw_offsets": [
+        0.0,
+        5.08,
+        11.34
+      ],
+      "last_note_end": 19.640624999999996
+    },
+    {
+      "id": "third-2",
+      "input_sha256": "2e91315530bc2fe5312eb0ebb23aac5e2c2ab5e96542b91cf68c39575c916d1a",
+      "duration": 20.0,
+      "notes": 58,
+      "seconds": 12.980982332024723,
+      "midi_sha256": "823bbc4616d08c0435448ac868cfae62e9f343b5ef64cfa8d2d6ba8219a2ca32",
+      "raw_offsets": [
+        0.0,
+        5.18
+      ],
+      "last_note_end": 20.00624999999999
+    },
+    {
+      "id": "saved-G",
+      "input_sha256": "3ae457c1f7c467f04f321987e45ec76844cc6f3d529e824ec5d98bd49636a872",
+      "duration": 14.466031746031746,
+      "notes": 41,
+      "seconds": 9.556306283018785,
+      "midi_sha256": "248cab6b058ebcccc36196d69aa7475ccd0f7ad5e4b345f508adf87444e13061",
+      "raw_offsets": [
+        0
+      ],
+      "last_note_end": 14.478125000000006
+    }
+  ],
+  "portable_cpu_kernels": true,
+  "model_license": "CC BY-NC-SA 4.0 evaluation only",
+  "compatibility_note": "Lazy import of unused training helper; disable mkldnn, MHA fastpath, flash and memory-efficient SDP on AVX-only CPU. First attempt exited SIGILL; portable math run succeeded. No model parameters or output corrections changed."
+}

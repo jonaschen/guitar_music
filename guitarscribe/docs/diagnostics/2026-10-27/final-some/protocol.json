@@ -1,0 +1,24 @@
+{
+  "created_at": "2026-10-26T23:06:44.866726+00:00",
+  "hypothesis": "Learned spectrogram pitch and note-boundary predictions can avoid treating vocal pitch fluctuations as separate notes; not a claim of accuracy.",
+  "candidate": "SOME v0.0.1 0918_continuous256_clean_3spk_fixmel",
+  "local_only": true,
+  "training": false,
+  "parameter_search": false,
+  "setup_and_execution_limit_hours": 2,
+  "inference_timeout_seconds_per_clip": 300,
+  "windows": [
+    "third 20–40 seconds",
+    "third 40–60 seconds",
+    "saved G 49.95773242630386–64.4237641723356 analysis seconds (original +18s)"
+  ],
+  "control": "Existing G, same windows and neutral synthesis, no chord accompaniment masking the melody",
+  "model_license": "CC BY-NC-SA 4.0, local noncommercial evaluation only; no product integration",
+  "decision": "User target duration 95% and melody 85%, subjective unless independently annotated; no count-based pass",
+  "stop": [
+    "No available working inference within cap: stop",
+    "Corrupt or mistimed output: no listening candidate",
+    "Poor listening or target not confirmed by Wednesday deadline: stop melody research"
+  ],
+  "deadline": "2026-10-28T23:59:59+08:00"
+}

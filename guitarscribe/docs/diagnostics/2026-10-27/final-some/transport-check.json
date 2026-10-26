@@ -1,0 +1,26 @@
+[
+  {
+    "id": "third-1",
+    "notes": 49,
+    "baseline_sha256": "9a7f18567f9735b93ce302e91ac46ca7266ac0903f2ba6f528c96c4c2548bcdc",
+    "raw_to_midi_max_error_seconds": 0.0007851473922961816,
+    "past_clip_end_seconds": 0,
+    "source_hash_verified": true
+  },
+  {
+    "id": "third-2",
+    "notes": 58,
+    "baseline_sha256": "36488875f1ba3b30a628d27c640d92d9a187750aa348a9f4079d8e6849bc0a36",
+    "raw_to_midi_max_error_seconds": 0.0007270408163257969,
+    "past_clip_end_seconds": 0.006249999999990763,
+    "source_hash_verified": true
+  },
+  {
+    "id": "saved-G",
+    "notes": 41,
+    "baseline_sha256": "b32d8ed317dd9f1492ed733caa41f699a686c5c360626b5bb19d67a235be293f",
+    "raw_to_midi_max_error_seconds": 0.0004875283446725831,
+    "past_clip_end_seconds": 0.012093253968259887,
+    "source_hash_verified": true
+  }
+]

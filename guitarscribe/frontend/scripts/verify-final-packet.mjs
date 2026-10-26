@@ -1,0 +1,44 @@
+import {chromium} from '@playwright/test';
+import {writeFile,readFile} from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const out=path.resolve(root,'../output/evaluation/final-some-2026-10-27');
+const browser=await chromium.launch({executablePath:'/usr/bin/google-chrome',headless:true});
+try {
+ const page=await browser.newPage({viewport:{width:1280,height:900}});page.setDefaultTimeout(15000);
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('http://localhost:5173/listening/after-work-2026-10-27/index.html');
+ await page.getByLabel('驗收回報草稿').fill('自動檢查草稿');await page.reload();
+ if(await page.getByLabel('驗收回報草稿').inputValue()!=='自動檢查草稿')throw Error('draft persistence');
+ const download=page.waitForEvent('download');await page.getByRole('button',{name:'下載回報草稿'}).click();
+ if(await readFile(await (await download).path(),'utf8')!=='自動檢查草稿')throw Error('draft export');
+ await page.goto('http://localhost:5173/listening/final-some-2026-10-27/index.html');
+ await page.waitForSelector('[data-group-id="clip-3"]');const groups=page.locator('section[data-group-id]');
+ if(await groups.count()!==3)throw Error('groups');
+ await groups.nth(0).getByRole('button',{name:'播放：B',exact:true}).click();
+ await page.waitForFunction(()=>!document.querySelector('audio').paused&&document.querySelector('audio').currentTime>0);
+ await groups.nth(1).getByRole('button',{name:'播放：B',exact:true}).click();
+ await page.waitForFunction(()=>document.querySelectorAll('audio')[0].paused&&!document.querySelectorAll('audio')[1].paused);
+ await page.getByRole('button',{name:'全部停止'}).click();
+ if(!(await page.locator('audio').evaluateAll(a=>a.every(p=>p.paused))))throw Error('stop');
+ const decoded=await page.evaluate(async()=>{
+  const packet=await(await fetch('packet.json')).json();const c=new OfflineAudioContext(1,1,44100);const results=[];
+  for(const g of packet.groups)for(const t of g.tracks){const r=await fetch(t.file);if(!r.ok)throw Error(t.file);const b=await c.decodeAudioData(await r.arrayBuffer());results.push({file:t.file,duration:b.duration});}return results;
+ });
+ const revision='bc41b274-69d4-430f-8dda-52bd0759119d';
+ const original=await(await fetch(`http://localhost:8000/revisions/${revision}`)).text();
+ await page.goto(`http://localhost:5173/?revision=${revision}&view=accompaniment`);
+ const panel=page.getByRole('region',{name:'和弦核對'});await panel.waitFor();
+ await panel.getByRole('button',{name:'從這段開頭播放'}).click();
+ await page.waitForFunction(()=>document.querySelector('.accompaniment-review')?.textContent.includes('播放中'));
+ await panel.getByRole('button',{name:'暫停核對'}).click();
+ await page.screenshot({path:path.join(out,'simple-ui.png'),fullPage:true});
+ await page.setViewportSize({width:390,height:844});
+ if(await panel.evaluate(el=>el.scrollWidth>el.clientWidth))throw Error('panel overflow');
+ await page.screenshot({path:path.join(out,'narrow-ui.png'),fullPage:true});
+ if(await(await fetch(`http://localhost:8000/revisions/${revision}`)).text()!==original)throw Error('saved score mutated');
+ if(errors.length)throw Error(JSON.stringify(errors));
+ await writeFile(path.join(out,'browser-check.json'),JSON.stringify({groups:3,decoded,exclusive_playback:true,stop:true,local_draft_reload_export:true,live_original_guitar_review:true,saved_score_unchanged:true,narrow_panel:true,errors},null,2)+'\n');
+ console.log({groups:3,decoded:decoded.length,live_original_guitar_review:true,errors});
+} finally {await browser.close();}
