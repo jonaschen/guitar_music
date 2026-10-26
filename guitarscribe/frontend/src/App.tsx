@@ -193,12 +193,19 @@ async function postSaveRevision(score: SongScore, revisionId: string | null, cre
   return response.json();
 }
 
-async function compilePlayback(score: SongScore): Promise<PlaybackManifest> {
-  const response = await fetch(API_BASE + "/scores/playback/manifest", {
-    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(score),
+type ChordPerformanceMode = "original" | "continuous" | "sparse";
+
+async function compilePlayback(score: SongScore, mode: ChordPerformanceMode): Promise<{ manifest: PlaybackManifest; notice: string }> {
+  const response = await fetch(API_BASE + (mode === "original" ? "/scores/playback/manifest" : "/scores/chord-entry-performance"), {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(mode === "original" ? score : { score, mode, output: "preview" }),
   });
   if (!response.ok) throw new Error(await response.text());
-  return response.json();
+  const body = await response.json();
+  return mode === "original" ? { manifest: body, notice: "" } : {
+    manifest: body.candidate,
+    notice: `本次處理 ${body.changes.length} 段和弦；${body.skipped.length} 段保留原演奏（例如人工修改、短和弦或刷弦空間不足）。`,
+  };
 }
 
 async function getRevision(revisionId: string): Promise<SongScore> {
@@ -268,6 +275,11 @@ export function App() {
   const [synthSnapshot, setSynthSnapshot] = useState<{ manifest: PlaybackManifest; chords: ScoreChord[] } | null>(null);
   const [isSynthPreparing, setIsSynthPreparing] = useState(false);
   const [guitarTone, setGuitarTone] = useState("pluck");
+  const [chordPerformance, setChordPerformance] = useState<ChordPerformanceMode>("original");
+  const performanceGenerationRef = useRef(0);
+  const [performanceNotice, setPerformanceNotice] = useState("");
+  const [midiPending, setMidiPending] = useState(false);
+  const midiRequestRef = useRef(0);
   const [synthTracks, setSynthTracks] = useState<Record<PlaybackTrack, boolean>>({ guitar: true, melody: false, metronome: false });
   const [synthVolumes, setSynthVolumes] = useState<Record<PlaybackTrack, number>>({ guitar: 0.24, melody: 0.45, metronome: 0.18 });
   const [melodyConnection, setMelodyConnection] = useState<"connected" | "separate">("connected");
@@ -307,6 +319,16 @@ export function App() {
     audioRef.current?.pause(); stopSynth(false); referenceStopRef.current();
     setFocusedWorkspace(value => !value);
     try { localStorage.setItem("guitarscribe.workspaceMode", focusedWorkspace ? "full" : "focus"); } catch { /* UI remains usable without storage. */ }
+  }
+  function openPerformanceControls() {
+    audioRef.current?.pause(); stopSynth(false); referenceStopRef.current();
+    setFocusedWorkspace(false);
+    window.requestAnimationFrame(() => {
+      const panel = document.querySelector<HTMLDetailsElement>(".synth-panel");
+      if (!panel) return;
+      panel.open = true; panel.scrollIntoView({ block: "start" });
+      panel.querySelector<HTMLSelectElement>('select[aria-label="吉他演奏方案"]')?.focus({ preventScroll: true });
+    });
   }
   const [saveStatus, setSaveStatus] = useState("No saved revision yet.");
   const [isSavingRevision, setIsSavingRevision] = useState(false);
@@ -572,7 +594,17 @@ export function App() {
 
   // A compiled sequence belongs to one immutable score snapshot. Never let
   // newly edited notation run alongside old audio (including pending fetches).
-  useEffect(() => { stopSynth(false); }, [score]);
+  useEffect(() => {
+    stopSynth(false);
+    performanceGenerationRef.current++;
+    setChordPerformance("original"); setPerformanceNotice("");
+  }, [score]);
+
+  function selectChordPerformance(mode: ChordPerformanceMode) {
+    referenceStopRef.current(); stopSynth(false);
+    performanceGenerationRef.current++;
+    setChordPerformance(mode); setPerformanceNotice("");
+  }
   useEffect(() => {
     audioRef.current?.pause(); stopSynth(false);
     setLoopRange(null); setLoopStart(null); setLoopEnd(null);
@@ -983,15 +1015,27 @@ export function App() {
   }
 
   async function downloadMidi() {
-    if (!score) return;
-    const response = await fetch(API_BASE + "/scores/midi", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(score) });
-    if (!response.ok) throw new Error(await response.text());
-    const url = URL.createObjectURL(new Blob([await response.blob()], { type: "audio/midi" }));
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "guitarscribe-melody.mid";
-    link.click();
-    URL.revokeObjectURL(url);
+    if (!score || midiPending) return;
+    const generation = performanceGenerationRef.current;
+    const request = ++midiRequestRef.current;
+    const obsolete = () => !isCurrentWork() || generation !== performanceGenerationRef.current || request !== midiRequestRef.current;
+    setMidiPending(true);
+    try {
+      const response = await fetch(API_BASE + (chordPerformance === "original" ? "/scores/midi" : "/scores/chord-entry-performance"), {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(chordPerformance === "original" ? score : { score, mode: chordPerformance, output: "midi" }),
+      });
+      if (!response.ok) throw new Error(await response.text());
+      const blob = await response.blob();
+      if (obsolete()) return;
+      const url = URL.createObjectURL(new Blob([blob], { type: "audio/midi" }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = chordPerformance === "original" ? "guitarscribe-melody.mid" : `guitarscribe-${chordPerformance}.mid`;
+      link.click(); URL.revokeObjectURL(url);
+    } catch (error) {
+      if (!obsolete()) setError(error instanceof Error ? error.message : "MIDI 匯出失敗");
+    } finally { if (request === midiRequestRef.current) setMidiPending(false); }
   }
 
   async function downloadMusicXml() {
@@ -1210,8 +1254,9 @@ export function App() {
       const context = synthContextRef.current ?? new AudioContext();
       synthContextRef.current = context;
       await context.resume();
-      const manifest = await compilePlayback(score);
+      const { manifest, notice } = await compilePlayback(score, chordPerformance);
       if (generation !== synthGenerationRef.current) return;
+      setPerformanceNotice(notice);
       const buffers = guitarTone === "pluck" && tracks.guitar && (solo === null || solo === "guitar")
         ? await preparePluckedBuffers(context, manifest.events.filter((event) => event.track === "guitar").flatMap((event) => event.pitches), () => generation !== synthGenerationRef.current)
         : new Map<number, AudioBuffer>();
@@ -1924,6 +1969,7 @@ export function App() {
               <div><strong>{focusMode ? "專注修譜" : "完整工具"}</strong><p>選一段 → 對照來源 → 修譜與重播 → 保存版本</p></div>
               <button type="button" className="ghost-button" onClick={() => { setShowNewSong(value => !value); }}>{showNewSong ? "收起新曲目" : "分析新曲目"}</button>
               <button type="button" className="ghost-button" onClick={switchWorkspace}>{focusMode ? "顯示完整工具" : "回到專注修譜"}</button>
+              <button type="button" className="ghost-button" onClick={openPerformanceControls}>伴奏演奏</button>
             </nav> : null}
             <section className="revision-recovery" aria-label="工作版本">
               <h3>工作版本</h3>
@@ -2157,7 +2203,15 @@ export function App() {
                   <p>Web Audio uses the current key, capo, selected voicings, rhythm, and estimated melody. 修改樂譜或刷奏後會停止舊播放，請重新按 Play score。</p>
                   <p aria-label="Playback chord comparison">譜面當前：{score.chords.find((chord) => chord.id === activeChordId)?.symbol ?? "—"} · 演奏事件：{isSynthPlaying && !isCountingIn && synthTracks.guitar && synthVolumes.guitar > 0 && (synthSoloTrack === null || synthSoloTrack === "guitar") ? soundingChord?.symbol ?? "—" : "—"}</p>
                   <p>Guitar plays a suggested strumming pattern on the detected beat grid, not the original recording's arrangement. To compare, click the same bar's chord before using Original / Play and Play score. Short chords between strums may not sound; inspect the chord sheet for all detected changes.</p>
+                  <p>「吉他演奏」同時用於 Play score 與 Download MIDI。這是本次工作階段的選擇，不寫入樂譜；改譜、載入版本或重新整理後回到原版。實驗方案不會自動校正錯誤和弦。</p>
+                  {performanceNotice ? <p role="status">{performanceNotice}</p> : null}
                   <div className="synth-controls">
+                    <label>吉他演奏 <select aria-label="吉他演奏方案" value={chordPerformance} onChange={(event) => selectChordPerformance(event.target.value as ChordPerformanceMode)}>
+                      <option value="original">原版刷奏</option>
+                      <option value="continuous">換和弦即彈・連續刷奏（實驗）</option>
+                      <option value="sparse">換和弦只彈一下（實驗）</option>
+                    </select></label>
+                    <button type="button" className="ghost-button" disabled={chordPerformance === "original"} onClick={() => selectChordPerformance("original")}>回原版演奏</button>
                     <label>Guitar tone <select aria-label="Score guitar tone" value={guitarTone} onChange={(event) => { stopSynth(false); setGuitarTone(event.target.value); }}><option value="pluck">新：逐泛音衰減</option><option value="simple">舊：簡單振盪器</option></select></label>
                     <button type="button" className="ghost-button" disabled={isSynthPreparing} onClick={() => void toggleSynthPlayback()}>{isSynthPreparing ? "Preparing score…" : isSynthPlaying ? "Pause score" : "Play score"}</button>
                     <button type="button" className="ghost-button" onClick={() => stopSynth(true)}>Stop score</button>
@@ -2195,7 +2249,8 @@ export function App() {
 
                 <div className="export-actions">
                   <button type="button" className="ghost-button" onClick={downloadScoreJson}>Download JSON</button>
-                  <button type="button" className="ghost-button" onClick={() => void downloadMidi()}>Download MIDI</button>
+                  <button type="button" className="ghost-button" disabled={midiPending} onClick={() => void downloadMidi()}>{midiPending ? "Preparing MIDI…" : "Download MIDI"}</button>
+                  <span>MIDI 演奏：{chordPerformance === "original" ? "原版" : chordPerformance === "continuous" ? "換和弦即彈・連續刷奏" : "換和弦只彈一下"}；JSON／MusicXML 保留原譜。</span>
                   <button type="button" className="ghost-button" onClick={() => void downloadMusicXml()}>Download MusicXML</button>
                   <button type="button" className="ghost-button" onClick={() => void downloadChordPro()}>Download ChordPro</button>
                   <button type="button" className="ghost-button" disabled={!score.lyrics} onClick={() => void downloadLrc()}>Download LRC</button>

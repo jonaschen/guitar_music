@@ -1,0 +1,11 @@
+{
+  "liveApi": true,
+  "defaultFocusMode": true,
+  "directEntry": true,
+  "previewStatus": 200,
+  "midiStatus": 200,
+  "matchingRevision": true,
+  "playPause": true,
+  "restoreOriginal": true,
+  "pageErrors": []
+}
