@@ -1,0 +1,12 @@
+[
+  {
+    "label": "A",
+    "events": 1480,
+    "max_error_seconds": 0.0010000003333363594
+  },
+  {
+    "label": "B",
+    "events": 1480,
+    "max_error_seconds": 0.001000000000438206
+  }
+]

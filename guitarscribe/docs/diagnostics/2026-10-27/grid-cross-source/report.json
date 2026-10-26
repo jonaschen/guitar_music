@@ -1,0 +1,161 @@
+{
+  "window": [
+    10,
+    40
+  ],
+  "source_sha256": "19f8f03ff283edee0e0f6412e5e9be599c3d419f53975bae5567c6376cb5daf2",
+  "score_sha256": "6618d9849423a346743e7791b62aa93b120c1310cb13036ef8078dfe84b42016",
+  "reference_A_sha256": "ab7530e45567017f7ac9d8f37ed082950c44e0f8c2680dbce75a4505276d5c34",
+  "frozen_guitar_gain": 0.88929955445293,
+  "grid": {
+    "policy": "nearest-eighth-v1",
+    "changes": [
+      {
+        "chord_id": "stem-chord-1",
+        "original": [
+          0.853333333,
+          3.114666666
+        ],
+        "candidate": [
+          0.92,
+          3.16
+        ]
+      },
+      {
+        "chord_id": "stem-chord-2",
+        "original": [
+          3.114666666,
+          4.053333333
+        ],
+        "candidate": [
+          3.16,
+          4.0
+        ]
+      },
+      {
+        "chord_id": "stem-chord-3",
+        "original": [
+          4.053333333,
+          4.949333333
+        ],
+        "candidate": [
+          4.0,
+          4.84
+        ]
+      },
+      {
+        "chord_id": "stem-chord-4",
+        "original": [
+          4.949333333,
+          6.741333333
+        ],
+        "candidate": [
+          4.84,
+          6.8100000000000005
+        ]
+      },
+      {
+        "chord_id": "stem-chord-5",
+        "original": [
+          6.741333333,
+          7.722666666
+        ],
+        "candidate": [
+          6.8100000000000005,
+          7.64
+        ]
+      },
+      {
+        "chord_id": "stem-chord-6",
+        "original": [
+          7.722666666,
+          8.405333333
+        ],
+        "candidate": [
+          7.64,
+          8.489999999999998
+        ]
+      },
+      {
+        "chord_id": "stem-chord-7",
+        "original": [
+          8.405333333,
+          9.855999999
+        ],
+        "candidate": [
+          8.489999999999998,
+          9.9
+        ]
+      },
+      {
+        "chord_id": "stem-chord-8",
+        "original": [
+          9.855999999,
+          16.62
+        ],
+        "candidate": [
+          9.9,
+          16.62
+        ]
+      },
+      {
+        "chord_id": "stem-chord-19",
+        "original": [
+          39.04,
+          41.301333333
+        ],
+        "candidate": [
+          39.04,
+          41.28
+        ]
+      },
+      {
+        "chord_id": "stem-chord-20",
+        "original": [
+          41.301333333,
+          43.306666666
+        ],
+        "candidate": [
+          41.28,
+          43.25
+        ]
+      },
+      {
+        "chord_id": "stem-chord-21",
+        "original": [
+          43.306666666,
+          45.0
+        ],
+        "candidate": [
+          43.25,
+          45.0
+        ]
+      }
+    ],
+    "protected": [],
+    "unquantized_edges": [],
+    "applied": false,
+    "saved": false,
+    "melody_changed": false
+  },
+  "A_skipped": [
+    {
+      "chord_id": "stem-chord-2",
+      "reason": "insufficient_room_for_strings"
+    },
+    {
+      "chord_id": "stem-chord-19",
+      "reason": "insufficient_room_for_strings"
+    },
+    {
+      "chord_id": "stem-chord-20",
+      "reason": "insufficient_room_for_strings"
+    }
+  ],
+  "B_skipped": [],
+  "guitar_events": [
+    118,
+    118
+  ],
+  "listening_hint": "每段 30 秒，只需各聽一次。聽不出差異也可以直接回覆。"
+}

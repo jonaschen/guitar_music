@@ -1,0 +1,13 @@
+{
+  "window": [
+    10,
+    40
+  ],
+  "source": "Previously reviewed live recording of 情非得已",
+  "mode": "continuous for both A and B",
+  "only_score_change": "nearest-eighth-v1 chord boundaries",
+  "control": "Previous continuous B, acoustically checked then reused as A",
+  "decision": "A better / B better / similar / both wrong; unclear is valid",
+  "stop": "One fixed comparison; do not tune to a preferred answer or promote a global default",
+  "limitations": "Second recording and song relative to 小手 grid trial; not melody validation"
+}
