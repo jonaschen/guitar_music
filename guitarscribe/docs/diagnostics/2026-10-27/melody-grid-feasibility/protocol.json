@@ -1,0 +1,34 @@
+{
+  "started_utc": "2026-10-27T12:01:11Z",
+  "limit_minutes": 60,
+  "scope": "read existing JSON only; no inference, audio render, playback candidate, score or database mutation",
+  "clips": [
+    "third-1: original 20–40s",
+    "saved-G: original 67.95773242630386–82.4237641723356s"
+  ],
+  "excluded": "third 40–60s: beat grid not human-confirmed",
+  "grid": "Each consecutive existing quarter-note beat interval is divided into 4 equal parts (primary 16th); 8 parts (32nd) reference only. No fixed BPM, no swing/triplet assumption tested. Use bracketing beats, no extrapolation.",
+  "mapping": "Nearest existing subdivision point by absolute distance; ties within 1e-12 seconds go earlier. Preserve all input note identities, original onsets, ends and pitches. Mapped onsets are diagnostic fields only.",
+  "collision": "Two or more distinct sequential notes mapped to the same grid point. Report groups, all involved notes, excess occupants sum(k-1), adjacent equal-pitch pairs, and all original durations/pitches. Excess is not actual deletion.",
+  "gate": "Any G collision blocks a no-deletion/no-merge listening proposal under this rule. Zero collisions only passes onset feasibility, not duration/rest/repetition or accuracy. No extremely-few threshold.",
+  "SOME": "Read raw offset+durations+rest flags; accumulate rests; preserve continuous pitch, report rounded MIDI for comparison only; compare identities/times to frozen MIDI-derived notes.",
+  "edges": "Nearest point can lie just outside clip; flag separately, do not clamp. Non-bracketed onset fails coverage. Small source-origin rounding difference remains explicit.",
+  "human_scope": "third-1 click confirmation; saved-G uses accepted accompaniment grid, not independent proof of sixteenth-note vocal rhythm",
+  "extension": "User allows a further two days if a concrete idea merits it; no automatic experiment after this count, 60-minute cap retained.",
+  "inputs": {
+    "output/evaluation/third-source-2026-10-25/G-score.json": "56d0ee001d6f2e1981060bd4c3544cfe7acbe4ca10c0b3ac9ca9750fab464d53",
+    "output/evaluation/third-source-2026-10-25/g-1.json": "9a7f18567f9735b93ce302e91ac46ca7266ac0903f2ba6f528c96c4c2548bcdc",
+    "output/evaluation/third-source-click-2026-10-26/frozen-inputs.json": "b59b46aa86f307fb578d4b9f521755ba39885a3b8fe7ea23f43b0f554bb7cbfc",
+    "output/evaluation/saved-accompaniment-workspace-2026-10-26/score.json": "265c0e567da396c97a220fa811764aebffff51a4d2115e2532415613127e0d1b",
+    "output/evaluation/saved-song-entry-2026-10-26/score.json": "bb1acd1914d6eb3c496016b42b2e188664d1447bb022736912d4b7e18d15fe1a",
+    "output/evaluation/saved-song-entry-2026-10-26/protocol.json": "57ad650e00a6ed27c9c6c22d8a7f88bb69471bda10ee51a2d06381ec4ac8a073",
+    "output/evaluation/external-comparison-2026-10-25/manifest.json": "eb654e35452bd8133efc7fda86ee07ac43960a4384e3c9e2e59d3ebbe9d88c0c",
+    "output/evaluation/external-comparison-2026-10-25/baseline-2.json": "b32d8ed317dd9f1492ed733caa41f699a686c5c360626b5bb19d67a235be293f",
+    "output/evaluation/final-some-2026-10-27/third-1-raw.json": "19f120db991e21c44d683ab8376154326d55f662c81e2466cf91753f186f9915",
+    "output/evaluation/final-some-2026-10-27/saved-G-raw.json": "5203a5f4b074c55ae538be64971f20e65453c2c04cd2054a3a08568588205f06",
+    "output/evaluation/final-some-2026-10-27/third-1-notes.json": "a5e8e5bdaa53a3856116dc1e86e62f8bcbc92e658c5af15c012981670228c3fa",
+    "output/evaluation/final-some-2026-10-27/saved-G-notes.json": "5acd771438cb2a3a6764bc8c67fd64854a604e952eca2e40ebda5aa19ae15931",
+    "output/evaluation/final-some-2026-10-27/listening-inputs.json": "7d1c5500703e7e4cf9c1b139312743691cdbc2628d405971267fcafb166f3ad4",
+    "docs/diagnostics/2026-10-27/final-some/transport-check.json": "035a5988b3ede33aa1ccc6831c35521784477a27bd21080ed236feecaee29bdf"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "started_utc": "2026-10-27T12:01:11Z",
+  "count_verification_and_report_completed_utc": "2026-10-27T12:06:55Z",
+  "elapsed_wall_seconds": 344,
+  "limit_seconds": 3600,
+  "scope": "source inspection, protocol, diagnostic implementation, controls, count, independent verification, report; excludes later commit/push",
+  "not_billable_time_measurement": true
+}

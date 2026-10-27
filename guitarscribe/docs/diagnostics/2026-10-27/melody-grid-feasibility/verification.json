@@ -1,0 +1,56 @@
+{
+  "unit_tests_passed": 4,
+  "independent_exhaustive_search": [
+    {
+      "clip": "third-1",
+      "model": "G",
+      "denominator": 16,
+      "matches": true
+    },
+    {
+      "clip": "third-1",
+      "model": "G",
+      "denominator": 32,
+      "matches": true
+    },
+    {
+      "clip": "third-1",
+      "model": "SOME_raw",
+      "denominator": 16,
+      "matches": true
+    },
+    {
+      "clip": "third-1",
+      "model": "SOME_raw",
+      "denominator": 32,
+      "matches": true
+    },
+    {
+      "clip": "saved-G",
+      "model": "G",
+      "denominator": 16,
+      "matches": true
+    },
+    {
+      "clip": "saved-G",
+      "model": "G",
+      "denominator": 32,
+      "matches": true
+    },
+    {
+      "clip": "saved-G",
+      "model": "SOME_raw",
+      "denominator": 16,
+      "matches": true
+    },
+    {
+      "clip": "saved-G",
+      "model": "SOME_raw",
+      "denominator": 32,
+      "matches": true
+    }
+  ],
+  "all_frozen_input_hashes_unchanged": true,
+  "database_access": false,
+  "audio_generation": false
+}
