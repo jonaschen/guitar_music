@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-27",
+  "decision": "stop_melody_research_keep_existing_G_as_experimental",
+  "acceptance_gate_passed": false,
+  "measured_duration_accuracy": null,
+  "measured_pitch_accuracy": null,
+  "clips": [
+    {
+      "group": 1,
+      "user": "都不好"
+    },
+    {
+      "group": 2,
+      "user": "都不好"
+    },
+    {
+      "group": 3,
+      "user": "A 比較貼合，但是 B 的音符拍子長度感覺比較正常"
+    }
+  ],
+  "ui": {
+    "user": "操作沒有問題，和弦判斷沒有問題",
+    "accepted": true,
+    "scope": "Reviewed compact chord workflow and original-plus-guitar comparison; not universal chord accuracy"
+  },
+  "next": "Close UI and delivery documentation; no further melody experiment or repeated listening request"
+}

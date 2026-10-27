@@ -115,3 +115,20 @@ test('simple accompaniment view preserves melody tools and exposes nearby settin
   await page.setViewportSize({width:390,height:844});
   expect(await panel.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);
 });
+
+
+test('new users land on accepted chord view and explicit melody selection survives reload',async({page})=>{
+  await setup(page);
+  await page.evaluate(()=>{localStorage.removeItem('guitarscribe.editorView');localStorage.removeItem('guitarscribe.workspaceMode');});
+  await page.reload();
+  await expect(page.getByRole('region',{name:'和弦核對'})).toBeVisible();
+  await expect(page.getByLabel('Tab start bar')).toBeHidden();
+  await page.getByRole('button',{name:'旋律編輯（實驗）',exact:true}).click();
+  await expect(page.getByLabel('Tab start bar')).toBeVisible();
+  await page.reload();
+  await expect(page.getByLabel('Tab start bar')).toBeVisible();
+  await page.getByRole('button',{name:'簡潔和弦頁',exact:true}).click();
+  await page.reload();
+  await expect(page.getByLabel('Tab start bar')).toBeHidden();
+  await expect(page.getByRole('region',{name:'和弦核對'})).toBeVisible();
+});

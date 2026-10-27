@@ -1,5 +1,7 @@
 # GuitarScribe
 
+目前交付：本機和弦核對、伴奏試聽與修譜工具。簡潔頁已獲使用者驗收，為新使用者預設入口。自動主旋律未達品質門檻，已停止本輪研發，保留實驗入口及既有資料。啟動、操作及限制見 [Codex 收尾報告](docs/Closeout_2026-10-27.md)。
+
 Backend-first prototype for generating guitar-friendly song analysis from uploaded audio.
 
 ## Current API

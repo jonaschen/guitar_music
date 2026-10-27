@@ -316,9 +316,13 @@ export function App() {
   const [chordEndDraft, setChordEndDraft] = useState("");
   const [candidateVoicings, setCandidateVoicings] = useState<ScoreChord["available_voicings"]>([]);
   const [revisionId, setRevisionId] = useState("");
-  const [accompanimentView, setAccompanimentView] = useState(() => new URLSearchParams(window.location.search).get("view") === "accompaniment");
+  const [accompanimentView, setAccompanimentView] = useState(() => {
+    const view = new URLSearchParams(window.location.search).get("view");
+    if (view === "accompaniment" || view === "melody") return view === "accompaniment";
+    try { return localStorage.getItem("guitarscribe.editorView") !== "melody"; } catch { return true; }
+  });
   const [focusedWorkspace, setFocusedWorkspace] = useState(() => {
-    if (new URLSearchParams(window.location.search).get("view") === "accompaniment") return true;
+    if (["accompaniment", "melody"].includes(new URLSearchParams(window.location.search).get("view") ?? "")) return true;
     try { return localStorage.getItem("guitarscribe.workspaceMode") !== "full"; } catch { return true; }
   });
   const focusMode = !!score && focusedWorkspace;
@@ -326,6 +330,14 @@ export function App() {
     audioRef.current?.pause(); stopSynth(false); referenceStopRef.current();
     setFocusedWorkspace(value => !value);
     try { localStorage.setItem("guitarscribe.workspaceMode", focusedWorkspace ? "full" : "focus"); } catch { /* UI remains usable without storage. */ }
+  }
+  function switchEditorView() {
+    audioRef.current?.pause(); stopSynth(false); referenceStopRef.current();
+    const view = accompanimentView ? "melody" : "accompaniment";
+    setFocusedWorkspace(true); setAccompanimentView(!accompanimentView);
+    try { localStorage.setItem("guitarscribe.editorView", view); localStorage.setItem("guitarscribe.workspaceMode", "focus"); } catch { /* Optional preference. */ }
+    const url = new URL(window.location.href); url.searchParams.set("view", view);
+    window.history.replaceState(null, "", url);
   }
   function openPerformanceControls() {
     audioRef.current?.pause(); stopSynth(false); referenceStopRef.current();
@@ -2015,7 +2027,7 @@ export function App() {
               <button type="button" className="ghost-button" onClick={() => { setShowNewSong(value => !value); }}>{showNewSong ? "收起新曲目" : "分析新曲目"}</button>
               <button type="button" className="ghost-button" onClick={switchWorkspace}>{focusMode ? "顯示完整工具" : accompanimentView ? "回到和弦核對" : "回到專注修譜"}</button>
               <button type="button" hidden={accompanimentView && focusMode} className="ghost-button" onClick={openPerformanceControls}>伴奏演奏</button>
-              <button type="button" className="ghost-button" onClick={() => { audioRef.current?.pause(); stopSynth(false); setFocusedWorkspace(true); setAccompanimentView(value => !value); }}>{accompanimentView ? "旋律編輯（實驗）" : "簡潔和弦頁"}</button>
+              <button type="button" className="ghost-button" onClick={switchEditorView}>{accompanimentView ? "旋律編輯（實驗）" : "簡潔和弦頁"}</button>
             </nav> : null}
             <section className="revision-recovery" aria-label="工作版本">
               <h3>工作版本</h3>
