@@ -1,0 +1,50 @@
+{
+  "scope": "Read-only export and structural checks; no musical-quality claim, no analysis or revision writes",
+  "cases": [
+    {
+      "endpoint": "/revisions/bc41b274-69d4-430f-8dda-52bd0759119d",
+      "chords": 16,
+      "melody_notes": 131,
+      "duration_seconds": 29.291979166666668,
+      "score_sha256": "a1038d85533d0df5e1187fb97cf56fddbc6e38db389d4734aedc2af34b4917d7",
+      "musicxml_measures": 16,
+      "midi_tracks": 1,
+      "midi_duration_seconds": 29.292416666666664,
+      "chordpro_bytes": 189,
+      "playback_events": 290,
+      "stored_data_unchanged": true,
+      "midi_unmatched_note_offs": 0,
+      "midi_unclosed_note_ons": 0
+    },
+    {
+      "endpoint": "/api/v1/jobs/db79e1145ea046088b8aa5ef421d0e3f",
+      "chords": 28,
+      "melody_notes": 76,
+      "duration_seconds": 45.0,
+      "score_sha256": "c47bf2ddbe5b5bbb3760320b6f22e114792c58238f3fa0d383efdb8fac96bc06",
+      "musicxml_measures": 21,
+      "midi_tracks": 1,
+      "midi_duration_seconds": 45.1395,
+      "chordpro_bytes": 197,
+      "playback_events": 274,
+      "stored_data_unchanged": true,
+      "midi_unmatched_note_offs": 0,
+      "midi_unclosed_note_ons": 0
+    },
+    {
+      "endpoint": "/api/v1/jobs/f303ec8a86834633b060920fa85430af",
+      "chords": 33,
+      "melody_notes": 106,
+      "duration_seconds": 60.0,
+      "score_sha256": "7d4a8ac4cd7c30b308436e6675d370bf54605d85ad25818af23abe2681cc3dba",
+      "musicxml_measures": 28,
+      "midi_tracks": 1,
+      "midi_duration_seconds": 60.139333333333326,
+      "chordpro_bytes": 220,
+      "playback_events": 374,
+      "stored_data_unchanged": true,
+      "midi_unmatched_note_offs": 0,
+      "midi_unclosed_note_ons": 0
+    }
+  ]
+}

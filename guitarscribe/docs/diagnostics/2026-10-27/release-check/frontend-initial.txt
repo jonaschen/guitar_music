@@ -1,0 +1,211 @@
+[WebServer] (node:468030) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+Running 135 tests using 1 worker
+
+(node:468050) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:468050) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/135] e2e/accompaniment-review.spec.ts:207:1 › mix uses one audio clock, no melody, loops and resumes without source offset drift
+[2/135] e2e/accompaniment-review.spec.ts:254:1 › source and guitar modes are separate, changing selection stops playback
+[3/135] e2e/accompaniment-review.spec.ts:285:1 › cancelled audio fetch cannot start later and transposed mixes are disabled
+[4/135] e2e/accompaniment-review.spec.ts:337:1 › simple accompaniment view preserves melody tools and exposes nearby settings
+[5/135] e2e/accompaniment-review.spec.ts:373:1 › new users land on accepted chord view and explicit melody selection survives reload
+[6/135] e2e/accompaniment-review.spec.ts:403:1 › chord review saves the exact score and reopens without falling back to analysis
+[7/135] e2e/accompaniment-review.spec.ts:459:1 › saved chord review remains playable when its source job has expired
+[8/135] e2e/accompaniment-review.spec.ts:500:3 › ChordPro export reports failure and can retry without losing the score
+[9/135] e2e/accompaniment-review.spec.ts:500:3 › MusicXML export reports failure and can retry without losing the score
+[10/135] e2e/accompaniment-review.spec.ts:500:3 › LRC export reports failure and can retry without losing the score
+[11/135] e2e/accompaniment-review.spec.ts:550:1 › a delayed export cannot download an obsolete working score
+[12/135] e2e/analysis-start.spec.ts:17:3 › submits pre-analysis skip for upload
+[13/135] e2e/analysis-start.spec.ts:17:3 › submits pre-analysis skip for youtube
+[14/135] e2e/analysis-start.spec.ts:61:1 › rejects negative skip before sending an upload
+[15/135] e2e/bar-timing.spec.ts:98:1 › retiming changes only shared beats and records provenance without mutating source
+[16/135] e2e/bar-timing.spec.ts:113:1 › rejects crossing, nonfinite, missing beats, outer shifts and tiny beat gaps
+[17/135] e2e/bar-timing.spec.ts:130:1 › preserves uneven pulse fractions unless evenly spaced explicitly
+[18/135] e2e/bar-timing.spec.ts:141:1 › eight-bar boundaries support validation, undo, redo and revision reload
+[19/135] e2e/chord-entry-workspace.spec.ts:145:1 › explicit mode drives playback and MIDI, restores original and does not persist
+[20/135] e2e/chord-entry-workspace.spec.ts:213:1 › late preview cannot start after switching mode
+[21/135] e2e/chord-entry-workspace.spec.ts:240:1 › late MIDI is discarded on mode change and failed request is visible
+[22/135] e2e/chord-entry-workspace.spec.ts:282:1 › editing score resets mode and invalidates a pending preview
+[23/135] e2e/chord-entry-workspace.spec.ts:312:1 › focused workspace has a direct accompaniment entry
+[24/135] e2e/chord-entry-workspace.spec.ts:325:1 › entry audit is read-only, uses active mode and clears stale findings
+[25/135] e2e/chord-entry-workspace.spec.ts:377:1 › grid preview applies explicitly to playback and MIDI and Undo restores score
+[26/135] e2e/chord-entry-workspace.spec.ts:470:1 › grid rejects stale responses and displays failures without changing score
+[27/135] e2e/chord-entry-workspace.spec.ts:522:1 › loaded grid revision has no misleading Undo action
+[28/135] e2e/chord-grid-overflow.spec.ts:4:40 › tiny chord fragments stay inside the measure at 1440px
+[29/135] e2e/chord-grid-overflow.spec.ts:4:40 › tiny chord fragments stay inside the measure at 1000px
+[30/135] e2e/chord-grid-overflow.spec.ts:4:40 › tiny chord fragments stay inside the measure at 390px
+[31/135] e2e/chord-spans.spec.ts:23:1 › repeated labels describe sustained harmony, not additional chord changes
+[32/135] e2e/chord-spans.spec.ts:38:1 › do not merge across silence, gaps, or different selected shapes
+[33/135] e2e/connected-melody.spec.ts:3:1 › phrases preserve note data, real gaps, overlaps and repeated attacks
+[34/135] e2e/connected-melody.spec.ts:30:1 › offline audio removes internal dips while retaining rests, short endings and repeated attacks
+[35/135] e2e/connected-melody.spec.ts:113:1 › resume and speed clip the phrase without replaying its prefix or extending its end
+[36/135] e2e/connected-melody.spec.ts:166:1 › a sub-millisecond boundary note keeps its velocity change at its own onset
+[37/135] e2e/editor-audio-parity-live.spec.ts:3:1 › saved G deep link survives refresh and editor schedules its exact pitches and timing
+[38/135] e2e/ensemble-alignment-live.spec.ts:2:1 › real G comparison page uses matching score time and actual ensemble scheduling without persistence writes
+[39/135] e2e/ensemble-realtime.spec.ts:262:1 › focus buttons isolate actual guitar events and switch source back to original
+[40/135] e2e/ensemble-realtime.spec.ts:320:3 › editor ensemble scales only melody gain by one quarter: connected
+[41/135] e2e/ensemble-realtime.spec.ts:320:3 › editor ensemble scales only melody gain by one quarter: separate
+[42/135] e2e/ensemble-realtime.spec.ts:382:1 › ensemble loop holds its bar interval within 15ms for three passes without RAF
+[43/135] e2e/ensemble-realtime.spec.ts:409:1 › ensemble pause halts scheduling, resume continues, and stop leaves no later starts
+[44/135] e2e/ensemble-realtime.spec.ts:448:1 › a sustained pluck at a selected bar starts with the melody clock and keeps its string age
+[45/135] e2e/focused-workspace.spec.ts:112:1 › default focus keeps a single editor and preserves unapplied draft across tool modes
+[46/135] e2e/focused-workspace.spec.ts:159:1 › focus edits, compiles, undoes, saves a new revision and explicitly restores it after refresh
+[47/135] e2e/focused-workspace.spec.ts:274:1 › source loading can be cancelled by changing tracks without stale playback
+[48/135] e2e/focused-workspace.spec.ts:322:1 › source failure is explained in focus mode and leaves the score editable
+[49/135] e2e/focused-workspace.spec.ts:348:1 › connection switch cancels sound and compares the same score in solo and ensemble
+[50/135] e2e/guitar-envelope.spec.ts:3:1 › guitar sustain stays audible until the final release within each note
+[51/135] e2e/guitar-envelope.spec.ts:17:1 › rendered guitar tone retains energy late in a note and releases at its end
+[52/135] e2e/known-events-diagnostic.spec.ts:323:1 › known rest, repeated-note and cross-bar events schedule, pause, resume and loop without hanging
+[53/135] e2e/measure-layout.spec.ts:9:1 › beat widths represent 3:1, 2:2 and 2:1:1 even with uneven beat times
+[54/135] e2e/measure-layout.spec.ts:20:1 › pickup, partial last measure and missing grid do not invent a full four-beat bar
+[55/135] e2e/melody-articulation.spec.ts:3:1 › short and long melody envelopes retain duration and ordered automation
+[56/135] e2e/melody-articulation.spec.ts:14:1 › rendered repeated melody notes sustain, articulate and stop on time
+[57/135] e2e/melody-articulation.spec.ts:58:1 › up and down pick colours differ without shifting onsets or cutting resonance
+[58/135] e2e/melody-editor.spec.ts:82:1 › Accompaniment candidate preserves melody, is undoable and rejects stale work
+[59/135] e2e/melody-editor.spec.ts:158:1 › Contour candidate is explicit, undoable and cannot apply after work changes
+[60/135] e2e/melody-editor.spec.ts:308:1 › G survives explicit save, refresh, restore and resave with the same playback notes and source
+[61/135] e2e/melody-editor.spec.ts:418:1 › revision preview and late responses never replace newer edits; cancel and expired source are safe
+[62/135] e2e/melody-editor.spec.ts:510:3 › late simplify result cannot overwrite restored G or add a false Undo entry
+[63/135] e2e/melody-editor.spec.ts:510:3 › late remap result cannot overwrite restored G or add a false Undo entry
+[64/135] e2e/melody-editor.spec.ts:510:3 › late transpose result cannot overwrite restored G or add a false Undo entry
+[65/135] e2e/melody-editor.spec.ts:510:3 › late voicings result cannot overwrite restored G or add a false Undo entry
+[66/135] e2e/melody-editor.spec.ts:510:3 › late lyrics result cannot overwrite restored G or add a false Undo entry
+[67/135] e2e/melody-editor.spec.ts:612:1 › a pending score transform stays stale after editing and Undo return to its original score
+[68/135] e2e/melody-editor.spec.ts:660:3 › late original analysis 200 cannot replace an explicitly restored G revision
+[69/135] e2e/melody-editor.spec.ts:660:3 › late original analysis 404 cannot replace an explicitly restored G revision
+[70/135] e2e/melody-editor.spec.ts:734:1 › restore preview stays invalid after Undo returns to the same score object
+[71/135] e2e/melody-editor.spec.ts:774:1 › editor ensemble uses current score, clips both tracks, loops and cancels pending playback
+[72/135] e2e/melody-editor.spec.ts:891:1 › edit pitch and duration, audition, undo, save and reload without a selected chord
+[73/135] e2e/melody-editor.spec.ts:995:1 › empty melody can be filled, deleted and restored; invalid edit preserves notes
+[74/135] e2e/melody-editor.spec.ts:1058:1 › late edit response cannot overwrite Undo
+[75/135] e2e/melody-editor.spec.ts:1104:1 › notation clock preserves rubato, pickup and compound meter without mutating notes
+[76/135] e2e/melody-editor.spec.ts:1143:1 › tab workflow pauses in place, changes fret and duration, auditions and undoes
+[77/135] e2e/melody-editor.spec.ts:1208:1 › tab can insert on an empty string and stay inside mobile viewport
+[78/135] e2e/melody-editor.spec.ts:1255:1 › range loop restarts, pause cancels it, and cross-bar notes remain one editable event
+[79/135] e2e/melody-editor.spec.ts:1326:3 › source preview boundary is cancelled by seek
+[80/135] e2e/melody-editor.spec.ts:1326:3 › source preview boundary is cancelled by track
+[81/135] e2e/melody-editor.spec.ts:1326:3 › source preview boundary is cancelled by pause
+[82/135] e2e/melody-editor.spec.ts:1433:1 › source segment plays through media onPlay and stops at its selected bar boundary
+[83/135] e2e/melody-editor.spec.ts:1521:1 › empty opening explains missing notes and can jump to an editable note without modifying it
+[84/135] e2e/melody-editor.spec.ts:1587:1 › four bars default, eight bars follow within the editor without chord page scrolling
+[85/135] e2e/melody-editor.spec.ts:1664:1 › add into a gap explains overlap and offers an explicit shortening without overwriting existing notes
+[86/135] e2e/melody-editor.spec.ts:1709:1 › an empty string at an occupied melody time offers selecting the existing note
+[87/135] e2e/melody-editor.spec.ts:1744:1 › missing parent save explains recovery and preserves working score until explicit new save
+[88/135] e2e/melody-editor.spec.ts:1781:1 › snap grid respects variable beat times and stays inside the clicked bar
+[89/135] e2e/melody-editor.spec.ts:1798:1 › nearby clicks select the same eighth grid point, arrows move the draft, free mode remains available
+[90/135] e2e/melody-editor.spec.ts:1850:1 › phrase shift previews the selected range and moves all notes once with undo and save
+[91/135] e2e/melody-editor.spec.ts:1955:1 › cropped analysis explains source offset without skipping the opening twice
+[92/135] e2e/melody-editor.spec.ts:1997:1 › saved revision can be recovered without a surviving analysis job
+[93/135] e2e/melody-editor.spec.ts:2029:1 › song range bounds original audio and permits previewing a replacement start outside the range
+[94/135] e2e/melody-editor.spec.ts:2104:1 › song range preserves timestamps, filters notation, bounds score playback and persists in revisions
+[95/135] e2e/melody-realtime.spec.ts:181:1 › solo loop keeps a steady onset interval over three passes without adding 30ms per pass
+[96/135] e2e/melody-realtime.spec.ts:208:1 › pause and resume preserve the original complete solo loop range
+[97/135] e2e/melody-realtime.spec.ts:253:1 › stopping a solo loop prevents any later oscillator scheduling
+[98/135] e2e/musicxml-render.spec.ts:25:3 › real exporter draws harmony changes and tied TAB at 1280px
+e2e/musicxml-render.spec.ts:25:3 › real exporter draws harmony changes and tied TAB at 1280px
+ Image guitarscribe-backend Building 
+
+  1) e2e/musicxml-render.spec.ts:25:3 › real exporter draws harmony changes and tied TAB at 1280px ─
+
+    Error: spawnSync docker ETIMEDOUT
+
+      11 |     cwd: path.join(project, "backend"), encoding: "utf8", timeout: 60000,
+      12 |     env: {...process.env, PYTHONPATH: path.join(project, "backend")},
+    > 13 |   }) : execFileSync("docker", ["compose", "run", "--rm", "-T", "-v",
+         |        ^
+      14 |     `${project}/backend:/app`, "backend", "sh", "-c",
+      15 |     "PYTHONPATH=. python scripts/musicxml_reader_fixtures.py"], { cwd: project, encoding: "utf8", timeout: 60000 }));
+      16 | });
+        at /home/jonas/gemini-home/music_analysis/guitarscribe/frontend/e2e/musicxml-render.spec.ts:13:8
+
+
+[99/135] e2e/musicxml-render.spec.ts:25:3 › real exporter draws harmony changes and tied TAB at 390px
+(node:474147) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:474147) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[100/135] e2e/new-song.spec.ts:110:1 › new source preserves the current audio and unapplied draft; failed upload keeps work
+[101/135] e2e/new-song.spec.ts:161:1 › dirty submission can be cancelled; successful YouTube analysis opens focus
+[102/135] e2e/new-song.spec.ts:246:1 › edits made while a new analysis runs require explicit result confirmation
+[103/135] e2e/new-song.spec.ts:332:1 › vocal input defaults to available separation and focus offers explicit two-stage G
+[104/135] e2e/new-song.spec.ts:388:3 › failed new analysis preserves the prior score and permits retry
+[105/135] e2e/new-song.spec.ts:388:3 › cancelled new analysis preserves the prior score and permits retry
+[106/135] e2e/new-song.spec.ts:446:1 › failed replacement restores a saved revision link and keeps edits made during analysis
+[107/135] e2e/new-song.spec.ts:511:1 › cancel button restores the prior source and releases the new-analysis form
+[108/135] e2e/onset-checkpoint.spec.ts:7:1 › external checkpoint offers two mutually exclusive three-track comparisons
+[109/135] e2e/playback-reference.spec.ts:17:1 › additive pluck starts smoothly, decays, and remains bounded
+[110/135] e2e/playback-reference.spec.ts:29:1 › reference can play, switch tone, and stop without loading or replacing a song
+[111/135] e2e/playback-reference.spec.ts:90:1 › metronome volume and downbeat produce measurable differences
+[112/135] e2e/playback-reference.spec.ts:116:1 › weak strokes retain earlier resonance without clipping and harmony change damps it
+[113/135] e2e/revision-link.spec.ts:161:1 › revision deep link wins over job query and activeJobId
+[114/135] e2e/revision-link.spec.ts:177:1 › confirmed restore and successful save update revision URL; refresh loads that saved score
+[115/135] e2e/revision-link.spec.ts:219:1 › missing revision deep link reports the error without falling back to the original job
+[116/135] e2e/revision-link.spec.ts:239:1 › a late deep-link response cannot replace a different revision restored by the user
+[117/135] e2e/revision-link.spec.ts:285:1 › starting a new analysis clears the revision deep link
+[118/135] e2e/revision-link.spec.ts:327:1 › submitting a new analysis invalidates a pending startup revision before job creation resolves
+[119/135] e2e/revision-link.spec.ts:386:1 › an older save response cannot replace the URL after a new analysis starts
+[120/135] e2e/revision-recovery-live.spec.ts:5:3 › full: saved G restores, note and bar edits reach real ensemble playback, and Undo preserves the saved revision
+[121/135] e2e/revision-recovery-live.spec.ts:5:3 › focus: saved G restores, note and bar edits reach real ensemble playback, and Undo preserves the saved revision
+[122/135] e2e/rosvot-checkpoint.spec.ts:7:1 › ROSVOT checkpoint serves three groups with three mutually exclusive tracks each
+[123/135] e2e/score-workspace.spec.ts:118:1 › chord chart merges repeated regions reversibly and offers the reference groove
+[124/135] e2e/score-workspace.spec.ts:184:1 › accompaniment comparison is not labeled as instrumental lead
+[125/135] e2e/score-workspace.spec.ts:208:1 › whole-song pluck playback resumes string age and cancels pending preparation
+[126/135] e2e/score-workspace.spec.ts:319:1 › manual seek stays put and exact A–B loops without editing the score
+[127/135] e2e/score-workspace.spec.ts:448:1 › listening presets enable melody, restore balance and clear solo
+[128/135] e2e/score-workspace.spec.ts:499:1 › score edits stop active and pending audio instead of leaving stale harmony playing
+[129/135] e2e/score-workspace.spec.ts:585:1 › bar 12 readout follows compiled G to C timing rather than the selected editor chord
+[130/135] e2e/score-workspace.spec.ts:687:1 › clears an expired saved job instead of trapping refresh in a 404 loop
+[131/135] e2e/score-workspace.spec.ts:706:1 › automatically retries a temporary reconnect failure
+[132/135] e2e/score-workspace.spec.ts:742:1 › shows internal and whole-bar unassigned chord gaps without extending chords
+[133/135] e2e/score-workspace.spec.ts:813:1 › renders an analyzed score workspace
+  2) e2e/score-workspace.spec.ts:813:1 › renders an analyzed score workspace ───────────────────────
+
+    Error: expect.toBeVisible: Error: strict mode violation: getByText('0.0–8.0') resolved to 2 elements:
+        1) <p aria-live="polite">…</p> aka getByText('已暫停 · 樂譜 0.0–8.0 秒 · 譜面和弦：C')
+        2) <span>0.0–8.0</span> aka getByText('0.0–8.0', { exact: true })
+
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for getByText('0.0–8.0')
+
+
+      421 |   await expect(page.getByRole("button", { name: "One two", exact: true })).toBeVisible();
+      422 |   await page.getByRole("button", { name: "Fit timing to bars" }).click();
+    > 423 |   await expect(page.getByText("0.0–8.0")).toBeVisible();
+          |                                           ^
+      424 |   await expect(page.getByText("Suggested · 100%")).toBeVisible();
+      425 |   await page.getByRole("button", { name: "Edit text" }).click();
+      426 |   await page.getByLabel("Edit lyric line 0").fill("Edited lyric");
+        at /home/jonas/gemini-home/music_analysis/guitarscribe/frontend/e2e/score-workspace.spec.ts:423:43
+
+    Error Context: test-results/score-workspace-renders-an-analyzed-score-workspace/error-context.md
+
+
+(node:476398) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:476398) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[134/135] e2e/smoke.spec.ts:2:1 › shows the legal upload workflow
+[135/135] e2e/source-checkpoint.spec.ts:7:1 › third-source checkpoint plays original, vocal stem and G melody in both groups
+  2 failed
+    e2e/musicxml-render.spec.ts:25:3 › real exporter draws harmony changes and tied TAB at 1280px ──
+    e2e/score-workspace.spec.ts:813:1 › renders an analyzed score workspace ────────────────────────
+  4 skipped
+  1 did not run
+  128 passed (6.3m)

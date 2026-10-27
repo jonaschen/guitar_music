@@ -420,7 +420,7 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await page.getByRole("button", { name: "Import lyrics" }).click();
   await expect(page.getByRole("button", { name: "One two", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Fit timing to bars" }).click();
-  await expect(page.getByText("0.0–8.0")).toBeVisible();
+  await expect(page.locator(".lyrics-panel").getByText("0.0–8.0", { exact: true })).toBeVisible();
   await expect(page.getByText("Suggested · 100%")).toBeVisible();
   await page.getByRole("button", { name: "Edit text" }).click();
   await page.getByLabel("Edit lyric line 0").fill("Edited lyric");
@@ -434,7 +434,7 @@ test("renders an analyzed score workspace", async ({ page }) => {
   await page.getByRole("button", { name: "Undo" }).click();
   await expect(page.getByRole("button", { name: "One two", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Distribute timing" }).click();
-  await expect(page.getByText("0.0–8.0")).toBeVisible();
+  await expect(page.locator(".lyrics-panel").getByText("0.0–8.0", { exact: true })).toBeVisible();
   await expect(page.getByLabel("Start timing for lyric line 0")).toBeVisible();
   await expect(page.getByLabel("End timing for lyric line 0")).toBeVisible();
 });

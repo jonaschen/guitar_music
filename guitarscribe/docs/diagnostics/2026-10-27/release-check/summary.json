@@ -1,0 +1,27 @@
+{
+  "application_commit": "7db838f",
+  "backend": {
+    "passed": 703,
+    "failed": 0,
+    "warnings": 5
+  },
+  "frontend_initial": {
+    "passed": 128,
+    "failed": 2,
+    "skipped": 4,
+    "did_not_run": 1
+  },
+  "frontend_targeted_reruns": {
+    "musicxml_passed": 2,
+    "workspace_passed": 1
+  },
+  "frontend_combined_final": {
+    "passed": 131,
+    "skipped": 4,
+    "unresolved_failures": 0,
+    "note": "Combined first run and targeted reruns; not a second full-suite run"
+  },
+  "real_score_export_cases": 3,
+  "human_retest_required": false,
+  "melody_research": "stopped"
+}

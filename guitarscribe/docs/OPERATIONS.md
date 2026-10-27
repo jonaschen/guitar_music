@@ -92,3 +92,27 @@ keep ports 5173/8000 private where practical, set an appropriate CORS allow
 list in a deployment-specific build, and use a shared rate limiter for
 multiple backend workers. Do not treat the in-memory submission limiter as a
 distributed production control.
+
+## Verify the existing local installation without Docker
+
+Use the already installed runtime for backend tests and for the MusicXML reader
+fixtures used by Playwright. Without `GUITARSCRIBE_TEST_PYTHON`, that fixture test
+falls back to Docker Compose and may try to build an image.
+
+From the `guitarscribe/` directory, run these in order:
+
+```bash
+cd backend
+"$HOME/.cache/guitarscribe-runtime/bin/python" -m pytest tests -q
+cd ../frontend
+GUITARSCRIBE_TEST_PYTHON="$HOME/.cache/guitarscribe-runtime/bin/python" npx playwright test --workers=1
+npm run build
+```
+
+The local browser configuration expects Google Chrome at `/usr/bin/google-chrome`.
+Tests use their own browser profiles; tests requiring an explicit saved revision
+are opt-in and are skipped without `GUITARSCRIBE_RECOVERY_REVISION`. Historical
+listening-packet tests may also skip if their local audio packet is absent. A
+passing automated suite checks software behavior, not transcription quality.
+These commands assume dependencies are already installed; do not use them as a
+fresh-machine setup procedure.
