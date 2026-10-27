@@ -1021,16 +1021,29 @@ export function App() {
     }
   }
 
+  async function downloadTextScore(endpoint: string, filename: string, mimeType: string, label: string) {
+    if (!score) return;
+    setError("");
+    try {
+      const response = await fetch(API_BASE + endpoint, {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(score),
+      });
+      if (!response.ok) throw new Error(await response.text());
+      const content = await response.text();
+      if (!isCurrentWork()) return;
+      const url = URL.createObjectURL(new Blob([content], { type: mimeType }));
+      try {
+        const link = document.createElement("a");
+        link.href = url; link.download = filename; link.click();
+      } finally { URL.revokeObjectURL(url); }
+    } catch (exportError) {
+      if (isCurrentWork()) setError(`${label} 匯出失敗，工作譜仍保留，請稍後重試。${exportError instanceof Error ? ` ${exportError.message}` : ""}`);
+    }
+  }
+
   async function downloadLrc() {
     if (!score?.lyrics) return;
-    const response = await fetch(`${API_BASE}/scores/lrc`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(score) });
-    if (!response.ok) throw new Error(await response.text());
-    const url = URL.createObjectURL(new Blob([await response.text()], { type: "text/plain" }));
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "guitarscribe-lyrics.lrc";
-    link.click();
-    URL.revokeObjectURL(url);
+    await downloadTextScore("/scores/lrc", "guitarscribe-lyrics.lrc", "text/plain", "LRC");
   }
 
   async function downloadMidi() {
@@ -1058,15 +1071,7 @@ export function App() {
   }
 
   async function downloadMusicXml() {
-    if (!score) return;
-    const response = await fetch(API_BASE + "/scores/musicxml", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(score) });
-    if (!response.ok) throw new Error(await response.text());
-    const url = URL.createObjectURL(new Blob([await response.text()], { type: "application/vnd.recordare.musicxml+xml" }));
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "guitarscribe-melody.musicxml";
-    link.click();
-    URL.revokeObjectURL(url);
+    await downloadTextScore("/scores/musicxml", "guitarscribe-melody.musicxml", "application/vnd.recordare.musicxml+xml", "MusicXML");
   }
 
   function downloadScoreJson() {
@@ -1081,19 +1086,7 @@ export function App() {
   }
 
   async function downloadChordPro() {
-    if (!score) return;
-    const response = await fetch(`${API_BASE}/scores/chordpro`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(score),
-    });
-    if (!response.ok) throw new Error(await response.text());
-    const url = URL.createObjectURL(new Blob([await response.text()], { type: "text/plain" }));
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "guitarscribe-score.chopro";
-    link.click();
-    URL.revokeObjectURL(url);
+    await downloadTextScore("/scores/chordpro", "guitarscribe-score.chopro", "text/plain", "ChordPro");
   }
 
   function updateGuitarSetting<Key extends keyof SongScore["guitar"]>(key: Key, value: SongScore["guitar"][Key]) {
@@ -1937,7 +1930,7 @@ export function App() {
           <form className="intake-card" onSubmit={handleSubmit}>
             <p role="status">{capabilities ? `${capabilities.improved_accompaniment ? "改善版伴奏可用" : "基本伴奏分析"} · ${capabilities.beat_engine} / ${capabilities.chord_engine}` : capabilitiesFailed ? "無法取得分析能力，請確認服務後重新整理。" : "正在確認分析能力…"}</p>
             {capabilities && !capabilities.melody_available ? <p role="note">目前僅分析拍點與和弦，不會產生旋律；完成後可手動補音。</p> : null}
-            {capabilities?.melody_available && capabilities.vocal_separation_enabled && melodyMode === "vocal" && separateVocals ? <p>人聲旋律預設先分離；分析完成後可在專注區產生並確認套用 G 候選。</p> : null}
+            {capabilities?.melody_available && capabilities.vocal_separation_enabled && melodyMode === "vocal" && separateVocals ? <p>分析完成後先用「原曲＋系統吉他」核對和弦。自動旋律仍屬實驗功能，未達品質驗收門檻。</p> : null}
             <label className="field">
               <span>選擇音檔</span>
               <input type="file" accept=".wav,.mp3,.flac,.ogg,.m4a,audio/*" onChange={handleFileChange} />

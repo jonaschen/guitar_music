@@ -179,3 +179,51 @@ test('saved chord review remains playable when its source job has expired', asyn
   await panel.getByRole('button',{name:'暫停核對'}).click();
   await expect(page.getByLabel('Current working version')).toContainText('已保存／載入');
 });
+
+for (const [label, endpoint, filename] of [
+  ['ChordPro', 'chordpro', 'guitarscribe-score.chopro'],
+  ['MusicXML', 'musicxml', 'guitarscribe-melody.musicxml'],
+  ['LRC', 'lrc', 'guitarscribe-lyrics.lrc'],
+]) {
+  test(`${label} export reports failure and can retry without losing the score`, async ({page}) => {
+    const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+    let fail=true;
+    await page.route(`**/scores/${endpoint}`, route => {
+      expect(route.request().postDataJSON().chords).toEqual(score.chords);
+      return route.fulfill(fail ? {status:503,body:'Temporarily unavailable'} : {contentType:'text/plain',body:'export fixture'});
+    });
+    await setup(page,{...score,lyrics:{id:'test',language:'zh',source:'user',timing_level:'line',raw_text:'test',revision:1,lines:[]}});
+    await page.getByRole('button',{name:'顯示完整工具',exact:true}).click();
+    await page.getByRole('button',{name:`Download ${label}`,exact:true}).click();
+    await expect(page.locator('.error-banner')).toContainText(`${label} 匯出失敗`);
+    await expect(page.getByLabel('本段和弦')).toHaveText('C');
+    await expect(page.getByLabel('Current working version')).not.toContainText('有未保存修改');
+    fail=false;
+    const downloaded=page.waitForEvent('download');
+    await page.getByRole('button',{name:`Download ${label}`,exact:true}).click();
+    expect((await downloaded).suggestedFilename()).toBe(filename);
+    await expect(page.locator('.error-banner')).toHaveCount(0);
+    expect(errors).toEqual([]);
+  });
+}
+
+test('a delayed export cannot download an obsolete working score', async ({page}) => {
+  let pending:Route|undefined;
+  await page.route('**/scores/chordpro', route => {pending=route;});
+  await page.addInitScript(()=>{
+    (window as any).__exportLinks=[];
+    const click=HTMLAnchorElement.prototype.click;
+    HTMLAnchorElement.prototype.click=function(){(window as any).__exportLinks.push(this.download);click.call(this);};
+  });
+  await setup(page);
+  await page.getByRole('button',{name:'顯示完整工具',exact:true}).click();
+  await page.getByRole('button',{name:'Download ChordPro',exact:true}).click();
+  await expect.poll(()=>!!pending).toBe(true);
+  await page.getByRole('combobox',{name:'Max capo',exact:true}).selectOption('7');
+  await expect(page.getByLabel('Current working version')).toContainText('有未保存修改');
+  await pending!.fulfill({body:'old score'});
+  // Flush the response handling before inspecting download side effects.
+  await page.evaluate(()=>new Promise(resolve=>setTimeout(resolve,200)));
+  expect(await page.evaluate(()=>(window as any).__exportLinks)).toEqual([]);
+  await expect(page.getByRole('combobox',{name:'Max capo',exact:true})).toHaveValue('7');
+});
