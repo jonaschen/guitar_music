@@ -132,3 +132,50 @@ test('new users land on accepted chord view and explicit melody selection surviv
   await expect(page.getByLabel('Tab start bar')).toBeHidden();
   await expect(page.getByRole('region',{name:'和弦核對'})).toBeVisible();
 });
+
+
+test('chord review saves the exact score and reopens without falling back to analysis', async ({page}) => {
+  let saved:any;
+  await page.route('**/revisions', route => {
+    const body=route.request().postDataJSON();
+    expect(body.create_new).toBe(true); saved=body.score;
+    return route.fulfill({json:{revision_id:'chord-saved'}});
+  });
+  await page.route('**/revisions/chord-saved', route => route.fulfill({json:saved}));
+  await setup(page);
+  await page.getByRole('button',{name:'簡潔和弦頁',exact:true}).click();
+  await expect(page.getByText(/尚無此分析的保存記錄/)).not.toContainText('G 候選');
+  await page.getByRole('button',{name:'保存目前工作版本',exact:true}).click();
+  await expect(page).toHaveURL(/revision=chord-saved/);
+  expect(saved.chords).toEqual(score.chords);
+  expect(saved.melody).toEqual(score.melody);
+  // The saved revision must win even if the original analysis changes.
+  const changed=structuredClone(score);changed.chords[0].symbol='Dm';
+  await page.route('**/api/v1/jobs/entry-job', route => route.fulfill({json:{id:'entry-job',status:'completed',progress:100,artifacts:[],score:changed}}));
+  await page.reload();
+  await expect(page.getByLabel('Current working version')).toContainText('已保存／載入');
+  await expect(page.getByLabel('本段和弦')).toHaveText('C');
+  await expect(page.getByLabel('Tab start bar')).toBeHidden();
+  await page.getByRole('button',{name:'從這段開頭播放',exact:true}).click();
+  await expect.poll(()=>page.evaluate(()=>(window as any).__sources.filter((s:any)=>s.bufferDuration===8).length)).toBeGreaterThan(0);
+  await page.getByRole('button',{name:'暫停核對',exact:true}).click();
+});
+
+test('saved chord review remains playable when its source job has expired', async ({page}) => {
+  const saved=structuredClone(score);
+  saved.provenance.parameters={candidate_source_job_id:'entry-job'};
+  await setup(page);
+  await page.route('**/revisions/expired-source', route => route.fulfill({json:saved}));
+  await page.route('**/api/v1/jobs/entry-job', route => route.fulfill({status:404,json:{detail:'Expired'}}));
+  await page.goto('/?revision=expired-source&view=accompaniment');
+  const panel=page.getByRole('region',{name:'和弦核對'});
+  await expect(panel.getByText(/此版本目前沒有可用原曲/)).toBeVisible();
+  await expect(panel.getByRole('button',{name:'從這段開頭播放'})).toBeDisabled();
+  await expect(page.getByLabel('本段和弦')).toHaveText('C');
+  await panel.getByRole('button',{name:'只聽吉他',exact:true}).click();
+  await panel.getByRole('button',{name:'從這段開頭播放'}).click();
+  await expect.poll(()=>page.evaluate(()=>(window as any).__sources.filter((s:any)=>s.when!==undefined).length)).toBeGreaterThan(0);
+  expect(await page.evaluate(()=>(window as any).__sources.filter((s:any)=>s.bufferDuration===8).length)).toBe(0);
+  await panel.getByRole('button',{name:'暫停核對'}).click();
+  await expect(page.getByLabel('Current working version')).toContainText('已保存／載入');
+});

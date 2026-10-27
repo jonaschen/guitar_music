@@ -1,5 +1,13 @@
 # GuitarScribe operations guide
 
+For the current non-Docker local installation, use the startup instructions in
+[the Codex closeout guide](Closeout_2026-10-27.md). The Compose commands below
+apply only to a Docker deployment; `docker compose stop backend` does not stop
+a backend launched with `run_local_preview.sh`. For that local installation,
+stop the running backend in its own terminal (Ctrl+C), confirm it has exited,
+then copy the data directory and restart with the same launcher. Do not copy
+a live SQLite database as if it were a consistent stopped-service backup.
+
 GuitarScribe is designed for a single trusted host running Docker Compose. The
 analysis worker is intentionally limited to one concurrent job by default;
 long audio and optional vocal separation can use substantial CPU, RAM, and

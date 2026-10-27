@@ -2037,7 +2037,7 @@ export function App() {
               {rememberedVersion ? <div hidden={accompanimentView && focusMode && savedSnapshot?.score === score && rememberedVersion.id === savedSnapshot.id}>
                 <p>可恢復：{rememberedVersion.label} · {rememberedVersion.id}。此記錄不代表目前已載入。</p>
                 <button type="button" disabled={isLoadingRevision || isSavingRevision} onClick={() => void loadRevision(rememberedVersion.id)}>恢復上次保存版本</button>
-              </div> : <p>尚無此分析的保存記錄。G 候選套用後請保存；保存後可用版本網址重新開啟同一份譜。</p>}
+              </div> : <p>尚無此分析的保存記錄。請保存目前工作版本；保存後可用版本網址重新開啟同一份譜。</p>}
               {isLoadingRevision ? <button type="button" onClick={() => { revisionRequestRef.current++; setIsLoadingRevision(false); setSaveStatus("已取消讀取，目前工作譜不變。"); }}>取消讀取版本</button> : null}
               {restorePreview ? <div role="status">
                 <p>待恢復：{melodyVersion(restorePreview.next)} · {restorePreview.next.melody.length} 音符 · {restorePreview.id}</p>
