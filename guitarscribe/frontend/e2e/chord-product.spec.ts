@@ -171,3 +171,40 @@ test('half beat edit moves the shared boundary, auto-saves, compiles and undoes 
   await expect.poll(()=>saved?.score?.chords[0].end).toBe(2.5);
   expect(saved.score.chords[1].start).toBe(2.5);
 });
+
+test('renaming a continuation in Bar 7 preserves Bars 6 and 8, survives reload and undoes atomically',async({page})=>{
+  const working={...score,song:{...score.song,duration_seconds:16},beats:Array.from({length:32},(_,i)=>({time:i*.5,beat:i%4+1,measure:Math.floor(i/4)+1,confidence:1})),chords:[
+    {...score.chords[0],id:'before',symbol:'C',end:9.5},
+    {...score.chords[0],id:'span',symbol:'Am',start:9.5,end:15.5},
+    {...score.chords[0],id:'after',symbol:'G',start:15.5,end:16},
+  ]};
+  await setup(page,working);let saved:any;
+  await page.route('**/revisions',r=>{saved=r.request().postDataJSON();return r.fulfill({json:{revision_id:'bar-seven'}});});
+  await page.route('**/revisions/bar-seven',r=>r.fulfill({json:saved.score}));
+  await page.getByText('練習與編輯',{exact:true}).click();await page.getByRole('button',{name:'編輯和弦',exact:true}).click();
+  await page.getByRole('button',{name:'編輯 Bar 7 的 Am',exact:true}).click();
+  await expect(page.getByRole('heading',{name:'修改 第 7 小節的 Am',exact:true})).toBeVisible();
+  await page.getByLabel('和弦名稱',{exact:true}).fill('Em');await page.getByRole('button',{name:'套用和弦修改',exact:true}).click();
+  await expect(page.getByRole('button',{name:'編輯 Bar 6 的 Am',exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:'編輯 Bar 7 的 Em',exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:'編輯 Bar 8 的 Am',exact:true})).toBeVisible();
+  await expect.poll(()=>saved?.score?.chords?.length).toBe(5);
+  expect(saved.score.chords.slice(1,4).map((c:any)=>[c.symbol,c.start,c.end])).toEqual([['Am',9.5,12],['Em',12,14],['Am',14,15.5]]);
+  expect(new Set(saved.score.chords.map((c:any)=>c.id)).size).toBe(5);
+  await page.getByRole('button',{name:'復原',exact:true}).click();
+  await expect(page.getByRole('button',{name:'編輯 Bar 7 的 Am',exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'重做',exact:true}).click();
+  await expect(page.getByRole('button',{name:'編輯 Bar 7 的 Em',exact:true})).toBeVisible();
+  await page.reload();await expect(page.getByRole('button',{name:'播放 Bar 6 的 Am',exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:'播放 Bar 7 的 Em',exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:'播放 Bar 8 的 Am',exact:true})).toBeVisible();
+});
+
+
+test('stable review entry loads accepted Bar 7 revision without restoring remembered baseline',async({page})=>{
+  await setup(page);
+  await page.route('**/revisions/3188712c-bfb9-461d-a19b-d45b10466efe',r=>r.fulfill({json:{...score,song:{...score.song,title:'Accepted Bar 7'}}}));
+  await page.goto('/review.html');
+  await expect(page).toHaveURL(/revision=3188712c-bfb9-461d-a19b-d45b10466efe/);
+  await expect(page.getByRole('heading',{name:'Accepted Bar 7',exact:true})).toBeVisible();
+});

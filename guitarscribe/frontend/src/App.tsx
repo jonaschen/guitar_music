@@ -1,3 +1,4 @@
+import {editChordSlice, type ChordEditScope} from "./chordSlice";
 import {beatCoordinate, shiftByBeats, retimeChord} from "./chordTiming";
 import { ChordSongPage } from "./ChordSongPage";
 import { AccompanimentReview, type ReviewMode } from "./AccompanimentReview";
@@ -327,6 +328,7 @@ export function App() {
   const [isRetuningScore, setIsRetuningScore] = useState(false);
   const [capoRecommendations, setCapoRecommendations] = useState<Array<{ capo: number; shape_key: string; difficulty: number; open_chords: number; barre_chords: number; covered_chords: number }>>([]);
   const [selectedChordId, setSelectedChordId] = useState<string | null>(null);
+  const [chordEditScope, setChordEditScope] = useState<ChordEditScope | null>(null);
   const [compactEditOpen, setCompactEditOpen] = useState(false);
   const [chordDraft, setChordDraft] = useState("");
   const [chordStartDraft, setChordStartDraft] = useState("");
@@ -1743,6 +1745,7 @@ export function App() {
   }
 
   function selectChord(chord: ScoreChord, seekTime = chord.start) {
+    setChordEditScope(null);
     setSelectedChordId(chord.id);
     seekTo(seekTime);
     setChordDraft(chord.symbol);
@@ -1755,22 +1758,15 @@ export function App() {
     if (!/^[A-G][#b]?[a-zA-Z0-9+#b()°ø-]*(?:\/[A-G][#b]?)?$/.test(nextSymbol)) { setError("請輸入和弦名稱，例如 C、Am、G7 或 C/E。"); return; }
     setError("");
 
-    updateChords((chords) =>
-      chords.map((chord) =>
-        chord.id === selectedChordId
-          ? {
-              ...chord,
-              symbol: nextSymbol,
-              shape_symbol: shiftedChordName(nextSymbol, -(score?.guitar.capo ?? 0)),
-              source_symbol: shiftedChordName(nextSymbol, -(score?.key_context.transpose_semitones ?? 0)),
-              voicing_id: null,
-              available_voicings: [],
-              origin: "user",
-              edited: true,
-            }
-          : chord,
-      ),
-    );
+    try {
+      audioRef.current?.pause(); stopSynth(false);
+      updateChords(chords => editChordSlice(chords, selectedChordId, chordEditScope, {
+        symbol: nextSymbol,
+        shape_symbol: shiftedChordName(nextSymbol, -(score?.guitar.capo ?? 0)),
+        source_symbol: shiftedChordName(nextSymbol, -(score?.key_context.transpose_semitones ?? 0)),
+        voicing_id: null, available_voicings: [], origin: "user", edited: true,
+      }));
+    } catch (error) { setError(error instanceof Error ? error.message : "修改失敗，原譜已保留。"); }
   }
 
   function applyVoicing(voicing: NonNullable<ScoreChord["available_voicings"]>[number]) {
@@ -1992,8 +1988,8 @@ export function App() {
   }, [score, hasUnsavedChanges, analysisBusy, isSavingRevision]);
 
   const compactChordEditor = !MELODY_ENABLED && compactEditOpen && selectedChord ? <section className="compact-chord-editor" aria-label="修改和弦">
-                  <h3>修改 {selectedChord.symbol}</h3>
-                  <p>名稱只修改這段；調整拍長時，相連的下一個和弦會一起移動交界。可用「復原」取消。</p>
+                  <h3>修改 {chordEditScope ? `第 ${chordEditScope.bar} 小節的 ` : ""}{selectedChord.symbol}</h3>
+                  <p>{chordEditScope ? `名稱只修改第 ${chordEditScope.bar} 小節內選到的和弦，不影響前後小節。` : "名稱修改整段和弦。"}拍長調整仍影響整段和弦與相連交界，可用「復原」取消。</p>
                   <p aria-label="目前和弦拍長">目前拍長：{selectedChordBeats === null ? "拍點不足" : `${Number(selectedChordBeats.toFixed(2))} 拍`}</p>
                   <div><button type="button" disabled={selectedChordBeats === null} onClick={()=>changeChordBeats(-.5)}>減少半拍</button><button type="button" disabled={selectedChordBeats === null} onClick={()=>changeChordBeats(.5)}>增加半拍</button></div>
                   <p>拍長按鈕會立即套用並自動保存；已有休止不移動下一和弦，不能跨越其他和弦。</p>
@@ -2001,7 +1997,7 @@ export function App() {
                   <input id="compact-chord-name" value={chordDraft} onChange={e=>setChordDraft(e.target.value)} placeholder="例如 C、Am、G7" />
                   <div><button type="button" disabled={!chordDraft.trim() || chordDraft.trim()===selectedChord.symbol} onClick={()=>{renameSelectedChord();setCompactEditOpen(false);}}>套用和弦修改</button>
                   <button type="button" onClick={()=>{setChordDraft(selectedChord.symbol);setCompactEditOpen(false);}}>關閉編輯</button>
-                  <button type="button" onClick={()=>{setCompactEditOpen(false);setFocusedWorkspace(false);window.requestAnimationFrame(()=>document.querySelector<HTMLElement>(".side-panel")?.scrollIntoView({block:"start"}));}}>調整時間與指型</button></div>
+                  <button type="button" onClick={()=>{setCompactEditOpen(false);setChordEditScope(null);setFocusedWorkspace(false);window.requestAnimationFrame(()=>document.querySelector<HTMLElement>(".side-panel")?.scrollIntoView({block:"start"}));}}>調整時間與指型</button></div>
                 </section> : null;
 
   return (
@@ -2103,6 +2099,7 @@ export function App() {
               <div>
                 <p className="eyebrow">GuitarScribe</p>
                 <h2>{score ? score.song.title : "開始你的和弦譜"}</h2>
+                {!MELODY_ENABLED && revisionId === "bc41b274-69d4-430f-8dda-52bd0759119d" ? <p role="note">這是第七小節修正前的歷史版本。<a href="/review.html" target="_blank" rel="noopener noreferrer">開啟已確認版本（新分頁）</a>；目前修改保留在此頁。</p> : null}
                 {!MELODY_ENABLED && score ? <p role="status" className="autosave-status">{isSavingRevision ? "正在保存…" : hasUnsavedChanges ? lastAutoSaveAttempt.current === score ? "尚未保存，請在版本歷史中重試。" : "等待自動保存…" : savedSnapshot ? "已保存" : "原始分析已保留"}</p> : null}
               </div>
               <div className="status-pill" hidden={!MELODY_ENABLED}>{status === "ready" ? "可編輯" : analysisJob ? `${analysisJob.progress}%` : "尚未分析"}</div>
@@ -2156,7 +2153,7 @@ export function App() {
                   editPanel={compactChordEditor} speed={playbackRate} onSpeed={setSpeed}
                   keyControls={!MELODY_ENABLED ? <><label>調性 <select aria-label="歌曲調性" value={score.key_context.target.key} disabled={isRetuningScore} onChange={e=>void retuneScore(e.target.value)}>{PITCH_TO_FLAT_KEY.map(key=><option key={key} value={key}>{key}</option>)}{!PITCH_TO_FLAT_KEY.includes(score.key_context.target.key)?<option value={score.key_context.target.key}>{score.key_context.target.key}</option>:null}</select></label><label>Capo <select aria-label="歌曲 Capo" value={capo} disabled={isRetuningScore} onChange={e=>void retuneScore(score.key_context.target.key,Number(e.target.value))}>{Array.from({length:9},(_,n)=><option key={n} value={n}>{n}</option>)}</select></label></>:null}
                   secondaryActions={!MELODY_ENABLED ? <><button type="button" disabled={!undoHistory.length} onClick={undoScoreChange}>復原</button><button type="button" disabled={!redoHistory.length} onClick={redoScoreChange}>重做</button></>:null}
-                  onEditChord={id => { const chord=score.chords.find(c=>c.id===id); if (!chord) return; selectChord(chord); setCompactEditOpen(true); window.requestAnimationFrame(()=>document.querySelector<HTMLInputElement>("#compact-chord-name")?.focus()); }} />
+                  onEditChord={(id, scope) => { const chord=score.chords.find(c=>c.id===id); if (!chord) return; selectChord(chord, Math.max(chord.start, scope?.start ?? chord.start)); setChordEditScope(scope ?? null); setCompactEditOpen(true); window.requestAnimationFrame(()=>document.querySelector<HTMLInputElement>("#compact-chord-name")?.focus()); }} />
                 {!MELODY_ENABLED ? <section className="compact-exports" aria-label="保存與匯出">
                   <details><summary>下載與備份</summary><p>下載和弦文字、伴奏 MIDI 或完整工作檔。</p>
                   <div><button type="button" onClick={()=>void downloadChordPro()}>下載和弦譜</button>

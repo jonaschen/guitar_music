@@ -47,7 +47,7 @@ export function ChordSongPage({score,sourceAvailable,playing,preparing,playhead,
         return <div className={`notation-measure${active?' current-measure':''}`} key={`${bar.number}-${bar.start}`} aria-label={`Bar ${bar.number}`}>
           <span className="measure-number">{bar.number}</span>
           <div className="measure-chords">{entries.length?entries.map(c=><button key={c.id} type="button" disabled={!editing&&unavailable} aria-label={`${editing?'編輯':'播放'} Bar ${bar.number} 的 ${c.symbol}`} title={`${c.symbol} · ${layout.length(Math.max(c.start,bar.start),Math.min(c.end,bar.end))}`} onClick={()=>{
-            if(editing){onStop();onEditChord?.(c.id);}
+            if(editing){onStop();onEditChord?.(c.id,{start:bar.start,end:bar.end,bar:bar.number});}
             else {const from=Math.max(c.start,bar.start);onStop();if(loop&&(from<start||from>=end))setLoop(false);onPlay(mode,loop&&from>=start&&from<end?start:0,loop&&from>=start&&from<end?end:score.song.duration_seconds,loop&&from>=start&&from<end,from);}
           }}>{c.symbol}{c.start<bar.start?<span className="tie-mark" aria-label="延續"> —</span>:null}</button>):<span className="no-chord">—</span>}</div>
         </div>;

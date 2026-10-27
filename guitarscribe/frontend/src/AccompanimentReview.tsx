@@ -8,7 +8,7 @@ export function AccompanimentReview({ score, sourceAvailable, playing, preparing
   score: SongScore; sourceAvailable: boolean; playing: boolean; preparing: boolean; playhead: number;
   guitarVolume: number; performanceLabel: string; onVolume: (value: number) => void;
   onPlay: (mode: ReviewMode, start: number, end: number, loop: boolean, from?: number) => void;
-  onStop: () => void; onTools: () => void; onEditChord?: (id: string) => void;
+  onStop: () => void; onTools: () => void; onEditChord?: (id: string, scope?: {start:number;end:number;bar:number}) => void;
 }) {
   const bars = useMemo(() => notationBars(score), [score]);
   const [index, setIndex] = useState(0), [count, setCount] = useState(4);
