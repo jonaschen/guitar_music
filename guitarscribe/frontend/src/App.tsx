@@ -1,3 +1,4 @@
+import {beatCoordinate, shiftByBeats, retimeChord} from "./chordTiming";
 import { ChordSongPage } from "./ChordSongPage";
 import { AccompanimentReview, type ReviewMode } from "./AccompanimentReview";
 import { ChangeEvent, FormEvent, lazy, Suspense, useEffect, useRef, useState } from "react";
@@ -741,10 +742,10 @@ export function App() {
     return {
       start: Number.isFinite(draftStart) ? draftStart : selectedChord.start,
       end: Number.isFinite(draftEnd) ? draftEnd : selectedChord.end,
-      startMin: ordered[index - 1]?.end ?? 0,
+      startMin: ordered[index - 1] && Math.abs(ordered[index - 1].end-selectedChord.start)<1e-6 ? ordered[index - 1].start + .1 : ordered[index - 1]?.end ?? 0,
       startMax: selectedChord.end - 0.1,
       endMin: selectedChord.start + 0.1,
-      endMax: ordered[index + 1]?.start ?? score.song.duration_seconds,
+      endMax: ordered[index + 1] && Math.abs(ordered[index + 1].start-selectedChord.end)<1e-6 ? ordered[index + 1].end - .1 : ordered[index + 1]?.start ?? score.song.duration_seconds,
     };
   })();
   const activeChordId = score?.chords.find((chord) => playbackTime >= chord.start && playbackTime < chord.end)?.id ?? null;
@@ -1777,20 +1778,28 @@ export function App() {
     updateChords((chords) => chords.map((chord) => chord.id === selectedChordId ? { ...chord, voicing_id: voicing.id, available_voicings: candidateVoicings, origin: "user", edited: true } : chord));
   }
 
-  function saveSelectedChordTiming() {
+  function applyChordTiming(start: number, end: number) {
     if (!selectedChordId || !score) return;
-    const start = Number(chordStartDraft);
-    const end = Number(chordEndDraft);
-    if (!Number.isFinite(start) || !Number.isFinite(end) || start < 0 || end > score.song.duration_seconds || end - start < 0.1) {
-      setError("Chord timing must be within the song and at least 0.1 seconds long.");
-      return;
-    }
-    if (score.chords.some((chord) => chord.id !== selectedChordId && start < chord.end && end > chord.start)) {
-      setError("Chord timing cannot overlap another chord.");
-      return;
-    }
-    updateChords((chords) => chords.map((chord) => chord.id === selectedChordId ? { ...chord, start, end, origin: "user", edited: true } : chord));
+    try {
+      const next = retimeChord(score, selectedChordId, start, end);
+      audioRef.current?.pause(); stopSynth(false);
+      setError(""); recordScoreChange(next);
+    } catch (error) { setError(error instanceof Error ? error.message : "拍長調整失敗，原譜已保留。"); }
   }
+  function saveSelectedChordTiming() {
+    if (!chordStartDraft.trim() || !chordEndDraft.trim()) { setError("請填入開始與結束時間。"); return; }
+    applyChordTiming(Number(chordStartDraft), Number(chordEndDraft));
+  }
+  function changeChordBeats(delta: number) {
+    if (!score || !selectedChord) return;
+    try { applyChordTiming(selectedChord.start, shiftByBeats(score, selectedChord.end, delta)); }
+    catch (error) { setError(error instanceof Error ? error.message : "目前無法調整拍長。"); }
+  }
+  const selectedChordBeats = (() => {
+    if (!score || !selectedChord) return null;
+    try {return beatCoordinate(score,selectedChord.end)-beatCoordinate(score,selectedChord.start);}
+    catch {return null;}
+  })();
 
   function addChordAtPlayhead() {
     if (!score) return;
@@ -1984,11 +1993,14 @@ export function App() {
 
   const compactChordEditor = !MELODY_ENABLED && compactEditOpen && selectedChord ? <section className="compact-chord-editor" aria-label="修改和弦">
                   <h3>修改 {selectedChord.symbol}</h3>
-                  <p>修改只影響這一段，可隨時「還原上一步」。</p>
+                  <p>名稱只修改這段；調整拍長時，相連的下一個和弦會一起移動交界。可用「復原」取消。</p>
+                  <p aria-label="目前和弦拍長">目前拍長：{selectedChordBeats === null ? "拍點不足" : `${Number(selectedChordBeats.toFixed(2))} 拍`}</p>
+                  <div><button type="button" disabled={selectedChordBeats === null} onClick={()=>changeChordBeats(-.5)}>減少半拍</button><button type="button" disabled={selectedChordBeats === null} onClick={()=>changeChordBeats(.5)}>增加半拍</button></div>
+                  <p>拍長按鈕會立即套用並自動保存；已有休止不移動下一和弦，不能跨越其他和弦。</p>
                   <label htmlFor="compact-chord-name">和弦名稱</label>
                   <input id="compact-chord-name" value={chordDraft} onChange={e=>setChordDraft(e.target.value)} placeholder="例如 C、Am、G7" />
                   <div><button type="button" disabled={!chordDraft.trim() || chordDraft.trim()===selectedChord.symbol} onClick={()=>{renameSelectedChord();setCompactEditOpen(false);}}>套用和弦修改</button>
-                  <button type="button" onClick={()=>{setChordDraft(selectedChord.symbol);setCompactEditOpen(false);}}>取消修改</button>
+                  <button type="button" onClick={()=>{setChordDraft(selectedChord.symbol);setCompactEditOpen(false);}}>關閉編輯</button>
                   <button type="button" onClick={()=>{setCompactEditOpen(false);setFocusedWorkspace(false);window.requestAnimationFrame(()=>document.querySelector<HTMLElement>(".side-panel")?.scrollIntoView({block:"start"}));}}>調整時間與指型</button></div>
                 </section> : null;
 

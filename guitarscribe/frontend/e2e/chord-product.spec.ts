@@ -1,3 +1,4 @@
+import {beatCoordinate, shiftByBeats, retimeChord} from "../src/chordTiming";
 import {test, expect} from '@playwright/test';
 const score = {
   schema_version:'1.0', song:{title:'Entry preview test',source_type:'local',duration_seconds:8},
@@ -10,10 +11,10 @@ const score = {
   provenance:{beat_engine:'test',chord_engine:'test',melody_engine:'test',parameters:{}},
 };
 
-async function setup(page:any) {
+async function setup(page:any, working:any=score) {
   await page.addInitScript(()=>{localStorage.setItem('guitarscribe.editorView','melody');localStorage.setItem('guitarscribe.workspaceMode','full');});
   await page.route('**/api/v1/capabilities',r=>r.fulfill({json:{melody_available:true,youtube_enabled:true,vocal_separation_enabled:true}}));
-  const archived={...score,melody:[{id:'n',start:0,end:1,midi:60,note:'C4',confidence:1,origin:'model',edited:false}]};
+  const archived={...working,melody:[{id:'n',start:0,end:1,midi:60,note:'C4',confidence:1,origin:'model',edited:false}]};
   await page.route('**/api/v1/jobs/product-job',r=>r.fulfill({json:{id:'product-job',status:'completed',progress:100,artifacts:[],score:archived}}));
   await page.route('**/api/v1/jobs/product-job/audio',r=>r.fulfill({status:404,body:''}));
   await page.route('**/revisions/*/history',r=>r.fulfill({json:[]}));
@@ -127,4 +128,46 @@ test('normal chord click seeks and plays; editing is explicit',async({page})=>{
   await expect(page.locator('.playback-status')).toContainText(/播放中 · [4-7]\./);
   await expect(page.getByRole('region',{name:'修改和弦'})).toHaveCount(0);
   await page.getByRole('button',{name:'暫停',exact:true}).click();
+});
+
+
+test('beat editing follows variable beat durations and protects gaps and neighbours',()=>{
+  const s:any={...score,beats:[0,.4,1,1.8,2.8,4].map((time,i)=>({time,beat:i%4+1,measure:1})),chords:[{...score.chords[0],end:1},{...score.chords[0],id:'g',symbol:'G',start:1,end:4}]};
+  const end=shiftByBeats(s,1,.5);expect(end).toBeCloseTo(1.4);
+  const next=retimeChord(s,'c',0,end);expect(next.chords[1].start).toBeCloseTo(end);
+  expect(beatCoordinate(next,end)-beatCoordinate(next,0)).toBeCloseTo(2.5);
+  expect(s.chords[0].end).toBe(1);
+  expect(()=>retimeChord(s,'c',0,4)).toThrow(/相鄰和弦太短/);
+  expect(()=>retimeChord(s,'c',0,9)).toThrow(/歌曲範圍/);
+  const gap={...s,chords:[s.chords[0],{...s.chords[1],start:2}]};
+  expect(retimeChord(gap,'c',0,1.4).chords[1].start).toBe(2);
+  expect(()=>retimeChord(gap,'c',0,2.2)).toThrow(/跨過其他和弦/);
+  expect(()=>shiftByBeats({...s,beats:[]},1,.5)).toThrow(/拍點不足/);
+});
+
+test('half beat edit moves the shared boundary, auto-saves, compiles and undoes both chords',async({page})=>{
+  const working={...score,chords:[{...score.chords[0],end:2},{...score.chords[0],id:'g',symbol:'G',start:2,end:8}]};
+  await setup(page,working);let saved:any,compiled:any;
+  await page.route('**/revisions',r=>{saved=r.request().postDataJSON();return r.fulfill({json:{revision_id:'timed'}});});
+  await page.getByText('練習與編輯',{exact:true}).click();await page.getByRole('button',{name:'編輯和弦',exact:true}).click();
+  await page.getByRole('button',{name:'編輯 Bar 1 的 C',exact:true}).click();
+  await page.getByRole('button',{name:'增加半拍',exact:true}).click();
+  await expect(page.getByLabel('目前和弦拍長')).toContainText('4.5 拍');
+  await expect.poll(()=>saved?.score?.chords[0].end).toBe(2.25);
+  expect(saved.score.chords[1].start).toBe(2.25);expect(saved.score.melody).toHaveLength(1);
+  await page.route('**/scores/playback/manifest',r=>{compiled=r.request().postDataJSON();return r.fulfill({json:{revision:'test',duration_seconds:8,bpm:120,time_signature:'4/4',events:[]}});});
+  await page.getByLabel('播放聲音',{exact:true}).selectOption('guitar');await page.getByRole('button',{name:'播放',exact:true}).click();
+  await expect.poll(()=>compiled?.chords[0].end).toBe(2.25);expect(compiled.chords[1].start).toBe(2.25);
+  await page.getByRole('button',{name:'暫停',exact:true}).click();
+  await page.getByRole('button',{name:'復原',exact:true}).click();
+  await expect(page.getByLabel('目前和弦拍長')).toContainText('4 拍');
+  await expect.poll(()=>saved?.score?.chords[1].start).toBe(2);
+  await page.getByRole('button',{name:'重做',exact:true}).click();
+  await expect(page.getByLabel('目前和弦拍長')).toContainText('4.5 拍');
+  await page.getByRole('button',{name:'調整時間與指型',exact:true}).click();
+  await expect(page.getByLabel('Drag chord end boundary')).toHaveAttribute('max','7.9');
+  await page.locator('.timing-fields input').nth(1).fill('2.5');
+  await page.getByRole('button',{name:'Save timing',exact:true}).click();
+  await expect.poll(()=>saved?.score?.chords[0].end).toBe(2.5);
+  expect(saved.score.chords[1].start).toBe(2.5);
 });
