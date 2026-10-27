@@ -1096,3 +1096,6 @@ body:has(.chord-product) { background: #12161c; }
 @media(prefers-reduced-motion:no-preference) { .chord-product button { transition: background-color 200ms ease; } }
 
 .song-sheet .measure-chords button { min-width: 44px; }
+
+.song-sheet .measure-chords button { display: inline-flex; flex-direction: column; align-items: flex-start; justify-content: center; padding: 4px; }
+.song-sheet .measure-chords .chord-duration { font-size: 14px; font-weight: 400; color: var(--text-muted); white-space: normal; }

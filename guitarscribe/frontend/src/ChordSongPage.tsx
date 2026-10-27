@@ -37,7 +37,7 @@ export function ChordSongPage({score,sourceAvailable,playing,preparing,playhead,
       </div>
       <p>原曲合奏維持原速；切換「吉他」可調整練習速度。</p>
     </details>
-    <p className="sheet-hint">{editing?'編輯模式：點選和弦修改名稱。':'點和弦即可從該處播放。'}</p>
+    <p className="sheet-hint">{editing?'編輯模式：點選和弦修改名稱或刪除片段。':'點和弦即可從該處播放。'}</p>
     {editing?editPanel:null}
     <div className="notation-sheet" aria-label="和弦譜">
       {bars.map(bar=>{
@@ -49,7 +49,7 @@ export function ChordSongPage({score,sourceAvailable,playing,preparing,playhead,
           <div className="measure-chords">{entries.length?entries.map(c=><button key={c.id} type="button" disabled={!editing&&unavailable} aria-label={`${editing?'編輯':'播放'} Bar ${bar.number} 的 ${c.symbol}`} title={`${c.symbol} · ${layout.length(Math.max(c.start,bar.start),Math.min(c.end,bar.end))}`} onClick={()=>{
             if(editing){onStop();onEditChord?.(c.id,{start:bar.start,end:bar.end,bar:bar.number});}
             else {const from=Math.max(c.start,bar.start);onStop();if(loop&&(from<start||from>=end))setLoop(false);onPlay(mode,loop&&from>=start&&from<end?start:0,loop&&from>=start&&from<end?end:score.song.duration_seconds,loop&&from>=start&&from<end,from);}
-          }}>{c.symbol}{c.start<bar.start?<span className="tie-mark" aria-label="延續"> —</span>:null}</button>):<span className="no-chord">—</span>}</div>
+          }}><span>{c.symbol}{c.start<bar.start?<span className="tie-mark" aria-label="延續"> —</span>:null}</span><small className="chord-duration">{layout.length(Math.max(c.start,bar.start),Math.min(c.end,bar.end))}</small></button>):<span className="no-chord">—</span>}</div>
         </div>;
       })}
     </div>

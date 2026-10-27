@@ -1,4 +1,4 @@
-import {editChordSlice, type ChordEditScope} from "./chordSlice";
+import {editChordSlice, removeChordSlice, type ChordEditScope} from "./chordSlice";
 import {beatCoordinate, shiftByBeats, retimeChord} from "./chordTiming";
 import { ChordSongPage } from "./ChordSongPage";
 import { AccompanimentReview, type ReviewMode } from "./AccompanimentReview";
@@ -1853,6 +1853,15 @@ export function App() {
     );
   }
 
+  function removeSelectedBarChord() {
+    if (!selectedChordId || !chordEditScope) return;
+    try {
+      audioRef.current?.pause(); stopSynth(false); setError("");
+      updateChords(chords => removeChordSlice(chords,selectedChordId,chordEditScope));
+      setCompactEditOpen(false); setChordEditScope(null); setSelectedChordId(null);
+    } catch (error) {setError(error instanceof Error ? error.message : "刪除失敗，原譜保留。");}
+  }
+
   function deleteSelectedChord() {
     if (!selectedChordId) return;
     updateChords((chords) => chords.filter((chord) => chord.id !== selectedChordId));
@@ -1990,9 +1999,11 @@ export function App() {
   const compactChordEditor = !MELODY_ENABLED && compactEditOpen && selectedChord ? <section className="compact-chord-editor" aria-label="修改和弦">
                   <h3>修改 {chordEditScope ? `第 ${chordEditScope.bar} 小節的 ` : ""}{selectedChord.symbol}</h3>
                   <p>{chordEditScope ? `名稱只修改第 ${chordEditScope.bar} 小節內選到的和弦，不影響前後小節。` : "名稱修改整段和弦。"}拍長調整仍影響整段和弦與相連交界，可用「復原」取消。</p>
-                  <p aria-label="目前和弦拍長">目前拍長：{selectedChordBeats === null ? "拍點不足" : `${Number(selectedChordBeats.toFixed(2))} 拍`}</p>
+                  {chordEditScope && selectedChordBeats !== null && score ? <p aria-label="本小節片段拍長">本小節內：{Number((beatCoordinate(score,Math.min(selectedChord.end,chordEditScope.end))-beatCoordinate(score,Math.max(selectedChord.start,chordEditScope.start))).toFixed(2))} 拍</p> : null}
+                  <p aria-label="目前和弦拍長">整段拍長（含跨小節部分）：{selectedChordBeats === null ? "拍點不足" : `${Number(selectedChordBeats.toFixed(2))} 拍`}</p>
                   <div><button type="button" disabled={selectedChordBeats === null} onClick={()=>changeChordBeats(-.5)}>減少半拍</button><button type="button" disabled={selectedChordBeats === null} onClick={()=>changeChordBeats(.5)}>增加半拍</button></div>
                   <p>拍長按鈕會立即套用並自動保存；已有休止不移動下一和弦，不能跨越其他和弦。</p>
+                  {chordEditScope ? <div className="chord-removal"><p>只刪除此小節內的片段：前面相連的和弦會接續；沒有則留白。下一小節保留，可用「復原」取消。</p><button type="button" onClick={removeSelectedBarChord}>刪除此小節內的片段</button></div> : null}
                   <label htmlFor="compact-chord-name">和弦名稱</label>
                   <input id="compact-chord-name" value={chordDraft} onChange={e=>setChordDraft(e.target.value)} placeholder="例如 C、Am、G7" />
                   <div><button type="button" disabled={!chordDraft.trim() || chordDraft.trim()===selectedChord.symbol} onClick={()=>{renameSelectedChord();setCompactEditOpen(false);}}>套用和弦修改</button>

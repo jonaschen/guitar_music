@@ -1,3 +1,4 @@
+import {removeChordSlice} from "../src/chordSlice";
 import {beatCoordinate, shiftByBeats, retimeChord} from "../src/chordTiming";
 import {test, expect} from '@playwright/test';
 const score = {
@@ -207,4 +208,32 @@ test('stable review entry loads accepted Bar 7 revision without restoring rememb
   await page.goto('/review.html');
   await expect(page).toHaveURL(/revision=3188712c-bfb9-461d-a19b-d45b10466efe/);
   await expect(page.getByRole('heading',{name:'Accepted Bar 7',exact:true})).toBeVisible();
+});
+
+
+test('bar deletion preserves outside spans and gaps without mutating original',()=>{
+  const c:any={...score.chords[0],start:0,end:8};
+  const removed=removeChordSlice([c],'c',{start:2,end:4,bar:2});
+  expect(removed.map(x=>[x.start,x.end])).toEqual([[0,2],[4,8]]);
+  expect(new Set(removed.map(x=>x.id)).size).toBe(2);expect(c.end).toBe(8);
+  const gap:any=[{...c,id:'p',end:1},{...c,id:'g',symbol:'G',start:1.5,end:4}];
+  expect(removeChordSlice(gap,'g',{start:0,end:2,bar:1}).map(x=>[x.start,x.end])).toEqual([[0,1],[2,4]]);
+});
+
+test('deleting trailing fragment fills with previous chord, preserves next bar, saves and undoes',async({page})=>{
+  const working={...score,chords:[{...score.chords[0],end:1.99},{...score.chords[0],id:'g',symbol:'G',start:1.99,end:8}]};
+  await setup(page,working);let saved:any;
+  await page.route('**/revisions',r=>{saved=r.request().postDataJSON();return r.fulfill({json:{revision_id:'removed-fragment'}});});
+  await page.route('**/revisions/removed-fragment',r=>r.fulfill({json:saved.score}));
+  await page.getByText('練習與編輯',{exact:true}).click();await page.getByRole('button',{name:'編輯和弦',exact:true}).click();
+  const fragment=page.getByRole('button',{name:'編輯 Bar 1 的 G',exact:true});await expect(fragment).toContainText('0.02 拍');await fragment.click();
+  await expect(page.getByLabel('本小節片段拍長')).toContainText('0.02 拍');
+  await page.getByRole('button',{name:'刪除此小節內的片段',exact:true}).click();
+  await expect(fragment).toHaveCount(0);await expect(page.getByRole('button',{name:'編輯 Bar 2 的 G',exact:true})).toBeVisible();
+  await expect.poll(()=>saved?.score?.chords[0].end).toBe(2);expect(saved.score.chords[1].start).toBe(2);
+  expect(saved.score.melody).toHaveLength(1);
+  await page.getByRole('button',{name:'復原',exact:true}).click();await expect(fragment).toBeVisible();
+  await page.getByRole('button',{name:'重做',exact:true}).click();await expect(fragment).toHaveCount(0);
+  await page.reload();await expect(page.getByRole('button',{name:'播放 Bar 1 的 G',exact:true})).toHaveCount(0);
+  await expect(page.getByRole('button',{name:'播放 Bar 2 的 G',exact:true})).toBeVisible();
 });
