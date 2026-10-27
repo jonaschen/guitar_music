@@ -236,6 +236,7 @@ export function App() {
   const [capabilitiesFailed, setCapabilitiesFailed] = useState(false);
   const pendingAnalysisBase = useRef<SongScore | null | undefined>(undefined);
   const submitInFlight = useRef(false);
+  const pendingAnalysisOrigin = useRef<{ score: SongScore; job: AnalysisJob | null; revision: string | null } | null>(null);
   useEffect(() => {
     let disposed = false;
     void fetch(`${API_BASE}/api/v1/capabilities`).then(response => {
@@ -548,9 +549,11 @@ export function App() {
             setStatus("ready");
             setSaveStatus("新曲目已完成；目前工作譜在分析期間改變，請先保存，再確認載入新結果。");
             pendingAnalysisBase.current = undefined;
+            pendingAnalysisOrigin.current = null;
             return;
           }
           pendingAnalysisBase.current = undefined;
+          pendingAnalysisOrigin.current = null;
           audioRef.current?.pause(); stopSynth(false); referenceStopRef.current();
           replaceScore(scoreFromJob(nextJob));
           restoreWorkingJob(nextJob.id);
@@ -560,9 +563,7 @@ export function App() {
           setStatus("ready");
           setShowNewSong(false); setFocusedWorkspace(true);
         } else if (nextJob.status === "failed" || nextJob.status === "cancelled") {
-          pendingAnalysisBase.current = undefined;
-          setStatus("error");
-          setError(nextJob.error ?? nextJob.message);
+          recoverFailedAnalysis(nextJob);
         }
       } catch (pollError) {
         if (!disposed) {
@@ -782,6 +783,7 @@ export function App() {
 
     submitInFlight.current = true;
     pendingAnalysisBase.current = scoreRef.current;
+    pendingAnalysisOrigin.current = score ? { score, job: analysisJob, revision: new URLSearchParams(window.location.search).get("revision") } : null;
     setStatus("queued");
     setError("");
     try {
@@ -800,17 +802,45 @@ export function App() {
       window.localStorage.setItem("guitarscribe.activeJobId", createdJob.id);
     } catch (submitError) {
       pendingAnalysisBase.current = undefined;
+      pendingAnalysisOrigin.current = null;
       setStatus("error");
       setError(submitError instanceof Error ? submitError.message : "Analysis failed.");
     } finally { submitInFlight.current = false; }
+  }
+
+  function recoverFailedAnalysis(failed: AnalysisJob) {
+    const origin = pendingAnalysisOrigin.current;
+    pendingAnalysisBase.current = undefined;
+    pendingAnalysisOrigin.current = null;
+    setStatus("error");
+    setError(failed.error ?? failed.message ?? "分析已停止，目前工作譜保留。");
+    const current = scoreRef.current;
+    if (!origin || !current || sourceJobId(current) !== sourceJobId(origin.score)) return;
+    // Restore only the source context; never replace edits or clear Undo.
+    const source = sourceJobId(current);
+    const previousJob = origin.job?.status === "completed" && origin.job.id === source ? origin.job : null;
+    setAnalysisJob(previousJob);
+    setAudioUrl(previousJob ? `${API_BASE}/api/v1/jobs/${previousJob.id}/audio` : null);
+    setDiagnosticAudioTrack("source");
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("job") === failed.id) {
+      url.searchParams.delete("job");
+      if (origin.revision) url.searchParams.set("revision", origin.revision);
+      else if (source) url.searchParams.set("job", source);
+      window.history.replaceState({}, "", url);
+    }
+    try {
+      if (source) localStorage.setItem("guitarscribe.activeJobId", source);
+      else localStorage.removeItem("guitarscribe.activeJobId");
+    } catch { /* The restored URL remains usable without browser storage. */ }
   }
 
   async function cancelCurrentJob() {
     if (!analysisJob) return;
     try {
       const cancelled = await cancelAnalysisJob(analysisJob.id);
-      if (["failed", "cancelled"].includes(cancelled.status)) pendingAnalysisBase.current = undefined;
       setAnalysisJob(cancelled);
+      if (["failed", "cancelled"].includes(cancelled.status)) recoverFailedAnalysis(cancelled);
     } catch (cancelError) {
       setError(cancelError instanceof Error ? cancelError.message : "Could not cancel analysis.");
     }
