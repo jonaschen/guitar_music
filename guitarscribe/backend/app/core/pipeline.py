@@ -132,81 +132,84 @@ class AnalysisPipeline:
         raw_detector_notes = []
         raw_contour = None
         source_timed_melody = False
-        try:
-            melody_audio = normalized
-            separation_warnings: list[str] = []
-            if separate_vocals and self.melody_separator and melody_mode == MelodyMode.VOCAL:
-                try:
-                    await report("vocal_separation")
-                    melody_audio, source_separated = await self.melody_separator.separate(normalized, melody_mode)
-                    if melody_audio.temporary_directory:
-                        temporary_directories.add(melody_audio.temporary_directory)
-                    if source_separated:
-                        artifact_directory = options.get("_artifact_directory")
-                        if artifact_directory:
-                            artifact_path = Path(artifact_directory) / "vocal-stem.wav"
-                            shutil.copy2(melody_audio.path, artifact_path)
-                            if melody_audio.accompaniment_path is not None:
-                                # Preserve the separator's existing output for
-                                # source review; never treat it as a lead line.
-                                try:
-                                    target = Path(artifact_directory) / "accompaniment-stem.wav"
-                                    pending = target.with_name("accompaniment-stem.pending.wav")
-                                    shutil.copy2(melody_audio.accompaniment_path, pending)
-                                    pending.replace(target)
-                                except OSError as accompaniment_error:
-                                    logger.warning("Accompaniment diagnostic unavailable: %s", accompaniment_error)
-                                    separation_warnings.append("Accompaniment comparison audio could not be saved; vocal extraction is unchanged.")
-                        separation_warnings.append("Vocal isolation was applied before melody extraction.")
-                except Exception as separation_error:
-                    logger.warning("Vocal separation failed; using full mix: %s", separation_error)
-                    separation_warnings.append(f"Vocal separation failed; using full mix: {separation_error}")
-            elif separate_vocals and melody_mode == MelodyMode.VOCAL:
-                separation_warnings.append("Vocal isolation was requested but is not enabled on this server; using the full mix.")
-            await report("melody_analysis")
-            analyzer = self.vocal_melody_analyzer if source_separated and self.vocal_melody_analyzer else self.melody_analyzer
+        if melody_mode == MelodyMode.OFF:
+            melody = MelodyAnalysis(engine="disabled", mode=MelodyMode.OFF, notes=[])
+        else:
             try:
-                melody = await analyzer.analyze(melody_audio, beats, melody_mode)
-            except Exception as melody_error:
-                if analyzer is self.melody_analyzer:
-                    raise
-                logger.warning("pYIN vocal tracing failed; falling back to Basic Pitch: %s", melody_error)
-                separation_warnings.append("Vocal pitch tracing failed; used Basic Pitch on the isolated vocal stem.")
-                melody = await self.melody_analyzer.analyze(melody_audio, beats, melody_mode)
-            raw_detector_notes = [note.model_copy(deep=True) for note in melody.notes]
-            raw_contour = melody.contour
-            # Preserve machine-readable evidence before quantization/selection.
-            # A rendered raw WAV alone cannot explain which notes were removed.
-            if options.get("_artifact_directory"):
-                (Path(options["_artifact_directory"]) / "melody-candidates.json").write_text(
-                    json.dumps({"schema_version": "1.0", "source_separated": source_separated,
-                                "analysis": melody.model_dump(mode="json")}, ensure_ascii=False, indent=2),
-                    encoding="utf-8",
-                )
-            source_timed_melody = source_separated and melody.engine == "pyin_vocal" and melody.contour is not None
-            if source_timed_melody:
-                melody.notes = self.melody_post.process_source_timed(melody.notes)
-                melody.warnings.append("Vocal notes preserve source frame timing; no automatic beat snapping or repeated-note merging. Verify pitches and bar alignment by ear.")
-            else:
-                melody.notes = self.melody_post.process(melody.notes, beats.beats, melody_mode)
-            if source_separated and analyzer is not self.melody_analyzer and not source_timed_melody:
+                melody_audio = normalized
+                separation_warnings: list[str] = []
+                if separate_vocals and self.melody_separator and melody_mode == MelodyMode.VOCAL:
+                    try:
+                        await report("vocal_separation")
+                        melody_audio, source_separated = await self.melody_separator.separate(normalized, melody_mode)
+                        if melody_audio.temporary_directory:
+                            temporary_directories.add(melody_audio.temporary_directory)
+                        if source_separated:
+                            artifact_directory = options.get("_artifact_directory")
+                            if artifact_directory:
+                                artifact_path = Path(artifact_directory) / "vocal-stem.wav"
+                                shutil.copy2(melody_audio.path, artifact_path)
+                                if melody_audio.accompaniment_path is not None:
+                                    # Preserve the separator's existing output for
+                                    # source review; never treat it as a lead line.
+                                    try:
+                                        target = Path(artifact_directory) / "accompaniment-stem.wav"
+                                        pending = target.with_name("accompaniment-stem.pending.wav")
+                                        shutil.copy2(melody_audio.accompaniment_path, pending)
+                                        pending.replace(target)
+                                    except OSError as accompaniment_error:
+                                        logger.warning("Accompaniment diagnostic unavailable: %s", accompaniment_error)
+                                        separation_warnings.append("Accompaniment comparison audio could not be saved; vocal extraction is unchanged.")
+                            separation_warnings.append("Vocal isolation was applied before melody extraction.")
+                    except Exception as separation_error:
+                        logger.warning("Vocal separation failed; using full mix: %s", separation_error)
+                        separation_warnings.append(f"Vocal separation failed; using full mix: {separation_error}")
+                elif separate_vocals and melody_mode == MelodyMode.VOCAL:
+                    separation_warnings.append("Vocal isolation was requested but is not enabled on this server; using the full mix.")
+                await report("melody_analysis")
+                analyzer = self.vocal_melody_analyzer if source_separated and self.vocal_melody_analyzer else self.melody_analyzer
                 try:
-                    reference = await self.melody_analyzer.analyze(melody_audio, beats, melody_mode)
-                    reference.notes = self.melody_post.process(reference.notes, beats.beats, melody_mode)
-                    cross_checked = self.melody_post.keep_cross_checked_notes(melody.notes, reference.notes)
-                    if len(cross_checked) >= 8 and len(cross_checked) / max(1, len(melody.notes)) >= 0.55:
-                        melody.notes = cross_checked
-                        melody.warnings.append("Isolated vocal notes were cross-checked against a second pitch extractor.")
-                except Exception as reference_error:
-                    logger.info("Basic Pitch cross-check unavailable; keeping pYIN result: %s", reference_error)
-            melody = self.fretboard_mapper.map_notes(melody)
-            melody.confidence, quality_warnings = self.melody_post.assess_quality(
-                melody.notes, normalized.duration_seconds, melody_mode, source_separated=source_separated
-            )
-            melody.warnings.extend(warning for warning in [*separation_warnings, *quality_warnings] if warning not in melody.warnings)
-        except Exception as e:
-            logger.warning(f"Melody analysis failed, continuing without melody: {e}")
-            melody = MelodyAnalysis(warnings=[str(e)])
+                    melody = await analyzer.analyze(melody_audio, beats, melody_mode)
+                except Exception as melody_error:
+                    if analyzer is self.melody_analyzer:
+                        raise
+                    logger.warning("pYIN vocal tracing failed; falling back to Basic Pitch: %s", melody_error)
+                    separation_warnings.append("Vocal pitch tracing failed; used Basic Pitch on the isolated vocal stem.")
+                    melody = await self.melody_analyzer.analyze(melody_audio, beats, melody_mode)
+                raw_detector_notes = [note.model_copy(deep=True) for note in melody.notes]
+                raw_contour = melody.contour
+                # Preserve machine-readable evidence before quantization/selection.
+                # A rendered raw WAV alone cannot explain which notes were removed.
+                if options.get("_artifact_directory"):
+                    (Path(options["_artifact_directory"]) / "melody-candidates.json").write_text(
+                        json.dumps({"schema_version": "1.0", "source_separated": source_separated,
+                                    "analysis": melody.model_dump(mode="json")}, ensure_ascii=False, indent=2),
+                        encoding="utf-8",
+                    )
+                source_timed_melody = source_separated and melody.engine == "pyin_vocal" and melody.contour is not None
+                if source_timed_melody:
+                    melody.notes = self.melody_post.process_source_timed(melody.notes)
+                    melody.warnings.append("Vocal notes preserve source frame timing; no automatic beat snapping or repeated-note merging. Verify pitches and bar alignment by ear.")
+                else:
+                    melody.notes = self.melody_post.process(melody.notes, beats.beats, melody_mode)
+                if source_separated and analyzer is not self.melody_analyzer and not source_timed_melody:
+                    try:
+                        reference = await self.melody_analyzer.analyze(melody_audio, beats, melody_mode)
+                        reference.notes = self.melody_post.process(reference.notes, beats.beats, melody_mode)
+                        cross_checked = self.melody_post.keep_cross_checked_notes(melody.notes, reference.notes)
+                        if len(cross_checked) >= 8 and len(cross_checked) / max(1, len(melody.notes)) >= 0.55:
+                            melody.notes = cross_checked
+                            melody.warnings.append("Isolated vocal notes were cross-checked against a second pitch extractor.")
+                    except Exception as reference_error:
+                        logger.info("Basic Pitch cross-check unavailable; keeping pYIN result: %s", reference_error)
+                melody = self.fretboard_mapper.map_notes(melody)
+                melody.confidence, quality_warnings = self.melody_post.assess_quality(
+                    melody.notes, normalized.duration_seconds, melody_mode, source_separated=source_separated
+                )
+                melody.warnings.extend(warning for warning in [*separation_warnings, *quality_warnings] if warning not in melody.warnings)
+            except Exception as e:
+                logger.warning(f"Melody analysis failed, continuing without melody: {e}")
+                melody = MelodyAnalysis(warnings=[str(e)])
             
         await report("postprocessing")
         rhythm = self.rhythm_suggester.suggest(beats, chords)
@@ -245,7 +248,7 @@ class AnalysisPipeline:
                 mode=chords.mode,
                 bpm=beats.bpm,
                 time_signature=beats.time_signature,
-                confidence=melody.confidence,
+                confidence=chords.confidence if melody_mode == MelodyMode.OFF else melody.confidence,
                 warnings=[*beats.warnings, *chords.warnings, *melody.warnings],
             ),
             key_context=KeyContext(
@@ -271,7 +274,7 @@ class AnalysisPipeline:
                     "melody_mode": melody_mode.value,
                     "separate_vocals_requested": separate_vocals,
                     "vocal_source_separated": source_separated,
-                    "melody_note_processing": "source-timed-semitone-v2" if source_timed_melody else "legacy-eighth-grid",
+                    "melody_note_processing": "disabled" if melody_mode == MelodyMode.OFF else "source-timed-semitone-v2" if source_timed_melody else "legacy-eighth-grid",
                     "chord_complexity": complexity.value,
                     **chords.parameters,
                     "chord_postprocess_version": "2-preserve-decoder-events",

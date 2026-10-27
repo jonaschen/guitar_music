@@ -86,3 +86,11 @@ class RevisionStore:
                 (next_revision_id, score_id, payload, now),
             )
         return next_revision_id
+
+    def history(self, revision_id: str) -> list[dict[str, str]]:
+        with self._connect() as connection:
+            parent = connection.execute("SELECT score_id FROM revisions WHERE id = ?", (revision_id,)).fetchone()
+            if parent is None:
+                raise FileNotFoundError(f"Revision not found: {revision_id}")
+            rows = connection.execute("SELECT id, created_at FROM revisions WHERE score_id = ? ORDER BY created_at DESC LIMIT 50", (parent["score_id"],)).fetchall()
+        return [dict(row) for row in rows]

@@ -4,6 +4,7 @@ from enum import Enum
 from .melody_contour import MelodyContour
 
 class MelodyMode(str, Enum):
+    OFF = "off"
     VOCAL = "vocal"
     GUITAR = "guitar"
     MIX = "mix"

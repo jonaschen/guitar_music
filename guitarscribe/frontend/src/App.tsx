@@ -1,3 +1,4 @@
+import { ChordSongPage } from "./ChordSongPage";
 import { AccompanimentReview, type ReviewMode } from "./AccompanimentReview";
 import { ChangeEvent, FormEvent, lazy, Suspense, useEffect, useRef, useState } from "react";
 import { ChordEntryAudit } from "./ChordEntryAudit";
@@ -27,7 +28,20 @@ import { startMelodyAudition, type MelodyAudition } from "./melodyAudition";
 
 const AlphaTabScore = lazy(() => import("./AlphaTabScore"));
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = new URL("/backend", window.location.origin).href;
+// Archived melody tools are available only in an explicitly opted-in development build.
+const MELODY_ENABLED = import.meta.env.DEV && import.meta.env.VITE_ARCHIVED_MELODY === "true";
+function analysisErrorMessage(message: string) {
+  if (/Inconsistent meter|missing beats|unobserved downbeat|Downbeat must|beats requires/.test(message))
+    return "這段音訊的拍點或小節位置尚無法可靠確認，因此沒有產生和弦譜。音訊已保留，目前工作版本不受影響。可以改選片段，或先繼續編輯已保存的歌曲。";
+  return message;
+}
+function shiftedChordName(symbol: string, semitones: number): string {
+  if (semitones % 12 === 0) return symbol;
+  const names = symbol.includes("b") ? ["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"] : ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+  return symbol.replace(/^[A-G][#b]?|(?<=\/)[A-G][#b]?$/g, note => names[((NOTE_TO_PITCH[note] ?? 0) + semitones % 12 + 12) % 12]);
+}
+const ReviewComponent = MELODY_ENABLED ? AccompanimentReview : ChordSongPage;
 const KEY_OPTIONS = [
   { pitch: 0, label: "C" },
   { pitch: 1, label: "C#/Db" },
@@ -223,7 +237,7 @@ export function App() {
   const [status, setStatus] = useState<AnalyzeState>("idle");
   const [file, setFile] = useState<File | null>(null);
   const [youtubeUrl, setYoutubeUrl] = useState("");
-  const [melodyMode, setMelodyMode] = useState("vocal");
+  const [melodyMode, setMelodyMode] = useState(MELODY_ENABLED ? "vocal" : "off");
   const [separateVocals, setSeparateVocals] = useState(true);
   const [showRawChordSegments, setShowRawChordSegments] = useState(false);
   const [chordComplexity, setChordComplexity] = useState("full");
@@ -312,21 +326,28 @@ export function App() {
   const [isRetuningScore, setIsRetuningScore] = useState(false);
   const [capoRecommendations, setCapoRecommendations] = useState<Array<{ capo: number; shape_key: string; difficulty: number; open_chords: number; barre_chords: number; covered_chords: number }>>([]);
   const [selectedChordId, setSelectedChordId] = useState<string | null>(null);
+  const [compactEditOpen, setCompactEditOpen] = useState(false);
   const [chordDraft, setChordDraft] = useState("");
   const [chordStartDraft, setChordStartDraft] = useState("");
   const [chordEndDraft, setChordEndDraft] = useState("");
   const [candidateVoicings, setCandidateVoicings] = useState<ScoreChord["available_voicings"]>([]);
+  const [versionHistory, setVersionHistory] = useState<Array<{id:string;created_at:string}>>([]);
   const [revisionId, setRevisionId] = useState("");
   const [accompanimentView, setAccompanimentView] = useState(() => {
+    if (!MELODY_ENABLED) return true;
     const view = new URLSearchParams(window.location.search).get("view");
     if (view === "accompaniment" || view === "melody") return view === "accompaniment";
     try { return localStorage.getItem("guitarscribe.editorView") !== "melody"; } catch { return true; }
   });
   const [focusedWorkspace, setFocusedWorkspace] = useState(() => {
+    if (!MELODY_ENABLED) return true;
     if (["accompaniment", "melody"].includes(new URLSearchParams(window.location.search).get("view") ?? "")) return true;
     try { return localStorage.getItem("guitarscribe.workspaceMode") !== "full"; } catch { return true; }
   });
   const focusMode = !!score && focusedWorkspace;
+  const youtubeUrlValid = !youtubeUrl.trim() || (()=>{try {const u=new URL(youtubeUrl.trim());return u.protocol==="https:" && ((["youtube.com","www.youtube.com","m.youtube.com"].includes(u.hostname) && u.pathname==="/watch" && /^[\w-]{11}$/.test(u.searchParams.get("v")??"")) || u.hostname==="youtu.be" && /^\/[\w-]{11}$/.test(u.pathname));}catch{return false;}})();
+  const analysisBusy = !!analysisJob && !["completed","failed","cancelled"].includes(analysisJob.status);
+  const productScreen = analysisBusy ? "analyzing" : !score || showNewSong ? "home" : "song";
   function switchWorkspace() {
     audioRef.current?.pause(); stopSynth(false); referenceStopRef.current();
     setFocusedWorkspace(value => !value);
@@ -492,7 +513,7 @@ export function App() {
           setError("This analysis completed without a recoverable score. Please run it again.");
         } else if (job.status === "failed" || job.status === "cancelled") {
           setStatus("error");
-          setError(job.error ?? job.message);
+          setError(analysisErrorMessage(job.error ?? job.message));
         }
       } catch (restoreError) {
         if (obsolete()) return;
@@ -793,8 +814,8 @@ export function App() {
       revisionRequestRef.current++;
       setIsLoadingRevision(false); setRestorePreview(null);
       const createdJob = useYouTube
-        ? await createYouTubeAnalysisJob(youtubeUrl.trim(), melodyMode, capabilities.vocal_separation_enabled && separateVocals, chordComplexity, Number(skipSeconds), analysisSeconds === "full" ? null : Number(analysisSeconds))
-        : await createAnalysisJob(file!, melodyMode, capabilities.vocal_separation_enabled && separateVocals, chordComplexity, Number(skipSeconds), analysisSeconds === "full" ? null : Number(analysisSeconds));
+        ? await createYouTubeAnalysisJob(youtubeUrl.trim(), melodyMode, MELODY_ENABLED && capabilities.vocal_separation_enabled && separateVocals, chordComplexity, Number(skipSeconds), analysisSeconds === "full" ? null : Number(analysisSeconds))
+        : await createAnalysisJob(file!, melodyMode, MELODY_ENABLED && capabilities.vocal_separation_enabled && separateVocals, chordComplexity, Number(skipSeconds), analysisSeconds === "full" ? null : Number(analysisSeconds));
       const url = new URL(window.location.href);
       url.searchParams.delete("revision"); url.searchParams.set("job", createdJob.id);
       window.history.replaceState({}, "", url);
@@ -813,7 +834,7 @@ export function App() {
     pendingAnalysisBase.current = undefined;
     pendingAnalysisOrigin.current = null;
     setStatus("error");
-    setError(failed.error ?? failed.message ?? "分析已停止，目前工作譜保留。");
+    setError(analysisErrorMessage(failed.error ?? failed.message ?? "分析已停止，目前工作譜保留。"));
     const current = scoreRef.current;
     if (!origin || !current || sourceJobId(current) !== sourceJobId(origin.score)) return;
     // Restore only the source context; never replace edits or clear Undo.
@@ -1083,9 +1104,10 @@ export function App() {
     const obsolete = () => !isCurrentWork() || generation !== performanceGenerationRef.current || request !== midiRequestRef.current;
     setMidiPending(true);
     try {
+      const exportScore = MELODY_ENABLED ? score : { ...score, melody: [] };
       const response = await fetch(API_BASE + (chordPerformance === "original" ? "/scores/midi" : "/scores/chord-entry-performance"), {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(chordPerformance === "original" ? score : { score, mode: chordPerformance, output: "midi" }),
+        body: JSON.stringify(chordPerformance === "original" ? exportScore : { score: exportScore, mode: chordPerformance, output: "midi" }),
       });
       if (!response.ok) throw new Error(await response.text());
       const blob = await response.blob();
@@ -1093,7 +1115,7 @@ export function App() {
       const url = URL.createObjectURL(new Blob([blob], { type: "audio/midi" }));
       const link = document.createElement("a");
       link.href = url;
-      link.download = chordPerformance === "original" ? "guitarscribe-melody.mid" : `guitarscribe-${chordPerformance}.mid`;
+      link.download = chordPerformance === "original" ? (MELODY_ENABLED ? "guitarscribe-melody.mid" : "guitarscribe-accompaniment.mid") : `guitarscribe-${chordPerformance}.mid`;
       link.click(); URL.revokeObjectURL(url);
     } catch (error) {
       if (!obsolete()) setError(error instanceof Error ? error.message : "MIDI 匯出失敗");
@@ -1288,7 +1310,7 @@ export function App() {
     const selectedRange = segment ? clipRange(segment.start, segment.end, score) : null;
     if (selectedRange && selectedRange.end <= selectedRange.start) return;
     const reviewMode = segment?.reviewMode;
-    const rate = reviewMode ? 1 : playbackRate;
+    const rate = reviewMode && reviewMode !== "guitar" ? 1 : playbackRate;
     const tone = reviewMode ? "pluck" : guitarTone;
     const tracks = reviewMode ? { guitar: reviewMode !== "source", melody: false, metronome: false } : segment ? { guitar: true, melody: !segment.guitarOnly, metronome: false } : synthTracks;
     const editorMelodyGain = segment && !segment.guitarOnly ? 0.25 : 1;
@@ -1729,6 +1751,8 @@ export function App() {
     if (!selectedChordId) return;
     const nextSymbol = chordDraft.trim();
     if (!nextSymbol) return;
+    if (!/^[A-G][#b]?[a-zA-Z0-9+#b()°ø-]*(?:\/[A-G][#b]?)?$/.test(nextSymbol)) { setError("請輸入和弦名稱，例如 C、Am、G7 或 C/E。"); return; }
+    setError("");
 
     updateChords((chords) =>
       chords.map((chord) =>
@@ -1736,7 +1760,10 @@ export function App() {
           ? {
               ...chord,
               symbol: nextSymbol,
-              shape_symbol: chord.shape_symbol ?? nextSymbol,
+              shape_symbol: shiftedChordName(nextSymbol, -(score?.guitar.capo ?? 0)),
+              source_symbol: shiftedChordName(nextSymbol, -(score?.key_context.transpose_semitones ?? 0)),
+              voicing_id: null,
+              available_voicings: [],
               origin: "user",
               edited: true,
             }
@@ -1837,7 +1864,7 @@ export function App() {
     try {
       const response = await postSaveRevision(score, revisionId.trim() || null, createNew);
       const jobId = sourceJobId(score) ?? workingJobId;
-      const remembered = { id: response.revision_id, label: `${melodyVersion(score)} · ${score.melody.length} 音符`, jobId };
+      const remembered = { id: response.revision_id, label: MELODY_ENABLED ? `${melodyVersion(score)} · ${score.melody.length} 音符` : `伴奏工作譜 · ${score.chords.length} 段和弦`, jobId };
       setRememberedVersion(remembered);
       let storageWarning = "";
       try {
@@ -1854,7 +1881,7 @@ export function App() {
       setSavedSnapshot({ id: response.revision_id, score });
       setSaveStatus(`Saved revision ${response.revision_id}.${storageWarning}`);
     } catch (saveError) {
-      const message = saveError instanceof Error ? saveError.message : "Revision save failed.";
+      const message = MELODY_ENABLED ? saveError instanceof Error ? saveError.message : "Revision save failed." : "暫時無法保存，修改仍保留在這個頁面。請保持頁面開啟，並在版本歷史中按保存重試。";
       setError(message); setSaveStatus(message);
     } finally {
       saveInFlightRef.current = false;
@@ -1923,7 +1950,7 @@ export function App() {
     setRevisionId(id);
     const source = sourceJobId(next);
     setWorkingJobId(source);
-    const remembered = { id, label: `${melodyVersion(next)} · ${next.melody.length} 音符`, jobId: source };
+    const remembered = { id, label: MELODY_ENABLED ? `${melodyVersion(next)} · ${next.melody.length} 音符` : `伴奏工作譜 · ${next.chords.length} 段和弦`, jobId: source };
     setRememberedVersion(remembered);
     let storageWarning = "";
     try {
@@ -1942,25 +1969,48 @@ export function App() {
     setSaveStatus(`Loaded revision ${id}.${compatible ? "" : " 來源音訊未恢復；仍可編輯及播放保存的樂譜。"}${storageWarning}`);
   }
 
+  useEffect(() => {
+    if (MELODY_ENABLED || !revisionId) { setVersionHistory([]); return; }
+    let active=true;
+    void fetch(`${API_BASE}/revisions/${encodeURIComponent(revisionId)}/history`).then(r=>r.ok?r.json():[]).then(rows=>{if(active)setVersionHistory(rows);}).catch(()=>{if(active)setVersionHistory([]);});
+    return ()=>{active=false;};
+  },[revisionId]);
+  const lastAutoSaveAttempt = useRef<SongScore | null>(null);
+  useEffect(() => {
+    if (MELODY_ENABLED || !score || !hasUnsavedChanges || analysisBusy || isSavingRevision || lastAutoSaveAttempt.current === score) return;
+    const timer = window.setTimeout(() => { lastAutoSaveAttempt.current = score; void saveRevision(true); }, 1200);
+    return () => window.clearTimeout(timer);
+  }, [score, hasUnsavedChanges, analysisBusy, isSavingRevision]);
+
+  const compactChordEditor = !MELODY_ENABLED && compactEditOpen && selectedChord ? <section className="compact-chord-editor" aria-label="修改和弦">
+                  <h3>修改 {selectedChord.symbol}</h3>
+                  <p>修改只影響這一段，可隨時「還原上一步」。</p>
+                  <label htmlFor="compact-chord-name">和弦名稱</label>
+                  <input id="compact-chord-name" value={chordDraft} onChange={e=>setChordDraft(e.target.value)} placeholder="例如 C、Am、G7" />
+                  <div><button type="button" disabled={!chordDraft.trim() || chordDraft.trim()===selectedChord.symbol} onClick={()=>{renameSelectedChord();setCompactEditOpen(false);}}>套用和弦修改</button>
+                  <button type="button" onClick={()=>{setChordDraft(selectedChord.symbol);setCompactEditOpen(false);}}>取消修改</button>
+                  <button type="button" onClick={()=>{setCompactEditOpen(false);setFocusedWorkspace(false);window.requestAnimationFrame(()=>document.querySelector<HTMLElement>(".side-panel")?.scrollIntoView({block:"start"}));}}>調整時間與指型</button></div>
+                </section> : null;
+
   return (
-    <div className={`page-shell${focusMode ? " focus-workspace" : ""}`}>
+    <div className={`page-shell${!MELODY_ENABLED ? " chord-product" : ""}${focusMode ? " focus-workspace" : ""}`}>
       <div className="aurora aurora-left" />
       <div className="aurora aurora-right" />
       <main className="layout">
-        <div hidden={focusMode}><PlaybackReference stopRef={referenceStopRef} onStart={() => { stopSynth(false); audioRef.current?.pause(); }} /></div>
-        <section className="hero-card new-song-panel" aria-label="新曲目來源" hidden={focusMode && !showNewSong}>
+        <div hidden={focusMode || !MELODY_ENABLED}><PlaybackReference stopRef={referenceStopRef} onStart={() => { stopSynth(false); audioRef.current?.pause(); }} /></div>
+        <section className="hero-card new-song-panel" aria-label="新曲目來源" hidden={MELODY_ENABLED ? focusMode && !showNewSong : productScreen !== "home"}>
           <div className="hero-copy">
             <p className="eyebrow">GuitarScribe</p>
-            <h1>選擇來源，開始修譜</h1>
+            <h1>把歌曲變成和弦譜</h1>
             <p className="lede">
-              先分析一段，再對照原曲、試聽與修譜。
+              選擇歌曲，對照原曲與吉他，再保存你的和弦譜。
             </p>
           </div>
 
           <form className="intake-card" onSubmit={handleSubmit}>
-            <p role="status">{capabilities ? `${capabilities.improved_accompaniment ? "改善版伴奏可用" : "基本伴奏分析"} · ${capabilities.beat_engine} / ${capabilities.chord_engine}` : capabilitiesFailed ? "無法取得分析能力，請確認服務後重新整理。" : "正在確認分析能力…"}</p>
-            {capabilities && !capabilities.melody_available ? <p role="note">目前僅分析拍點與和弦，不會產生旋律；完成後可手動補音。</p> : null}
-            {capabilities?.melody_available && capabilities.vocal_separation_enabled && melodyMode === "vocal" && separateVocals ? <p>分析完成後先用「原曲＋系統吉他」核對和弦。自動旋律仍屬實驗功能，未達品質驗收門檻。</p> : null}
+            <p role="status">{capabilities ? "分析服務已就緒" : capabilitiesFailed ? "無法取得分析能力，請確認服務後重新整理。" : "正在確認分析能力…"}</p>
+            {MELODY_ENABLED && capabilities && !capabilities.melody_available ? <p role="note">目前僅分析拍點與和弦，不會產生旋律；完成後可手動補音。</p> : null}
+            {MELODY_ENABLED && capabilities?.melody_available && capabilities.vocal_separation_enabled && melodyMode === "vocal" && separateVocals ? <p>分析完成後先用「原曲＋系統吉他」核對和弦。自動旋律仍屬實驗功能，未達品質驗收門檻。</p> : null}
             <label className="field">
               <span>選擇音檔</span>
               <input type="file" accept=".wav,.mp3,.flac,.ogg,.m4a,audio/*" onChange={handleFileChange} />
@@ -1968,8 +2018,8 @@ export function App() {
 
             <label className="field">
               <span>YouTube 網址</span>
-              <input aria-label="YouTube video URL" type="url" disabled={!capabilities?.youtube_enabled} value={youtubeUrl} onChange={(event) => setYoutubeUrl(event.target.value)} placeholder="https://www.youtube.com/watch?v=…" />
-              <small>{capabilities?.youtube_enabled ? "同時選擇音檔與網址時，以網址為準。" : "目前服務未開啟 YouTube，請使用音檔。"}</small>
+              <input aria-label="YouTube video URL" aria-invalid={!youtubeUrlValid} aria-describedby="youtube-url-feedback" type="url" disabled={!capabilities?.youtube_enabled} value={youtubeUrl} onChange={(event) => setYoutubeUrl(event.target.value)} placeholder="https://www.youtube.com/watch?v=…" />
+              <small id="youtube-url-feedback">{!youtubeUrlValid ? "請貼上單一 YouTube 影片網址，例如 https://youtu.be/影片代碼。" : capabilities?.youtube_enabled ? "同時選擇音檔與網址時，以網址為準。" : "目前服務未開啟 YouTube，請使用音檔。"}</small>
             </label>
 
             <label className="field">分析長度<select aria-label="Analysis duration" value={analysisSeconds} onChange={event => setAnalysisSeconds(event.target.value)}>
@@ -1979,7 +2029,7 @@ export function App() {
             <details><summary>進階分析設定</summary>
             <label><input type="checkbox" checked={analysisSeconds === "full"} onChange={event => setAnalysisSeconds(event.target.checked ? "full" : "45")} />分析整首（耗時較長）</label>
             <div className="field-row">
-              <label className="field">
+              <label className="field" hidden={!MELODY_ENABLED}>
                 <span>Melody focus (Beta)</span>
                 <select disabled={capabilities?.melody_available === false} value={melodyMode} onChange={(event) => setMelodyMode(event.target.value)}>
                   <option value="vocal">Vocal melody (Beta)</option>
@@ -1988,7 +2038,7 @@ export function App() {
                 </select>
               </label>
 
-              <label className="field vocal-isolation-option">
+              <label className="field vocal-isolation-option" hidden={!MELODY_ENABLED}>
                 <span>Vocal isolation</span>
                 <label className="checkbox-label">
                   <input type="checkbox" checked={separateVocals} disabled={melodyMode !== "vocal" || !capabilities?.vocal_separation_enabled || !capabilities?.melody_available} onChange={(event) => setSeparateVocals(event.target.checked)} />
@@ -1997,7 +2047,7 @@ export function App() {
               </label>
 
               <label className="field">
-                <span>Chord detail</span>
+                <span>和弦細節</span>
                 <select value={chordComplexity} onChange={(event) => setChordComplexity(event.target.value)}>
                   <option value="simple">Simple</option>
                   <option value="standard">Standard</option>
@@ -2015,14 +2065,14 @@ export function App() {
               <p>從略過位置開始分析所選長度，工作譜以 0 秒起算。請使用有權分析的來源。</p>
             </div>
 
-            <button aria-label="Start analysis" className="primary-button" type="submit" disabled={!capabilities || status === "queued" || !!(analysisJob && !["completed", "failed", "cancelled"].includes(analysisJob.status))}>
+            <button aria-label="Start analysis" className="primary-button" type="submit" disabled={!youtubeUrlValid || !capabilities || status === "queued" || !!(analysisJob && !["completed", "failed", "cancelled"].includes(analysisJob.status))}>
               {status === "queued" ? "正在分析…" : "開始分析"}
             </button>
-            {score ? <button type="button" className="ghost-button" onClick={() => setShowNewSong(false)}>收起來源，繼續修譜</button> : null}
+            {score ? <button type="button" className="ghost-button" onClick={() => setShowNewSong(false)}>{MELODY_ENABLED ? "收起來源，繼續修譜" : "回到歌曲"}</button> : !MELODY_ENABLED && rememberedVersion ? <button type="button" disabled={isLoadingRevision} onClick={()=>void loadRevision(rememberedVersion.id)}>繼續上次的歌曲</button> : null}
           </form>
         </section>
 
-        {error ? <p className="error-banner">{error}</p> : null}
+        {error ? <p className="error-banner" role="alert">{error}</p> : null}
         {analysisJob && !["completed", "failed", "cancelled"].includes(analysisJob.status) ? (
           <section className="job-progress" aria-live="polite">
             <div>
@@ -2035,58 +2085,72 @@ export function App() {
           </section>
         ) : null}
 
-        <section className="workspace">
+        <section className="workspace" hidden={!MELODY_ENABLED && productScreen !== "song"}>
           <div className="panel result-panel">
             <div className="panel-header">
               <div>
-                <p className="eyebrow">Result workspace</p>
-                <h2>{score ? score.song.title : "No song loaded yet"}</h2>
+                <p className="eyebrow">GuitarScribe</p>
+                <h2>{score ? score.song.title : "開始你的和弦譜"}</h2>
+                {!MELODY_ENABLED && score ? <p role="status" className="autosave-status">{isSavingRevision ? "正在保存…" : hasUnsavedChanges ? lastAutoSaveAttempt.current === score ? "尚未保存，請在版本歷史中重試。" : "等待自動保存…" : savedSnapshot ? "已保存" : "原始分析已保留"}</p> : null}
               </div>
-              <div className="status-pill">{status === "ready" ? "Editable draft" : analysisJob ? `${analysisJob.progress}%` : "Waiting for analysis"}</div>
+              <div className="status-pill" hidden={!MELODY_ENABLED}>{status === "ready" ? "可編輯" : analysisJob ? `${analysisJob.progress}%` : "尚未分析"}</div>
             </div>
 
             {score ? <nav className="workspace-mode" aria-label="工作區模式">
               <div><strong>{focusMode ? accompanimentView ? "和弦核對" : "專注修譜" : "完整工具"}</strong><p>選一段 → 對照來源 → 修譜與重播 → 保存版本</p></div>
               <button type="button" className="ghost-button" onClick={() => { setShowNewSong(value => !value); }}>{showNewSong ? "收起新曲目" : "分析新曲目"}</button>
-              <button type="button" className="ghost-button" onClick={switchWorkspace}>{focusMode ? "顯示完整工具" : accompanimentView ? "回到和弦核對" : "回到專注修譜"}</button>
+              <button type="button" hidden={!MELODY_ENABLED} className="ghost-button" onClick={switchWorkspace}>{focusMode ? "顯示完整工具" : accompanimentView ? "回到和弦核對" : "回到專注修譜"}</button>
               <button type="button" hidden={accompanimentView && focusMode} className="ghost-button" onClick={openPerformanceControls}>伴奏演奏</button>
-              <button type="button" className="ghost-button" onClick={switchEditorView}>{accompanimentView ? "旋律編輯（實驗）" : "簡潔和弦頁"}</button>
+              <button type="button" hidden={!MELODY_ENABLED} className="ghost-button" onClick={switchEditorView}>{accompanimentView ? "旋律編輯（實驗）" : "簡潔和弦頁"}</button>
             </nav> : null}
-            <section className="revision-recovery" aria-label="工作版本">
+            <details className="version-history" open={MELODY_ENABLED ? true : undefined}><summary hidden={MELODY_ENABLED}>版本歷史與還原</summary><section className="revision-recovery" aria-label="工作版本">
               <h3>工作版本</h3>
-              <p aria-label="Current working version">{score ? accompanimentView && focusMode ? `伴奏工作譜 · ${score.chords.length} 段和弦` : `${melodyVersion(score)} · ${score.melody.length} 音符` : "尚未載入樂譜"} · {savedSnapshot?.score === score ? accompanimentView && focusMode ? "已保存／載入" : `已保存／載入：${savedSnapshot.id}` : hasUnsavedChanges ? "有未保存修改" : "目前為原分析／未保存初稿"}</p>
-              {score ? <button type="button" disabled={isSavingRevision || isLoadingRevision} onClick={() => void saveRevision(true)}>保存目前工作版本</button> : null}
+              {!MELODY_ENABLED && versionHistory.length ? <label>已保存的版本<select aria-label="版本歷史" value="" onChange={e=>{if(e.target.value)void loadRevision(e.target.value);}}><option value="">選擇版本（最近 50 份）</option>{versionHistory.map(item=><option key={item.id} value={item.id}>{new Date(item.created_at).toLocaleString()} {item.id===revisionId?"· 目前版本":""}</option>)}</select></label>:null}
+              {!MELODY_ENABLED && score ? <><button type="button" disabled={!analysisJob?.score || analysisJob.status!=="completed"} onClick={()=>{if(analysisJob?.score && window.confirm("還原原始分析？目前修改可用「復原」找回。")) {audioRef.current?.pause();stopSynth(false);recordScoreChange(scoreFromJob(analysisJob));}}}>還原原始分析</button><button type="button" onClick={switchWorkspace}>{focusMode?"診斷與完整工具":"關閉完整工具"}</button></>:null}
+              <p aria-label="Current working version">{score ? accompanimentView ? `伴奏工作譜 · ${score.chords.length} 段和弦` : `${melodyVersion(score)} · ${score.melody.length} 音符` : "尚未載入樂譜"} · {savedSnapshot?.score === score ? accompanimentView && focusMode ? "已保存／載入" : `已保存／載入：${savedSnapshot.id}` : hasUnsavedChanges ? "有未保存修改" : "目前為原分析／未保存初稿"}</p>
+              {score ? <button type="button" disabled={isSavingRevision || isLoadingRevision} onClick={() => void saveRevision(true)}>{isSavingRevision ? "正在保存…" : "保存目前工作版本"}</button> : null}
               {score && accompanimentView && focusMode ? <button type="button" disabled={!undoHistory.length} title="還原這個工作階段最近一次修改" onClick={undoScoreChange}>還原上一步</button> : null}
               {rememberedVersion ? <div hidden={accompanimentView && focusMode && savedSnapshot?.score === score && rememberedVersion.id === savedSnapshot.id}>
-                <p>可恢復：{rememberedVersion.label} · {rememberedVersion.id}。此記錄不代表目前已載入。</p>
+                <p>可恢復：{MELODY_ENABLED ? rememberedVersion.label : "伴奏工作版本"} · {rememberedVersion.id}。此記錄不代表目前已載入。</p>
                 <button type="button" disabled={isLoadingRevision || isSavingRevision} onClick={() => void loadRevision(rememberedVersion.id)}>恢復上次保存版本</button>
-              </div> : <p>尚無此分析的保存記錄。請保存目前工作版本；保存後可用版本網址重新開啟同一份譜。</p>}
+              </div> : <p hidden={!MELODY_ENABLED}>尚無此分析的保存記錄。請保存目前工作版本；保存後可用版本網址重新開啟同一份譜。</p>}
               {isLoadingRevision ? <button type="button" onClick={() => { revisionRequestRef.current++; setIsLoadingRevision(false); setSaveStatus("已取消讀取，目前工作譜不變。"); }}>取消讀取版本</button> : null}
               {restorePreview ? <div role="status">
-                <p>待恢復：{melodyVersion(restorePreview.next)} · {restorePreview.next.melody.length} 音符 · {restorePreview.id}</p>
+                <p>待恢復：{MELODY_ENABLED ? `${melodyVersion(restorePreview.next)} · ${restorePreview.next.melody.length} 音符` : `伴奏工作譜 · ${restorePreview.next.chords.length} 段和弦`} · {restorePreview.id}</p>
                 {restorePreview.generation !== workGenerationRef.current ? <p>工作譜已改變，此預覽已失效；請重新讀取要恢復的版本。</p> : null}
                 <p>{hasUnsavedChanges ? "目前有未保存修改，建議先保存。" : ""}確認後切換工作譜；原工作譜可用 Undo 找回。</p>
                 <button type="button" disabled={isSavingRevision || restorePreview.generation !== workGenerationRef.current} onClick={applyRestoredVersion}>確認恢復版本（可 Undo）</button>
                 <button type="button" onClick={() => setRestorePreview(null)}>保留目前工作譜</button>
               </div> : null}
-              <p role="status" hidden={accompanimentView && focusMode && saveStatus.startsWith("Loaded revision")}>{saveStatus}</p>
+              <p role="status" hidden={accompanimentView && focusMode && saveStatus.startsWith("Loaded revision")}>{!MELODY_ENABLED && saveStatus === "No saved revision yet." ? "" : !MELODY_ENABLED && saveStatus.startsWith("Saved revision") ? "已保存，可放心離開；下次用目前網址繼續。" : saveStatus}</p>
             </section>
 
+            </details>
             {!score ? <section className="revision-recovery" aria-label="載入已保存修訂">
               <h3>繼續編輯已保存的樂譜</h3>
-              <p>原分析失效時，仍可用保存的 revision ID 載入樂譜、編輯及試聽。這不會恢復已失效的原曲／Contour 音訊。</p>
+              <p>原分析失效時，仍可用保存的版本 ID 載入和弦譜、編輯及試聽吉他；原曲音訊需仍保留在本機。</p>
               <label className="field">版本 ID<input aria-label="Saved revision ID" value={revisionId} onChange={(event) => setRevisionId(event.target.value)} /></label>
               <button type="button" className="ghost-button" disabled={isLoadingRevision || !revisionId.trim()} onClick={() => void loadRevision()}>載入已保存修訂</button>
             </section> : null}
 
             {score ? (
               <>
-                <AccompanimentReview score={score} sourceAvailable={!!analysisJob && analysisJob.status === "completed" && sourceJobId(score) === analysisJob.id}
+                <ReviewComponent score={score} sourceAvailable={!!analysisJob && analysisJob.status === "completed" && sourceJobId(score) === analysisJob.id}
                   playing={activeReview !== null && isSynthPlaying} preparing={isSynthPreparing}
                   playhead={playbackTime} guitarVolume={synthVolumes.guitar} onVolume={value => setSynthVolumes(v => ({...v, guitar: value}))}
                   performanceLabel={chordPerformance === "original" ? "原版刷奏" : chordPerformance === "continuous" ? "換和弦即彈・連續刷奏" : "換和弦只彈一下"}
                   onStop={() => { audioRef.current?.pause(); stopSynth(false); }} onTools={openPerformanceControls}
-                  onPlay={(mode, start, end, loop, from) => void toggleSynthPlayback({start, end, loop, from, reviewMode: mode})} />
+                  onPlay={(mode, start, end, loop, from) => void toggleSynthPlayback({start, end, loop, from, reviewMode: mode})}
+                  editPanel={compactChordEditor} speed={playbackRate} onSpeed={setSpeed}
+                  keyControls={!MELODY_ENABLED ? <><label>調性 <select aria-label="歌曲調性" value={score.key_context.target.key} disabled={isRetuningScore} onChange={e=>void retuneScore(e.target.value)}>{PITCH_TO_FLAT_KEY.map(key=><option key={key} value={key}>{key}</option>)}{!PITCH_TO_FLAT_KEY.includes(score.key_context.target.key)?<option value={score.key_context.target.key}>{score.key_context.target.key}</option>:null}</select></label><label>Capo <select aria-label="歌曲 Capo" value={capo} disabled={isRetuningScore} onChange={e=>void retuneScore(score.key_context.target.key,Number(e.target.value))}>{Array.from({length:9},(_,n)=><option key={n} value={n}>{n}</option>)}</select></label></>:null}
+                  secondaryActions={!MELODY_ENABLED ? <><button type="button" disabled={!undoHistory.length} onClick={undoScoreChange}>復原</button><button type="button" disabled={!redoHistory.length} onClick={redoScoreChange}>重做</button></>:null}
+                  onEditChord={id => { const chord=score.chords.find(c=>c.id===id); if (!chord) return; selectChord(chord); setCompactEditOpen(true); window.requestAnimationFrame(()=>document.querySelector<HTMLInputElement>("#compact-chord-name")?.focus()); }} />
+                {!MELODY_ENABLED ? <section className="compact-exports" aria-label="保存與匯出">
+                  <details><summary>下載與備份</summary><p>下載和弦文字、伴奏 MIDI 或完整工作檔。</p>
+                  <div><button type="button" onClick={()=>void downloadChordPro()}>下載和弦譜</button>
+                  <button type="button" disabled={midiPending} onClick={()=>void downloadMidi()}>{midiPending ? "準備伴奏檔…" : "下載伴奏 MIDI"}</button>
+                  <button type="button" onClick={downloadScoreJson}>備份完整工作檔</button></div></details>
+                </section> : null}
                 <div hidden={focusMode} className="advanced-workspace">
                 {(score.song.source_start_seconds ?? 0) > 0 ? <p role="status">分析前已略過 {score.song.source_start_seconds} 秒；樂譜／播放 0 秒 = 原檔 {score.song.source_start_seconds} 秒。請勿再次略過同一段開場。</p> : null}
                 <SongRangeEditor score={score} playhead={playbackTime}
@@ -2247,7 +2311,7 @@ export function App() {
                       ["melody-contour", "Contour melody (Experimental)"],
                       ["raw-melody", "Raw detector"],
                       ["final-melody", "Final melody"],
-                    ] as Array<[DiagnosticAudioTrack, string]>).map(([track, label]) => <button key={track} type="button" title={track === "melody-contour" ? "Requires saved pitch data from a new vocal-isolated pYIN analysis. This does not change Play score, MIDI or Tab." : undefined} className={diagnosticAudioTrack === track ? "ghost-button diagnostic-track-active" : "ghost-button"} disabled={track !== "source" && !analysisJob.artifacts?.includes(track)} onClick={() => selectDiagnosticAudioTrack(track)}>{label}</button>)}</div> : null}
+                    ] as Array<[DiagnosticAudioTrack, string]>).filter(([track]) => MELODY_ENABLED || ["source", "accompaniment-stem"].includes(track)).map(([track, label]) => <button key={track} type="button" title={track === "melody-contour" ? "Requires saved pitch data from a new vocal-isolated pYIN analysis. This does not change Play score, MIDI or Tab." : undefined} className={diagnosticAudioTrack === track ? "ghost-button diagnostic-track-active" : "ghost-button"} disabled={track !== "source" && !analysisJob.artifacts?.includes(track)} onClick={() => selectDiagnosticAudioTrack(track)}>{label}</button>)}</div> : null}
                     {diagnosticAudioTrack === "melody-contour" ? <p role="status">Experimental source-pitch playback, separate from score notes. Vocal-source only: instrumental interludes and outros are not recovered. Key/capo edits, MIDI and Tab do not change this audio. Whole-song melody accuracy is not yet verified.</p> : null}
                     {diagnosticAudioTrack === "accompaniment-stem" ? <p role="status">Separated accompaniment for comparison: includes rhythm, bass and other instruments, not an extracted instrumental melody.</p> : null}
                     <button type="button" className="ghost-button" onClick={() => seekMeasure(-1)}>Previous bar</button>
@@ -2272,7 +2336,7 @@ export function App() {
                     <label className="transport-speed">Speed <select value={playbackRate} onChange={(event) => setSpeed(Number(event.target.value))}>{[0.5, 0.6, 0.75, 0.9, 1, 1.1, 1.25, 1.5].map((rate) => <option key={rate} value={rate}>{Math.round(rate * 100)}%</option>)}</select></label>
                     <input className="transport-timeline" type="range" min={bounds.start} max={bounds.end} step="0.01" value={Math.max(bounds.start, Math.min(playbackTime, bounds.end))} onPointerDown={() => setFollowPlayhead(false)} onKeyDown={() => setFollowPlayhead(false)} onChange={(event) => { setFollowPlayhead(false); seekTo(Number(event.target.value)); }} aria-label="Playback position" />
                     <span>{playbackTime.toFixed(1)}s / {score.song.duration_seconds.toFixed(1)}s</span>
-                    {analysisJob?.status === "completed" ? <DiagnosticTimeline audioUrl={`${API_BASE}/api/v1/jobs/${analysisJob.id}/audio`} score={score} playbackTime={playbackTime} onSeek={seekTo} /> : null}
+                    {MELODY_ENABLED && analysisJob?.status === "completed" ? <DiagnosticTimeline audioUrl={`${API_BASE}/api/v1/jobs/${analysisJob.id}/audio`} score={score} playbackTime={playbackTime} onSeek={seekTo} /> : null}
                   </section>
                 ) : null}
 
@@ -2284,11 +2348,11 @@ export function App() {
                     onClear={() => { audioRef.current?.pause(); stopSynth(false); setLoopStart(null); setLoopEnd(null); }} />
                   {!followPlayhead ? <p>手動定位時已關閉頁面自動跟隨。<button type="button" className="ghost-button" onClick={() => setFollowPlayhead(true)}>恢復播放跟隨</button></p> : null}
                   <div className="toolbar-actions">
-                    <button type="button" className="ghost-button" onClick={() => { stopSynth(false); setSynthTracks({ guitar: true, melody: true, metronome: false }); setSynthSoloTrack(null); setSynthVolumes({ guitar: 0.24, melody: 0.45, metronome: 0.18 }); }}>旋律＋吉他（預設平衡）</button>
-                    <button type="button" className="ghost-button" onClick={() => { stopSynth(false); setSynthTracks((tracks) => ({ ...tracks, melody: true })); setSynthSoloTrack("melody"); setSynthVolumes((volumes) => ({ ...volumes, melody: 0.45 })); }}>只聽旋律</button>
+                    <button type="button" hidden={!MELODY_ENABLED} className="ghost-button" onClick={() => { stopSynth(false); setSynthTracks({ guitar: true, melody: true, metronome: false }); setSynthSoloTrack(null); setSynthVolumes({ guitar: 0.24, melody: 0.45, metronome: 0.18 }); }}>旋律＋吉他（預設平衡）</button>
+                    <button type="button" hidden={!MELODY_ENABLED} className="ghost-button" onClick={() => { stopSynth(false); setSynthTracks((tracks) => ({ ...tracks, melody: true })); setSynthSoloTrack("melody"); setSynthVolumes((volumes) => ({ ...volumes, melody: 0.45 })); }}>只聽旋律</button>
                   </div>
                   <p>旋律音色與上下刷音色調整只影響此處試聽，不改寫音符／拍點，也不改變 MIDI 播放器的音色。套用聆聽配置後請按 Play score。</p>
-                  <p>Web Audio uses the current key, capo, selected voicings, rhythm, and estimated melody. 修改樂譜或刷奏後會停止舊播放，請重新按 Play score。</p>
+                  <p>播放採用目前調性、移調夾、指型與刷奏設定。 修改樂譜或刷奏後會停止舊播放，請重新按 Play score。</p>
                   <p aria-label="Playback chord comparison">譜面當前：{score.chords.find((chord) => chord.id === activeChordId)?.symbol ?? "—"} · 演奏事件：{isSynthPlaying && !isCountingIn && synthTracks.guitar && synthVolumes.guitar > 0 && (synthSoloTrack === null || synthSoloTrack === "guitar") ? soundingChord?.symbol ?? "—" : "—"}</p>
                   <p>Guitar plays a suggested strumming pattern on the detected beat grid, not the original recording's arrangement. To compare, click the same bar's chord before using Original / Play and Play score. Short chords between strums may not sound; inspect the chord sheet for all detected changes.</p>
                   <p>「吉他演奏」同時用於 Play score 與 Download MIDI。這是本次工作階段的選擇，不寫入樂譜；改譜、載入版本或重新整理後回到原版。實驗方案不會自動校正錯誤和弦。</p>
@@ -2309,7 +2373,7 @@ export function App() {
                     <label>Guitar tone <select aria-label="Score guitar tone" value={guitarTone} onChange={(event) => { stopSynth(false); setGuitarTone(event.target.value); }}><option value="pluck">新：逐泛音衰減</option><option value="simple">舊：簡單振盪器</option></select></label>
                     <button type="button" className="ghost-button" disabled={isSynthPreparing} onClick={() => void toggleSynthPlayback()}>{isSynthPreparing ? "Preparing score…" : isSynthPlaying ? "Pause score" : "Play score"}</button>
                     <button type="button" className="ghost-button" onClick={() => stopSynth(true)}>Stop score</button>
-                    {(["guitar", "melody", "metronome"] as PlaybackTrack[]).map((track) => <label className="synth-track" key={track}><input type="checkbox" aria-label={track + " track"} checked={synthTracks[track]} onChange={() => { stopSynth(false); setSynthTracks((tracks) => ({ ...tracks, [track]: !tracks[track] })); }} /><span>{track}</span><input type="range" min="0" max="1" step="0.01" value={synthVolumes[track]} onChange={(event) => { stopSynth(false); setSynthVolumes((volumes) => ({ ...volumes, [track]: Number(event.target.value) })); }} aria-label={track + " volume"} /><button type="button" className={synthSoloTrack === track ? "synth-solo synth-solo-active" : "synth-solo"} onClick={() => { stopSynth(false); setSynthSoloTrack((current) => current === track ? null : track); }}>{synthSoloTrack === track ? "Soloed" : "Solo"}</button></label>)}
+                    {(["guitar", "melody", "metronome"] as PlaybackTrack[]).filter(track => MELODY_ENABLED || track !== "melody").map((track) => <label className="synth-track" key={track}><input type="checkbox" aria-label={track + " track"} checked={synthTracks[track]} onChange={() => { stopSynth(false); setSynthTracks((tracks) => ({ ...tracks, [track]: !tracks[track] })); }} /><span>{track}</span><input type="range" min="0" max="1" step="0.01" value={synthVolumes[track]} onChange={(event) => { stopSynth(false); setSynthVolumes((volumes) => ({ ...volumes, [track]: Number(event.target.value) })); }} aria-label={track + " volume"} /><button type="button" className={synthSoloTrack === track ? "synth-solo synth-solo-active" : "synth-solo"} onClick={() => { stopSynth(false); setSynthSoloTrack((current) => current === track ? null : track); }}>{synthSoloTrack === track ? "Soloed" : "Solo"}</button></label>)}
                     <span role="status">{activeBeatIndex >= 0 ? `Bar ${score.beats[activeBeatIndex].measure} · Beat ${score.beats[activeBeatIndex].beat}` : "Beat —"}</span>
                   </div>
                 </details>
@@ -2345,7 +2409,7 @@ export function App() {
                   <button type="button" className="ghost-button" onClick={downloadScoreJson}>Download JSON</button>
                   <button type="button" className="ghost-button" disabled={midiPending} onClick={() => void downloadMidi()}>{midiPending ? "Preparing MIDI…" : "Download MIDI"}</button>
                   <span>MIDI 演奏：{chordPerformance === "original" ? "原版" : chordPerformance === "continuous" ? "換和弦即彈・連續刷奏" : "換和弦只彈一下"}；JSON／MusicXML 保留原譜。</span>
-                  <button type="button" className="ghost-button" onClick={() => void downloadMusicXml()}>Download MusicXML</button>
+                  <button type="button" hidden={!MELODY_ENABLED} className="ghost-button" onClick={() => void downloadMusicXml()}>Download MusicXML</button>
                   <button type="button" className="ghost-button" onClick={() => void downloadChordPro()}>Download ChordPro</button>
                   <button type="button" className="ghost-button" disabled={!score.lyrics} onClick={() => void downloadLrc()}>Download LRC</button>
                 </div>
@@ -2367,11 +2431,11 @@ export function App() {
                     <span>Chord chart</span>
                     <strong>Needs review</strong>
                   </article>
-                  <article className="metric-card">
+                  <article className="metric-card" hidden={!MELODY_ENABLED}>
                     <span>Melody engine</span>
                     <strong className="metric-engine">{score.provenance.melody_engine.replace(/_/g, " ") || "—"}</strong>
                   </article>
-                  <article className="metric-card">
+                  <article className="metric-card" hidden={!MELODY_ENABLED}>
                     <span>Melody status</span>
                     <strong>Experimental</strong>
                   </article>
@@ -2386,7 +2450,9 @@ export function App() {
                 </section>
 
                 </div>
-                <div hidden={accompanimentView && focusMode}>
+                {!MELODY_ENABLED && !focusMode ? <AccompanimentCandidate score={score} jobId={workingJobId} apiBase={API_BASE}
+                  onCommit={(base, next) => { if (scoreRef.current !== base) return false; stopSynth(false); return recordScoreChange(next); }} /> : null}
+                {MELODY_ENABLED ? <div hidden={accompanimentView && focusMode}>
                 {score.provenance.parameters?.melody_note_processing !== "bounded-source-v1" ? <p role="note">目前為原分析／其他音符版本，尚未套用 G。若要使用 G，請展開下方候選入口，先產生、再確認套用；不會自動替換旋律。</p> : null}
                 <ContourCandidate score={score} jobId={workingJobId} apiBase={API_BASE}
                   onCommit={(base, next) => { if (scoreRef.current !== base) return false; audioRef.current?.pause(); stopSynth(false); return recordScoreChange(next); }} />
@@ -2421,10 +2487,10 @@ export function App() {
                   canUndo={undoHistory.length > 0} canRedo={redoHistory.length > 0}
                   revisionId={revisionId} onRevisionId={setRevisionId} onSave={() => void saveRevision(true)} onLoad={() => void loadRevision()}
                   saving={isSavingRevision || isLoadingRevision} saveStatus={saveStatus} />
-                </div>
+                </div> : null}
 
                 <div hidden={focusMode} className="advanced-workspace">
-                {score.melody.length > 0 ? <details className="melody-workspace workspace-disclosure">
+                {MELODY_ENABLED ? <>{score.melody.length > 0 ? <details className="melody-workspace workspace-disclosure">
                 <summary>Melody &amp; Tab previews · Experimental</summary>
                 <section className="melody-panel">
                   <div><h3>Estimated melody timeline</h3><p>Click a note to seek. Check Analysis notes above for transcription limitations.</p></div><button type="button" className="ghost-button melody-simplify" onClick={() => void simplifyMelody()}>Simplify melody</button>
@@ -2456,7 +2522,7 @@ export function App() {
                   </div> : null}
                   {activeMeasureGroup && !activeMeasureNotes.length ? <p className="tab-empty">No playable melody note is mapped in this bar.</p> : null}
                 </section>
-                </details> : <section className="melody-empty" aria-live="polite"><h3>No melody notes in working score</h3><p>Use Melody editor to add missing notes. The original analysis and contour audio remain separate; adding notes enables melody notation and exports without rerunning analysis.</p></section>}
+                </details> : <section className="melody-empty" aria-live="polite"><h3>No melody notes in working score</h3><p>Use Melody editor to add missing notes. The original analysis and contour audio remain separate; adding notes enables melody notation and exports without rerunning analysis.</p></section>}</> : null}
 
                 <label><input type="checkbox" checked={showRawChordSegments} onChange={(event) => setShowRawChordSegments(event.target.checked)} />顯示原始分析區段（逐段編輯）</label>
                 <p>和弦寬度依拍長排列：兩和弦不一定各半小節。相鄰同和弦／指型合併顯示；刷奏型不會自動校正小節線。</p>
@@ -2512,15 +2578,15 @@ export function App() {
               </>
             ) : (
               <div className="placeholder">
-                <p>Upload audio to populate the editable chord grid and key toolbar.</p>
+                <p>先選擇音檔或貼上 YouTube 網址，完成分析後會顯示和弦核對頁。</p>
               </div>
             )}
           </div>
 
-          <aside className="panel side-panel" hidden={focusMode}>
+          <aside className="panel side-panel" hidden={focusMode || (!MELODY_ENABLED && !selectedChord)}>
             <div className="panel-header">
               <div>
-                <p className="eyebrow">Session notes</p>
+                <p className="eyebrow">和弦編輯</p>
                 <h2>{selectedChord ? `Edit ${selectedChord.symbol}` : "Why this shell exists"}</h2>
               </div>
             </div>
@@ -2540,7 +2606,7 @@ export function App() {
                       {isLoadingRevision ? "Loading..." : "Load revision"}
                     </button>
                   </div>
-                  <p className="revision-status">{saveStatus}</p>
+                  <p className="revision-status">{!MELODY_ENABLED && saveStatus === "No saved revision yet." ? "" : !MELODY_ENABLED && saveStatus.startsWith("Saved revision") ? "已保存，可放心離開；下次用目前網址繼續。" : saveStatus}</p>
                 </div>
                 <label className="field compact-field">
                   <span>Chord symbol</span>
@@ -2598,7 +2664,7 @@ export function App() {
                 <li>Uses local audio upload, not YouTube download, to stay aligned with the handoff constraints.</li>
                 <li>Shows `source`, `target`, and `shape` key states separately.</li>
                 <li>Capo changes reuse the existing analysis instead of recomputing DSP output.</li>
-                <li>Select any chord card to rename it, split it, or remove it from the current revision.</li>
+                <li>點選和弦即可修改名稱、起訖或指型；修改後可還原上一步。</li>
               </ul>
             )}
           </aside>

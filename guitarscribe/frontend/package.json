@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:product": "playwright test --config playwright.product.config.ts"
   },
   "dependencies": {
     "@coderline/alphatab": "^1.8.4",

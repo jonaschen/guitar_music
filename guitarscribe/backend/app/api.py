@@ -93,7 +93,7 @@ class YouTubeJobRequest(BaseModel):
     analysis_seconds: float | None = Field(default=None, gt=0, le=600, allow_inf_nan=False)
     url: str = Field(description="A single youtube.com or youtu.be video URL. Playlists are not accepted.")
     rights_confirmed: bool = Field(description="Must be true: the caller confirms they have rights to analyze this audio.")
-    melody_mode: str = Field(default="vocal", description="Melody extraction mode: vocal, guitar, or mix.")
+    melody_mode: str = Field(default="vocal", description="Melody extraction mode: off (chords only), vocal, guitar, or mix.")
     chord_complexity: str = Field(default="standard", description="Chord vocabulary: simple, standard, or full.")
     separate_vocals: bool = Field(default=False, description="Request optional vocal separation when the server enables it.")
 
@@ -599,6 +599,14 @@ async def load_revision(
 ) -> SongScore:
     try:
         return revision_store.load(revision_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/revisions/{revision_id}/history", tags=["Revisions"])
+async def revision_history(revision_id: str, revision_store: RevisionStore = Depends(get_revision_store)) -> list[dict[str, str]]:
+    try:
+        return revision_store.history(revision_id)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
