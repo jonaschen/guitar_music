@@ -1,6 +1,6 @@
 # GuitarScribe
 
-目前交付：本機和弦核對、伴奏試聽與修譜工具。主旋律停止研發並從一般 UI 隱藏，舊資料保留。使用 [穩定試用入口](http://localhost:5173/review.html) 開啟已確認的 Bar 7 修正版；不要以修正前的歷史修訂作為正式試聽入口。新版 UI 與限制見 [Codex 進度報告](docs/Chord_Web_Mobile_2026-10-27.md)。
+目前交付：本機和弦核對、伴奏試聽與修譜工具。主旋律停止研發並從一般 UI 隱藏，舊資料保留。使用 [穩定試用入口](http://localhost:5173/review.html) 開啟先前確認有改善的整份拍格版；不要以修正前的歷史修訂作為正式試聽入口。新版 UI 與限制見 [Codex 進度報告](docs/Chord_Web_Mobile_2026-10-27.md)。
 
 Backend-first prototype for generating guitar-friendly song analysis from uploaded audio.
 

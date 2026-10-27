@@ -2110,7 +2110,7 @@ export function App() {
               <div>
                 <p className="eyebrow">GuitarScribe</p>
                 <h2>{score ? score.song.title : "開始你的和弦譜"}</h2>
-                {!MELODY_ENABLED && revisionId === "bc41b274-69d4-430f-8dda-52bd0759119d" ? <p role="note">這是第七小節修正前的歷史版本。<a href="/review.html" target="_blank" rel="noopener noreferrer">開啟已確認版本（新分頁）</a>；目前修改保留在此頁。</p> : null}
+                {!MELODY_ENABLED && ["bc41b274-69d4-430f-8dda-52bd0759119d", "3188712c-bfb9-461d-a19b-d45b10466efe"].includes(revisionId) ? <p role="note">這是尚未完整整理拍格的歷史版本。<a href="/review.html" target="_blank" rel="noopener noreferrer">開啟拍格譜（新分頁）</a>；目前修改保留在此頁。</p> : null}
                 {!MELODY_ENABLED && score ? <p role="status" className="autosave-status">{isSavingRevision ? "正在保存…" : hasUnsavedChanges ? lastAutoSaveAttempt.current === score ? "尚未保存，請在版本歷史中重試。" : "等待自動保存…" : savedSnapshot ? "已保存" : "原始分析已保留"}</p> : null}
               </div>
               <div className="status-pill" hidden={!MELODY_ENABLED}>{status === "ready" ? "可編輯" : analysisJob ? `${analysisJob.progress}%` : "尚未分析"}</div>

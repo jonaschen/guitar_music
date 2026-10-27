@@ -1,0 +1,568 @@
+{
+  "song": {
+    "title": "小手拉大手 · 八分拍格伴奏候選（旋律未改）",
+    "source_type": "local",
+    "source_url": null,
+    "duration_seconds": 29.291979166666668,
+    "source_start_seconds": 67.95772916666667
+  },
+  "analysis": {
+    "key": "C",
+    "mode": "major",
+    "bpm": 130.4347826086954,
+    "time_signature": "4/4",
+    "capo": 0,
+    "confidence": 0.0,
+    "warnings": [
+      "Separate excerpt: accompaniment retained from reviewed baseline; saved melody clipped only at excerpt edges, not corrected or re-transcribed. Original full revision is unchanged.",
+      "Experimental eighth-note chord timing candidate on the existing beat grid. Original detection retained separately; short chords/rests and manual boundaries may remain unquantized. Melody is unchanged.",
+      "This is a separate timing preview, not proof that all original off-grid boundaries were errors."
+    ]
+  },
+  "beats": [
+    {
+      "time": 0.0,
+      "beat": 1,
+      "measure": 1,
+      "confidence": 0.0
+    },
+    {
+      "time": 0.46,
+      "beat": 2,
+      "measure": 1,
+      "confidence": 0.0
+    },
+    {
+      "time": 0.92,
+      "beat": 3,
+      "measure": 1,
+      "confidence": 0.0
+    },
+    {
+      "time": 1.38,
+      "beat": 4,
+      "measure": 1,
+      "confidence": 0.0
+    },
+    {
+      "time": 1.82,
+      "beat": 1,
+      "measure": 2,
+      "confidence": 0.0
+    },
+    {
+      "time": 2.28,
+      "beat": 2,
+      "measure": 2,
+      "confidence": 0.0
+    },
+    {
+      "time": 2.76,
+      "beat": 3,
+      "measure": 2,
+      "confidence": 0.0
+    },
+    {
+      "time": 3.22,
+      "beat": 4,
+      "measure": 2,
+      "confidence": 0.0
+    },
+    {
+      "time": 3.68,
+      "beat": 1,
+      "measure": 3,
+      "confidence": 0.0
+    },
+    {
+      "time": 4.14,
+      "beat": 2,
+      "measure": 3,
+      "confidence": 0.0
+    },
+    {
+      "time": 4.62,
+      "beat": 3,
+      "measure": 3,
+      "confidence": 0.0
+    },
+    {
+      "time": 5.08,
+      "beat": 4,
+      "measure": 3,
+      "confidence": 0.0
+    },
+    {
+      "time": 5.54,
+      "beat": 1,
+      "measure": 4,
+      "confidence": 0.0
+    },
+    {
+      "time": 6.0,
+      "beat": 2,
+      "measure": 4,
+      "confidence": 0.0
+    },
+    {
+      "time": 6.46,
+      "beat": 3,
+      "measure": 4,
+      "confidence": 0.0
+    },
+    {
+      "time": 6.92,
+      "beat": 4,
+      "measure": 4,
+      "confidence": 0.0
+    },
+    {
+      "time": 7.38,
+      "beat": 1,
+      "measure": 5,
+      "confidence": 0.0
+    },
+    {
+      "time": 7.84,
+      "beat": 2,
+      "measure": 5,
+      "confidence": 0.0
+    },
+    {
+      "time": 8.32,
+      "beat": 3,
+      "measure": 5,
+      "confidence": 0.0
+    },
+    {
+      "time": 8.76,
+      "beat": 4,
+      "measure": 5,
+      "confidence": 0.0
+    },
+    {
+      "time": 9.22,
+      "beat": 1,
+      "measure": 6,
+      "confidence": 0.0
+    },
+    {
+      "time": 9.68,
+      "beat": 2,
+      "measure": 6,
+      "confidence": 0.0
+    },
+    {
+      "time": 10.14,
+      "beat": 3,
+      "measure": 6,
+      "confidence": 0.0
+    },
+    {
+      "time": 10.6,
+      "beat": 4,
+      "measure": 6,
+      "confidence": 0.0
+    },
+    {
+      "time": 11.08,
+      "beat": 1,
+      "measure": 7,
+      "confidence": 0.0
+    },
+    {
+      "time": 11.54,
+      "beat": 2,
+      "measure": 7,
+      "confidence": 0.0
+    },
+    {
+      "time": 12.0,
+      "beat": 3,
+      "measure": 7,
+      "confidence": 0.0
+    },
+    {
+      "time": 12.46,
+      "beat": 4,
+      "measure": 7,
+      "confidence": 0.0
+    },
+    {
+      "time": 12.92,
+      "beat": 1,
+      "measure": 8,
+      "confidence": 0.0
+    },
+    {
+      "time": 13.36,
+      "beat": 2,
+      "measure": 8,
+      "confidence": 0.0
+    },
+    {
+      "time": 13.84,
+      "beat": 3,
+      "measure": 8,
+      "confidence": 0.0
+    },
+    {
+      "time": 14.3,
+      "beat": 4,
+      "measure": 8,
+      "confidence": 0.0
+    },
+    {
+      "time": 14.76,
+      "beat": 1,
+      "measure": 9,
+      "confidence": 0.0
+    },
+    {
+      "time": 15.22,
+      "beat": 2,
+      "measure": 9,
+      "confidence": 0.0
+    },
+    {
+      "time": 15.68,
+      "beat": 3,
+      "measure": 9,
+      "confidence": 0.0
+    },
+    {
+      "time": 16.14,
+      "beat": 4,
+      "measure": 9,
+      "confidence": 0.0
+    },
+    {
+      "time": 16.58,
+      "beat": 1,
+      "measure": 10,
+      "confidence": 0.0
+    },
+    {
+      "time": 17.06,
+      "beat": 2,
+      "measure": 10,
+      "confidence": 0.0
+    },
+    {
+      "time": 17.52,
+      "beat": 3,
+      "measure": 10,
+      "confidence": 0.0
+    },
+    {
+      "time": 17.98,
+      "beat": 4,
+      "measure": 10,
+      "confidence": 0.0
+    },
+    {
+      "time": 18.44,
+      "beat": 1,
+      "measure": 11,
+      "confidence": 0.0
+    },
+    {
+      "time": 18.9,
+      "beat": 2,
+      "measure": 11,
+      "confidence": 0.0
+    },
+    {
+      "time": 19.36,
+      "beat": 3,
+      "measure": 11,
+      "confidence": 0.0
+    },
+    {
+      "time": 19.82,
+      "beat": 4,
+      "measure": 11,
+      "confidence": 0.0
+    },
+    {
+      "time": 20.28,
+      "beat": 1,
+      "measure": 12,
+      "confidence": 0.0
+    },
+    {
+      "time": 20.74,
+      "beat": 2,
+      "measure": 12,
+      "confidence": 0.0
+    },
+    {
+      "time": 21.22,
+      "beat": 3,
+      "measure": 12,
+      "confidence": 0.0
+    },
+    {
+      "time": 21.68,
+      "beat": 4,
+      "measure": 12,
+      "confidence": 0.0
+    },
+    {
+      "time": 22.14,
+      "beat": 1,
+      "measure": 13,
+      "confidence": 0.0
+    },
+    {
+      "time": 22.6,
+      "beat": 2,
+      "measure": 13,
+      "confidence": 0.0
+    },
+    {
+      "time": 23.08,
+      "beat": 3,
+      "measure": 13,
+      "confidence": 0.0
+    },
+    {
+      "time": 23.54,
+      "beat": 4,
+      "measure": 13,
+      "confidence": 0.0
+    },
+    {
+      "time": 23.98,
+      "beat": 1,
+      "measure": 14,
+      "confidence": 0.0
+    },
+    {
+      "time": 24.44,
+      "beat": 2,
+      "measure": 14,
+      "confidence": 0.0
+    },
+    {
+      "time": 24.92,
+      "beat": 3,
+      "measure": 14,
+      "confidence": 0.0
+    },
+    {
+      "time": 25.38,
+      "beat": 4,
+      "measure": 14,
+      "confidence": 0.0
+    },
+    {
+      "time": 25.84,
+      "beat": 1,
+      "measure": 15,
+      "confidence": 0.0
+    },
+    {
+      "time": 26.3,
+      "beat": 2,
+      "measure": 15,
+      "confidence": 0.0
+    },
+    {
+      "time": 26.76,
+      "beat": 3,
+      "measure": 15,
+      "confidence": 0.0
+    },
+    {
+      "time": 27.22,
+      "beat": 4,
+      "measure": 15,
+      "confidence": 0.0
+    },
+    {
+      "time": 27.68,
+      "beat": 1,
+      "measure": 16,
+      "confidence": 0.0
+    },
+    {
+      "time": 28.14,
+      "beat": 2,
+      "measure": 16,
+      "confidence": 0.0
+    },
+    {
+      "time": 28.62,
+      "beat": 3,
+      "measure": 16,
+      "confidence": 0.0
+    },
+    {
+      "time": 29.06,
+      "beat": 4,
+      "measure": 16,
+      "confidence": 0.0
+    }
+  ],
+  "provenance": {
+    "beat_engine": "beat_this_small",
+    "chord_engine": "chordino",
+    "melody_engine": "pyin_vocal",
+    "beat_engine_version": "1.1.0",
+    "chord_engine_version": "",
+    "melody_engine_version": "0.11.0",
+    "tempo_map_version": "reviewed-small0-excerpt-v1",
+    "parameters": {
+      "melody_mode": "vocal",
+      "vocal_source_separated": false,
+      "melody_note_processing": "bounded-source-v1",
+      "bounded_switch_cost": 0.35,
+      "bounded_max_error_semitones": 0.6,
+      "derived_excerpt": true,
+      "excerpt_parent_start": 49.95772916666667,
+      "analysis_source_job_id": "ffa4697903394eb8a93f159b23487ff5",
+      "candidate_source_job_id": "ffa4697903394eb8a93f159b23487ff5",
+      "melody_parent_job_id": "3ba648f12cb74dd59a45c1b2d4bc83ab",
+      "melody_parent_revision_id": "db8c657e-62a5-4fad-a33e-cde25a9e1c0d",
+      "source_audio_sha256": "de1978a656d0c646cbc76d1deebe7a787d63b332dca3f248507feca0b4e008f0",
+      "accepted_accompaniment_score_sha256": "bb1acd1914d6eb3c496016b42b2e188664d1447bb022736912d4b7e18d15fe1a",
+      "melody_parent_score_sha256": "f1392dd8147032631b63639ebe03fdeacfd35fe0a65fd570495946531e6efade",
+      "derived_without_inference": true,
+      "melody_parent_vocal_source_separated": true,
+      "chord_vamp_wrapper_version": "1.1.0",
+      "chord_grid_candidate": "nearest-eighth-v1",
+      "chord_grid_parent_revision": "bc41b274-69d4-430f-8dda-52bd0759119d"
+    }
+  },
+  "chords": [
+    {
+      "id": "chord-2",
+      "start": 0.23,
+      "end": 1.82,
+      "symbol": "D",
+      "origin": "model",
+      "edited": false
+    },
+    {
+      "id": "chord-3",
+      "start": 1.82,
+      "end": 4.62,
+      "symbol": "G",
+      "origin": "model",
+      "edited": false
+    },
+    {
+      "id": "chord-4",
+      "start": 4.62,
+      "end": 5.54,
+      "symbol": "G7",
+      "origin": "model",
+      "edited": false
+    },
+    {
+      "id": "chord-5",
+      "start": 5.54,
+      "end": 7.15,
+      "symbol": "C",
+      "origin": "model",
+      "edited": false
+    },
+    {
+      "id": "chord-6",
+      "start": 7.15,
+      "end": 9.22,
+      "symbol": "G",
+      "origin": "model",
+      "edited": false
+    },
+    {
+      "id": "chord-7",
+      "start": 9.22,
+      "end": 11.08,
+      "symbol": "Am",
+      "origin": "model",
+      "edited": false
+    },
+    {
+      "id": "chord-8",
+      "start": 11.08,
+      "end": 12.92,
+      "symbol": "Em",
+      "origin": "model",
+      "edited": false
+    },
+    {
+      "id": "chord-9",
+      "start": 12.92,
+      "end": 14.76,
+      "symbol": "F",
+      "origin": "model",
+      "edited": false
+    },
+    {
+      "id": "chord-10",
+      "start": 14.76,
+      "end": 16.58,
+      "symbol": "C",
+      "origin": "model",
+      "edited": false
+    },
+    {
+      "id": "chord-11",
+      "start": 16.58,
+      "end": 18.21,
+      "symbol": "D7",
+      "origin": "model",
+      "edited": false
+    },
+    {
+      "id": "chord-12",
+      "start": 18.21,
+      "end": 20.28,
+      "symbol": "G6",
+      "origin": "model",
+      "edited": false
+    },
+    {
+      "id": "chord-13",
+      "start": 20.28,
+      "end": 22.14,
+      "symbol": "C",
+      "origin": "model",
+      "edited": false
+    },
+    {
+      "id": "chord-14",
+      "start": 22.14,
+      "end": 23.98,
+      "symbol": "G",
+      "origin": "model",
+      "edited": false
+    },
+    {
+      "id": "chord-15",
+      "start": 23.98,
+      "end": 25.84,
+      "symbol": "Am",
+      "origin": "model",
+      "edited": false
+    },
+    {
+      "id": "chord-16",
+      "start": 25.84,
+      "end": 27.68,
+      "symbol": "Em",
+      "origin": "model",
+      "edited": false
+    },
+    {
+      "id": "chord-17",
+      "start": 27.68,
+      "end": 29.291979166666668,
+      "symbol": "F",
+      "origin": "model",
+      "edited": false
+    }
+  ]
+}

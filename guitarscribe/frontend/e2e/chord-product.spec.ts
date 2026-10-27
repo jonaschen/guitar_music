@@ -1,3 +1,5 @@
+import {readFileSync} from "node:fs";
+const acceptedGrid=JSON.parse(readFileSync(new URL("./fixtures/accepted-chord-grid.json",import.meta.url),"utf8"));
 import {removeChordSlice} from "../src/chordSlice";
 import {beatCoordinate, shiftByBeats, retimeChord} from "../src/chordTiming";
 import {test, expect} from '@playwright/test';
@@ -204,9 +206,9 @@ test('renaming a continuation in Bar 7 preserves Bars 6 and 8, survives reload a
 
 test('stable review entry loads accepted Bar 7 revision without restoring remembered baseline',async({page})=>{
   await setup(page);
-  await page.route('**/revisions/3188712c-bfb9-461d-a19b-d45b10466efe',r=>r.fulfill({json:{...score,song:{...score.song,title:'Accepted Bar 7'}}}));
+  await page.route('**/revisions/4384c826-a4f0-4442-b1d4-ef7bbc7888f4',r=>r.fulfill({json:{...score,song:{...score.song,title:'Accepted Bar 7'}}}));
   await page.goto('/review.html');
-  await expect(page).toHaveURL(/revision=3188712c-bfb9-461d-a19b-d45b10466efe/);
+  await expect(page).toHaveURL(/revision=4384c826-a4f0-4442-b1d4-ef7bbc7888f4/);
   await expect(page.getByRole('heading',{name:'Accepted Bar 7',exact:true})).toBeVisible();
 });
 
@@ -226,7 +228,7 @@ test('deleting trailing fragment fills with previous chord, preserves next bar, 
   await page.route('**/revisions',r=>{saved=r.request().postDataJSON();return r.fulfill({json:{revision_id:'removed-fragment'}});});
   await page.route('**/revisions/removed-fragment',r=>r.fulfill({json:saved.score}));
   await page.getByText('練習與編輯',{exact:true}).click();await page.getByRole('button',{name:'編輯和弦',exact:true}).click();
-  const fragment=page.getByRole('button',{name:'編輯 Bar 1 的 G',exact:true});await expect(fragment).toContainText('0.02 拍');await fragment.click();
+  const fragment=page.getByRole('button',{name:'編輯 Bar 1 的 G',exact:true});await expect(fragment).toHaveAttribute('title',/0.02 拍/);await fragment.click();
   await expect(page.getByLabel('本小節片段拍長')).toContainText('0.02 拍');
   await page.getByRole('button',{name:'刪除此小節內的片段',exact:true}).click();
   await expect(fragment).toHaveCount(0);await expect(page.getByRole('button',{name:'編輯 Bar 2 的 G',exact:true})).toBeVisible();
@@ -236,4 +238,19 @@ test('deleting trailing fragment fills with previous chord, preserves next bar, 
   await page.getByRole('button',{name:'重做',exact:true}).click();await expect(fragment).toHaveCount(0);
   await page.reload();await expect(page.getByRole('button',{name:'播放 Bar 1 的 G',exact:true})).toHaveCount(0);
   await expect(page.getByRole('button',{name:'播放 Bar 2 的 G',exact:true})).toBeVisible();
+});
+
+
+test('accepted grid renders full-bar chords and real half-bar changes, without boundary slivers',async({page})=>{
+  await setup(page,{...score,...acceptedGrid});
+  const sheet=page.getByLabel('和弦譜',{exact:true});
+  for(const [bar,symbol] of [[5,'G'],[6,'Am'],[7,'Em'],[8,'F'],[9,'C'],[14,'Am'],[15,'Em']]){
+    const cell=sheet.getByLabel(`Bar ${bar}`,{exact:true});
+    await expect(cell.getByRole('button')).toHaveCount(1);
+    await expect(cell.getByRole('button',{name:`播放 Bar ${bar} 的 ${symbol}`,exact:true})).toBeVisible();
+  }
+  await expect(sheet.getByLabel('Bar 3',{exact:true}).getByRole('button')).toHaveCount(2);
+  await expect(sheet.getByLabel('Bar 3',{exact:true}).getByText('2 拍',{exact:true})).toHaveCount(2);
+  await expect(sheet).not.toContainText('約');
+  await expect(sheet).not.toContainText('0.02 拍');
 });
