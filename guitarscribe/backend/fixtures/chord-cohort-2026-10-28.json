@@ -4,7 +4,7 @@
   "cases": [
     {"video": "S8RWhc_LmMc", "job": "1de2b4da3efc4b7491b98dae67ba0060", "source_sha256": "9cab0ee0a6b85d27bbc9baffc32c0c39b9fa6574fa83dcd968d787742cea0ba2", "human_feedback": "Pulse speed basically correct; downbeat phase and chords unconfirmed"},
     {"video": "WObbdwgB41c", "job": "8a89fde02c614127bf6332d7d8db8be1", "source_sha256": "92788d212db5b39b998a113b4d31ff04bd88cc52a6a52d26bd352dab4c6c0f7c", "human_feedback": "Beat check failed: click stops around 20 s, perceived speed differs before/after"},
-    {"video": "vmmRFJcDJJw", "job": "e2941e2199e6468abd3845922ef2fa74", "source_sha256": "0c29ae8dd17706e4455b2408a2a8e28e8794f859f87746d5ed8f2b345e2b0e47", "human_feedback": "Not yet listened"},
-    {"video": "QbM3o4qy9RQ", "job": "8b946897e8334d51865cb35ec7c73b14", "source_sha256": "5b3912ee9557cda00486a76837b335eff373a807e7af94d395330ed2d808dd1e", "human_feedback": "Not yet listened"}
+    {"video": "vmmRFJcDJJw", "job": "e2941e2199e6468abd3845922ef2fa74", "source_sha256": "0c29ae8dd17706e4455b2408a2a8e28e8794f859f87746d5ed8f2b345e2b0e47", "human_feedback": "Reviewed 0–45 s nearest-eighth workspace: overall acceptable; not whole-song acceptance", "reviewed_revision": "04582735-12ca-4c12-abce-acc95b3f31ee"},
+    {"video": "QbM3o4qy9RQ", "job": "8b946897e8334d51865cb35ec7c73b14", "source_sha256": "5b3912ee9557cda00486a76837b335eff373a807e7af94d395330ed2d808dd1e", "human_feedback": "Reviewed 0–45 s nearest-eighth workspace: intro not acceptable; around Bar 17 onward (27.68 s in this score), verse sounds acceptable. Approximate user boundary, not a detected section or whole-song acceptance", "reviewed_revision": "2f5365b2-1e0e-4244-a0d9-e6e2e5cef478"}
   ]
 }

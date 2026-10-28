@@ -1,0 +1,36 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GuitarScribe · 全部曲目</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#12161c;color:#edf0f5;font:16px/1.65 system-ui,sans-serif}main{max-width:1080px;margin:auto;padding:24px}h1{font-size:28px}h2{font-size:20px}p,small{color:#c3cad3}small{font-size:14px}button,select{font:inherit;min-height:44px;border:1px solid #505a67;border-radius:4px;background:#202630;color:inherit;padding:8px;cursor:pointer}button:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid #ffb65a;outline-offset:3px}#songs{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px}#songs button{text-align:left}#songs small{display:block}button[aria-pressed=true]{border-color:#ffb65a}#player{width:100%;margin:16px 0}#song{margin-top:32px}#warning{color:#ffd29a}a{color:#b2d8ff}.tools{display:flex;gap:16px;align-items:center;flex-wrap:wrap}#chords{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;max-height:60vh;overflow:auto;padding:8px 4px}#chords button{text-align:left}#chords strong{display:block}#chords .active{background:#51391e;border-color:#ffb65a}#chords small{display:block}details{margin-top:24px}summary{cursor:pointer}#error{color:#ffd29a}.status{font-size:14px}#song[hidden]{display:none}
+#chords{gap:0}#chords button{border:0;border-bottom:1px solid #424b58;border-radius:0;background:transparent;padding:12px}#chords button.active{background:#51391e}
+</style></head><body><main>
+<h1>全部曲目 · 完成度檢視</h1>
+<p>6 首歌、7 個錄音來源，皆為完整音檔。選一首即可比較原曲與吉他，點和弦可跳到該位置。</p>
+<p id="summary" role="status">正在載入…</p><nav id="songs" aria-label="選擇歌曲"></nav>
+<section id="song" hidden><h2 id="title"></h2><p id="warning"></p><p id="history"></p>
+<div class="tools"><label>聲音 <select id="mode" aria-label="播放內容"><option value="mix">原曲＋吉他</option><option value="source">只聽原曲</option><option value="guitar">只聽吉他</option></select></label><a id="score-link" hidden>開啟可編輯和弦譜</a><a id="source-link" target="_blank" rel="noreferrer">來源影片</a></div>
+<audio id="player" controls preload="metadata"></audio><small>切換聲音保留播放位置。吉他長音會自然衰減；兩種核對方式不代表同樣的完成程度。</small><p id="timing-detail" class="status"></p>
+<h2 id="sheet-title">和弦時間表</h2><p id="key" class="status"></p><div id="chords" aria-label="和弦時間表"></div>
+<details><summary>如何看這份結果</summary><p>「節奏伴奏」：整首拍格通過結構檢查，可檢視小節譜；音樂品質仍待試聽。「和弦核對」：拍格未通過，吉他只在每次偵測到換和弦時彈一下，時間表保留原始秒數，不能當作完整刷奏伴奏或可靠小節譜。</p><p>目前整首結果尚未經人耳驗收。先前接受的片段另行保留，不會自動替整首背書。</p><p><a href="/listening/cohort-accompaniment-2026-10-28/index.html">上一輪兩首片段與和弦譜</a> · <a href="/review.html">已接受的小手片段譜</a></p></details>
+</section><p id="error" role="alert"></p></main><script>
+const names={'5wq_uTMW0v8':'小手拉大手','Q-B-fw-bO7M':'情非得已 · 現場','0rpbhqZI0hc':'情非得已 · 錄音室','S8RWhc_LmMc':'I Believe','WObbdwgB41c':'遇見','vmmRFJcDJJw':'直到世界的盡頭','QbM3o4qy9RQ':'君が好きだと叫びたい'};
+const history={'vmmRFJcDJJw':'先前 0–45 秒：整體可接受。整首尚未驗收。','QbM3o4qy9RQ':'先前 0–45 秒：前奏不合；約第 17 小節（27.68 秒）進主歌後尚可。整首尚未驗收。','S8RWhc_LmMc':'先前 0–45 秒：速度基本正確，小節分組仍待處理。','WObbdwgB41c':'先前 0–45 秒：拍點有中斷與密度變化，尚未通過。'};
+const player=document.getElementById('player'),mode=document.getElementById('mode');let selected=null,generation=0,buttons=[];
+const clock=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
+function play(request=generation){player.play().catch(error=>{if(request===generation&&error.name!=='AbortError')document.getElementById('error').textContent='請按播放繼續。'})}
+function audio(position=0,resume=false){const request=++generation;player.pause();player.src=`${selected.video}/${mode.value}.wav`;player.addEventListener('loadedmetadata',()=>{if(request!==generation)return;player.currentTime=Math.min(position,Math.max(0,player.duration-.01));if(resume)play(request)},{once:true});player.load()}
+function choose(row){selected=row;mode.value='mix';audio();document.getElementById('song').hidden=false;document.getElementById('error').textContent='';document.getElementById('title').textContent=names[row.video]||row.title;
+ document.querySelectorAll('#songs button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.video===row.video)));
+ document.getElementById('warning').textContent=row.kind==='rhythmic'?'整首節奏伴奏已產生，聽感尚未驗收。':'整首拍格未通過：目前提供逐和弦核對，每次換和弦彈一下；尚無可靠的小節譜或連續刷奏。';
+ document.getElementById('history').textContent=history[row.video]||'先前僅部分片段有驗收紀錄，尚不能代表整首可用。';
+ document.getElementById('timing-detail').textContent=row.timing_summary?'偵測到的重拍間隔：'+Object.entries(row.timing_summary).map(([beats,count])=>`${beats} 拍 × ${count}`).join('、')+'。局部不一致就會擋下整首；不代表所有區段都錯。':'';
+ const link=document.getElementById('score-link');link.hidden=!row.revision;if(row.revision)link.href='/?revision='+encodeURIComponent(row.revision);
+ document.getElementById('source-link').href=row.url;
+ document.getElementById('key').textContent=`${clock(row.duration)} · ${row.chords.length} 段和弦 · 推估調性 ${row.key_estimate} ${row.mode_estimate==='minor'?'小調':'大調'}（未確認）`+(row.unsupported_chord_ids.length?` · ${row.unsupported_chord_ids.length} 段尚無可用指型`:'');
+ const sheet=document.getElementById('chords');sheet.replaceChildren();sheet.scrollTop=0;buttons=[];
+ for(const chord of row.chords){const button=document.createElement('button'),symbol=document.createElement('strong'),time=document.createElement('small');symbol.textContent=chord.symbol;time.textContent=`${clock(chord.start)}–${clock(chord.end)} · ${(chord.end-chord.start).toFixed(1)} 秒`;button.append(symbol,time);button.setAttribute('aria-label',`${chord.symbol}，${chord.start.toFixed(2)} 秒`);button.addEventListener('click',()=>{player.currentTime=chord.start;play()});sheet.append(button);buttons.push({button,chord})}
+}
+mode.addEventListener('change',()=>audio(player.currentTime,!player.paused));player.addEventListener('timeupdate',()=>buttons.forEach(({button,chord})=>button.classList.toggle('active',chord.start<=player.currentTime&&player.currentTime<chord.end)));
+player.addEventListener('playing',()=>{document.getElementById('error').textContent=''});
+player.addEventListener('error',()=>{document.getElementById('error').textContent='音訊暫時無法載入，請重新整理；若仍失敗，請告訴我曲名。'});
+fetch('packet.json').then(r=>{if(!r.ok)throw Error();return r.json()}).then(rows=>{rows.sort((a,b)=>Object.keys(names).indexOf(a.video)-Object.keys(names).indexOf(b.video));const ready=rows.filter(r=>r.kind==='rhythmic').length;document.getElementById('summary').textContent=`${rows.length} 個完整來源已處理：${ready} 個產生節奏伴奏；${rows.length-ready} 個僅能逐和弦核對，拍格仍待修正。`;for(const row of rows){const button=document.createElement('button'),small=document.createElement('small');button.dataset.video=row.video;button.textContent=names[row.video]||row.title;small.textContent=`${clock(row.duration)} · ${row.kind==='rhythmic'?'節奏伴奏，待驗收':'和弦核對，拍格待修'}`;button.append(small);button.setAttribute('aria-pressed','false');button.addEventListener('click',()=>choose(row));document.getElementById('songs').append(button)}choose(rows[0])}).catch(()=>{document.getElementById('summary').textContent='清單載入失敗，請重新整理。'});
+</script></body></html>

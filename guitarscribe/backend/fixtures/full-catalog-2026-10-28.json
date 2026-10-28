@@ -1,0 +1,137 @@
+{
+  "scope": "Six songs, seven recordings, full cached sources from time zero; melody off. Inspection is not rhythmic accompaniment acceptance.",
+  "records": [
+    {
+      "video": "5wq_uTMW0v8",
+      "title": "梁靜茹-小手拉大手",
+      "source_job": "3ba648f12cb74dd59a45c1b2d4bc83ab",
+      "full_job": "1862b446d1fc4f6a9eade9b3799cdaaa",
+      "source_sha256": "6c6d1be95dd4ba94a8d71896d50b7e5d154c397405b837a76bc7870d39253b2c",
+      "duration_seconds": 274.34378684807257,
+      "full_pipeline_status": "failed",
+      "inspection_mode": "unmetered",
+      "chord_count": 132,
+      "unsupported_chords": 0,
+      "downbeat_interval_counts": {
+        "2": 5,
+        "1": 4,
+        "3": 2,
+        "4": 130
+      },
+      "human_verdict": "whole_song_unreviewed"
+    },
+    {
+      "video": "Q-B-fw-bO7M",
+      "title": "【纯享】#庾澄庆 时隔22年再唱成名曲《情非得已》，实力不减当年，开口瞬间泪崩！#曾比特 #我们的歌5 纯享",
+      "source_job": "db79e1145ea046088b8aa5ef421d0e3f",
+      "full_job": "e38469d95ab8406480bc7c4a0e30058f",
+      "source_sha256": "f2c4b421bb7e994eea74a5a316f02c2dd346d09a049db03c162110ad0af0fe9e",
+      "duration_seconds": 277.6106802721088,
+      "full_pipeline_status": "failed",
+      "inspection_mode": "unmetered",
+      "chord_count": 151,
+      "unsupported_chords": 0,
+      "downbeat_interval_counts": {
+        "4": 108,
+        "3": 7,
+        "2": 4
+      },
+      "human_verdict": "whole_song_unreviewed"
+    },
+    {
+      "video": "0rpbhqZI0hc",
+      "title": "庾澄慶 Harlem Yu / 情非得已【歌詞】",
+      "source_job": "f303ec8a86834633b060920fa85430af",
+      "full_job": "43b8a8e2f897419bb7507ed15307172a",
+      "source_sha256": "5371ca52ee79766dfcd63a51f8b34b4b2ee1adcfbdc6d9ab113939d4e57c092e",
+      "duration_seconds": 273.1015192743764,
+      "full_pipeline_status": "failed",
+      "inspection_mode": "unmetered",
+      "chord_count": 151,
+      "unsupported_chords": 0,
+      "downbeat_interval_counts": {
+        "4": 118,
+        "2": 1,
+        "1": 1
+      },
+      "human_verdict": "whole_song_unreviewed"
+    },
+    {
+      "video": "S8RWhc_LmMc",
+      "title": "I Believe - 我的野蠻女友主題曲",
+      "source_job": "1de2b4da3efc4b7491b98dae67ba0060",
+      "full_job": "82d0c407e49a4691819c941cf008e3c0",
+      "source_sha256": "a52a9cb0fc36213992723da9ebd0eabf703d27da8c2e6182a71fe93a41e0719c",
+      "duration_seconds": 284.42124716553286,
+      "full_pipeline_status": "failed",
+      "inspection_mode": "unmetered",
+      "chord_count": 175,
+      "unsupported_chords": 0,
+      "downbeat_interval_counts": {
+        "4": 48,
+        "2": 48,
+        "6": 1,
+        "1": 1,
+        "3": 1
+      },
+      "human_verdict": "whole_song_unreviewed"
+    },
+    {
+      "video": "WObbdwgB41c",
+      "title": "孫燕姿 Sun Yan-Zi - 遇見 Encounter  4K MV (Official 4K UltraHD Video)",
+      "source_job": "8a89fde02c614127bf6332d7d8db8be1",
+      "full_job": "511b69bb58e64ac6ae0eef47a608dd99",
+      "source_sha256": "0d7b8605975b53e73b0e54633c71941d8152638c2747b0fda1df3da1a9f6d63a",
+      "duration_seconds": 206.611179138322,
+      "full_pipeline_status": "failed",
+      "inspection_mode": "unmetered",
+      "chord_count": 133,
+      "unsupported_chords": 0,
+      "downbeat_interval_counts": {
+        "2": 21,
+        "3": 1,
+        "1": 6,
+        "4": 55,
+        "5": 1,
+        "6": 1
+      },
+      "human_verdict": "whole_song_unreviewed"
+    },
+    {
+      "video": "vmmRFJcDJJw",
+      "title": "灌篮高手 三井寿之歌  《直到世界的尽头》致逝去的青春",
+      "source_job": "e2941e2199e6468abd3845922ef2fa74",
+      "full_job": "52ee174315dc41e3ad9a8d2e581d3c7b",
+      "source_sha256": "54e25b19e890df314cb20ac8e787a20808813e4bb7e366aef28bf243630213b5",
+      "duration_seconds": 346.3372562358277,
+      "full_pipeline_status": "failed",
+      "inspection_mode": "unmetered",
+      "chord_count": 159,
+      "unsupported_chords": 0,
+      "downbeat_interval_counts": {
+        "4": 131,
+        "2": 7,
+        "3": 4,
+        "1": 4
+      },
+      "human_verdict": "whole_song_unreviewed"
+    },
+    {
+      "video": "QbM3o4qy9RQ",
+      "title": "【完整版日文精選】君が好きだと叫びたい-BAAD",
+      "source_job": "8b946897e8334d51865cb35ec7c73b14",
+      "full_job": "978b57925b43416ea10f5701f87d2235",
+      "source_sha256": "312a6aa2852fb68ba91b90e16467092acf2dafb24ba8937eec27dbeaada1219a",
+      "duration_seconds": 226.208820861678,
+      "full_pipeline_status": "failed",
+      "inspection_mode": "unmetered",
+      "chord_count": 145,
+      "unsupported_chords": 0,
+      "downbeat_interval_counts": {
+        "4": 132,
+        "3": 1
+      },
+      "human_verdict": "whole_song_unreviewed"
+    }
+  ]
+}

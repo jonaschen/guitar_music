@@ -25,10 +25,11 @@ def decode_chord_events(chords_data, duration_seconds):
 
 
 class ChordinoChordAnalyzer:
-    async def analyze(self, audio: NormalizedAudio, beats: BeatAnalysis) -> ChordAnalysis:
+    async def analyze(self, audio: NormalizedAudio, beats: BeatAnalysis | None) -> ChordAnalysis:
         return await run_blocking_analysis(self._analyze, audio, beats)
 
-    def _analyze(self, audio: NormalizedAudio, beats: BeatAnalysis) -> ChordAnalysis:
+    def _analyze(self, audio: NormalizedAudio, beats: BeatAnalysis | None) -> ChordAnalysis:
+        # Chordino uses audio only; an inspection can run without a valid meter.
         logger.info(f"Analyzing chords with chordino for {audio.path}")
         try:
             import vamp
