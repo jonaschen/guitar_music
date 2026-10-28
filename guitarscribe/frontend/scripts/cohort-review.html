@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>兩首新歌 · 伴奏試聽</title>
+<style>
+body{margin:0;background:#12161c;color:#edf0f5;font:16px/1.7 system-ui,sans-serif}main{max-width:720px;margin:auto;padding:24px}h1{font-size:28px}h2{font-size:20px;margin:0 0 8px}p{color:#c3cad3}section{padding:24px 0;border-top:1px solid #424b58}audio{display:block;width:100%;margin:16px 0}select{font:inherit;max-width:100%;min-height:44px;padding:8px;background:#202630;color:inherit}a{color:#b2d8ff}small{font-size:14px;color:#c3cad3}.score-link{display:inline-block;padding:8px 0}details{margin-top:24px}summary{cursor:pointer}#error{color:#ffcf9a}
+</style></head><body><main>
+<h1>兩首新歌：伴奏是否可用？</h1>
+<p>每首約 45 秒，直接播放即可。請留意<strong>換和弦是否合拍、和弦是否搭得上原曲</strong>；不確定可以回「無法判斷」。</p>
+<p>可以只回「第 3 首：可用／哪裡不對；第 4 首：可用／哪裡不對」。若有問題，附大約秒數即可，不必改譜。</p>
+<div id="songs" aria-label="新歌試聽"></div><p id="error" role="status">正在載入…</p>
+<details><summary>前兩首的狀態</summary><p>第 1 首：速度基本正確，小節分組仍待處理。第 2 首：拍點中斷與密度變化尚未解決。這次不需要重聽。</p></details>
+<p><small>這是前 45 秒的初步確認，尚未代表整首可用。切換播放內容會暫停並回到開頭；同時只會播放一首。</small></p>
+<p><a href="/review.html">回到已通過的和弦譜</a></p>
+</main><script>
+const players=[];
+fetch('packet.json').then(r=>{if(!r.ok)throw Error();return r.json()}).then(songs=>{
+ for(const song of songs){
+  const section=document.createElement('section'),title=document.createElement('h2');
+  title.textContent=`第 ${song.number} 首 · ${song.title}`;section.append(title);
+  const label=document.createElement('label');label.textContent='播放內容 ';
+  const select=document.createElement('select');select.setAttribute('aria-label',`第 ${song.number} 首播放內容`);
+  for(const [value,text] of [['mix','原曲＋吉他'],['source','只聽原曲'],['guitar','只聽吉他']]){const option=document.createElement('option');option.value=value;option.textContent=text;select.append(option)}
+  label.append(select);section.append(label);
+  const audio=document.createElement('audio');audio.controls=true;audio.preload='metadata';audio.src=song.audio.mix.file;audio.setAttribute('aria-label',`第 ${song.number} 首播放器`);players.push(audio);section.append(audio);
+  audio.addEventListener('play',()=>players.forEach(p=>{if(p!==audio)p.pause()}));
+  audio.addEventListener('error',()=>{document.getElementById('error').textContent='音檔暫時無法載入，請重新整理；若仍失敗，請告訴我是哪一首。'});
+  select.addEventListener('change',()=>{audio.pause();audio.src=song.audio[select.value].file;audio.load()});
+  const link=document.createElement('a');link.className='score-link';link.textContent='開啟這首的和弦譜（可選）';link.href='/?revision='+encodeURIComponent(song.revision);link.addEventListener('click',()=>players.forEach(p=>p.pause()));section.append(link);
+  document.getElementById('songs').append(section);
+ }
+ document.getElementById('error').textContent='';
+}).catch(()=>{document.getElementById('error').textContent='試聽清單暫時無法載入，請重新整理。'});
+</script></body></html>

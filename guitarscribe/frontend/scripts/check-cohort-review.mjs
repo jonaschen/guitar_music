@@ -1,0 +1,100 @@
+// Actual deployment checks. Edits are confined to new engineering revisions.
+import {chromium,expect} from '@playwright/test';
+import {readFile,writeFile,mkdir} from 'node:fs/promises';
+import assert from 'node:assert/strict';
+import path from 'node:path';
+
+const [input,slug]=process.argv.slice(2);
+assert.ok(input);assert.match(slug,/^[a-z0-9-]+$/);
+const reports=JSON.parse(await readFile(path.join(input,'report.json'),'utf8'));
+const output=path.join(input,'browser-check');await mkdir(output,{recursive:true});
+const browser=await chromium.launch({executablePath:'/usr/bin/google-chrome',headless:true});
+const checks=[];
+try{
+ const context=await browser.newContext({viewport:{width:390,height:844}}),page=await context.newPage();
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto(`http://127.0.0.1:5173/listening/${slug}/index.html`);
+ await expect(page.locator('audio')).toHaveCount(2);
+ await page.waitForFunction(()=>[...document.querySelectorAll('audio')].every(a=>Math.abs(a.duration-45.35)<.01));
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+ await page.locator('audio').nth(0).evaluate(a=>a.play());
+ await page.waitForFunction(()=>document.querySelectorAll('audio')[0].currentTime>0);
+ await page.locator('audio').nth(1).evaluate(a=>a.play());
+ await page.waitForFunction(()=>document.querySelectorAll('audio')[0].paused && document.querySelectorAll('audio')[1].currentTime>0);
+ for(const mode of ['guitar','source','mix']){
+  await page.getByLabel('第 4 首播放內容').selectOption(mode);
+  await page.waitForFunction(()=>{const a=document.querySelectorAll('audio')[1];return a.readyState>=1&&a.paused&&a.currentTime===0&&Math.abs(a.duration-45.35)<.01});
+ }
+ await expect(page.locator('.score-link').nth(0)).toHaveAttribute('href','/?revision='+reports[0].revision);
+ await expect(page.locator('.score-link').nth(1)).toHaveAttribute('href','/?revision='+reports[1].revision);
+ await page.screenshot({path:path.join(output,'listening-mobile.png'),fullPage:true});
+ checks.push({listeningDurations:[45.35,45.35],exclusivePlayback:true,switchPausesAndResets:true,mobileOverflow:false});
+ await context.close();
+ for(const report of reports){
+  const context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage();
+  page.on('pageerror',e=>errors.push(e.message));
+  const api='http://127.0.0.1:8000';
+  const original=await (await page.request.get(api+'/revisions/'+report.revision)).json();
+  const copy=structuredClone(original);copy.song.title+=' · 工程檢查';
+  const created=await page.request.post(api+'/revisions',{data:{score:copy}});
+  expect(created.ok()).toBeTruthy();const testRevision=(await created.json()).revision_id;
+  await page.goto('http://127.0.0.1:5173/?revision='+testRevision);
+  await expect(page.getByRole('region',{name:'和弦核對'})).toBeVisible({timeout:30000});
+  await expect(page.getByLabel('歌曲調性')).toBeVisible();await expect(page.getByLabel('歌曲 Capo')).toBeVisible();
+  await expect(page.getByLabel('播放聲音',{exact:true})).toHaveValue('mix');
+  await page.getByRole('button',{name:'播放',exact:true}).click();
+  await expect(page.locator('.playback-status')).toContainText('播放中',{timeout:30000});
+  await expect(page.locator('.playback-status')).toContainText(/播放中 · [1-9]/,{timeout:15000});
+  await page.getByRole('button',{name:'暫停',exact:true}).click();
+  const position=async()=>Number((await page.locator('.playback-status').textContent()).match(/· ([\d.]+) \/ /)[1]);
+  const prior=await position();
+  await page.getByRole('button',{name:'播放',exact:true}).click();
+  await expect(page.locator('.playback-status')).toContainText('播放中');
+  await expect.poll(position).toBeGreaterThan(prior+.1);
+  await page.getByRole('button',{name:'暫停',exact:true}).click();
+  const bar=page.getByLabel('Bar 3',{exact:true});
+  const priorChord=(await bar.locator('button span').first().textContent()).replace(' —','');
+  await bar.locator('button').first().click();
+  await expect(page.locator('.playback-status')).toContainText('播放中');
+  assert.ok(await position()>=original.beats.find(b=>b.measure===3).time-.1);
+  await page.getByRole('button',{name:'暫停',exact:true}).click();
+  await page.screenshot({path:path.join(output,`song-${report.number}-desktop.png`),fullPage:true});
+  await page.setViewportSize({width:390,height:844});
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+  await page.screenshot({path:path.join(output,`song-${report.number}-mobile.png`),fullPage:true});
+  await page.getByText('練習與編輯',{exact:true}).click();
+  await page.getByRole('button',{name:'編輯和弦',exact:true}).click();
+  await bar.locator('button').first().click();
+  const saved=()=>page.waitForResponse(r=>r.url().endsWith('/revisions')&&r.request().method()==='POST');
+  let responsePromise=saved();
+  await page.getByRole('button',{name:'增加半拍',exact:true}).click();
+  let response=await responsePromise;expect(response.ok()).toBeTruthy();
+  const timed=response.request().postDataJSON().score;
+  assert.notDeepEqual(timed.chords,original.chords);assert.deepEqual(timed.beats,original.beats);
+  assert.ok(timed.chords.every((c,i)=>c.start<c.end&&(!i||timed.chords[i-1].end<=c.start)));
+  responsePromise=saved();await page.getByRole('button',{name:'復原',exact:true}).click();
+  response=await responsePromise;expect(response.ok()).toBeTruthy();
+  assert.deepEqual(response.request().postDataJSON().score.chords,original.chords);
+  const replacement=priorChord==='Am'?'C':'Am';
+  await page.getByLabel('和弦名稱',{exact:true}).fill(replacement);
+  responsePromise=saved();
+  await page.getByRole('button',{name:'套用和弦修改',exact:true}).click();
+  response=await responsePromise;expect(response.ok()).toBeTruthy();
+  await expect(bar.locator('button').first()).toContainText(replacement);
+  responsePromise=saved();await page.getByRole('button',{name:'復原',exact:true}).click();
+  response=await responsePromise;expect(response.ok()).toBeTruthy();
+  await expect(bar.locator('button').first()).toContainText(priorChord);
+  responsePromise=saved();await page.getByRole('button',{name:'重做',exact:true}).click();
+  response=await responsePromise;expect(response.ok()).toBeTruthy();
+  const savedId=(await response.json()).revision_id;
+  await page.goto('http://127.0.0.1:5173/?revision='+savedId);
+  await expect(bar.locator('button').first()).toContainText(replacement,{timeout:30000});
+  assert.deepEqual(await(await page.request.get(api+'/revisions/'+report.revision)).json(),original);
+  checks.push({number:report.number,testRevision,savedId,mixPlayPauseResume:true,chordSeek:true,
+   mobileOverflow:false,halfBeatEditAndUndo:true,renameUndoRedoSaveReload:true,publishedRevisionUnchanged:true});
+  await context.close();
+ }
+ assert.deepEqual(errors,[]);
+ await writeFile(path.join(output,'report.json'),JSON.stringify({checks,errors},null,2));
+ console.log(JSON.stringify({checks,errors}));
+}finally{await browser.close();}

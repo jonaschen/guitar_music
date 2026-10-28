@@ -1997,8 +1997,8 @@ export function App() {
   }, [score, hasUnsavedChanges, analysisBusy, isSavingRevision]);
 
   const compactChordEditor = !MELODY_ENABLED && compactEditOpen && selectedChord ? <section className="compact-chord-editor" aria-label="修改和弦">
-                  <h3>修改 {chordEditScope ? `第 ${chordEditScope.bar} 小節的 ` : ""}{selectedChord.symbol}</h3>
-                  <p>{chordEditScope ? `名稱只修改第 ${chordEditScope.bar} 小節內選到的和弦，不影響前後小節。` : "名稱修改整段和弦。"}拍長調整仍影響整段和弦與相連交界，可用「復原」取消。</p>
+                  <h3>修改 {chordEditScope ? chordEditScope.bar===0 ? "起始片段的 " : `第 ${chordEditScope.bar} 小節的 ` : ""}{selectedChord.symbol}</h3>
+                  <p>{chordEditScope ? `名稱只修改${chordEditScope.bar===0 ? "起始片段" : `第 ${chordEditScope.bar} 小節`}內選到的和弦，不影響前後小節。` : "名稱修改整段和弦。"}拍長調整仍影響整段和弦與相連交界，可用「復原」取消。</p>
                   {chordEditScope && selectedChordBeats !== null && score ? <p aria-label="本小節片段拍長">本小節內：{Number((beatCoordinate(score,Math.min(selectedChord.end,chordEditScope.end))-beatCoordinate(score,Math.max(selectedChord.start,chordEditScope.start))).toFixed(2))} 拍</p> : null}
                   <p aria-label="目前和弦拍長">整段拍長（含跨小節部分）：{selectedChordBeats === null ? "拍點不足" : `${Number(selectedChordBeats.toFixed(2))} 拍`}</p>
                   <div><button type="button" disabled={selectedChordBeats === null} onClick={()=>changeChordBeats(-.5)}>減少半拍</button><button type="button" disabled={selectedChordBeats === null} onClick={()=>changeChordBeats(.5)}>增加半拍</button></div>

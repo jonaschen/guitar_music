@@ -14,6 +14,27 @@ const score = {
   provenance:{beat_engine:'test',chord_engine:'test',melody_engine:'test',parameters:{}},
 };
 
+test('cropped pickup has one opening cell; editing does not invent or renumber full bars',async({page})=>{
+  const working={...score,beats:[{time:.22,beat:4,measure:0,confidence:0},
+    ...Array.from({length:15},(_,i)=>({time:.64+i*.5,beat:i%4+1,measure:Math.floor(i/4)+1,confidence:0}))]};
+  await setup(page,working);
+  const sheet=page.getByLabel('和弦譜',{exact:true});
+  await expect(sheet.getByLabel('起始片段',{exact:true})).toHaveCount(1);
+  await expect(sheet.getByLabel('Bar -1',{exact:true})).toHaveCount(0);
+  await expect(sheet.getByLabel('Bar 0',{exact:true})).toHaveCount(0);
+  await expect(sheet.getByLabel('Bar 1',{exact:true})).toBeVisible();
+  await page.getByText('練習與編輯',{exact:true}).click();
+  await page.getByRole('button',{name:'編輯和弦',exact:true}).click();
+  await page.getByRole('button',{name:'編輯 起始片段 的 C',exact:true}).click();
+  await expect(page.getByRole('heading',{name:'修改 起始片段的 C',exact:true})).toBeVisible();
+  await page.getByLabel('和弦名稱',{exact:true}).fill('G');
+  let saved:any;await page.route('**/revisions',r=>{saved=r.request().postDataJSON();return r.fulfill({json:{revision_id:'pickup-edited'}})});
+  await page.getByRole('button',{name:'套用和弦修改',exact:true}).click();
+  await expect.poll(()=>saved?.score?.chords?.[0]?.end).toBe(.64);
+  expect(saved.score.beats).toEqual(working.beats);
+  await expect(sheet.getByLabel('Bar 1',{exact:true}).getByRole('button')).toContainText('C');
+});
+
 async function setup(page:any, working:any=score) {
   await page.addInitScript(()=>{localStorage.setItem('guitarscribe.editorView','melody');localStorage.setItem('guitarscribe.workspaceMode','full');});
   await page.route('**/api/v1/capabilities',r=>r.fulfill({json:{melody_available:true,youtube_enabled:true,vocal_separation_enabled:true}}));

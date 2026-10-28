@@ -158,3 +158,34 @@ PYTHONPATH=backend ~/.cache/guitarscribe-runtime/bin/python backend/scripts/chec
 腳本唯讀查 SQLite、核對來源 hash／共同設定、回報脈動間隔／短和弦／音訊越界，並呼叫不保存的播放與匯出端點；不重新辨識、不排除失敗來源、不修改譜。缺少本機資料會報錯，不能以少跑案例冒充通過。
 
 下一個完整工作段落：優先整理第三／四來源可用的伴奏與修譜入口，完成工程檢查後集中交付必要試聽；第一／二來源另保留拍點與分組問題，不強制補拍。多曲成效以可完成分析、實際合拍、和弦可用、所需人工修正量分開記錄，目前後三項在新兩來源均未知。45 秒通過後再擴展較長段落，不能用短片通過代替整曲可用。主旋律維持凍結，已通過 UI 不重驗。
+
+## 第三／四來源集中交付（2026-10-28）
+
+Codex 已完成本段工程工作，唯一待辦為兩首新歌的音樂聽感。入口：<http://localhost:5173/listening/cohort-accompaniment-2026-10-28/index.html>。兩段皆原曲 0–45 秒，試聽另留 0.35 秒吉他衰減尾音；不縮選好聽區間，不重問前兩首。曲名依這兩個影片的 YouTube oEmbed 標題辨識，顯示簡短名稱。
+
+| 來源 | 獨立工作譜 | 和弦數 | 吉他刷奏事件／弦音 |
+| --- | --- | --- | --- |
+| 第 3 首：直到世界的盡頭（vmmRFJcDJJw） | `04582735-12ca-4c12-abce-acc95b3f31ee` | 14 | 117／666 |
+| 第 4 首：君が好きだと叫びたい（QbM3o4qy9RQ） | `2f5365b2-1e0e-4244-a0d9-e6e2e5cef478` | 27 | 157／806 |
+
+每份從原 job 深拷貝，只先將最後和弦終點 45.139591836 裁到 45 秒，再使用既有 `nearest-eighth-v1`。全數和弦、標籤、指型、原拍點保持；沒有合併、刪除、改拍格、重新跑模型或為某首換參數。兩份皆無碰撞保護／未量化內部端點。新來源拍格相位及和弦仍未經人耳確認，不能以工程投影通過宣稱正確。
+
+母版參數標記 `analysis_source_job_id`、`review_audio_bounds`、`review_cohort`，來源網址／曲名接回工作區；原偵測引擎版本保留，避免把處理保存資料誤稱重跑新版分析。原 jobs 與《小手》已接受修訂不覆寫；瀏覽器編輯測試另建帶「工程檢查」名稱的獨立版本，公開兩份母版前後完全一致。
+
+試聽使用保存工作譜的正式 manifest，渲染前再次以線上 API 核對修訂及 manifest 全部相等。吉他使用產品 `pluckedTone.ts`、原版演奏、音量 0.24，原曲 0.45；兩首共用設定，沒有逐曲平衡調音。輸出 22050Hz mono PCM16、45.35 秒，附原曲／吉他單獨播放；共同防 clipping 增益本次皆為 1。所有排程弦音起點對齊 manifest，音訊 SHA256／frame／sample rate／有限值／峰值檢查通過；混合檔減去原曲與吉他後誤差不超過一個 PCM16 階。這確認輸出相符，不代表音樂聽感通過。
+
+實際瀏覽器在 1440／390px 檢查：原曲合奏播放／暫停／續播、點和弦跳播、增加半拍後保存與復原、改名／Undo／Redo／保存重載，兩份均通過。試聽頁音長、播放互斥、內容切換暫停歸零、修訂連結、無水平溢出／JS 例外皆通過。截圖另找出起始裁切片段被列成 -1、0 小節：已只在和弦頁將無拍點前緣併入起始片段，標示「起始」，保持正式小節從 1 編號與既有時間資料；編輯及循環選項同步標示。新增回歸確保改起始片段不改 Bar 1 或拍點。
+
+驗證結果：18 項產品瀏覽器測試、14 項後端拍格／音訊邊界測試通過；正式 build 通過，保留既有 alphaTab 大 chunk 提示。真實瀏覽器測試報告、候選、音檔 hash、修正明細留在 `output/evaluation/cohort-workspaces-2026-10-28/`；生成音訊僅本機保存，不納 Git。
+
+重現腳本（輸出目錄不可覆寫已發布試聽）：
+
+```bash
+# guitarscribe 目錄；新輸出路徑會建立新的獨立修訂。
+PYTHONPATH=backend ~/.cache/guitarscribe-runtime/bin/python backend/scripts/prepare_cohort_review.py --output output/evaluation/NEW-DIRECTORY
+# frontend 目錄；slug 必須尚未存在。
+node scripts/render-cohort-review.mjs ../output/evaluation/NEW-DIRECTORY NEW-SLUG
+node scripts/check-cohort-review.mjs ../output/evaluation/NEW-DIRECTORY NEW-SLUG
+```
+
+請使用者只聽兩段，回「第 3／4 首：可用，或哪裡不對」，有問題附約略秒數即可；可以回無法判斷，不要求逐和弦標註或再做 UI 驗收。若合拍且和弦大致可用，下一步擴展片段長度並記錄實際修譜負擔；若偏拍，先分離拍點／小節分組與換和弦邊界，保留本次固定母版，不直接逐曲調參。第一、二來源問題仍開啟，主旋律維持凍結。
