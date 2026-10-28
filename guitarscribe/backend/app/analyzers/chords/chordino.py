@@ -9,6 +9,21 @@ from .chromagram import estimate_key_from_chords
 
 logger = logging.getLogger(__name__)
 
+
+def decode_chord_events(chords_data, duration_seconds):
+    """Intersect Vamp regions with the audio; padding is not playable time."""
+    events = []
+    for i, event in enumerate(chords_data):
+        start = max(0.0, float(event['timestamp']))
+        end = min(duration_seconds, float(chords_data[i+1]['timestamp'])
+                  if i + 1 < len(chords_data) else duration_seconds)
+        if event['label'] == 'N' or end <= start:
+            continue
+        events.append(ChordEvent(id=f'chord-{i+1}', start=start, end=end,
+                                 symbol=event['label'], confidence=0.9))
+    return events
+
+
 class ChordinoChordAnalyzer:
     async def analyze(self, audio: NormalizedAudio, beats: BeatAnalysis) -> ChordAnalysis:
         return await run_blocking_analysis(self._analyze, audio, beats)
@@ -25,28 +40,10 @@ class ChordinoChordAnalyzer:
             y, sr = librosa.load(str(audio.path), sr=audio.sample_rate)
             data = vamp.collect(y, sr, "nnls-chroma:chordino")
             
-            chords_data = data['list']
-            events = []
-            
-            for i in range(len(chords_data)):
-                event = chords_data[i]
-                start = float(event['timestamp'])
-                symbol = event['label']
-                end = float(chords_data[i+1]['timestamp']) if i + 1 < len(chords_data) else audio.duration_seconds
-                
-                if symbol == "N":
-                    continue
-                    
-                events.append(ChordEvent(
-                    id=f"chord-{i+1}",
-                    start=start,
-                    end=end,
-                    symbol=symbol,
-                    confidence=0.9
-                ))
+            events = decode_chord_events(data['list'], audio.duration_seconds)
             
             key, mode = estimate_key_from_chords(events)
-            parameters = {'vamp_version': version('vamp')}
+            parameters = {'vamp_version': version('vamp'), 'chordino_region_bounds': 'audio-intersection-v1'}
             library = Path(vamp.vampyhost.get_library_for('nnls-chroma:chordino'))
             parameters['chordino_library_sha256'] = hashlib.sha256(library.read_bytes()).hexdigest()
             return ChordAnalysis(
@@ -55,7 +52,7 @@ class ChordinoChordAnalyzer:
                 mode=mode,
                 confidence=0.8,
                 engine="chordino",
-                engine_version="1.1-provenance",
+                engine_version="1.2-audio-bounds",
                 parameters=parameters,
                 warnings=['Chordino chord confidence is not calibrated; the key is an estimate from detected harmony.'],
             )

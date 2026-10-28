@@ -1,0 +1,10 @@
+{
+  "scope": "Four user-supplied sources, original 0–45 seconds; no whole-song quality claim",
+  "options": {"melody_mode": "off", "chord_complexity": "full", "separate_vocals": false, "skip_seconds": 0, "analysis_seconds": 45},
+  "cases": [
+    {"video": "S8RWhc_LmMc", "job": "1de2b4da3efc4b7491b98dae67ba0060", "source_sha256": "9cab0ee0a6b85d27bbc9baffc32c0c39b9fa6574fa83dcd968d787742cea0ba2", "human_feedback": "Pulse speed basically correct; downbeat phase and chords unconfirmed"},
+    {"video": "WObbdwgB41c", "job": "8a89fde02c614127bf6332d7d8db8be1", "source_sha256": "92788d212db5b39b998a113b4d31ff04bd88cc52a6a52d26bd352dab4c6c0f7c", "human_feedback": "Beat check failed: click stops around 20 s, perceived speed differs before/after"},
+    {"video": "vmmRFJcDJJw", "job": "e2941e2199e6468abd3845922ef2fa74", "source_sha256": "0c29ae8dd17706e4455b2408a2a8e28e8794f859f87746d5ed8f2b345e2b0e47", "human_feedback": "Not yet listened"},
+    {"video": "QbM3o4qy9RQ", "job": "8b946897e8334d51865cb35ec7c73b14", "source_sha256": "5b3912ee9557cda00486a76837b335eff373a807e7af94d395330ed2d808dd1e", "human_feedback": "Not yet listened"}
+  ]
+}
