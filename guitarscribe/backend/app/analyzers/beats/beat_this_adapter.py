@@ -5,6 +5,7 @@ from pathlib import Path
 
 from ...models.audio import NormalizedAudio
 from .learned_projection import project_learned_beats
+from .timing_diagnostics import BeatProjectionError, describe_observations
 from ..worker import run_blocking_analysis
 
 
@@ -33,4 +34,11 @@ class BeatThisBeatAnalyzer:
     def _analyze(self,audio:NormalizedAudio):
         self._load()
         beats,downbeats=self._predictor(str(audio.path))
-        return project_learned_beats([float(t)for t in beats],[float(t)for t in downbeats],self._version)
+        beats, downbeats = [float(t) for t in beats], [float(t) for t in downbeats]
+        try:
+            return project_learned_beats(beats, downbeats, self._version)
+        except ValueError as error:
+            evidence = describe_observations(beats, downbeats)
+            evidence.update(engine='beat-this', engine_version=self._version,
+                            parameters=dict(self.parameters), rejection_reason=str(error))
+            raise BeatProjectionError(str(error), evidence) from error

@@ -12,6 +12,7 @@ from .config import Settings, ChordEngine, BeatEngine
 from ..analyzers.preprocessor import DemucsMelodySeparator, FFmpegPreprocessor
 from ..analyzers.protocols import ChordCandidateAnalyzer, TimingCandidateAnalyzer
 from ..analyzers.beats.librosa_beats import LibrosaBeatAnalyzer
+from ..analyzers.beats.timing_diagnostics import BeatProjectionError
 from ..analyzers.chords.chromagram import ChordDecoderConfig, ChromagramChordAnalyzer
 from ..analyzers.chords.chordino import ChordinoChordAnalyzer
 from ..analyzers.chords.canonical_adapter import CanonicalChordAnalyzerAdapter
@@ -100,7 +101,14 @@ class AnalysisPipeline:
                 )
             beats = self.beat_analyzer.project(timing_result)
         else:
-            beats = await self.beat_analyzer.analyze(normalized)
+            try:
+                beats = await self.beat_analyzer.analyze(normalized)
+            except BeatProjectionError as error:
+                if options.get("_artifact_directory"):
+                    (Path(options["_artifact_directory"]) / "timing-rejection.json").write_text(
+                        json.dumps(error.evidence, ensure_ascii=False, allow_nan=False, indent=2) + "\n"
+                    )
+                raise
             if options.get("_artifact_directory"):
                 (Path(options["_artifact_directory"]) / "timing-analysis.json").write_text(
                     beats.model_dump_json(indent=2) + "\n"

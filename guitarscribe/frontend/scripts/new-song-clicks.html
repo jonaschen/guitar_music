@@ -1,0 +1,13 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>兩首新歌 · 拍點確認</title>
+<style>body{font:16px/1.7 system-ui,sans-serif;background:#12161c;color:#edf0f5;margin:0}main{max-width:720px;margin:auto;padding:24px}h1{font-size:28px}h2{font-size:20px}section{padding:24px 0;border-top:1px solid #424b58}audio{width:100%;margin:16px 0}select{font:inherit;padding:8px;background:#202630;color:inherit;min-height:44px}p,small{color:#c3cad3}a{color:#b2d8ff}.note{font-size:14px}</style></head><body><main>
+<h1>兩首新歌：先確認拍點</h1><p>每首 45 秒，沿用你提供的來源。答答聲只有等強度拍點，沒有小節重音，也沒有加入和弦。</p>
+<p>每首只需回覆：<strong>答答聲能否讓你跟著打拍或刷奏？</strong> 若不行，是局部偏掉、逐漸偏掉，還是像快一倍／慢一半？無法判斷也可以。</p>
+<section><h2>第 1 首</h2><p class="note">你先提供的 S8RWhc_LmMc，原曲 0–45 秒。</p><label>播放內容 <select data-song="1"><option value="click">原曲＋答答聲</option><option value="source">只聽原曲</option></select></label><audio id="song-1" controls preload="metadata" src="song-1-click.wav"></audio></section>
+<section><h2>第 2 首</h2><p class="note">後來提供的 WObbdwgB41c，原曲 0–45 秒。</p><label>播放內容 <select data-song="2"><option value="click">原曲＋答答聲</option><option value="source">只聽原曲</option></select></label><audio id="song-2" controls preload="metadata" src="song-2-click.wav"></audio></section>
+<p class="note">切換播放內容會暫停並從頭開始。兩首使用相同答答音色與音量規則；未調整任何拍點。這一步不判斷和弦品質。</p>
+<p><a href="/review.html">回到已通過的和弦譜</a></p>
+</main><script>
+const audio=[...document.querySelectorAll('audio')];
+for(const el of audio)el.addEventListener('play',()=>{for(const other of audio)if(other!==el)other.pause()});
+for(const select of document.querySelectorAll('select'))select.addEventListener('change',()=>{const el=document.getElementById('song-'+select.dataset.song);el.pause();el.src='song-'+select.dataset.song+'-'+select.value+'.wav';el.load()});
+</script></body></html>
