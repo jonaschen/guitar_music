@@ -1,6 +1,7 @@
 """Read-only evidence for rejected beat grids; never repairs or selects a grid."""
 from bisect import bisect_left
 from math import isfinite
+from .pulse_intervals import describe_pulse_intervals
 
 
 def describe_observations(beats, downbeats):
@@ -32,7 +33,7 @@ def describe_observations(beats, downbeats):
     return dict(schema_version='1.0', beats=clean(beats), downbeats=clean(downbeats),
                 aligned_observations=valid, beats_per_downbeat_interval=gaps,
                 structurally_consistent_spans=spans, musical_verdict='unconfirmed',
-                automatic_repair=False)
+                pulse_intervals=describe_pulse_intervals(beats), automatic_repair=False)
 
 
 class BeatProjectionError(ValueError):

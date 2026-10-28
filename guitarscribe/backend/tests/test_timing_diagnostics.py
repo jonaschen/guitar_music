@@ -41,3 +41,21 @@ async def test_pipeline_saves_evidence_before_rejecting_and_skips_later_analysis
     assert report['beats']==beats and report['downbeats']==down
     assert report['parameters']['beat_this_dbn'] is False
     assert not (tmp_path/'chord-analysis.json').exists()
+
+
+def test_pulse_density_drop_and_gap_are_reported_without_inserting_beats():
+    from app.analyzers.beats.pulse_intervals import describe_pulse_intervals
+    beats=[0,.65,1.30,1.95,3.25,4.55,8.45,9.10,9.75,10.40]
+    before=list(beats)
+    report=describe_pulse_intervals(beats)
+    assert report['median_seconds']==pytest.approx(.65)
+    assert [x['ratio_to_median'] for x in report['deviations']]==pytest.approx([2,2,6])
+    assert beats==before
+    assert all(x['kind']=='long_interval' for x in report['deviations'])
+
+
+def test_uniform_half_speed_is_not_called_a_local_gap():
+    from app.analyzers.beats.pulse_intervals import describe_pulse_intervals
+    report=describe_pulse_intervals([0,1.3,2.6,3.9,5.2])
+    assert report['deviations']==[]
+    assert report['median_seconds']==pytest.approx(1.3)
