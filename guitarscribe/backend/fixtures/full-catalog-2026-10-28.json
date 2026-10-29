@@ -18,7 +18,10 @@
         "3": 2,
         "4": 130
       },
-      "human_verdict": "whole_song_unreviewed"
+      "human_verdict": "best_in_batch",
+      "human_review_date": "2026-10-30",
+      "human_review_scope": "unmetered_chord_follow_along",
+      "human_review_evidence": "full-catalog-feedback-2026-10-30.json"
     },
     {
       "video": "Q-B-fw-bO7M",
@@ -36,7 +39,10 @@
         "3": 7,
         "2": 4
       },
-      "human_verdict": "whole_song_unreviewed"
+      "human_verdict": "usable_with_minor_edits",
+      "human_review_date": "2026-10-30",
+      "human_review_scope": "unmetered_chord_follow_along",
+      "human_review_evidence": "full-catalog-feedback-2026-10-30.json"
     },
     {
       "video": "0rpbhqZI0hc",
@@ -54,7 +60,10 @@
         "2": 1,
         "1": 1
       },
-      "human_verdict": "whole_song_unreviewed"
+      "human_verdict": "usable_with_minor_edits",
+      "human_review_date": "2026-10-30",
+      "human_review_scope": "unmetered_chord_follow_along",
+      "human_review_evidence": "full-catalog-feedback-2026-10-30.json"
     },
     {
       "video": "S8RWhc_LmMc",
@@ -74,7 +83,10 @@
         "1": 1,
         "3": 1
       },
-      "human_verdict": "whole_song_unreviewed"
+      "human_verdict": "usable_with_minor_edits",
+      "human_review_date": "2026-10-30",
+      "human_review_scope": "unmetered_chord_follow_along",
+      "human_review_evidence": "full-catalog-feedback-2026-10-30.json"
     },
     {
       "video": "WObbdwgB41c",
@@ -95,7 +107,10 @@
         "5": 1,
         "6": 1
       },
-      "human_verdict": "whole_song_unreviewed"
+      "human_verdict": "needs_improvement",
+      "human_review_date": "2026-10-30",
+      "human_review_scope": "unmetered_chord_follow_along",
+      "human_review_evidence": "full-catalog-feedback-2026-10-30.json"
     },
     {
       "video": "vmmRFJcDJJw",
@@ -114,7 +129,10 @@
         "3": 4,
         "1": 4
       },
-      "human_verdict": "whole_song_unreviewed"
+      "human_verdict": "usable_with_minor_edits",
+      "human_review_date": "2026-10-30",
+      "human_review_scope": "unmetered_chord_follow_along",
+      "human_review_evidence": "full-catalog-feedback-2026-10-30.json"
     },
     {
       "video": "QbM3o4qy9RQ",
@@ -131,7 +149,10 @@
         "4": 132,
         "3": 1
       },
-      "human_verdict": "whole_song_unreviewed"
+      "human_verdict": "usable_with_minor_edits",
+      "human_review_date": "2026-10-30",
+      "human_review_scope": "unmetered_chord_follow_along",
+      "human_review_evidence": "full-catalog-feedback-2026-10-30.json"
     }
   ]
 }

@@ -1,0 +1,78 @@
+{
+  "date": "2026-10-30",
+  "scope": "Full-length unmetered chord inspection and human follow-along usability; does not accept automatic meter, continuous strumming, exact chord accuracy or all local passages.",
+  "user_quote": "小手拉大手是最好的；遇見似乎因為是鋼琴伴奏為主，處理的最不好，和弦聽起來很怪；剩下另外幾首都還可以，至少我跟刷可以對上大部分的和弦，可以再做微調就好，像這樣就是基本上能用了。",
+  "hypotheses": [
+    {
+      "video": "WObbdwgB41c",
+      "claim": "Piano-led accompaniment may contribute to errors",
+      "source": "user suggestion",
+      "status": "unverified"
+    }
+  ],
+  "records": [
+    {
+      "video": "5wq_uTMW0v8",
+      "source_sha256": "6c6d1be95dd4ba94a8d71896d50b7e5d154c397405b837a76bc7870d39253b2c",
+      "mix_sha256": "e7cfe6c8a556c8a5806ba35ab048963f317b464fc260107d06281df5003abb10",
+      "inspection_mode": "unmetered",
+      "verdict": "best_in_batch",
+      "label": "本批最好，可作為和弦核對基準",
+      "evidence": "explicit_song_feedback"
+    },
+    {
+      "video": "Q-B-fw-bO7M",
+      "source_sha256": "f2c4b421bb7e994eea74a5a316f02c2dd346d09a049db03c162110ad0af0fe9e",
+      "mix_sha256": "93b3632c4aa1516d91a8899fd58ec119140ab40a66a0884de2f7ea9787ed2c1f",
+      "inspection_mode": "unmetered",
+      "verdict": "usable_with_minor_edits",
+      "label": "大部分和弦可跟刷，微調後基本可用",
+      "evidence": "aggregate_feedback_for_remaining_recordings"
+    },
+    {
+      "video": "0rpbhqZI0hc",
+      "source_sha256": "5371ca52ee79766dfcd63a51f8b34b4b2ee1adcfbdc6d9ab113939d4e57c092e",
+      "mix_sha256": "56cb2b9c958b5f84de53b59eff5fe336f4bd4e4524c4603228a993eee5110596",
+      "inspection_mode": "unmetered",
+      "verdict": "usable_with_minor_edits",
+      "label": "大部分和弦可跟刷，微調後基本可用",
+      "evidence": "aggregate_feedback_for_remaining_recordings"
+    },
+    {
+      "video": "S8RWhc_LmMc",
+      "source_sha256": "a52a9cb0fc36213992723da9ebd0eabf703d27da8c2e6182a71fe93a41e0719c",
+      "mix_sha256": "bd844aec76415906d26e712a3f020c1444315fcbf15ad040518a1b3c8ca77f7d",
+      "inspection_mode": "unmetered",
+      "verdict": "usable_with_minor_edits",
+      "label": "大部分和弦可跟刷，微調後基本可用",
+      "evidence": "aggregate_feedback_for_remaining_recordings"
+    },
+    {
+      "video": "WObbdwgB41c",
+      "source_sha256": "0d7b8605975b53e73b0e54633c71941d8152638c2747b0fda1df3da1a9f6d63a",
+      "mix_sha256": "2b68df7533afb86de069dca96cec768ffb146f66815cee97755a0fcccecf160d",
+      "inspection_mode": "unmetered",
+      "verdict": "needs_improvement",
+      "label": "和弦聽感較差，需改善",
+      "evidence": "explicit_song_feedback"
+    },
+    {
+      "video": "vmmRFJcDJJw",
+      "source_sha256": "54e25b19e890df314cb20ac8e787a20808813e4bb7e366aef28bf243630213b5",
+      "mix_sha256": "04e58138232e61ccb4a02055529926da8b81d8907136374d2821d12f5d2d716a",
+      "inspection_mode": "unmetered",
+      "verdict": "usable_with_minor_edits",
+      "label": "大部分和弦可跟刷，微調後基本可用",
+      "evidence": "aggregate_feedback_for_remaining_recordings"
+    },
+    {
+      "video": "QbM3o4qy9RQ",
+      "source_sha256": "312a6aa2852fb68ba91b90e16467092acf2dafb24ba8937eec27dbeaada1219a",
+      "mix_sha256": "adb1aa613969a2b10097831e770442be8dbdfa38816e808d405983d61ab4702c",
+      "inspection_mode": "unmetered",
+      "verdict": "usable_with_minor_edits",
+      "label": "大部分和弦可跟刷，微調後基本可用",
+      "evidence": "aggregate_feedback_for_remaining_recordings"
+    }
+  ]
+}

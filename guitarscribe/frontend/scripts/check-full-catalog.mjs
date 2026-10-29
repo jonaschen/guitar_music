@@ -24,7 +24,7 @@ try{
   await page.waitForFunction(()=>document.querySelector('audio').currentTime>.1);
   await page.locator('audio').evaluate(a=>a.pause());
   if(row.kind==='unmetered'){
-   await expect(page.locator('#warning')).toContainText('整首拍格未通過');
+   await expect(page.locator('#warning')).toContainText('小節譜與連續刷奏仍待完善');
    await expect(page.locator('#score-link')).toBeHidden();
   }
   await page.locator('audio').evaluate(a=>{a.currentTime=30});
