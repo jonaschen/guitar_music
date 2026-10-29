@@ -215,6 +215,7 @@ async function postSaveRevision(score: SongScore, revisionId: string | null, cre
 type ChordPerformanceMode = "original" | "continuous" | "sparse";
 
 async function compilePlayback(score: SongScore, mode: ChordPerformanceMode): Promise<{ manifest: PlaybackManifest; notice: string }> {
+  if (score.analysis.timing_status === "unmetered") mode = "original";
   const response = await fetch(API_BASE + (mode === "original" ? "/scores/playback/manifest" : "/scores/chord-entry-performance"), {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify(mode === "original" ? score : { score, mode, output: "preview" }),
@@ -243,7 +244,7 @@ export function App() {
   const [separateVocals, setSeparateVocals] = useState(true);
   const [showRawChordSegments, setShowRawChordSegments] = useState(false);
   const [chordComplexity, setChordComplexity] = useState("full");
-  const [analysisSeconds, setAnalysisSeconds] = useState("45");
+  const [analysisSeconds, setAnalysisSeconds] = useState(MELODY_ENABLED ? "45" : "full");
   const [showNewSong, setShowNewSong] = useState(false);
   const [capabilities, setCapabilities] = useState<{
     youtube_enabled: boolean; vocal_separation_enabled: boolean; improved_accompaniment: boolean;
@@ -1998,17 +1999,26 @@ export function App() {
 
   const compactChordEditor = !MELODY_ENABLED && compactEditOpen && selectedChord ? <section className="compact-chord-editor" aria-label="修改和弦">
                   <h3>修改 {chordEditScope ? chordEditScope.bar===0 ? "起始片段的 " : `第 ${chordEditScope.bar} 小節的 ` : ""}{selectedChord.symbol}</h3>
+                  {score?.analysis.timing_status === "unmetered" ? <>
+                    <p>使用歌曲的實際秒數。調整相連交界時，前後和弦會一起銜接；已有空白會保留，可用「復原」取消。</p>
+                    <label>開始時間（秒）<input type="number" step="0.01" min="0" value={chordStartDraft} onChange={e=>setChordStartDraft(e.target.value)}/></label>
+                    <label>結束時間（秒）<input type="number" step="0.01" min="0" value={chordEndDraft} onChange={e=>setChordEndDraft(e.target.value)}/></label>
+                    <button type="button" onClick={saveSelectedChordTiming}>套用時間</button>
+                    <p>刪除後此段吉他留白，原曲繼續播放。</p>
+                    <button type="button" onClick={()=>{audioRef.current?.pause();stopSynth(false);recordScoreChange({...score,chords:score.chords.filter(c=>c.id!==selectedChord.id)});setCompactEditOpen(false);}}>刪除此段和弦</button>
+                  </> : <>
                   <p>{chordEditScope ? `名稱只修改${chordEditScope.bar===0 ? "起始片段" : `第 ${chordEditScope.bar} 小節`}內選到的和弦，不影響前後小節。` : "名稱修改整段和弦。"}拍長調整仍影響整段和弦與相連交界，可用「復原」取消。</p>
                   {chordEditScope && selectedChordBeats !== null && score ? <p aria-label="本小節片段拍長">本小節內：{Number((beatCoordinate(score,Math.min(selectedChord.end,chordEditScope.end))-beatCoordinate(score,Math.max(selectedChord.start,chordEditScope.start))).toFixed(2))} 拍</p> : null}
                   <p aria-label="目前和弦拍長">整段拍長（含跨小節部分）：{selectedChordBeats === null ? "拍點不足" : `${Number(selectedChordBeats.toFixed(2))} 拍`}</p>
                   <div><button type="button" disabled={selectedChordBeats === null} onClick={()=>changeChordBeats(-.5)}>減少半拍</button><button type="button" disabled={selectedChordBeats === null} onClick={()=>changeChordBeats(.5)}>增加半拍</button></div>
                   <p>拍長按鈕會立即套用並自動保存；已有休止不移動下一和弦，不能跨越其他和弦。</p>
                   {chordEditScope ? <div className="chord-removal"><p>只刪除此小節內的片段：前面相連的和弦會接續；沒有則留白。下一小節保留，可用「復原」取消。</p><button type="button" onClick={removeSelectedBarChord}>刪除此小節內的片段</button></div> : null}
+                  </>}
                   <label htmlFor="compact-chord-name">和弦名稱</label>
                   <input id="compact-chord-name" value={chordDraft} onChange={e=>setChordDraft(e.target.value)} placeholder="例如 C、Am、G7" />
                   <div><button type="button" disabled={!chordDraft.trim() || chordDraft.trim()===selectedChord.symbol} onClick={()=>{renameSelectedChord();setCompactEditOpen(false);}}>套用和弦修改</button>
                   <button type="button" onClick={()=>{setChordDraft(selectedChord.symbol);setCompactEditOpen(false);}}>關閉編輯</button>
-                  <button type="button" onClick={()=>{setCompactEditOpen(false);setChordEditScope(null);setFocusedWorkspace(false);window.requestAnimationFrame(()=>document.querySelector<HTMLElement>(".side-panel")?.scrollIntoView({block:"start"}));}}>調整時間與指型</button></div>
+                  <button type="button" hidden={score?.analysis.timing_status === "unmetered"} onClick={()=>{setCompactEditOpen(false);setChordEditScope(null);setFocusedWorkspace(false);window.requestAnimationFrame(()=>document.querySelector<HTMLElement>(".side-panel")?.scrollIntoView({block:"start"}));}}>調整時間與指型</button></div>
                 </section> : null;
 
   return (
@@ -2043,7 +2053,7 @@ export function App() {
 
             <label className="field">分析長度<select aria-label="Analysis duration" value={analysisSeconds} onChange={event => setAnalysisSeconds(event.target.value)}>
               {[30, 45, 60].map(seconds => <option key={seconds} value={seconds}>{seconds} 秒</option>)}
-              {analysisSeconds === "full" ? <option value="full">整首</option> : null}
+              <option value="full">整首</option>
             </select></label>
             <details><summary>進階分析設定</summary>
             <label><input type="checkbox" checked={analysisSeconds === "full"} onChange={event => setAnalysisSeconds(event.target.checked ? "full" : "45")} />分析整首（耗時較長）</label>
@@ -2166,12 +2176,12 @@ export function App() {
                   secondaryActions={!MELODY_ENABLED ? <><button type="button" disabled={!undoHistory.length} onClick={undoScoreChange}>復原</button><button type="button" disabled={!redoHistory.length} onClick={redoScoreChange}>重做</button></>:null}
                   onEditChord={(id, scope) => { const chord=score.chords.find(c=>c.id===id); if (!chord) return; selectChord(chord, Math.max(chord.start, scope?.start ?? chord.start)); setChordEditScope(scope ?? null); setCompactEditOpen(true); window.requestAnimationFrame(()=>document.querySelector<HTMLInputElement>("#compact-chord-name")?.focus()); }} />
                 {!MELODY_ENABLED ? <section className="compact-exports" aria-label="保存與匯出">
-                  <details><summary>下載與備份</summary><p>下載和弦文字、伴奏 MIDI 或完整工作檔。</p>
+                  <details><summary>下載與備份</summary><p>{score.analysis.timing_status === "unmetered" ? "下載附秒數的和弦文字或完整工作檔。" : "下載和弦文字、伴奏 MIDI 或完整工作檔。"}</p>
                   <div><button type="button" onClick={()=>void downloadChordPro()}>下載和弦譜</button>
-                  <button type="button" disabled={midiPending} onClick={()=>void downloadMidi()}>{midiPending ? "準備伴奏檔…" : "下載伴奏 MIDI"}</button>
+                  <button type="button" hidden={score.analysis.timing_status === "unmetered"} disabled={midiPending} onClick={()=>void downloadMidi()}>{midiPending ? "準備伴奏檔…" : "下載伴奏 MIDI"}</button>
                   <button type="button" onClick={downloadScoreJson}>備份完整工作檔</button></div></details>
                 </section> : null}
-                <div hidden={focusMode} className="advanced-workspace">
+                <div hidden={focusMode || score.analysis.timing_status === "unmetered"} className="advanced-workspace">
                 {(score.song.source_start_seconds ?? 0) > 0 ? <p role="status">分析前已略過 {score.song.source_start_seconds} 秒；樂譜／播放 0 秒 = 原檔 {score.song.source_start_seconds} 秒。請勿再次略過同一段開場。</p> : null}
                 <SongRangeEditor score={score} playhead={playbackTime}
                   onPreview={(start, end) => void auditionSourceSegment(start, end, true)}
@@ -2509,7 +2519,7 @@ export function App() {
                   saving={isSavingRevision || isLoadingRevision} saveStatus={saveStatus} />
                 </div> : null}
 
-                <div hidden={focusMode} className="advanced-workspace">
+                <div hidden={focusMode || score.analysis.timing_status === "unmetered"} className="advanced-workspace">
                 {MELODY_ENABLED ? <>{score.melody.length > 0 ? <details className="melody-workspace workspace-disclosure">
                 <summary>Melody &amp; Tab previews · Experimental</summary>
                 <section className="melody-panel">

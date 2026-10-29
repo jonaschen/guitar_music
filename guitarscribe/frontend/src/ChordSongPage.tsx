@@ -1,13 +1,17 @@
 import {useMemo, useState, type ComponentProps, type ReactNode} from 'react';
 import {AccompanimentReview, type ReviewMode} from './AccompanimentReview';
 import {notationBars} from './melodyNotation';
+import {ChordTimelinePage} from './ChordTimelinePage';
 import {measureLayout} from './measureLayout';
 
 type Props=ComponentProps<typeof AccompanimentReview> & {
   keyControls?:ReactNode; secondaryActions?:ReactNode; editPanel?:ReactNode;
   speed?:number; onSpeed?:(rate:number)=>void;
 };
-export function ChordSongPage({score,sourceAvailable,playing,preparing,playhead,guitarVolume,onVolume,onPlay,onStop,onTools,onEditChord,keyControls,secondaryActions,editPanel,speed=1,onSpeed}:Props){
+export function ChordSongPage(props:Props){
+  return props.score.analysis.timing_status==='unmetered' ? <ChordTimelinePage {...props}/> : <MeteredChordSongPage {...props}/>;
+}
+function MeteredChordSongPage({score,sourceAvailable,playing,preparing,playhead,guitarVolume,onVolume,onPlay,onStop,onTools,onEditChord,keyControls,secondaryActions,editPanel,speed=1,onSpeed}:Props){
   const bars=useMemo(()=>{
     const raw=notationBars(score);
     // A pre-beat sliver is part of the cropped opening, not another measure.

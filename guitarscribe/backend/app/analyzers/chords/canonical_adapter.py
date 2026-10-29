@@ -12,6 +12,10 @@ class CanonicalChordAnalyzerAdapter:
     def __init__(self, analyzer: ChordAnalyzer):
         self.analyzer = analyzer
 
+    @property
+    def supports_unmetered(self):
+        return getattr(self.analyzer, 'supports_unmetered', False)
+
     @staticmethod
     def _timing_projection(timing: TimingResult) -> BeatAnalysis:
         selected = timing.candidates[0]

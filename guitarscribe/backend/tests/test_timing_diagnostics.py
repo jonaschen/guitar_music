@@ -32,6 +32,7 @@ async def test_pipeline_saves_evidence_before_rejecting_and_skips_later_analysis
     beats=[i*.5 for i in range(14)];down=[0,2,3,5]
     pipeline.beat_analyzer=BeatThisBeatAnalyzer(predictor=lambda _: (beats,down))
     class Forbidden:
+        supports_unmetered = False
         def __getattr__(self,name): pytest.fail('Chord/melody processing must not run after grid rejection')
     pipeline.chord_analyzer=Forbidden();pipeline.melody_analyzer=Forbidden()
     with pytest.raises(BeatProjectionError,match='Inconsistent'):

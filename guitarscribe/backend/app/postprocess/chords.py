@@ -120,7 +120,7 @@ class ChordPostProcessor:
         return chords
 
     def process(
-        self, chords: List[ChordEvent], beats: BeatAnalysis, complexity: ChordComplexity,
+        self, chords: List[ChordEvent], beats: BeatAnalysis | None, complexity: ChordComplexity,
         key: str = "C", mode: str = "major",
     ) -> List[ChordEvent]:
         # Segmentation and sequence selection belong to the analyzer. Repeating

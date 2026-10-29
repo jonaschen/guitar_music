@@ -4,7 +4,7 @@ from ..exporters.midi import PlaybackEvent, _strum_profile
 from .voicings import ChordVoicingProvider
 
 
-def chord_inspection_events(chords, duration):
+def chord_inspection_events(chords, duration, *, tuning=(40,45,50,55,59,64), capo=0, max_fret=15):
     if not math.isfinite(duration) or duration <= 0:
         raise ValueError('Invalid audio duration')
     if any(not math.isfinite(c.start+c.end) or not 0 <= c.start < c.end <= duration for c in chords):
@@ -16,11 +16,12 @@ def chord_inspection_events(chords, duration):
     provider = ChordVoicingProvider()
     events, unsupported = [], []
     for chord in chords:
-        shapes = provider.get(chord.symbol, capo=0, max_fret=15)
+        shapes = chord.available_voicings or provider.get(chord.shape_symbol or chord.symbol, capo=capo, max_fret=max_fret)
         if not shapes:
             unsupported.append(chord.id)
             continue
-        pitches = tuple(t+f for t, f in zip((40,45,50,55,59,64), shapes[0].frets) if f is not None)
+        selected = next((v for v in shapes if v.id == chord.voicing_id), shapes[0])
+        pitches = tuple(t+f+capo for t, f in zip(tuning, selected.frets) if f is not None)
         if not pitches:
             unsupported.append(chord.id)
             continue

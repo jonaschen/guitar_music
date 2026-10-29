@@ -11,6 +11,7 @@ export type SongScore = {
     source_start_seconds?: number;
   };
   analysis: {
+    timing_status?: "metered" | "unmetered";
     key: string;
     mode: string;
     bpm: number;

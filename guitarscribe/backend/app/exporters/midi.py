@@ -44,6 +44,13 @@ class PlaybackManifest(BaseModel):
 
 
 def compile_playback_manifest(score: SongScore) -> PlaybackManifest:
+    if score.analysis.timing_status == 'unmetered':
+        from ..services.chord_inspection import chord_inspection_events
+        events, _ = chord_inspection_events(score.chords, score.song.duration_seconds,
+            tuning=score.guitar.tuning, capo=score.analysis.capo, max_fret=score.guitar.max_fret)
+        revision = hashlib.sha256(('unmetered-v1'+score.model_dump_json()).encode()).hexdigest()[:16]
+        return PlaybackManifest(revision=revision, duration_seconds=score.song.duration_seconds,
+                                bpm=0, time_signature='', events=tuple(events))
     # Older jobs and manually inserted chords may have no guitar shapes yet.
     # Resolve them on a copy so playback and MIDI work without rewriting edits.
     score = with_default_voicings(score)
@@ -239,6 +246,8 @@ def _varlen(value: int) -> bytes:
 
 
 def export_midi(score: SongScore, ticks_per_beat: int = 480) -> bytes:
+    if score.analysis.timing_status == 'unmetered':
+        raise ValueError('拍格尚未確認，請先下載和弦時間表或工作檔。')
     manifest = compile_playback_manifest(score)
     return export_manifest_midi(manifest, ticks_per_beat)
 

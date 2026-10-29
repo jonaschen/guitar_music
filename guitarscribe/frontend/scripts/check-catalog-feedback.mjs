@@ -10,7 +10,7 @@ const packet=await(await fetch(url+'packet.json')).json();
 const browser=await chromium.launch({executablePath:'/usr/bin/google-chrome',headless:true});
 const checks=[],errors=[];
 try{
- for(const variant of ['reviewed','changed_audio','changed_mode','missing_feedback']){
+ for(const variant of ['reviewed','changed_audio','changed_mode','missing_feedback','missing_workspaces']){
   const page=await browser.newPage({viewport:{width:390,height:844}});
   page.on('pageerror',e=>errors.push(e.message));
   if(variant==='changed_audio'||variant==='changed_mode'){
@@ -20,8 +20,9 @@ try{
    await page.route('**/packet.json',r=>r.fulfill({json:modified}));
   }
   if(variant==='missing_feedback')await page.route('**/feedback.json',r=>r.fulfill({status:404,body:''}));
+  if(variant==='missing_workspaces')await page.route('**/workspaces.json',r=>r.fulfill({status:404,body:''}));
   await page.goto(url+'index.html');await expect(page.locator('#songs button')).toHaveCount(7);
-  if(variant==='reviewed'){
+  if(variant==='reviewed'||variant==='missing_workspaces'){
    await expect(page.locator('#summary')).toContainText('6 個來源');
    for(const row of packet){
     await page.locator(`#songs button[data-video="${row.video}"]`).click();
@@ -29,6 +30,7 @@ try{
     await expect(page.locator('#verdict')).toContainText(text);
     await expect(page.locator('#warning')).toContainText('小節譜與連續刷奏仍待完善');
     await expect(page.locator('#chords button')).toHaveCount(row.chords.length);
+    if(variant==='reviewed')await expect(page.locator('#score-link')).toBeVisible();else await expect(page.locator('#score-link')).toBeHidden();
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
    }
    await page.screenshot({path:path.join(out,'mobile.png'),fullPage:true});
@@ -37,6 +39,7 @@ try{
   }else{
    await expect(page.locator('#verdict')).toContainText('尚未有相符的試聽驗收');
    await expect(page.locator('#songs button').first()).toContainText('待試聽');
+   if(variant==='changed_audio'||variant==='changed_mode')await expect(page.locator('#score-link')).toBeHidden();
   }
   checks.push({variant,passed:true});await page.close();
  }

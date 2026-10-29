@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Awaitable, Callable, Dict, Any
 from ..models.audio import SourceRequest
 from ..models.score import SongScore, SongInfo, AnalysisSummary, Provenance, KeyContext, KeySignature
-from ..models.analysis import AudioFeatures, MelodyAnalysis, MelodyMode, ChordComplexity
+from ..models.analysis import AudioFeatures, MelodyAnalysis, MelodyMode, ChordComplexity, RhythmSuggestion
 from .config import Settings, ChordEngine, BeatEngine
 from ..analyzers.preprocessor import DemucsMelodySeparator, FFmpegPreprocessor
 from ..analyzers.protocols import ChordCandidateAnalyzer, TimingCandidateAnalyzer
@@ -90,6 +90,7 @@ class AnalysisPipeline:
         
         await report("beat_analysis")
         timing_result = None
+        timing_rejection = None
         if isinstance(self.beat_analyzer, TimingCandidateAnalyzer):
             timing_result = await self.beat_analyzer.analyze_candidates(normalized)
             artifact_directory = options.get("_artifact_directory")
@@ -108,8 +109,13 @@ class AnalysisPipeline:
                     (Path(options["_artifact_directory"]) / "timing-rejection.json").write_text(
                         json.dumps(error.evidence, ensure_ascii=False, allow_nan=False, indent=2) + "\n"
                     )
-                raise
-            if options.get("_artifact_directory"):
+                # Only audio-only chord analyzers can proceed without timing.
+                # Melody/legacy analyzers retain their existing failure contract.
+                if options.get('melody_mode') != 'off' or not getattr(self.chord_analyzer, 'supports_unmetered', False):
+                    raise
+                beats = None
+                timing_rejection = error.evidence
+            if beats is not None and options.get("_artifact_directory"):
                 (Path(options["_artifact_directory"]) / "timing-analysis.json").write_text(
                     beats.model_dump_json(indent=2) + "\n"
                 )
@@ -220,7 +226,8 @@ class AnalysisPipeline:
                 melody = MelodyAnalysis(warnings=[str(e)])
             
         await report("postprocessing")
-        rhythm = self.rhythm_suggester.suggest(beats, chords)
+        rhythm = self.rhythm_suggester.suggest(beats, chords) if beats is not None else RhythmSuggestion(
+            pattern_id='unmetered-chord-inspection-v1', display=[], confidence=0, label='每次換和弦彈一下')
         artifact_directory = options.get("_artifact_directory")
         if artifact_directory:
             artifact_path = Path(artifact_directory)
@@ -252,12 +259,13 @@ class AnalysisPipeline:
                 duration_seconds=normalized.duration_seconds
             ),
             analysis=AnalysisSummary(
+                timing_status='metered' if beats is not None else 'unmetered',
                 key=chords.key,
                 mode=chords.mode,
-                bpm=beats.bpm,
-                time_signature=beats.time_signature,
+                bpm=beats.bpm if beats is not None else 0,
+                time_signature=beats.time_signature if beats is not None else '',
                 confidence=chords.confidence if melody_mode == MelodyMode.OFF else melody.confidence,
-                warnings=[*beats.warnings, *chords.warnings, *melody.warnings],
+                warnings=[*(beats.warnings if beats is not None else ['拍格尚未確認；和弦按偵測時間呈現，每次換和弦彈一下。']), *chords.warnings, *melody.warnings],
             ),
             key_context=KeyContext(
                 source=KeySignature(key=chords.key, mode=chords.mode),
@@ -265,20 +273,21 @@ class AnalysisPipeline:
                 shape=KeySignature(key=chords.key, mode=chords.mode),
                 sounding=KeySignature(key=chords.key, mode=chords.mode),
             ),
-            beats=beats.beats,
+            beats=beats.beats if beats is not None else [],
             chords=chords.chords,
             melody=melody.notes,
             rhythm=rhythm,
             provenance=Provenance(
-                beat_engine=beats.engine,
+                beat_engine=beats.engine if beats is not None else timing_rejection.get('engine', ''),
                 chord_engine=chords.engine,
                 melody_engine=melody.engine,
-                beat_engine_version=beats.engine_version,
-                tempo_map_version="learned-downbeats-v1" if beats.engine == "beat-this" else "legacy-beat-grid-v1",
+                beat_engine_version=beats.engine_version if beats is not None else timing_rejection.get('engine_version', ''),
+                tempo_map_version='unmetered-seconds-v1' if beats is None else "learned-downbeats-v1" if beats.engine == "beat-this" else "legacy-beat-grid-v1",
                 chord_engine_version=chords.engine_version,
                 melody_engine_version=melody.engine_version,
                 parameters={
                     **getattr(self.beat_analyzer, "parameters", {}),
+                    **({'timing_rejection_reason': timing_rejection.get('rejection_reason', 'Unconfirmed meter')} if timing_rejection else {}),
                     "melody_mode": melody_mode.value,
                     "separate_vocals_requested": separate_vocals,
                     "vocal_source_separated": source_separated,

@@ -25,6 +25,7 @@ def decode_chord_events(chords_data, duration_seconds):
 
 
 class ChordinoChordAnalyzer:
+    supports_unmetered = True
     async def analyze(self, audio: NormalizedAudio, beats: BeatAnalysis | None) -> ChordAnalysis:
         return await run_blocking_analysis(self._analyze, audio, beats)
 

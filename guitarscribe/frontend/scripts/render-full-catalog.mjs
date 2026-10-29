@@ -53,6 +53,7 @@ try{
 await copyFile(path.join(root,'scripts/full-catalog.html'),path.join(output,'index.html'));
 // Feedback is separate evidence; the page applies it only to matching audio hashes.
 await copyFile(path.join(root,'../backend/fixtures/full-catalog-feedback-2026-10-30.json'),path.join(output,'feedback.json'));
+await copyFile(path.join(root,'../backend/fixtures/full-catalog-workspaces-2026-10-30.json'),path.join(output,'workspaces.json'));
 for(const row of results)if(row.kind==='unmetered'){
  const evidence=JSON.parse(await readFile(path.join(input,row.video,'timing-rejection.json'),'utf8'));
  row.timing_summary={};

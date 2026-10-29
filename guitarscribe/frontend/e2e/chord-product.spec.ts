@@ -275,3 +275,45 @@ test('accepted grid renders full-bar chords and real half-bar changes, without b
   await expect(sheet).not.toContainText('約');
   await expect(sheet).not.toContainText('0.02 拍');
 });
+
+const timelineScore={...score,analysis:{...score.analysis,timing_status:'unmetered',bpm:0,time_signature:''},beats:[],rhythm:{...score.rhythm,display:[]},chords:[{...score.chords[0],end:3.217},{...score.chords[0],id:'g',symbol:'G',start:3.217,end:8}]};
+
+test('unmetered sheet edits seconds, adjacent boundary, undo, delete and autosave without fake bars',async({page})=>{
+  await setup(page,timelineScore);
+  await expect(page.getByLabel('和弦時間表',{exact:true})).toBeVisible();
+  await expect(page.locator('.notation-measure')).toHaveCount(0);
+  await page.getByText('下載與備份',{exact:true}).click();
+  await expect(page.getByRole('button',{name:'下載伴奏 MIDI',exact:true})).toBeHidden();
+  await page.getByText('練習與編輯',{exact:true}).click();
+  await page.getByRole('button',{name:'編輯和弦',exact:true}).click();
+  await page.getByRole('button',{name:'編輯 0.00 秒的 C',exact:true}).click();
+  await expect(page.getByRole('button',{name:'增加半拍'})).toHaveCount(0);
+  let saved:any;await page.route('**/revisions',r=>{saved=r.request().postDataJSON();return r.fulfill({json:{revision_id:'timeline-save'}})});
+  await page.getByLabel('結束時間（秒）',{exact:true}).fill('4.125');
+  await page.getByRole('button',{name:'套用時間',exact:true}).click();
+  await expect(page.getByRole('button',{name:'編輯 4.13 秒的 G',exact:true})).toBeVisible();
+  await expect.poll(()=>saved?.score?.chords?.[1].start).toBe(4.125);
+  expect(saved.score.chords[0].end).toBe(4.125);
+  expect(saved.score.analysis.timing_status).toBe('unmetered');expect(saved.score.beats).toEqual([]);
+  await page.getByRole('button',{name:'復原',exact:true}).click();
+  await expect(page.getByRole('button',{name:'編輯 3.22 秒的 G',exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'編輯 3.22 秒的 G',exact:true}).click();
+  await page.getByRole('button',{name:'刪除此段和弦',exact:true}).click();
+  await expect(page.getByLabel('和弦時間表',{exact:true}).getByRole('button')).toHaveCount(1);
+  await expect.poll(()=>saved?.score?.chords?.length).toBe(1);
+  expect(saved.score.chords[0].end).toBe(3.217);
+  await page.getByRole('button',{name:'復原',exact:true}).click();
+  await expect(page.getByLabel('和弦時間表',{exact:true}).getByRole('button')).toHaveCount(2);
+});
+
+for(const width of [320,390,1440])test(`unmetered timeline has no overflow at ${width}px`,async({page})=>{
+  await page.setViewportSize({width,height:844});await setup(page,timelineScore);
+  await expect(page.getByLabel('歌曲調性')).toBeVisible();await expect(page.getByLabel('歌曲 Capo')).toBeVisible();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.getByText('練習與編輯',{exact:true}).click();
+  await page.getByLabel('循環選取時間').check();
+  await page.getByLabel('到（秒）').fill('0');
+  await expect(page.getByRole('alert')).toContainText('結束須晚於開始');
+  await expect(page.getByRole('button',{name:'播放',exact:true})).toBeDisabled();
+  await page.screenshot({path:`test-results/chord-timeline-${width}.png`,fullPage:true});
+});

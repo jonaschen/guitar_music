@@ -11,6 +11,7 @@ class SongInfo(BaseModel):
     source_start_seconds: float = Field(default=0, ge=0, allow_inf_nan=False)
 
 class AnalysisSummary(BaseModel):
+    timing_status: Literal['metered', 'unmetered'] = 'metered'
     key: str = "C"
     mode: str = "major"
     bpm: float = 120.0
@@ -85,6 +86,8 @@ class SongScore(BaseModel):
 
     @model_validator(mode="after")
     def validate_song_range(self):
+        if self.analysis.timing_status == 'unmetered' and (self.beats or self.analysis.bpm != 0 or self.analysis.time_signature):
+            raise ValueError('Unmetered scores must not expose an inferred tempo, meter or beat grid')
         if self.song_range and not 0 <= self.song_range.start < self.song_range.end <= self.song.duration_seconds:
             raise ValueError("Song range must stay within the source duration and have positive length")
         return self

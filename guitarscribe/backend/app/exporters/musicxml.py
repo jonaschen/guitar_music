@@ -119,6 +119,8 @@ def _tab_note(measure: Element, note: MelodyNote, duration: int, *, tie_start: b
 
 
 def export_musicxml(score: SongScore) -> str:
+    if score.analysis.timing_status == "unmetered":
+        raise ValueError("拍格尚未確認，請匯出附秒數的和弦文字。")
     """Export a measure-aware guitar TAB score, including string and fret."""
     bpm = score.analysis.bpm if score.analysis.bpm > 0 else 120.0
     try:

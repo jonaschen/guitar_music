@@ -10,9 +10,11 @@ class ChordProExporter:
         lines = [
             f"{{title: {self._directive_value(score.song.title)}}}",
             f"{{key: {score.key_context.target.key} {score.key_context.target.mode}}}",
-            f"{{tempo: {round(score.analysis.bpm)}}}",
-            f"{{time: {score.analysis.time_signature}}}",
         ]
+        if score.analysis.timing_status != 'unmetered':
+            lines.extend([f"{{tempo: {round(score.analysis.bpm)}}}", f"{{time: {score.analysis.time_signature}}}"])
+        else:
+            lines.append('{comment: Unmetered chord timeline; times are seconds, not beats.}')
         if score.analysis.capo:
             lines.append(f"{{capo: {score.analysis.capo}}}")
         lines.append("")
@@ -32,6 +34,9 @@ class ChordProExporter:
                 if chords:
                     lines.append(" ".join(f"[{chord.symbol}]" for chord in chords))
                 lines.append(self._escape_lyric(lyric.text))
+        elif score.analysis.timing_status == 'unmetered':
+            for chord in score.chords:
+                lines.extend([f'{{comment: {chord.start:.3f}–{chord.end:.3f} s}}', f'[{chord.symbol}]'])
         else:
             by_measure: dict[int, list[str]] = defaultdict(list)
             for chord in score.chords:

@@ -9,6 +9,8 @@ POLICY = 'chord-entry-performance-v1'
 
 
 def build_entry_performance(score: SongScore, mode: str):
+    if score.analysis.timing_status == 'unmetered':
+        raise ValueError('拍格尚未確認，請使用逐和弦核對。')
     if mode not in {'sparse', 'continuous'}:
         raise ValueError('Choose sparse or continuous performance')
     chords = score.chords

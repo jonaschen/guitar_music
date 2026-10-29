@@ -25,7 +25,8 @@ try{
   await page.locator('audio').evaluate(a=>a.pause());
   if(row.kind==='unmetered'){
    await expect(page.locator('#warning')).toContainText('小節譜與連續刷奏仍待完善');
-   await expect(page.locator('#score-link')).toBeHidden();
+   await expect(page.locator('#score-link')).toHaveText('開啟可編輯和弦時間表');
+   await expect(page.locator('#score-link')).toHaveAttribute('href',/revision=/);
   }
   await page.locator('audio').evaluate(a=>{a.currentTime=30});
   await page.locator('#mode').selectOption('source');
