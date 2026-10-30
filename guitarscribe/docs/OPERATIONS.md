@@ -7,7 +7,7 @@
 - `guitarscribe-friends-web`：systemd 使用者暫時服務，既有 Python 環境執行 `app.web:create_app`，只監聽 `127.0.0.1:5273`。
 - `guitarscribe-friends-tunnel`：使用既有 ngrok 設定建立 HTTPS 入口；網址見本機 `output/web-preview/deployment.json`。首次訪問可能顯示 ngrok 確認頁，再進入邀請登入。
 - 整個網站與 `/backend` API 皆需邀請帳密。`output/web-preview/access.json` 只有維護者可讀，不能提交到 Git；所有受邀者仍共用同一資料空間，沒有逐人隔離。
-- `output/web-preview/site` 只放 production `index.html` 與 `assets/`，不含開發用 listening 音檔、測試包或本機文件。請勿將整個 `frontend/public` 複製對外。
+- `output/web-preview/site` 放 production `index.html` 與 `assets/`，另明確加入本輪受邀驗收的 `review-2026-10-31/`（兩組40秒片段、對照頁與對應修訂連結）。全部仍經邀請保護，不掛載開發用 listening 歷史音檔或本機文件。請勿將整個 `frontend/public` 複製對外。
 - 分析與修訂在 `output/web-preview/work`，與開發用 `output/work` 分離。`GUITARSCRIBE_WORK_DIR` 必須在啟動前設好。
 - 使用既有 Chordino／Beat This，旋律關閉；同時分析一首，提交限制每小時 20 次。不是無限制多人服務。
 
