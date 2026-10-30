@@ -1,0 +1,28 @@
+# Trial build uses the same chord/timing engines as the accepted local workflow.
+FROM node:22-bookworm-slim AS javascript
+FROM python:3.11-slim-bookworm
+COPY --from=javascript /usr/local/bin/node /usr/local/bin/node
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg libsndfile1 libfftw3-dev build-essential curl ca-certificates \
+    vamp-plugin-sdk libboost-dev && rm -rf /var/lib/apt/lists/*
+ARG CHORDINO_REVISION=4c5f214a75cb354f8d8c933e161377c5b4d83713
+RUN mkdir /tmp/chordino /usr/local/lib/vamp && \
+    curl -fL --retry 3 "https://github.com/c4dm/nnls-chroma/archive/${CHORDINO_REVISION}.tar.gz" \
+      | tar xz --strip-components=1 -C /tmp/chordino && \
+    make -C /tmp/chordino -f Makefile.linux -j2 VAMP_SDK_DIR=/usr/include BOOST_ROOT=/usr/include && \
+    cp /tmp/chordino/nnls-chroma.so /usr/local/lib/vamp/ && \
+    mkdir -p /usr/local/share/licenses/nnls-chroma && \
+    cp /tmp/chordino/COPYING /usr/local/share/licenses/nnls-chroma/ && rm -rf /tmp/chordino
+ENV VAMP_PATH=/usr/local/lib/vamp OMP_NUM_THREADS=2 PYTHONUNBUFFERED=1
+WORKDIR /app
+COPY pyproject.toml ./
+COPY app ./app
+# CPU versions verified by the local analysis baseline; no melody/separation stack.
+RUN pip install --no-cache-dir 'torch==2.5.1' 'torchaudio==2.5.1' --index-url https://download.pytorch.org/whl/cpu
+RUN pip install --no-cache-dir 'numpy<2' wheel setuptools && \
+    pip install --no-cache-dir --no-build-isolation 'vamp==1.1.0' && \
+    pip install --no-cache-dir -e '.[timing,youtube]' 'yt-dlp[default]'
+RUN python -c "import vamp; assert 'nnls-chroma:chordino' in vamp.list_plugins()"
+COPY . .
+RUN printf '%s\n' '#!/bin/sh' 'exec python -m yt_dlp --js-runtimes node "$@"' > /usr/local/bin/guitarscribe-ytdlp && chmod +x /usr/local/bin/guitarscribe-ytdlp
+CMD ["python", "-m", "uvicorn", "app.api:app", "--host", "0.0.0.0", "--port", "8000"]

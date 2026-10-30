@@ -1,0 +1,43 @@
+# Standalone friend trial; no .env, host Python or existing database required.
+name: guitarscribe-trial
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.trial
+    init: true
+    restart: unless-stopped
+    environment:
+      GUITARSCRIBE_WORK_DIR: /app/output/work
+      GUITARSCRIBE_BEAT_ENGINE: beat_this_small
+      GUITARSCRIBE_CHORD_ENGINE: chordino
+      GUITARSCRIBE_MELODY_SEPARATOR: "off"
+      GUITARSCRIBE_YOUTUBE_ENABLED: "true"
+      GUITARSCRIBE_YTDLP_BINARY: guitarscribe-ytdlp
+      GUITARSCRIBE_RHYTHM_PATTERNS_DIR: /app/rhythm-patterns
+      GUITARSCRIBE_JOB_TTL_SECONDS: "31536000"
+      GUITARSCRIBE_SUBMISSION_RATE_LIMIT: "20"
+    volumes:
+      - trial-data:/app/output
+      - trial-models:/root/.cache/torch
+      - ./rhythm-patterns:/app/rhythm-patterns:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
+      interval: 15s
+      timeout: 8s
+      start_period: 30s
+      retries: 5
+  frontend:
+    build: ./frontend
+    init: true
+    restart: unless-stopped
+    environment:
+      GUITARSCRIBE_API_TARGET: http://backend:8000
+    ports:
+      - "127.0.0.1:${GUITARSCRIBE_TRIAL_PORT:-5173}:5173"
+    depends_on:
+      backend:
+        condition: service_healthy
+volumes:
+  trial-data:
+  trial-models:

@@ -1099,3 +1099,7 @@ body:has(.chord-product) { background: #12161c; }
 
 .song-sheet .measure-chords button { display: inline-flex; flex-direction: column; align-items: flex-start; justify-content: center; padding: 4px; }
 .song-sheet .measure-chords .chord-duration { font-size: 14px; font-weight: 400; color: var(--text-muted); white-space: normal; }
+
+.example-entry { display:grid;gap:8px;padding-bottom:16px;border-bottom:1px solid var(--border); }
+.example-entry button,.example-note button { color:inherit;background:transparent;border:1px solid var(--border);border-radius:4px;min-height:44px;padding:8px;cursor:pointer; }
+.example-entry small,.example-note { color:var(--text-muted); }

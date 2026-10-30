@@ -1,0 +1,26 @@
+# Operator-side deployment. Visitors need only a browser and the invitation password.
+name: guitarscribe-web
+services:
+  backend:
+    extends:
+      file: compose.trial.yml
+      service: backend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.web
+    init: true
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${GUITARSCRIBE_WEB_PORT:-5273}:80"
+    volumes:
+      - type: bind
+        source: ${GUITARSCRIBE_WEB_AUTH_FILE:?Set absolute path to friends.htpasswd}
+        target: /etc/nginx/auth/friends.htpasswd
+        read_only: true
+    depends_on:
+      backend:
+        condition: service_healthy
+volumes:
+  trial-data:
+  trial-models:

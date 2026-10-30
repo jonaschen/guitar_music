@@ -884,3 +884,9 @@ async def capo_recommendations(request: CapoRecommendationRequest) -> list[CapoR
 @app.post("/scores/optimize-voicings", response_model=SongScore)
 async def optimize_voicings(score: SongScore) -> SongScore:
     return SongVoicingOptimizer().optimize(score)
+
+
+@app.get("/examples/little-hands", response_model=SongScore, tags=["Scores"])
+async def little_hands_example() -> SongScore:
+    """Portable chord-only example; contains no audio or local revision/job IDs."""
+    return SongScore.model_validate_json((Path(__file__).resolve().parent.parent / "examples" / "little-hands.json").read_text())

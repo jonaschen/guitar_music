@@ -311,3 +311,25 @@ Codex 報告。本段將已獲基本可用回饋的和弦核對接回產品。�
 ### 本機預覽存活方式
 
 交付前發現一次背景後端結束，故將本機預覽改為兩個 systemd 使用者暫時服務：`guitarscribe-preview-api.service`（8000）與 `guitarscribe-preview-web.service`（5173），設定失敗自動重啟。服務不依附本次 shell；仍限本機連線，不代表公開部署或開機自動啟動。可用 `systemctl --user status guitarscribe-preview-api guitarscribe-preview-web` 檢查、`systemctl --user stop guitarscribe-preview-api guitarscribe-preview-web` 停止。重啟／建立前確認沒有活躍分析工作。
+
+
+## 免安裝受邀網頁試用（2026-10-30）
+
+使用者希望朋友能直接開網址，並以各種 YouTube 歌曲測試「聽原曲看和弦跟彈」。本段交付不改辨識模型、不重開旋律；重點是讓既有成果可分享、可操作。
+
+已完成：首頁內附《小手拉大手》132 和弦範例（不含錄音、歌詞或本機 revision）；建立新工作稿，可試播吉他／編輯／保存，或帶入來源重新分析。時間表新增目前／下一和弦提示、固定播放列與可關閉的播放位置跟隨。
+
+已運行：production 前端＋獨立分析資料＋全站邀請帳密，透過既有 ngrok 提供 HTTPS。朋友不需 Docker、Python、模型或 API key；受邀者共用資料空間，並非個人帳號。開發資料與 listening 音檔未掛載。網址與帳密分別存本機 `output/web-preview/deployment.json`、`access.json`，不放 Git。主機須開機連網；暫時 systemd 服務不是開機自啟動，維運方式見 [OPERATIONS](OPERATIONS.md)。
+
+驗證：
+
+- 本段相關後端 34 項（API／無拍格／範例）通過，另新增邀請 gate 與獨立資料庫測試 1 項通過。
+- 產品 Playwright 24 項與 production build 通過；保留既有 AlphaTab 大區塊警告。
+- 既有 Linux 分析環境搭配獨立空工作目錄，實際完成範例132和弦播放、修改保存重載、來源帶入、合成音檔分析與吉他事件編譯。這是資料獨立驗證，不是全新依賴安裝驗證。
+- 真正 YouTube 取歌及前30秒分析完成（job `2b93b87d502f4cf2910ba26d7ba5a969`）；外部 HTTPS Chromium 390px 播放原曲＋吉他，零頁面錯誤。沒有把30秒結果當作全曲品質驗收。
+- 未登入 API 回傳401，登入後200；舊開發 revision 回傳404。公開測試跳過 ngrok 首次訪問確認頁，朋友可能需要先點 Visit Site。
+- Docker 後端／開發前端建置與兩套 compose 設定檢查完成；尚未跑容器端到端分析，不能宣稱跨平台安裝已驗收。線上試用使用既有 Python 環境。
+
+本機證據：`output/evaluation/web-preview-2026-10-30/{report,public-check,youtube-job}.json` 及手機寬度截圖。已接受歌曲音訊／使用者工作稿未改；主旋律保持停止。
+
+尚未知：任意新歌準確度、實體手機體驗、多人長時間穩定性。下一步讓少量受邀朋友直接試歌，只回報歌曲連結、能否跟彈、明顯問題與秒數；後續先處理這批真實使用障礙，再遷移常駐主機，不要求重驗既有音樂基準。

@@ -237,6 +237,7 @@ async function getRevision(revisionId: string): Promise<SongScore> {
 }
 
 export function App() {
+  const [isLoadingExample, setIsLoadingExample] = useState(false);
   const [status, setStatus] = useState<AnalyzeState>("idle");
   const [file, setFile] = useState<File | null>(null);
   const [youtubeUrl, setYoutubeUrl] = useState("");
@@ -408,6 +409,19 @@ export function App() {
     window.addEventListener("beforeunload", warn);
     return () => window.removeEventListener("beforeunload", warn);
   }, [hasUnsavedChanges]);
+
+  async function openExample() {
+    setIsLoadingExample(true); setError("");
+    try {
+      const response = await fetch(`${API_BASE}/examples/little-hands`);
+      if (!response.ok) throw new Error("範例暫時無法載入，請確認分析服務已啟動。");
+      const example: SongScore = await response.json();
+      const saved = await postSaveRevision(example, null, true);
+      replaceScore(example); finishRevisionRestore(saved.revision_id, example, null);
+      setShowNewSong(false); setStatus("ready"); setFocusedWorkspace(true);
+    } catch (error) { setError(error instanceof Error ? error.message : "範例載入失敗，請重試。"); }
+    finally { setIsLoadingExample(false); }
+  }
 
   function replaceScore(nextScore: SongScore) {
     workGenerationRef.current++;
@@ -2032,11 +2046,12 @@ export function App() {
             <p className="eyebrow">GuitarScribe</p>
             <h1>把歌曲變成和弦譜</h1>
             <p className="lede">
-              選擇歌曲，對照原曲與吉他，再保存你的和弦譜。
+              貼上 YouTube 歌曲連結，分析後一邊聽、一邊跟著和弦彈。
             </p>
           </div>
 
           <form className="intake-card" onSubmit={handleSubmit}>
+            {!MELODY_ENABLED && !score ? <div className="example-entry"><button type="button" disabled={isLoadingExample || analysisBusy} onClick={()=>void openExample()}>{isLoadingExample ? "載入範例…" : "開啟範例：小手拉大手"}</button><small>內附和弦稿，可直接試播吉他與編輯。</small></div> : null}
             <p role="status">{capabilities ? "分析服務已就緒" : capabilitiesFailed ? "無法取得分析能力，請確認服務後重新整理。" : "正在確認分析能力…"}</p>
             {MELODY_ENABLED && capabilities && !capabilities.melody_available ? <p role="note">目前僅分析拍點與和弦，不會產生旋律；完成後可手動補音。</p> : null}
             {MELODY_ENABLED && capabilities?.melody_available && capabilities.vocal_separation_enabled && melodyMode === "vocal" && separateVocals ? <p>分析完成後先用「原曲＋系統吉他」核對和弦。自動旋律仍屬實驗功能，未達品質驗收門檻。</p> : null}
@@ -2094,13 +2109,14 @@ export function App() {
               <p>從略過位置開始分析所選長度，工作譜以 0 秒起算。請使用有權分析的來源。</p>
             </div>
 
-            <button aria-label="Start analysis" className="primary-button" type="submit" disabled={!youtubeUrlValid || !capabilities || status === "queued" || !!(analysisJob && !["completed", "failed", "cancelled"].includes(analysisJob.status))}>
+            <button aria-label="Start analysis" className="primary-button" type="submit" disabled={isLoadingExample || !youtubeUrlValid || !capabilities || status === "queued" || !!(analysisJob && !["completed", "failed", "cancelled"].includes(analysisJob.status))}>
               {status === "queued" ? "正在分析…" : "開始分析"}
             </button>
             {score ? <button type="button" className="ghost-button" onClick={() => setShowNewSong(false)}>{MELODY_ENABLED ? "收起來源，繼續修譜" : "回到歌曲"}</button> : !MELODY_ENABLED && rememberedVersion ? <button type="button" disabled={isLoadingRevision} onClick={()=>void loadRevision(rememberedVersion.id)}>繼續上次的歌曲</button> : null}
           </form>
         </section>
 
+        {!MELODY_ENABLED && score?.song.source_type === "example" && productScreen === "song" ? <p className="example-note">範例不含原曲音檔。要聽原曲跟彈，<button type="button" onClick={()=>{setYoutubeUrl(score.song.source_url ?? "");setShowNewSong(true);}}>用這首歌曲開始分析</button>。</p> : null}
         {error ? <p className="error-banner" role="alert">{error}</p> : null}
         {analysisJob && !["completed", "failed", "cancelled"].includes(analysisJob.status) ? (
           <section className="job-progress" aria-live="polite">

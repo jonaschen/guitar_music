@@ -1,8 +1,14 @@
 # GuitarScribe
 
-目前交付：本機和弦核對、伴奏試聽與修譜工具。主旋律停止研發並從一般 UI 隱藏，舊資料保留。使用 [穩定試用入口](http://localhost:5173/review.html) 開啟先前確認有改善的整份拍格版；不要以修正前的歷史修訂作為正式試聽入口。新版 UI 與限制見 [Codex 進度報告](docs/Chord_Web_Mobile_2026-10-27.md)。
+朋友只需維護者提供的 HTTPS 網址與邀請密碼，請先看 [根目錄的中文入門指南](../README.md)。下列命令是維護者本機測試用，並非朋友使用前提：
 
-Backend-first prototype for generating guitar-friendly song analysis from uploaded audio.
+```bash
+docker compose -f compose.trial.yml up -d --build
+```
+
+開啟 http://localhost:5173，首頁可試《小手拉大手》內附和弦稿，或貼上自己的 YouTube 連結。內附範例沒有原曲音訊；分析來源後可聽原曲跟彈。新安裝不依賴本機歷史 job／revision，也不應使用只存在開發機的 `/review.html` 或 listening 測試包入口。
+
+目前產品是和弦核對、伴奏試聽與修譜工具；主旋律停止並隱藏。拍格不確定的結果採秒數時間表。試用版有等待時間與辨識誤差，尚非任意歌曲的即時精準轉錄。下面保留 API 與研發說明。
 
 ## Current API
 
@@ -15,7 +21,7 @@ Backend-first prototype for generating guitar-friendly song analysis from upload
 - `POST /scores/transpose`
   - JSON body with a full `SongScore`, target semitone delta, accidental preference, and optional capo
 
-## Run
+## 舊開發配置（朋友請直接使用維護者提供的網址）
 
 ```bash
 make build
@@ -50,7 +56,7 @@ The result's source WAV is available only through its completed job and is remov
 
 To protect the single-worker analysis service, job creation is limited per direct client address. The default is five submissions per hour; set `GUITARSCRIBE_SUBMISSION_RATE_LIMIT=0` only for a trusted development environment that needs to disable this in-memory guard. A production multi-worker deployment should replace it with a shared reverse-proxy or Redis-backed limiter.
 
-## Optional vocal isolation
+## Archived research: optional vocal isolation
 
 Full-mix melody extraction can follow accompaniment instead of the singer. Vocal focus can optionally run Demucs, then trace the isolated vocal's single fundamental-frequency line with pYIN; Basic Pitch remains a fallback if that trace cannot be produced. This does not add PyTorch to the normal backend image. In a dedicated Python 3.10-3.12 environment, install CPU PyTorch first, then the optional dependency:
 

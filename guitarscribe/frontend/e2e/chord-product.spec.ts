@@ -317,3 +317,39 @@ for(const width of [320,390,1440])test(`unmetered timeline has no overflow at ${
   await expect(page.getByRole('button',{name:'播放',exact:true})).toBeDisabled();
   await page.screenshot({path:`test-results/chord-timeline-${width}.png`,fullPage:true});
 });
+
+test('fresh installation opens portable example without a local job and offers source analysis',async({page})=>{
+  const example={...timelineScore,song:{...timelineScore.song,title:'小手拉大手 · 範例和弦稿',source_type:'example',source_url:'https://www.youtube.com/watch?v=5wq_uTMW0v8'},provenance:{...score.provenance,parameters:{example_id:'little-hands'}}};
+  await page.route('**/api/v1/capabilities',r=>r.fulfill({json:{melody_available:false,youtube_enabled:true}}));
+  await page.route('**/examples/little-hands',r=>r.fulfill({json:example}));
+  let saved:any;
+  await page.route('**/revisions',r=>{saved=r.request().postDataJSON();return r.fulfill({json:{revision_id:'new-example'}})});
+  await page.route('**/revisions/*/history',r=>r.fulfill({json:[]}));
+  await page.route('**/rhythm-patterns?*',r=>r.fulfill({json:[]}));
+  await page.goto('/');
+  await page.getByRole('button',{name:'開啟範例：小手拉大手',exact:true}).click();
+  await expect(page.getByLabel('和弦時間表',{exact:true})).toBeVisible();
+  await expect(page.getByLabel('播放聲音',{exact:true})).toHaveValue('guitar');
+  await expect(page.getByRole('button',{name:'播放',exact:true})).toBeEnabled();
+  await expect(page).toHaveURL(/revision=new-example/);
+  expect(saved.score.song.source_type).toBe('example');
+  await page.getByRole('button',{name:'用這首歌曲開始分析',exact:true}).click();
+  await expect(page.getByLabel('YouTube video URL')).toHaveValue(example.song.source_url);
+  await expect(page.getByLabel('Analysis duration')).toHaveValue('full');
+  await expect(page.getByRole('button',{name:'Start analysis',exact:true})).toBeEnabled();
+});
+
+test('follow-along shows current and next chords and scrolling can be disabled',async({page})=>{
+  const working={...timelineScore,song:{...timelineScore.song,duration_seconds:60},chords:Array.from({length:30},(_,i)=>({...score.chords[0],id:'c'+i,start:i*2,end:(i+1)*2,symbol:i%2?'G':'C'}))};
+  await page.setViewportSize({width:390,height:700});await setup(page,working);
+  await page.route('**/scores/playback/manifest',r=>r.fulfill({json:{revision:'follow',duration_seconds:60,bpm:0,time_signature:'',events:working.chords.map(c=>({id:c.id,track:'guitar',start:c.start,end:c.end,sustain_end:c.end,pitches:[48],pitch_offsets:[0],pitch_velocities:[98],velocity:98,source_id:c.id}))}}));
+  await page.getByLabel('播放聲音',{exact:true}).selectOption('guitar');
+  await page.getByRole('button',{name:'播放 40.00 秒的 C',exact:true}).click();
+  await expect(page.getByLabel('跟彈提示',{exact:true})).toContainText('目前 C');
+  await expect(page.getByLabel('跟彈提示',{exact:true})).toContainText('接著 G');
+  const bounds=await page.locator('[data-chord-id="c20"]').boundingBox();expect(bounds!.y).toBeGreaterThan(0);expect(bounds!.y+bounds!.height).toBeLessThan(700);
+  await page.getByRole('button',{name:'暫停',exact:true}).click();
+  await page.getByText('練習與編輯',{exact:true}).click();
+  await page.getByLabel('跟隨播放位置',{exact:true}).uncheck();
+  await expect(page.getByLabel('跟隨播放位置',{exact:true})).not.toBeChecked();
+});
