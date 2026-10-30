@@ -189,7 +189,7 @@ def get_job_service() -> AnalysisJobService:
             max_concurrent_jobs=settings.max_concurrent_jobs,
         max_queued_jobs=settings.max_queued_jobs,
         job_ttl_seconds=settings.job_ttl_seconds,
-        youtube_downloader=YouTubeAudioDownloader(settings.youtube_dl_binary, settings.youtube_download_timeout_seconds, settings.max_upload_bytes) if settings.youtube_enabled else None,
+        youtube_downloader=YouTubeAudioDownloader(settings.youtube_dl_binary, settings.youtube_download_timeout_seconds, settings.max_upload_bytes, js_runtime=settings.youtube_js_runtime) if settings.youtube_enabled else None,
         )
     return _job_service
 

@@ -333,3 +333,16 @@ Codex 報告。本段將已獲基本可用回饋的和弦核對接回產品。�
 本機證據：`output/evaluation/web-preview-2026-10-30/{report,public-check,youtube-job}.json` 及手機寬度截圖。已接受歌曲音訊／使用者工作稿未改；主旋律保持停止。
 
 尚未知：任意新歌準確度、實體手機體驗、多人長時間穩定性。下一步讓少量受邀朋友直接試歌，只回報歌曲連結、能否跟彈、明顯問題與秒數；後續先處理這批真實使用障礙，再遷移常駐主機，不要求重驗既有音樂基準。
+
+
+## 手機分享 YouTube 取歌故障修正（2026-10-30）
+
+使用者回報手機分享短網址顯示 `This video is not available`。後端紀錄證實 `FjFU9QHdx1g` 的短網址、`feature=shared` 與完整 watch URL 均已解析到同一影片代碼且同樣失敗，不能判定為短網址格式問題。
+
+實際差異在下載環境：網站沿 PATH 使用 yt-dlp 2026.08.19，未啟用 JS；互動終端機有 Node 24，但 systemd PATH 讀到 Node 18。新版 yt-dlp 2026.10.26＋EJS 0.8.0＋Node 24 模擬成功，第一次只換下載器仍於網站失敗；再指定服務使用 Node 絕對路徑後，真正整首流程完成。這段紀錄保留失敗的中間驗證，避免把 CLI 模擬當成網站修復完成。
+
+修正：套件依賴包含 `yt-dlp[default]>=2026.10.26`；預設優先使用應用 Python 同目錄的下載器，保留自訂執行檔設定；明確啟用 JS runtime，新增 `GUITARSCRIBE_YOUTUBE_JS_RUNTIME` 支援服務端絕對路徑。影片不可取得時顯示白話說明，原始錯誤留後端紀錄。手機端不需改網址格式、安裝或登入 YouTube。
+
+驗證：57 項後端相關測試通過（短／分享參數／長網址、命令參數、環境內下載器、自訂執行檔、JS 路徑、失敗訊息及既有 API／分析提交）。同一手機分享來源新建 job `876eea1641d545b38408a4282d9bde70` 完成整首 **154.122 秒、94 和弦**；外部 HTTPS Chromium 390×844 可開啟新譜、播放原曲＋吉他、暫停，零頁面錯誤。這是下載／操作修復證據，不是新歌音樂品質的人耳驗收。既有失敗 job、使用者譜與已完成曲目均保留。
+
+本機證據：`output/evaluation/youtube-share-fix-2026-10-30/job-fixed-runtime.json`、`browser.json`、`public-mobile-playback.png`。部署配置詳見 [維運文件](OPERATIONS.md#youtube-下載環境2026-10-30-修正)；暫時 systemd drop-in 與服務一樣需在重開機重建時保留。

@@ -34,6 +34,7 @@ class Settings(BaseModel):
     demucs_binary: Optional[str] = None
     youtube_enabled: bool = False
     youtube_dl_binary: str = "yt-dlp"
+    youtube_js_runtime: str = "node"
     youtube_download_timeout_seconds: int = 600
     submission_rate_limit: int = 5
     submission_rate_window_seconds: int = 3600
@@ -63,6 +64,7 @@ class Settings(BaseModel):
             demucs_binary=os.environ.get("GUITARSCRIBE_DEMUCS_BINARY"),
             youtube_enabled=os.environ.get("GUITARSCRIBE_YOUTUBE_ENABLED", "false").lower() == "true",
             youtube_dl_binary=os.environ.get("GUITARSCRIBE_YTDLP_BINARY", "yt-dlp"),
+            youtube_js_runtime=os.environ.get("GUITARSCRIBE_YOUTUBE_JS_RUNTIME", "node"),
             youtube_download_timeout_seconds=int(os.environ.get("GUITARSCRIBE_YOUTUBE_DOWNLOAD_TIMEOUT_SECONDS", "600")),
             submission_rate_limit=int(os.environ.get("GUITARSCRIBE_SUBMISSION_RATE_LIMIT", "5")),
             submission_rate_window_seconds=int(os.environ.get("GUITARSCRIBE_SUBMISSION_RATE_WINDOW_SECONDS", "3600")),

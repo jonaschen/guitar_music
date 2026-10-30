@@ -39,6 +39,14 @@ analysis worker is intentionally limited to one concurrent job by default;
 long audio and optional vocal separation can use substantial CPU, RAM, and
 disk.
 
+## YouTube 下載環境（2026-10-30 修正）
+
+目前非 Docker 服務應在**同一個 Python 環境**安裝 `yt-dlp[default]>=2026.10.26`；這包含 EJS 支援。伺服器 PATH 需有 Node 22 以上，程式會明確傳入 `--js-runtimes node`。依據 [yt-dlp 官方 EJS 說明](https://github.com/yt-dlp/yt-dlp/wiki/EJS)，只安裝 yt-dlp 或只有未啟用的 Node 並不足夠。這些是伺服器依賴，朋友手機不用安裝。
+
+下載器預設優先選用執行中 Python 同目錄的 `yt-dlp`，找不到才使用 PATH；`GUITARSCRIBE_YTDLP_BINARY` 指定的自訂路徑仍優先。若環境內已安裝新版卻仍錯誤，不要只檢查互動 shell 的 `yt-dlp --version`，須確認服務實際選用路徑與 JS runtime。可用 `GUITARSCRIBE_YOUTUBE_JS_RUNTIME=node:/absolute/path/to/node` 指定絕對路徑；目前 systemd 試用服務以暫時 drop-in 指向 `/home/jonas/.nvm/versions/node/v24.14.0/bin/node`，重建服務時也要保留此設定。互動 shell 的 nvm 設定不會自動傳給背景服務。
+
+本次發現既有主機 PATH 指向 `~/.local/bin/yt-dlp` 2026.08.19，且未啟用 JS 支援；同一影片的長／短／手機分享網址均在來源下載失敗。背景服務另讀到系統 Node 18，與互動 shell 的 Node 24 不同；已改用分析環境中的 2026.10.26、EJS 0.8.0 並指定 Node 24.14.0，無需登入 cookies。舊失敗 job 保留，不改寫成功；修正驗證使用新 job。
+
 ## Start and check
 
 ```bash
