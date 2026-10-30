@@ -1103,3 +1103,11 @@ body:has(.chord-product) { background: #12161c; }
 .example-entry { display:grid;gap:8px;padding-bottom:16px;border-bottom:1px solid var(--border); }
 .example-entry button,.example-note button { color:inherit;background:transparent;border:1px solid var(--border);border-radius:4px;min-height:44px;padding:8px;cursor:pointer; }
 .example-entry small,.example-note { color:var(--text-muted); }
+
+.performance-draft-status { flex-basis:100%;margin:0;color:var(--text-muted);font-size:14px; }
+@media(max-width:640px) {
+ .notation-sheet { grid-template-columns:repeat(2,minmax(0,1fr)); }
+ .notation-measure:nth-child(2n+1) { border-left:1px solid #68717c; }
+ .notation-measure { padding:8px; }
+ .song-sheet .tie-mark { display:inline; }
+}

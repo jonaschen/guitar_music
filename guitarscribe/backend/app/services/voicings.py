@@ -1,6 +1,7 @@
 import re
 
 from ..models.analysis import ChordVoicing
+from .slash_voicings import slash_shapes
 
 
 # Low-position standard-tuning shapes, ordered E-A-D-G-B-E.
@@ -112,6 +113,15 @@ class ChordVoicingProvider:
         return shapes
 
     def get(self, symbol: str, capo: int = 0, max_fret: int = 15) -> list[ChordVoicing]:
+        if '/' in symbol:
+            generated = slash_shapes(symbol, max_fret)
+            if generated:
+                return [ChordVoicing(
+                    id=f"slash-v1-{symbol}-{'-'.join('x' if f is None else str(f) for f in frets)}",
+                    symbol=symbol, shape_symbol=symbol, frets=list(frets), fingers=list(fingers),
+                    base_fret=max(1, min((f for f in frets if f not in (None, 0)), default=1)),
+                    capo=capo, difficulty=4.0, tags=['slash', 'complete', 'generated'],
+                ) for frets, fingers in generated]
         shapes = [
             {**shape, "frets": list(shape["frets"]), "fingers": list(shape["fingers"]), "tags": list(shape["tags"])}
             for shape in [*COMMON_VOICINGS.get(symbol, []), *self._caged_shapes(symbol), *self._extended_shapes(symbol)]

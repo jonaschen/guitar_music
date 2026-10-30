@@ -1,0 +1,15 @@
+<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GuitarScribe 集中驗收</title>
+<style>body{margin:0;background:#11161c;color:#edf0f5;font:16px/1.6 system-ui,sans-serif}main{max-width:720px;margin:auto;padding:24px 16px}h1{font-size:24px}h2{font-size:20px}p{color:#bac3ce}section{border-top:1px solid #46505c;margin-top:24px;padding-top:16px}audio{width:100%;display:block;margin:8px 0 16px}a{color:#f2a550}label{display:block}summary{cursor:pointer;padding:8px 0}small{font-size:14px;color:#bac3ce}.actions{display:flex;flex-wrap:wrap;gap:16px;margin-top:16px}.actions a{padding:8px 0}#error{color:#ffbd8d}</style>
+<main><h1>明天的集中驗收</h1><p>兩組各 40 秒，A 是原稿，B 是修正版。可以拖曳重聽；開始另一段時會暫停前一段。這輪不用重新分析歌曲。</p><div id="groups"></div><section><h2>手機畫面</h2><p>第 1 組的修正版改為一列一段時間範圍；第 2 組是小節譜，手機每列兩小節。只要告訴我：是否容易辨認、是否還有難讀或錯位的位置。</p><p>需要自行比較時：歌曲頁 → 練習與編輯 → 整理演奏稿；可按「復原」。原始分析保留。</p><small>第 1 組仍沒有已確認的拍格，未增加持續刷奏；兩組都沒有刪和弦或宣稱完成歌曲分段。</small></section><p id="error" role="alert"></p></main>
+<script type="module">
+const root=document.querySelector('#groups');
+const audio=(file,label)=>{const container=document.createElement('label');container.append(document.createTextNode(label));const player=document.createElement('audio');player.controls=true;player.preload='metadata';player.src=file;player.addEventListener('play',()=>{for(const other of document.querySelectorAll('audio'))if(other!==player)other.pause();});container.append(player);return container;};
+try{const response=await fetch('packet.json');if(!response.ok)throw Error('無法載入驗收資料，請重新整理。');for(const row of await response.json()){
+ const section=document.createElement('section'),heading=document.createElement('h2');heading.textContent=row.title;section.append(heading);
+ const description=document.createElement('p');description.textContent=`原曲 ${row.start}–${row.end} 秒。${row.question}`;section.append(description);
+ section.append(audio(`${row.number}-a-mix.wav`,'A · 原曲＋原稿吉他'),audio(`${row.number}-b-mix.wav`,'B · 原曲＋修正版吉他'));
+ const extra=document.createElement('details'),summary=document.createElement('summary');summary.textContent='需要時：單聽吉他或原曲';extra.append(summary,audio(`${row.number}-a-guitar.wav`,'A · 吉他'),audio(`${row.number}-b-guitar.wav`,'B · 吉他'),audio(`${row.number}-source.wav`,'原曲'));section.append(extra);
+ if(row.revisions){const links=document.createElement('div');links.className='actions';for(const [key,label] of [['a','開啟原稿'],['b','開啟修正版和弦譜']]){const a=document.createElement('a');a.textContent=label;a.href='/?revision='+encodeURIComponent(row.revisions[key]);a.target='_blank';a.rel='noopener';links.append(a);}section.append(links);}
+ root.append(section);
+}}catch(e){document.querySelector('#error').textContent=e.message;}
+</script></html>

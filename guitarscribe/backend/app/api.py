@@ -409,6 +409,16 @@ async def chord_grid_candidate(score: SongScore):
     return dict(score=candidate, report=report, applied=False, saved=False)
 
 
+@app.post('/scores/performance-draft', tags=['Scores'])
+async def performance_draft(score: SongScore):
+    from .services.performance_draft import build_performance_draft
+    try:
+        candidate, report = await asyncio.to_thread(build_performance_draft, score)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    return dict(score=candidate, report=report, applied=False, saved=False)
+
+
 class ChordEntryAuditRequest(BaseModel):
     score: SongScore
     mode: Literal['original', 'sparse', 'continuous'] = 'original'

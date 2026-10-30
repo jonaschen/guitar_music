@@ -1,6 +1,8 @@
-.chord-timeline { display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:0;margin-top:16px; }
-.chord-product .chord-timeline button { border:0;border-radius:0;border-bottom:1px solid var(--border, #d9dedb);background:transparent;text-align:left;padding:16px 8px;display:flex;flex-direction:column;gap:8px;min-width:0; }
-.chord-timeline small,.chord-timeline span { color:var(--text-muted);font-size:.8rem; }
+.chord-timeline { display:flex;flex-direction:column;gap:0;margin-top:0; }
+.timeline-columns,.chord-product .chord-timeline button { display:grid;grid-template-columns:minmax(112px,1.4fr) minmax(0,1fr) 64px;column-gap:8px;align-items:center; }
+.timeline-columns { padding:8px;color:var(--text-muted);font-size:14px;border-bottom:1px solid var(--border);margin-top:16px; }
+.chord-product .chord-timeline button { border:0;border-radius:0;border-bottom:1px solid var(--border, #d9dedb);background:transparent;text-align:left;padding:12px 8px;min-height:56px;min-width:0; }
+.chord-timeline small,.chord-timeline span { color:var(--text-muted);font-size:14px;font-variant-numeric:tabular-nums; }
 .chord-timeline strong { font-size:1.15rem;overflow-wrap:anywhere; }
 .chord-product .chord-timeline button.current-chord { background:rgba(241,143,59,.12);box-shadow:inset 3px 0 var(--accent); }
 .chord-timeline button:focus-visible { outline:2px solid var(--accent);outline-offset:-2px; }
@@ -11,3 +13,6 @@
 .chord-follow-cue { display:flex;gap:16px;align-items:center;margin:16px 0 0; }
 .chord-follow-cue strong { color:var(--accent);font-size:1.25rem; }
 .chord-follow-cue span { color:var(--text-muted); }
+
+.chord-timeline small { white-space:nowrap; }
+.timeline-columns > :last-child,.chord-timeline button > :last-child { text-align:right; }

@@ -67,14 +67,14 @@ test('frozen default ignores archived preference; saved data retained, accompani
   await expect(page.getByLabel('melody track',{exact:true})).toHaveCount(0);
   await expect(page.getByLabel('Tab start bar')).toHaveCount(0);
 });
-for(const width of [320,390,768,1440])test(`four-bar notation and progressive controls at ${width}px`,async({page})=>{
+for(const width of [320,390,768,1440])test(`responsive notation and progressive controls at ${width}px`,async({page})=>{
   await page.setViewportSize({width,height:844});await setup(page);
   await expect(page.getByLabel('歌曲調性')).toBeVisible();
   await expect(page.getByLabel('歌曲 Capo')).toBeVisible();
   await expect(page.getByRole('button',{name:'復原',exact:true})).toBeHidden();
   const bars=page.locator('.notation-measure');expect(await bars.count()).toBe(4);
   const bounds=await bars.evaluateAll(els=>els.map(el=>el.getBoundingClientRect().top));
-  expect(new Set(bounds).size).toBe(1);
+  expect(new Set(bounds).size).toBe(width<=640?2:1);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await page.screenshot({path:`test-results/chord-product-${width}.png`,fullPage:true});
   await page.getByText('練習與編輯',{exact:true}).click();
@@ -310,6 +310,10 @@ for(const width of [320,390,1440])test(`unmetered timeline has no overflow at ${
   await page.setViewportSize({width,height:844});await setup(page,timelineScore);
   await expect(page.getByLabel('歌曲調性')).toBeVisible();await expect(page.getByLabel('歌曲 Capo')).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await expect(page.getByText('時間表（非小節譜）',{exact:false})).toBeVisible();
+  const rowBounds=await page.getByLabel('和弦時間表',{exact:true}).getByRole('button').evaluateAll(els=>els.map(el=>{const r=el.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width}}));
+  expect(rowBounds[1].y).toBeGreaterThan(rowBounds[0].y);
+  expect(rowBounds[1].x).toBe(rowBounds[0].x);
   await page.getByText('練習與編輯',{exact:true}).click();
   await page.getByLabel('循環選取時間').check();
   await page.getByLabel('到（秒）').fill('0');
@@ -352,4 +356,46 @@ test('follow-along shows current and next chords and scrolling can be disabled',
   await page.getByText('練習與編輯',{exact:true}).click();
   await page.getByLabel('跟隨播放位置',{exact:true}).uncheck();
   await expect(page.getByLabel('跟隨播放位置',{exact:true})).not.toBeChecked();
+});
+
+test('performance draft updates shared timing, autosaves, and restores with undo',async({page})=>{
+  const working={...score,chords:[{...score.chords[0],end:2.019},{...score.chords[0],id:'g',symbol:'G',start:2.019,end:8}]};
+  await setup(page,working);
+  let saved:any;
+  await page.route('**/revisions',r=>{saved=r.request().postDataJSON();return r.fulfill({json:{revision_id:'performance-saved'}})});
+  await page.route('**/scores/performance-draft',r=>{
+    const original=r.request().postDataJSON();
+    return r.fulfill({json:{score:{...original,chords:[{...original.chords[0],end:2},{...original.chords[1],start:2}],provenance:{...original.provenance,parameters:{...original.provenance.parameters,chord_grid_candidate:'nearest-eighth-v1',performance_draft:'preserve-harmony-v1'}}},report:{}}});
+  });
+  await expect(page.getByLabel('Bar 2',{exact:true}).getByRole('button')).toHaveCount(2);
+  await page.getByText('練習與編輯',{exact:true}).click();
+  await page.getByRole('button',{name:'整理演奏稿',exact:true}).click();
+  await expect(page.getByLabel('Bar 2',{exact:true}).getByRole('button')).toHaveCount(1);
+  await expect.poll(()=>saved?.score?.chords[1].start).toBe(2);
+  expect(saved.score.provenance.parameters.analysis_source_job_id).toBe('product-job');
+  expect(saved.score.melody).toHaveLength(1);
+  await page.getByRole('button',{name:'復原',exact:true}).click();
+  await expect(page.getByLabel('Bar 2',{exact:true}).getByRole('button')).toHaveCount(2);
+  await expect.poll(()=>saved?.score?.chords[1].start).toBe(2.019);
+});
+
+test('a delayed performance draft cannot overwrite a newer manual chord edit',async({page})=>{
+  await setup(page,timelineScore);
+  let release:()=>void=()=>{};const ready=new Promise<void>(resolve=>{release=resolve;});
+  let submitted=false;
+  await page.route('**/scores/performance-draft',async r=>{
+    submitted=true;const original=r.request().postDataJSON();await ready;
+    await r.fulfill({json:{score:{...original,chords:original.chords.map(c=>({...c,symbol:'F#'}))},report:{}}}).catch(()=>{});
+  });
+  let saved:any;await page.route('**/revisions',r=>{saved=r.request().postDataJSON();return r.fulfill({json:{revision_id:'manual-kept'}})});
+  await page.getByText('練習與編輯',{exact:true}).click();
+  await page.getByRole('button',{name:'整理演奏稿',exact:true}).click();await expect.poll(()=>submitted).toBe(true);
+  await page.getByRole('button',{name:'編輯和弦',exact:true}).click();
+  await page.getByRole('button',{name:'編輯 0.00 秒的 C',exact:true}).click();
+  await page.getByLabel('和弦名稱',{exact:true}).fill('Em');
+  await page.getByRole('button',{name:'套用和弦修改',exact:true}).click();
+  release();
+  await expect(page.getByRole('button',{name:'編輯 0.00 秒的 Em',exact:true})).toBeVisible();
+  await expect.poll(()=>saved?.score?.chords[0].symbol).toBe('Em');
+  expect(saved.score.provenance.parameters.performance_draft).toBeUndefined();
 });

@@ -35,7 +35,7 @@ export function ChordTimelinePage({score,sourceAvailable,playing,preparing,playh
     </div>
     <p className="playback-status" role="status">{preparing?'正在準備聲音…':playing?'播放中':'已暫停'} · {stamp(playhead)} / {stamp(duration)}</p>
     {unavailable?<p role="status">{!sourceAvailable?'原曲暫時無法使用，請選「吉他」播放。':'已移調，請選「吉他」，或回到原調合奏。'}</p>:null}
-    <p className="sheet-hint">和弦時間表 · 拍格尚未確認，依實際秒數排列；吉他在每次換和弦時彈一下。</p>
+    <p className="sheet-hint">時間表（非小節譜） · 每列是一段和弦，長短請看時間；目前每段彈一次。</p>
     <details className="song-options"><summary>練習與編輯</summary>
       <div className="secondary-controls">
         <label><input type="checkbox" checked={follow} onChange={e=>setFollow(e.target.checked)}/>跟隨播放位置</label>
@@ -52,12 +52,13 @@ export function ChordTimelinePage({score,sourceAvailable,playing,preparing,playh
     </details>
     <p className="sheet-hint">{editing?'點和弦修改名稱、時間或刪除；修改會自動保存。':'點和弦即可從該處播放。'}</p>
     {editing?editPanel:null}
+    <div className="timeline-columns" aria-hidden="true"><span>時間範圍</span><span>和弦</span><span>長度</span></div>
     <div className="chord-timeline" aria-label="和弦時間表" ref={sheetRef}>
       {score.chords.map(c=><button type="button" key={c.id} data-chord-id={c.id} className={playing&&playhead>=c.start&&playhead<c.end?'current-chord':''} aria-label={`${editing?'編輯':'播放'} ${c.start.toFixed(2)} 秒的 ${c.symbol}`} disabled={!editing&&unavailable} title={`${c.start.toFixed(2)}–${c.end.toFixed(2)} 秒`} onClick={()=>{
         onStop();
         if(editing)onEditChord?.(c.id);
         else {const within=loop&&valid&&c.start>=rangeStart&&c.start<rangeEnd;if(!within)setLoop(false);onPlay(mode,within?rangeStart:0,within?rangeEnd:duration,within,c.start);}
-      }}><small>{stamp(c.start)}</small><strong>{c.symbol}</strong><span>{(c.end-c.start).toFixed(2)} 秒</span></button>)}
+      }}><small>{stamp(c.start)}–{stamp(c.end)}</small><strong>{c.symbol}</strong><span>{(c.end-c.start).toFixed(2)} 秒</span></button>)}
       {!score.chords.length?<p>目前沒有和弦，仍可播放原曲或還原版本。</p>:null}
     </div>
   </section>;
