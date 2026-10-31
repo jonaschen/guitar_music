@@ -1,0 +1,46 @@
+// Public smoke for the opt-in rhythm: fork, real compile, undo/redo, reload, play.
+import {chromium,expect} from '@playwright/test';
+import {readFile,writeFile} from 'node:fs/promises';
+const base=process.argv[2],output=process.argv[3];
+const auth=JSON.parse(await readFile(process.env.GUITARSCRIBE_WEB_ACCESS_FILE,'utf8'));
+const browser=await chromium.launch({executablePath:'/usr/bin/google-chrome',headless:true});
+const errors=[];
+try{
+ const context=await browser.newContext({httpCredentials:auth,extraHTTPHeaders:{'ngrok-skip-browser-warning':'1'},viewport:{width:390,height:844}});
+ const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
+ const originalRevision='968af037-f1ed-4441-b189-37036197d8aa';
+ const originalResponse=await context.request.get(base+'/backend/revisions/'+originalRevision);expect(originalResponse.status()).toBe(200);
+ const original=await originalResponse.json();
+ await page.goto(base+'/?revision='+originalRevision);
+ await expect(page.getByLabel('Bar 2',{exact:true})).toBeVisible({timeout:30000});
+ await page.getByText('練習與編輯',{exact:true}).click();
+ const savedResponse=page.waitForResponse(r=>r.url().endsWith('/revisions')&&r.request().method()==='POST');
+ await page.getByRole('button',{name:'每小節一下',exact:true}).click();
+ const saved=(await(await savedResponse).json()).revision_id;
+ const score=await(await context.request.get(base+'/backend/revisions/'+saved)).json();
+ expect(score.rhythm.pattern_id).toBe('observed-downbeats-v1');expect(score.chords).toEqual(original.chords);expect(score.beats).toEqual(original.beats);
+ const compile=await context.request.post(base+'/backend/scores/playback/manifest',{data:score});expect(compile.status()).toBe(200);
+ const manifest=await compile.json();
+ const expected=score.beats.filter(b=>b.beat===1&&b.time<score.song.duration_seconds).map(b=>b.time);
+ expect(manifest.events.filter(e=>e.track==='guitar').map(e=>e.start)).toEqual(expected);
+ const midi=await context.request.post(base+'/backend/scores/midi',{data:{...score,melody:[]}});expect(midi.status()).toBe(200);
+ expect((await midi.body()).subarray(0,4).toString()).toBe('MThd');
+ const undoneResponse=page.waitForResponse(r=>r.url().endsWith('/revisions')&&r.request().method()==='POST');
+ await page.getByRole('button',{name:'復原',exact:true}).click();
+ await expect(page.getByRole('button',{name:'每小節一下',exact:true})).toBeEnabled();
+ await undoneResponse;
+ const redoneResponse=page.waitForResponse(r=>r.url().endsWith('/revisions')&&r.request().method()==='POST');
+ await page.getByRole('button',{name:'重做',exact:true}).click();
+ await redoneResponse;await page.reload();
+ await page.getByText('練習與編輯',{exact:true}).click();
+ await expect(page.getByRole('button',{name:'已選：每小節一下',exact:true})).toBeDisabled();
+ await page.getByRole('button',{name:'播放',exact:true}).click();
+ await expect(page.getByRole('button',{name:'暫停',exact:true})).toBeVisible({timeout:90000});
+ await page.getByRole('button',{name:'暫停',exact:true}).click();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.screenshot({path:output+'/product-mobile.png',fullPage:true});
+ const unchanged=await(await context.request.get(base+'/backend/revisions/'+originalRevision)).json();expect(unchanged).toEqual(original);
+ expect(errors).toEqual([]);
+ const report={revision:saved,originalPreserved:true,downbeats:expected.length,strokes:expected.length,undoRedoReload:true,midi:true,mixedPlayback:true,errors};
+ await writeFile(output+'/public-product.json',JSON.stringify(report,null,2));console.log(report);
+}finally{await browser.close();}
