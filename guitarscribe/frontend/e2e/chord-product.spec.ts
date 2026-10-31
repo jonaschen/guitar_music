@@ -379,6 +379,34 @@ test('performance draft updates shared timing, autosaves, and restores with undo
   await expect.poll(()=>saved?.score?.chords[1].start).toBe(2.019);
 });
 
+test('bar strums use the saved score rhythm and can undo and redo without changing harmony',async({page})=>{
+  await setup(page);
+  let saved:any;
+  await page.route('**/revisions',r=>{saved=r.request().postDataJSON();return r.fulfill({json:{revision_id:'bar-strums'}})});
+  await page.getByText('練習與編輯',{exact:true}).click();
+  await page.getByRole('button',{name:'每小節一下',exact:true}).click();
+  await expect.poll(()=>saved?.score?.rhythm?.pattern_id).toBe('observed-downbeats-v1');
+  expect(saved.score.chords).toEqual(score.chords);
+  expect(saved.score.beats).toEqual(score.beats);
+  expect(saved.score.melody).toHaveLength(1);
+  await expect(page.getByRole('button',{name:'已選：每小節一下',exact:true})).toBeDisabled();
+  await page.getByRole('button',{name:'復原',exact:true}).click();
+  await expect.poll(()=>saved?.score?.rhythm?.pattern_id).toBe(score.rhythm.pattern_id);
+  await page.getByRole('button',{name:'重做',exact:true}).click();
+  await expect.poll(()=>saved?.score?.rhythm?.pattern_id).toBe('observed-downbeats-v1');
+  let exported:any;
+  await page.route('**/scores/midi',r=>{exported=r.request().postDataJSON();return r.fulfill({body:'midi',contentType:'audio/midi'});});
+  await page.getByText('下載與備份',{exact:true}).click();
+  await page.getByRole('button',{name:'下載伴奏 MIDI',exact:true}).click();
+  await expect.poll(()=>exported?.rhythm?.pattern_id).toBe('observed-downbeats-v1');
+});
+
+test('unmetered timeline cannot promise a bar-based strum',async({page})=>{
+  await setup(page,timelineScore);
+  await page.getByText('練習與編輯',{exact:true}).click();
+  await expect(page.getByRole('button',{name:'每小節一下',exact:true})).toHaveCount(0);
+});
+
 test('a delayed performance draft cannot overwrite a newer manual chord edit',async({page})=>{
   await setup(page,timelineScore);
   let release:()=>void=()=>{};const ready=new Promise<void>(resolve=>{release=resolve;});

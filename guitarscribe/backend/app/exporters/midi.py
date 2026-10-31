@@ -44,7 +44,10 @@ class PlaybackManifest(BaseModel):
 
 
 def compile_playback_manifest(score: SongScore) -> PlaybackManifest:
+    from ..services.downbeat_rhythm import PATTERN_ID, downbeat_events
     if score.analysis.timing_status == 'unmetered':
+        if score.rhythm.pattern_id == PATTERN_ID:
+            raise ValueError('拍格尚未確認，無法按小節刷奏。')
         from ..services.chord_inspection import chord_inspection_events
         events, _ = chord_inspection_events(score.chords, score.song.duration_seconds,
             tuning=score.guitar.tuning, capo=score.analysis.capo, max_fret=score.guitar.max_fret)
@@ -72,7 +75,9 @@ def compile_playback_manifest(score: SongScore) -> PlaybackManifest:
         ))
 
     pattern = score.rhythm.display
-    if pattern:
+    if score.rhythm.pattern_id == PATTERN_ID:
+        events.extend(downbeat_events(score))
+    elif pattern:
         slots = list(_rhythm_slots(score))
         spans = []
         for chord in sorted(score.chords, key=lambda item: item.start):

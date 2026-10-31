@@ -778,11 +778,18 @@ async def export_chordpro(score: SongScore) -> str:
 async def export_midi_score(score: SongScore) -> Response:
     if score.analysis.timing_status == 'unmetered':
         raise HTTPException(422, '拍格尚未確認，請下載和弦時間表或工作檔。')
-    return Response(content=export_midi(score), media_type="audio/midi", headers={"Content-Disposition": "attachment; filename=\"guitarscribe-melody.mid\""})
+    try:
+        content = export_midi(score)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    return Response(content=content, media_type="audio/midi", headers={"Content-Disposition": "attachment; filename=\"guitarscribe-melody.mid\""})
 
 @app.post("/scores/playback/manifest", response_model=PlaybackManifest)
 async def compile_score_playback(score: SongScore) -> PlaybackManifest:
-    return compile_playback_manifest(score)
+    try:
+        return compile_playback_manifest(score)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
 
 @app.post("/scores/musicxml", response_class=PlainTextResponse)
 async def export_musicxml_score(score: SongScore) -> str:
