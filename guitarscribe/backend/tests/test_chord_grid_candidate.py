@@ -78,3 +78,24 @@ def test_saved_candidate_reload_preserves_playback_midi_and_original(tmp_path):
     assert restored.melody == original.melody
     assert compile_playback_manifest(restored) == expected_manifest
     assert export_midi(restored) == expected_midi
+
+
+def test_scope_preserves_outside_harmony_and_shared_boundary_at_range_edge():
+    s=source();s.chords=[ChordEvent(id=str(i),start=a,end=b,symbol='C' if i%2==0 else 'G')
+        for i,(a,b) in enumerate([(0,.519),(.519,1.019),(1.019,2.019),(2.019,3.019),(3.019,4)])]
+    c,r=build_chord_grid_candidate(s,scope=(1.019,3))
+    assert [(x.start,x.end) for x in c.chords]==[(0,.519),(.519,1.019),(1.019,2),(2,3.019),(3.019,4)]
+    assert r['scope']==[1.019,3]
+    assert c.beats==s.beats and c.melody==s.melody
+    assert c.provenance.parameters['chord_grid_scope_end']==3
+
+
+def test_nearest_grid_outside_scope_is_not_replaced_with_different_grid_point():
+    s=source();s.chords[0].end=s.chords[1].start=2.019
+    c,_=build_chord_grid_candidate(s,scope=(2.01,3.9))
+    assert c.chords==s.chords  # Nearest is 2.0, outside scope: do not force 2.3.
+
+
+@pytest.mark.parametrize('scope',[(2,1),(-1,3),(0,5),(0,float('nan'))])
+def test_invalid_scope(scope):
+    with pytest.raises(ValueError,match='scope'):build_chord_grid_candidate(source(),scope=scope)

@@ -1,0 +1,22 @@
+<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GuitarScribe · 固定拍子，聽換和弦</title>
+<style>body{margin:0;background:#11161c;color:#edf0f5;font:16px/1.6 system-ui,sans-serif}main{max-width:720px;margin:auto;padding:24px 16px}h1{font-size:24px}h2{font-size:20px}p,li{color:#bac3ce}section{border-top:1px solid #46505c;margin-top:24px;padding-top:16px}audio{width:100%;display:block;margin:8px 0 24px}summary{cursor:pointer;padding:8px 0}a{color:#f2a550}.switches{display:flex;gap:16px;flex-wrap:wrap}button{font:inherit;color:#edf0f5;background:#252e39;border:1px solid #596574;padding:8px 16px;border-radius:4px;cursor:pointer}button[aria-pressed=true]{border-color:#f2a550}</style>
+<main><h1>固定拍子，聽換和弦</h1><p>上次這段拍子已通過，這次不用再確認拍子。兩版都是原曲 24–64 秒、每小節一下，拍子和刷奏位置完全相同。</p>
+<section><h2>A · 上次版本</h2><audio id="a" controls preload="metadata" src="a-mix.wav" aria-label="A 原曲加吉他"></audio><h2>B · 調整換和弦時間</h2><audio id="b" controls preload="metadata" src="b-mix.wav" aria-label="B 原曲加吉他"></audio>
+<p>和弦名稱保留，只整理這段的切換時間。21 次刷奏中，有 6 次因此彈到不同的和弦。音量與音色相同。</p>
+<div class="switches"><button type="button" id="switch-a" aria-pressed="false">同位置聽 A</button><button type="button" id="switch-b" aria-pressed="false">同位置聽 B</button></div><p id="status" role="status">可各聽一次，或在播放中按上面的按鈕切換比較。</p>
+<details><summary>需要時：原曲或單獨吉他</summary><p>原曲</p><audio controls preload="metadata" src="source.wav" aria-label="原曲"></audio><p>A 吉他</p><audio controls preload="metadata" src="a-guitar.wav" aria-label="A 吉他"></audio><p>B 吉他</p><audio controls preload="metadata" src="b-guitar.wav" aria-label="B 吉他"></audio></details></section>
+<section><h2>只需回覆一項</h2><p>哪一版的和弦比較貼合原曲？<br><strong>A／B／差不多／兩個都不對／無法判斷</strong></p><p>若只有某處怪，補一個大約播放器秒數即可。不用重新分析、修改樂譜或再測拍子。播放器 0 秒＝原曲 24 秒。</p><p>B 尚未取代你的工作譜，也沒有刪除短和弦。本次只判斷切換時間是否有幫助，不能據此確認每個和弦名稱或整首都正確。</p></section><p><a href="/">回到歌曲首頁</a></p></main>
+<script>
+let current=null,request=0;
+const players=[...document.querySelectorAll('audio')],status=document.querySelector('#status');
+for(const player of players){
+ player.addEventListener('play',()=>{if(player.paused)return;for(const other of players)if(other!==player)other.pause();current=player;for(const key of ['a','b'])document.querySelector('#switch-'+key).setAttribute('aria-pressed',String(player.id===key));status.textContent=player.id?'正在播放 '+player.id.toUpperCase()+'，可切換到另一版比較。':'正在播放，可切換到 A 或 B 比較。';});
+ player.addEventListener('pause',()=>{if(current===player&&player.paused)status.textContent='已暫停，可從同位置切換比較。';});
+}
+for(const key of ['a','b'])document.querySelector('#switch-'+key).addEventListener('click',async()=>{
+ const attempt=++request,target=document.querySelector('#'+key),position=current?.currentTime??0;
+ for(const player of players)player.pause();
+ try{target.currentTime=position>=40?0:position;await target.play();}
+ catch(error){if(attempt===request&&error.name!=='AbortError')status.textContent='目前無法播放，請點選音訊播放器的播放鍵再試一次。';}
+});
+</script></html>

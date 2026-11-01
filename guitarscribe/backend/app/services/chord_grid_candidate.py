@@ -8,10 +8,13 @@ from bisect import bisect_left
 from ..models.score import SongScore
 
 
-def build_chord_grid_candidate(score: SongScore):
+def build_chord_grid_candidate(score: SongScore, *, scope: tuple[float, float] | None = None):
     duration=score.song.duration_seconds
     if score.analysis.time_signature!='4/4':raise ValueError('This preview supports a quarter-note beat grid in 4/4 only')
     if not math.isfinite(duration) or duration<=0:raise ValueError('Invalid duration')
+    if scope is not None and (len(scope)!=2 or not all(math.isfinite(t) for t in scope)
+                              or not 0<=scope[0]<scope[1]<=duration):
+        raise ValueError('Invalid chord timing scope')
     if len(score.beats)<2 or any(not math.isfinite(b.time) or b.time<0 for b in score.beats):
         raise ValueError('Requires finite beat grid')
     if any(a.time>=b.time for a,b in zip(score.beats,score.beats[1:])):
@@ -27,8 +30,11 @@ def build_chord_grid_candidate(score: SongScore):
     def nearest(t):
         # Preserve cropped edges and uncovered intro/outro, without extrapolation.
         if t==0 or t==duration or not grid[0]<=t<=grid[-1]:return t
+        if scope is not None and not scope[0]<t<scope[1]:return t
         i=bisect_left(grid,t)
-        return min(grid[max(0,i-1):min(len(grid),i+1)],key=lambda x:(abs(x-t),x))
+        target=min(grid[max(0,i-1):min(len(grid),i+1)],key=lambda x:(abs(x-t),x))
+        # Never let an interior boundary cross the reviewed range's edges.
+        return t if scope is not None and not scope[0]<=target<=scope[1] else target
     edges={0.0,duration}|{t for c in score.chords for t in [c.start,c.end]}
     proposed={t:nearest(t) for t in edges}
     protected={t for c in score.chords if c.edited for t in [c.start,c.end]}
@@ -53,8 +59,10 @@ def build_chord_grid_candidate(score: SongScore):
             changes.append(dict(chord_id=old.id,original=[old.start,old.end],candidate=[new.start,new.end]))
     assert all(a.end<=b.start for a,b in zip(candidate.chords,candidate.chords[1:]))
     candidate.provenance.parameters['chord_grid_candidate']='nearest-eighth-v1'
+    if scope is not None:
+        candidate.provenance.parameters.update(chord_grid_scope_start=scope[0],chord_grid_scope_end=scope[1])
     candidate.analysis.warnings.append('Experimental eighth-note chord timing candidate on the existing beat grid. Original detection retained separately; short chords/rests and manual boundaries may remain unquantized. Melody is unchanged.')
-    return candidate,dict(policy='nearest-eighth-v1',changes=changes,
+    return candidate,dict(policy='nearest-eighth-v1',scope=list(scope) if scope is not None else None,changes=changes,
         protected=[dict(time=t,reason=reasons[t]) for t in sorted(reasons)],
         unquantized_edges=sorted(t for t in set(proposed.values()) if t not in grid and t not in {0,duration}),
         applied=False,saved=False,melody_changed=False)
