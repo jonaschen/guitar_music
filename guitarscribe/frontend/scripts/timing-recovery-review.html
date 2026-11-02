@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GuitarScribe · 小節拍格檢查</title>
+<style>
+body{font:17px/1.7 system-ui,sans-serif;background:#121820;color:#edf1f5;max-width:720px;margin:auto;padding:24px}h1{font-size:25px}h2{font-size:20px}p{color:#c4ccd5}section{padding:24px 0;border-top:1px solid #45505c}audio{width:100%;margin:8px 0}summary{cursor:pointer}a{color:#ffca78}.bars{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin-top:16px}.bar{border-right:1px solid #65717d;border-bottom:1px solid #45505c;padding:8px;overflow-wrap:anywhere;font-size:15px}.bar.active{background:#4f3c22}.bar small{display:block;color:#c4ccd5}button{font:inherit;padding:8px 16px;background:#ffc06b;color:#121820;border:0;border-radius:4px;cursor:pointer}@media(max-width:460px){body{padding:16px}.bars{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+<h1>小節拍格檢查</h1>
+<p>只聽兩段。確認答答聲能否跟拍，以及較高的聲音是否像每小節第一拍；若感覺快一倍、慢一半或無法判斷，也請直接回報。</p>
+<p>這是獨立候選，尚未替換你的工作譜。這次不評和弦名稱；展開的小節譜只供對照。</p>
+<main id="content">讀取中…</main>
+<script>
+const content=document.querySelector('#content');
+fetch('packet.json').then(r=>{if(!r.ok)throw Error();return r.json()}).then(rows=>{
+ content.textContent='';
+ rows.forEach((row,i)=>{
+  const section=document.createElement('section'),h=document.createElement('h2');h.textContent=`${i+1}. ${row.title}`;section.append(h);
+  const range=document.createElement('p');range.textContent=`原曲 ${row.start}–${row.end} 秒，約 ${Math.round(row.duration_seconds)} 秒。`;section.append(range);
+  const label=document.createElement('p');label.textContent='原曲＋拍子';section.append(label);
+  const audio=document.createElement('audio');audio.controls=true;audio.preload='metadata';audio.src=`${i+1}/click.wav`;audio.setAttribute('aria-label',`${row.title}：原曲加拍子`);section.append(audio);
+  const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='查看候選小節譜／單聽原曲';details.append(summary);
+  const original=document.createElement('audio');original.controls=true;original.preload='metadata';original.src=`${i+1}/source.wav`;original.setAttribute('aria-label',`${row.title}：原曲`);details.append(original);
+  const bars=document.createElement('div');bars.className='bars';
+  row.bars.forEach((b,n)=>{const cell=document.createElement('div');cell.className='bar';const time=document.createElement('small');time.textContent=`${Math.max(0,b.start).toFixed(1)} 秒`;cell.append(time,document.createTextNode(b.chords||'—'));bars.append(cell)});details.append(bars);section.append(details);content.append(section);
+  audio.addEventListener('timeupdate',()=>[...bars.children].forEach((cell,n)=>cell.classList.toggle('active',row.bars[n].start<=audio.currentTime&&audio.currentTime<row.bars[n].end)));
+ });
+ document.querySelectorAll('audio').forEach(a=>a.addEventListener('play',()=>document.querySelectorAll('audio').forEach(b=>{if(a!==b)b.pause()})));
+}).catch(()=>content.textContent='暫時無法讀取，請重新整理頁面。');
+</script></html>

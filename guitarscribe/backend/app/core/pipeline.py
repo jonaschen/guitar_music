@@ -119,6 +119,10 @@ class AnalysisPipeline:
                 (Path(options["_artifact_directory"]) / "timing-analysis.json").write_text(
                     beats.model_dump_json(indent=2) + "\n"
                 )
+            recovery = getattr(self.beat_analyzer, 'recovery_report', None)
+            if recovery is not None and options.get('_artifact_directory'):
+                (Path(options['_artifact_directory']) / 'timing-recovery.json').write_text(
+                    json.dumps(recovery, ensure_ascii=False, allow_nan=False, indent=2) + '\n')
         
         await report("chord_analysis")
         if timing_result is not None and isinstance(self.chord_analyzer, ChordCandidateAnalyzer):
@@ -303,7 +307,7 @@ def create_pipeline(settings: Settings) -> AnalysisPipeline:
     preprocessor = FFmpegPreprocessor(ffmpeg_binary=settings.ffmpeg_binary)
     if settings.beat_engine == BeatEngine.BEAT_THIS_SMALL:
         from ..analyzers.beats.beat_this_adapter import BeatThisBeatAnalyzer
-        beat_analyzer = BeatThisBeatAnalyzer()
+        beat_analyzer = BeatThisBeatAnalyzer(recovery_enabled=settings.beat_recovery_enabled)
     else:
         beat_analyzer = LibrosaBeatAnalyzer()
     

@@ -22,6 +22,7 @@ class Settings(BaseModel):
     job_ttl_seconds: int = 24 * 60 * 60
     work_dir: Path = Path("/tmp/guitarscribe")
     beat_engine: BeatEngine = BeatEngine.LIBROSA
+    beat_recovery_enabled: bool = False
     chord_engine: ChordEngine = ChordEngine.AUTO
     chord_change_threshold: float = Field(default=0.12, ge=0, le=2)
     chord_no_chord_threshold: float = Field(default=0.18, ge=0, le=1)
@@ -52,6 +53,7 @@ class Settings(BaseModel):
             job_ttl_seconds=int(os.environ.get("GUITARSCRIBE_JOB_TTL_SECONDS", str(24 * 60 * 60))),
             work_dir=Path(os.environ.get("GUITARSCRIBE_WORK_DIR", "/tmp/guitarscribe")),
             beat_engine=BeatEngine(os.environ.get("GUITARSCRIBE_BEAT_ENGINE", "librosa")),
+            beat_recovery_enabled=os.environ.get("GUITARSCRIBE_BEAT_RECOVERY_ENABLED", "false").lower() == "true",
             chord_engine=ChordEngine(os.environ.get("GUITARSCRIBE_CHORD_ENGINE", "auto")),
             chord_change_threshold=float(os.environ.get("GUITARSCRIBE_CHORD_CHANGE_THRESHOLD", "0.12")),
             chord_no_chord_threshold=float(os.environ.get("GUITARSCRIBE_CHORD_NO_CHORD_THRESHOLD", "0.18")),
