@@ -251,6 +251,24 @@ class AnalysisJobService:
                 progress_callback=report,
             )
             score.song.source_start_seconds = job.skip_seconds
+            # Keep source identity even if a downloaded WAV was analyzed locally.
+            score.song.source_type = job.source_type.value
+            score.song.source_url = job.source_url
+            title_path = directory / 'source-title.txt'
+            if job.source_type == SourceType.YOUTUBE and title_path.is_file():
+                try:
+                    with title_path.open(encoding='utf-8') as title_file:
+                        title = ' '.join(title_file.read(2048).split())[:300]
+                    if title:
+                        score.song.title = title
+                except (OSError, UnicodeError):
+                    logger.warning('source_title_unavailable job_id=%s', job_id)
+            # A diagnostic failure must not discard a completed musical analysis.
+            try:
+                from .analysis_health import write_analysis_health
+                await asyncio.to_thread(write_analysis_health, score, directory)
+            except Exception as diagnostic_error:
+                logger.warning('analysis_health_failed job_id=%s error=%s', job_id, diagnostic_error)
             job = self.get(job_id)
             if job.status == JobStatus.CANCELLED:
                 return

@@ -35,7 +35,7 @@ export function ChordTimelinePage({score,sourceAvailable,playing,preparing,playh
     </div>
     <p className="playback-status" role="status">{preparing?'正在準備聲音…':playing?'播放中':'已暫停'} · {stamp(playhead)} / {stamp(duration)}</p>
     {unavailable?<p role="status">{!sourceAvailable?'原曲暫時無法使用，請選「吉他」播放。':'已移調，請選「吉他」，或回到原調合奏。'}</p>:null}
-    <p className="sheet-hint">時間表（非小節譜） · 每列是一段和弦，長短請看時間；目前每段彈一次。</p>
+    <p className="sheet-hint">這首歌的小節位置尚未確認，先顯示和弦時間表。每列是一段和弦，不是一小節；目前每段彈一次。</p>
     <details className="song-options"><summary>練習與編輯</summary>
       <div className="secondary-controls">
         <label><input type="checkbox" checked={follow} onChange={e=>setFollow(e.target.checked)}/>跟隨播放位置</label>

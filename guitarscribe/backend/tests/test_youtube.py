@@ -47,6 +47,8 @@ async def test_youtube_download_rejects_successful_process_without_wav(tmp_path,
 async def test_shared_video_urls_reach_downloader_with_js_runtime(url, tmp_path, monkeypatch):
     async def create_process(*command, **options):
         assert command[command.index('--js-runtimes') + 1] == 'node'
+        index=command.index('--print-to-file')
+        assert command[index+1:index+3]==('after_move:%(title)s',str(tmp_path/'source-title.txt'))
         assert '--no-config' in command and '--no-playlist' in command
         assert command[-2:] == ('--', url)
         (tmp_path / 'input.wav').write_bytes(b'audio')

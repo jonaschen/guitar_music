@@ -40,6 +40,7 @@ class YouTubeAudioDownloader:
             self.binary, "--no-config", "--no-playlist", "--restrict-filenames",
             "--js-runtimes", self.js_runtime,
             "--max-filesize", max_size, "--extract-audio", "--audio-format", "wav",
+            "--print-to-file", "after_move:%(title)s", str(destination / "source-title.txt"),
             "--output", output_template, "--", url,
         ]
         logger.info("youtube_audio_download_started host=%s", urlparse(url).hostname)

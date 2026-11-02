@@ -281,6 +281,7 @@ const timelineScore={...score,analysis:{...score.analysis,timing_status:'unmeter
 test('unmetered sheet edits seconds, adjacent boundary, undo, delete and autosave without fake bars',async({page})=>{
   await setup(page,timelineScore);
   await expect(page.getByLabel('和弦時間表',{exact:true})).toBeVisible();
+  await expect(page.getByText('這首歌的小節位置尚未確認，先顯示和弦時間表。每列是一段和弦，不是一小節；目前每段彈一次。',{exact:true})).toBeVisible();
   await expect(page.locator('.notation-measure')).toHaveCount(0);
   await page.getByText('下載與備份',{exact:true}).click();
   await expect(page.getByRole('button',{name:'下載伴奏 MIDI',exact:true})).toBeHidden();
@@ -310,7 +311,7 @@ for(const width of [320,390,1440])test(`unmetered timeline has no overflow at ${
   await page.setViewportSize({width,height:844});await setup(page,timelineScore);
   await expect(page.getByLabel('歌曲調性')).toBeVisible();await expect(page.getByLabel('歌曲 Capo')).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
-  await expect(page.getByText('時間表（非小節譜）',{exact:false})).toBeVisible();
+  await expect(page.getByText('這首歌的小節位置尚未確認',{exact:false})).toBeVisible();
   const rowBounds=await page.getByLabel('和弦時間表',{exact:true}).getByRole('button').evaluateAll(els=>els.map(el=>{const r=el.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width}}));
   expect(rowBounds[1].y).toBeGreaterThan(rowBounds[0].y);
   expect(rowBounds[1].x).toBe(rowBounds[0].x);

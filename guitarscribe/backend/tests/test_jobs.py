@@ -41,6 +41,33 @@ class WaitingPipeline:
         raise AssertionError("Cancelled task should not finish")
 
 
+@pytest.mark.asyncio
+@pytest.mark.parametrize('title',['測試歌曲 · 現場版','',None])
+async def test_youtube_identity_and_optional_title_survive_local_audio_processing(tmp_path,title):
+    class Downloader:
+        async def download(self,url,directory):
+            path=directory/'input.wav';path.write_bytes(b'audio')
+            if title is not None:(directory/'source-title.txt').write_text(title)
+            return path
+    service=AnalysisJobService(JobStore(tmp_path/'jobs'),StubPipeline,youtube_downloader=Downloader())
+    url='https://youtu.be/test-song'
+    job=await service.submit_youtube(url,'off','full');await service.tasks[job.id]
+    result=service.get(job.id)
+    assert result.status==JobStatus.COMPLETED
+    assert result.score.song.source_type=='youtube' and result.score.song.source_url==url
+    assert result.score.song.title==(title or 'input')
+    assert (service.store.job_dir(job.id)/'analysis-health.json').is_file()
+
+
+@pytest.mark.asyncio
+async def test_diagnostic_failure_does_not_lose_completed_score(tmp_path,monkeypatch):
+    def fail(*args):raise OSError('diagnostic unavailable')
+    monkeypatch.setattr('app.services.analysis_health.write_analysis_health',fail)
+    service=AnalysisJobService(JobStore(tmp_path/'jobs'),StubPipeline)
+    job=await service.submit('test.wav',b'audio','off','full');await service.tasks[job.id]
+    assert service.get(job.id).status==JobStatus.COMPLETED and service.get(job.id).score is not None
+
+
 class AudioDurationPipeline(StubPipeline):
     def __init__(self):
         self.analyzed_path = None
@@ -62,6 +89,9 @@ def wav_bytes(duration_seconds: float) -> bytes:
 
 
 async def wait_for_terminal(service: AnalysisJobService, job_id: str):
+    task=service.tasks.get(job_id)
+    if task is not None:
+        await asyncio.wait_for(asyncio.shield(task),timeout=5)
     for _ in range(50):
         job = service.get(job_id)
         if job.status.value in {"completed", "failed", "cancelled"}:
@@ -85,6 +115,7 @@ async def test_job_service_persists_completed_score_and_progress(tmp_path):
     assert completed.artifacts == ["source"]
     assert service.get(created.id).score is not None
     assert (tmp_path / "jobs" / "jobs.sqlite3").exists()
+    assert (tmp_path / 'jobs' / created.id / 'analysis-health.json').is_file()
 
 
 @pytest.mark.parametrize("value", [0, -1, 600.001, float("nan"), float("inf")])
