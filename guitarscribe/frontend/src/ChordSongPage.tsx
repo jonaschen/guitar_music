@@ -5,13 +5,13 @@ import {ChordTimelinePage} from './ChordTimelinePage';
 import {measureLayout} from './measureLayout';
 
 type Props=ComponentProps<typeof AccompanimentReview> & {
-  keyControls?:ReactNode; secondaryActions?:ReactNode; editPanel?:ReactNode;
+  keyControls?:ReactNode; secondaryActions?:ReactNode; editPanel?:ReactNode; fingeringGuide?:ReactNode;
   speed?:number; onSpeed?:(rate:number)=>void;
 };
 export function ChordSongPage(props:Props){
   return props.score.analysis.timing_status==='unmetered' ? <ChordTimelinePage {...props}/> : <MeteredChordSongPage {...props}/>;
 }
-function MeteredChordSongPage({score,sourceAvailable,playing,preparing,playhead,guitarVolume,onVolume,onPlay,onStop,onTools,onEditChord,keyControls,secondaryActions,editPanel,speed=1,onSpeed}:Props){
+function MeteredChordSongPage({score,sourceAvailable,playing,preparing,playhead,guitarVolume,onVolume,onPlay,onStop,onTools,onEditChord,keyControls,secondaryActions,editPanel,fingeringGuide,speed=1,onSpeed}:Props){
   const bars=useMemo(()=>{
     const raw=notationBars(score);
     // A pre-beat sliver is part of the cropped opening, not another measure.
@@ -36,6 +36,7 @@ function MeteredChordSongPage({score,sourceAvailable,playing,preparing,playhead,
     </div>
     <p className="playback-status" role="status">{preparing?'正在準備聲音…':playing?'播放中':'已暫停'} · {playhead.toFixed(1)} / {score.song.duration_seconds.toFixed(1)} 秒</p>
     {unavailable?<p role="status">{!sourceAvailable?'原曲暫時無法使用，請選「吉他」播放。':'已移調，與原曲音高不同。請選「吉他」，或回到原調合奏。'}</p>:null}
+    {fingeringGuide}
     <details className="song-options"><summary>練習與編輯</summary>
       <div className="secondary-controls">
         <label><input type="checkbox" checked={loop} onChange={e=>change(()=>setLoop(e.target.checked))}/>循環選取小節</label>

@@ -9,6 +9,7 @@ import { ChordEntryAudit } from "./ChordEntryAudit";
 import { ChordGridCandidate } from "./ChordGridCandidate";
 import type { AccidentalPreference, AnalysisJob, PlaybackManifest, PlaybackTrack, SongScore } from "./types";
 import { ChordDiagram } from "./ChordDiagram";
+import { ChordFingerings } from "./ChordFingerings";
 import { createMediaTransportClock } from "./transportClock";
 import { DiagnosticTimeline } from "./DiagnosticTimeline";
 import { guitarEnvelope } from "./guitarEnvelope";
@@ -2190,6 +2191,7 @@ export function App() {
                   onStop={() => { audioRef.current?.pause(); stopSynth(false); }} onTools={openPerformanceControls}
                   onPlay={(mode, start, end, loop, from) => void toggleSynthPlayback({start, end, loop, from, reviewMode: mode})}
                   editPanel={compactChordEditor} speed={playbackRate} onSpeed={setSpeed}
+                  fingeringGuide={!MELODY_ENABLED?<ChordFingerings score={score} apiBase={API_BASE}/>:null}
                   keyControls={!MELODY_ENABLED ? <><label>調性 <select aria-label="歌曲調性" value={score.key_context.target.key} disabled={isRetuningScore} onChange={e=>void retuneScore(e.target.value)}>{PITCH_TO_FLAT_KEY.map(key=><option key={key} value={key}>{key}</option>)}{!PITCH_TO_FLAT_KEY.includes(score.key_context.target.key)?<option value={score.key_context.target.key}>{score.key_context.target.key}</option>:null}</select></label><label>Capo <select aria-label="歌曲 Capo" value={capo} disabled={isRetuningScore} onChange={e=>void retuneScore(score.key_context.target.key,Number(e.target.value))}>{Array.from({length:9},(_,n)=><option key={n} value={n}>{n}</option>)}</select></label></>:null}
                   secondaryActions={!MELODY_ENABLED ? <><PerformanceDraftControl score={score} apiBase={API_BASE} onCommit={(base,next)=>{if(scoreRef.current!==base)return false;audioRef.current?.pause();stopSynth(false);return recordScoreChange(next);}}/><DownbeatRhythmControl score={score} onCommit={(base,next)=>{if(scoreRef.current!==base)return false;audioRef.current?.pause();stopSynth(false);setChordPerformance('original');return recordScoreChange(next);}}/><button type="button" disabled={!undoHistory.length} onClick={undoScoreChange}>復原</button><button type="button" disabled={!redoHistory.length} onClick={redoScoreChange}>重做</button></>:null}
                   onEditChord={(id, scope) => { const chord=score.chords.find(c=>c.id===id); if (!chord) return; selectChord(chord, Math.max(chord.start, scope?.start ?? chord.start)); setChordEditScope(scope ?? null); setCompactEditOpen(true); window.requestAnimationFrame(()=>document.querySelector<HTMLInputElement>("#compact-chord-name")?.focus()); }} />

@@ -5,7 +5,7 @@ import './chordTimeline.css';
 
 const stamp=(seconds:number)=>`${Math.floor(seconds/60)}:${(seconds%60).toFixed(1).padStart(4,'0')}`;
 /** A seconds-based chord sheet. Never derives measures from rejected timing. */
-export function ChordTimelinePage({score,sourceAvailable,playing,preparing,playhead,guitarVolume,onVolume,onPlay,onStop,onEditChord,keyControls,secondaryActions,editPanel,speed=1,onSpeed}:ComponentProps<typeof ChordSongPage>){
+export function ChordTimelinePage({score,sourceAvailable,playing,preparing,playhead,guitarVolume,onVolume,onPlay,onStop,onEditChord,keyControls,secondaryActions,editPanel,fingeringGuide,speed=1,onSpeed}:ComponentProps<typeof ChordSongPage>){
   const [mode,setMode]=useState<ReviewMode>(score.song.source_type==='example'?'guitar':'mix'),[editing,setEditing]=useState(false);
   const [loop,setLoop]=useState(false),[start,setStart]=useState('0'),[end,setEnd]=useState(String(score.song.duration_seconds));
   const [follow,setFollow]=useState(true);
@@ -36,6 +36,7 @@ export function ChordTimelinePage({score,sourceAvailable,playing,preparing,playh
     <p className="playback-status" role="status">{preparing?'正在準備聲音…':playing?'播放中':'已暫停'} · {stamp(playhead)} / {stamp(duration)}</p>
     {unavailable?<p role="status">{!sourceAvailable?'原曲暫時無法使用，請選「吉他」播放。':'已移調，請選「吉他」，或回到原調合奏。'}</p>:null}
     <p className="sheet-hint">這首歌的小節位置尚未確認，先顯示和弦時間表。每列是一段和弦，不是一小節；目前每段彈一次。</p>
+    {fingeringGuide}
     <details className="song-options"><summary>練習與編輯</summary>
       <div className="secondary-controls">
         <label><input type="checkbox" checked={follow} onChange={e=>setFollow(e.target.checked)}/>跟隨播放位置</label>

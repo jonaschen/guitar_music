@@ -14,6 +14,44 @@ const score = {
   provenance:{beat_engine:'test',chord_engine:'test',melody_engine:'test',parameters:{}},
 };
 
+const guideShape=(symbol:string,frets:Array<number|null>,capo=0)=>({id:symbol+'-guide',symbol,shape_symbol:symbol,frets,fingers:[null,3,2,null,1,null],base_fret:1,capo,difficulty:1,tags:[]});
+for(const unmetered of [false,true])test(`fingering guide is readable without editing (${unmetered?'timeline':'bars'})`,async({page})=>{
+  const working={...score,analysis:{...score.analysis,timing_status:unmetered?'unmetered':'metered',bpm:unmetered?0:120,time_signature:unmetered?'':'4/4'},beats:unmetered?[]:score.beats,
+    chords:[{...score.chords[0],end:2},{...score.chords[0],id:'c2',start:2,end:4},{...score.chords[0],id:'g',symbol:'G',start:4,end:8}]};
+  await page.route('**/chord-voicings?*',r=>{const symbol=new URL(r.request().url()).searchParams.get('symbol')!;return r.fulfill({json:[guideShape(symbol,symbol==='C'?[null,3,2,0,1,0]:[3,2,0,0,0,3])]});});
+  await setup(page,working);let writes=0;await page.route('**/revisions',r=>{writes++;return r.fulfill({json:{revision_id:'unexpected'}})});
+  const guide=page.locator('.chord-fingerings');await expect(guide.getByLabel('查看和弦按法')).toHaveCount(0);
+  await guide.getByText('和弦按法',{exact:true}).click();await expect(guide.getByRole('img',{name:'C chord diagram'})).toBeVisible();
+  await expect(guide.getByLabel('查看和弦按法').locator('option')).toHaveCount(2);
+  await guide.getByLabel('查看和弦按法').selectOption({label:'G'});await expect(guide.getByRole('img',{name:'G chord diagram'})).toBeVisible();
+  await expect(guide.getByLabel('和弦品格')).toHaveText('品格：3 · 2 · 0 · 0 · 0 · 3');
+  for(const width of [320,390,1440]){await page.setViewportSize({width,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
+  await page.waitForTimeout(1400);expect(writes).toBe(0);await expect(page.getByRole('heading',{name:/修改/})).toHaveCount(0);
+});
+
+test('fingering guide retains the selected stored shape and explains capo-relative frets',async({page})=>{
+  const open=guideShape('C',[null,3,2,0,1,0],2),chosen={...guideShape('C',[8,10,10,9,8,8],2),id:'chosen',base_fret:8};
+  await setup(page,{...score,analysis:{...score.analysis,capo:2},chords:[{...score.chords[0],available_voicings:[open,chosen],voicing_id:'chosen'}]});
+  const guide=page.locator('.chord-fingerings');await guide.getByText('和弦按法',{exact:true}).click();
+  await expect(guide.getByLabel('和弦品格')).toHaveText('品格：8 · 10 · 10 · 9 · 8 · 8');
+  await expect(guide).toContainText('Capo 第 2 品；圖中品格從移調夾起算。');
+});
+
+test('late fingering lookup cannot replace a newly selected chord',async({page})=>{
+  let release!:()=>void;const hold=new Promise<void>(resolve=>{release=resolve});
+  await page.route('**/chord-voicings?*',async r=>{const symbol=new URL(r.request().url()).searchParams.get('symbol')!;if(symbol==='C')await hold;await r.fulfill({json:[guideShape(symbol,[3,2,0,0,0,3])]}).catch(()=>{});});
+  await setup(page,{...score,chords:[{...score.chords[0],end:4},{...score.chords[0],id:'g',symbol:'G',start:4}]});
+  const guide=page.locator('.chord-fingerings');await guide.getByText('和弦按法',{exact:true}).click();
+  await guide.getByLabel('查看和弦按法').selectOption({label:'G'});await expect(guide.getByRole('img',{name:'G chord diagram'})).toBeVisible();release();
+  await expect(guide.getByRole('img',{name:'C chord diagram'})).toHaveCount(0);
+});
+
+test('an incomplete shape is not presented as a full chord fingering',async({page})=>{
+  await page.route('**/chord-voicings?*',r=>r.fulfill({json:[{...guideShape('C',[null,3,null,null,null,null]),tags:['incomplete']}]}));
+  await setup(page);const guide=page.locator('.chord-fingerings');await guide.getByText('和弦按法',{exact:true}).click();
+  await expect(guide.getByRole('status')).toHaveText('目前沒有這個和弦的完整按法。');await expect(guide.getByRole('img')).toHaveCount(0);
+});
+
 test('cropped pickup has one opening cell; editing does not invent or renumber full bars',async({page})=>{
   const working={...score,beats:[{time:.22,beat:4,measure:0,confidence:0},
     ...Array.from({length:15},(_,i)=>({time:.64+i*.5,beat:i%4+1,measure:Math.floor(i/4)+1,confidence:0}))]};

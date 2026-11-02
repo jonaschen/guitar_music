@@ -896,6 +896,14 @@ h2 {
   font-weight: 700;
 }
 
+.chord-fingerings { margin: 16px 0; }
+.chord-fingerings summary { cursor: pointer; }
+.chord-fingerings-content { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding-top: 16px; }
+.chord-fingerings-content label { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; max-width: 100%; }
+.chord-fingerings-content select { max-width: 100%; }
+.chord-fingerings-content .chord-diagram { width: 174px; height: 156px; }
+.chord-fingerings-content p { margin: 0; color: var(--text-muted); }
+
 .capo-advisor {
   display: grid;
   gap: 0.6rem;
