@@ -1,6 +1,28 @@
 # Codex：小節拍格恢復，第一個可接回分析流程的檢查點
 
-日期：2026-11-02。狀態：程式與工程檢查完成，正式恢復開關仍關閉，等待兩段拍格聽感。**尚不適合宣稱任選歌曲即可可靠跟彈或邀朋友正式試用。**
+日期：2026-11-02。最新狀態：使用者確認兩段試聽「測試通過 答答聲可以跟拍」。受保護恢復已在受邀網站及本機預覽啟用。**尚不適合宣稱任選歌曲即可可靠跟彈或邀朋友正式試用。**
+
+## 已驗收與正式啟用
+
+本輪通過的是《遇見》0–40 秒及《君が好きだと叫びたい》193–226 秒的 click 跟拍。使用者沒有另外評分較高重音、和弦名稱或整首準確度，不補造這些判決，也不重問同份試聽。
+
+| 片段 | 實際播放的 click WAV SHA256 |
+|---|---|
+| 遇見 0–40 秒 | `95a36d5fc4ecadf80dc922c9a21aba54fc49cc21d3eb71519bae3a065bf51e4c` |
+| 灌籃高手 193–226 秒 | `3d2620d4e0b4a7205ee90c7cd3aa7d83e03f830ed1c919751befd585be2edfc2` |
+
+本機與已發布音檔逐一核對 SHA256 後，原話、來源 SHA256、片段及政策綁定保存於 `output/evaluation/timing-recovery-check-2026-11-02/human-feedback.json`。音檔未重製。
+
+啟用前確認兩個工作區無進行中工作；將 `guitarscribe-friends-web` 與 `guitarscribe-preview-api` 設為 `GUITARSCRIBE_BEAT_RECOVERY_ENABLED=true`，加入既有固定 DBN 隔離依賴並保留 Chordino 路徑，再重新啟動。已核對實際服務程序環境；沒有修改模型、解碼參數或保護門檻。
+
+正式 HTTP 分析驗證：
+
+- 《遇見》使用同一份完整音訊建立獨立 job `8cb6fb3ddb3247469c161bda2a79b23f`。新結果為 `metered / recovered`、305 拍；與已驗收候選的全曲拍點完全相同，133 個和弦名稱及起訖不變，312 個吉他事件、旋律 0 音。保存健康診斷與恢復證據。這是音訊上傳的工程工作，標題仍為舊上傳流程的 `input`，不是 YouTube 標題回歸。
+- 使用者剛新增、未參與前輪 13 錄音開發的另一個《你的樣子》來源 `1SEHRh3s9aE`，以正式 YouTube API 建立新 job `cd754fa6b231407290c076c2351e917c`。完成下載、標題保留及 70 和弦分析；候選在約 30 秒前後仍有約兩倍密度變化，被同一保護拒絕，保持 `unmetered`，沒有為此放寬規則。它仍是未解決的音樂拍格案例。
+- 38 個原盤點 job payload 及新來源的舊工作譜（`46ded744bec8445188b6d3b37449c64b`）均保持。新舊分析分開，已保存修訂不覆寫。
+- 外部 HTTPS 實際兩個新 job 分別顯示小節譜／時間表；原曲＋吉他播放推進、暫停通過，320／390／1440px 無溢出或頁面例外。這是播放與顯示檢查，沒有把新來源的和弦／拍格視為人耳通過。
+
+啟用驗證資料：`output/evaluation/timing-recovery-activation-2026-11-02/`。新來源未通過代表此次解法有範圍限制，不能把拒絕保護運作正常說成歌曲已可跟彈。下一個共通問題仍是密度切換與局部拍格保留；既有時間表不會因開關變更而自動改寫。
 
 ## 問題與本輪方法
 
@@ -24,7 +46,7 @@
 4. 每個原連續區段內，拍點和重拍都必須一對一保留；數量相同、依時間對應差不超過 70ms。不能插入倍速拍、整段換第一拍，也沒有例外歌名。
 5. 被擋下或缺少選用解碼依賴時，保留原有和弦時間表流程。保存原始拒絕與恢復證據，不丟掉整次和弦分析。
 
-預設 `GUITARSCRIBE_BEAT_RECOVERY_ENABLED=false`。程式可接回正式流程，但沒有先打開全域開關。`timing-recovery.json` 保存兩份觀察及拒絕原因；工作譜 provenance 記錄 policy、是否實際恢復及 DBN 使用狀態。未重跑或更換旋律模型。
+程式庫預設仍為 `GUITARSCRIBE_BEAT_RECOVERY_ENABLED=false`；本機兩個服務在本輪人耳驗收後明確設為 `true`。`timing-recovery.json` 保存兩份觀察及拒絕原因；工作譜 provenance 記錄 policy、是否實際恢復及 DBN 使用狀態。未重跑或更換旋律模型。
 
 ## 固定批次結果
 
@@ -58,7 +80,7 @@
 
 候選與前端驗證在 `output/evaluation/cross-song-decoders-2026-11-02/preview-scores/`。音訊與候選資料不加入 Git，原工作譜與已接受錄音保持。
 
-## 最後只需兩段人耳判斷
+## 兩段人耳判斷（已完成，下列保留原測試說明）
 
 入口：[小節拍格檢查](https://occupier-disgrace-stammer.ngrok-free.dev/timing-recovery-check-2026-11-02/)，沿用邀請帳密。
 
@@ -90,4 +112,4 @@ OMP_NUM_THREADS=2 /home/jonas/.cache/guitarscribe-runtime/bin/python \
   output/evaluation/guarded-recovery-NEXT c06705428794481cb54b75541dc03ece
 ```
 
-正式服務將來啟用時需要保留既有 Chordino Python path 並加入同一固定 DBN 隔離依賴，設定恢復開關後確認沒有進行中工作才重啟。這輪沒有啟用。完整手機／網站體驗還受主機開機、來源可下載、和弦準確度等限制，不能用此次拍格恢復掩蓋。
+正式服務已依上述步驟啟用；重建時需要保留既有 Chordino Python path 並加入同一固定 DBN 隔離依賴，設定恢復開關後確認沒有進行中工作才重啟。部署設定見 [維運紀錄](OPERATIONS.md#拍格恢復啟用2026-11-02)。完整手機／網站體驗還受主機開機、來源可下載、和弦準確度等限制，不能用此次拍格恢復掩蓋。

@@ -47,6 +47,25 @@ disk.
 
 本次發現既有主機 PATH 指向 `~/.local/bin/yt-dlp` 2026.08.19，且未啟用 JS 支援；同一影片的長／短／手機分享網址均在來源下載失敗。背景服務另讀到系統 Node 18，與互動 shell 的 Node 24 不同；已改用分析環境中的 2026.10.26、EJS 0.8.0 並指定 Node 24.14.0，無需登入 cookies。舊失敗 job 保留，不改寫成功；修正驗證使用新 job。
 
+## 拍格恢復啟用（2026-11-02）
+
+使用者通過兩段 click 跟拍後，受邀網站及本機預覽已明確啟用 `fixed-dbn-recovery-v1`；程式庫預設仍關閉。只恢復通過結構／密度／原連續拍點與重拍保護的新分析，原有有效拍格保持，舊 job／修訂不改寫。驗收與驗證見 [紀錄](Guarded_Timing_Recovery_2026-11-02.md#已驗收與正式啟用)。
+
+目前的 runtime drop-in：
+
+```ini
+# /run/user/1000/systemd/user/guitarscribe-friends-web.service.d/beat-recovery.conf
+[Service]
+Environment="GUITARSCRIBE_BEAT_RECOVERY_ENABLED=true"
+Environment="PYTHONPATH=/home/jonas/.cache/guitarscribe-beat-dbn/python:/home/jonas/.cache/guitarscribe-chordino-diagnostic/python"
+```
+
+`guitarscribe-preview-api.service.d/beat-recovery.conf` 同樣設定開關，`PYTHONPATH` 只需加入 DBN 隔離目錄；`run_local_preview.sh` 會保留它並補上 backend 與 Chordino 路徑。這些 `/run` 設定不跨重開機保留，重建暫時服務須重建 drop-in。不要直接改 transient unit 本體，也不要在有分析進行時重啟。
+
+本機依賴檢查：Beat This 1.1.0、madmom 0.17.dev0（既有固定 source build，見 [DBN 依賴](Downbeat_Rhythm_2026-10-31.md)）、Chordino 可載入；沒有新的套件安裝。恢復開啟但解碼依賴失效時，仍完成原有時間表和弦分析，原因保存在 `timing-recovery.json`。
+
+回退：將 drop-in 中恢復開關設為 `false`，確認工作已完成，再 `systemctl --user daemon-reload` 及重啟對應 API 服務。已完成的工作譜不因回退而變更。GitHub／Docker 安裝不會自動取得上述本機隔離依賴或設定，不能把本次主機啟用當成所有安裝皆已啟用。
+
 ## Start and check
 
 ```bash
