@@ -355,6 +355,18 @@ async def get_analysis_job(
         raise HTTPException(status_code=404, detail="Analysis job not found") from exc
 
 
+@app.get('/api/v1/jobs/{job_id}/timing-preview', tags=['Analysis jobs'])
+async def get_local_timing_preview(job_id: str, job_service: AnalysisJobService = Depends(get_job_service)):
+    from .services.partial_timing import preview_for_job
+    try:
+        job = job_service.get(job_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(404, 'Analysis job not found') from exc
+    if job.status != JobStatus.COMPLETED or job.score is None:
+        raise HTTPException(409, 'Timing preview is available after analysis completes')
+    return await asyncio.to_thread(preview_for_job, job, job_service.store.job_dir(job_id))
+
+
 @app.post("/api/v1/jobs/{job_id}/cancel", response_model=AnalysisJob, tags=["Analysis jobs"], summary="Cancel a queued or running analysis job")
 async def cancel_analysis_job(
     job_id: str,

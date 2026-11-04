@@ -316,6 +316,49 @@ test('accepted grid renders full-bar chords and real half-bar changes, without b
 
 const timelineScore={...score,analysis:{...score.analysis,timing_status:'unmetered',bpm:0,time_signature:''},beats:[],rhythm:{...score.rhythm,display:[]},chords:[{...score.chords[0],end:3.217},{...score.chords[0],id:'g',symbol:'G',start:3.217,end:8}]};
 
+const partialScore={...timelineScore,song:{...timelineScore.song,duration_seconds:12},chords:[{...score.chords[0],end:12}]};
+const partialPreview={job_id:'product-job',duration_seconds:12,source_start_seconds:0,covered_seconds:8,
+  regions:[{start:2,end:10,beats_per_bar:4,bars:Array.from({length:4},(_,i)=>({start:2+i*2,end:4+i*2,beats:Array.from({length:5},(_,j)=>2+i*2+j*.5)}))}]};
+
+test('local bar preview preserves gaps, score and playback; editing uses original seconds',async({page})=>{
+  await page.route('**/timing-preview',r=>r.fulfill({json:partialPreview}));
+  await setup(page,partialScore);
+  let writes=0,compiled:any;await page.route('**/revisions',r=>{writes++;return r.fulfill({json:{revision_id:'partial-save'}})});
+  await page.route('**/scores/playback/manifest',r=>{compiled=r.request().postDataJSON();return r.fulfill({json:{revision:'partial',duration_seconds:12,bpm:0,time_signature:'',events:[{id:'c',track:'guitar',start:0,end:12,sustain_end:12,pitches:[48],pitch_offsets:[0],pitch_velocities:[98],velocity:98,source_id:'c'}]}})});
+  await expect(page.getByLabel('和弦時間表',{exact:true})).toBeVisible();
+  await page.getByLabel(/預覽可辨識的小節/).check();
+  const preview=page.getByLabel('局部小節預覽',{exact:true});
+  await expect(preview.locator('.notation-measure')).toHaveCount(4);
+  await expect(preview.locator('.partial-unknown')).toHaveCount(2);
+  await expect(preview.getByLabel('延續',{exact:true})).toHaveCount(5);
+  for(const width of [320,390,1440]){await page.setViewportSize({width,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
+  await page.getByLabel('播放聲音',{exact:true}).selectOption('guitar');
+  await preview.getByRole('button',{name:'播放 4.00 秒的 C',exact:true}).click();
+  await expect(page.getByRole('button',{name:'暫停',exact:true})).toBeVisible();
+  expect(compiled.chords).toEqual(partialScore.chords);expect(compiled.beats).toEqual([]);
+  await page.getByRole('button',{name:'暫停',exact:true}).click();
+  expect(writes).toBe(0);
+  await page.getByText('練習與編輯',{exact:true}).click();
+  await page.getByRole('button',{name:'編輯和弦',exact:true}).click();
+  await expect(preview).toHaveCount(0);
+  await page.getByRole('button',{name:'編輯 0.00 秒的 C',exact:true}).click();
+  expect(Number(await page.getByLabel('結束時間（秒）',{exact:true}).inputValue())).toBe(12);
+  await page.getByLabel('和弦名稱',{exact:true}).fill('Em');
+  await page.getByRole('button',{name:'套用和弦修改',exact:true}).click();
+  await page.getByRole('button',{name:'完成編輯',exact:true}).click();
+  await expect(preview.getByRole('button',{name:'播放 4.00 秒的 Em',exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'復原',exact:true}).click();
+  await expect(preview.getByRole('button',{name:'播放 4.00 秒的 C',exact:true})).toBeVisible();
+});
+
+for(const variant of ['missing','wrong-source','wrong-crop'])test(`unavailable or mismatched timing preview preserves time sheet (${variant})`,async({page})=>{
+  await page.route('**/timing-preview',r=>variant==='missing'?r.fulfill({status:404}):r.fulfill({json:{...partialPreview,...(variant==='wrong-source'?{job_id:'other'}:{source_start_seconds:40})}}));
+  await setup(page,partialScore);
+  await expect(page.getByLabel('和弦時間表',{exact:true})).toBeVisible();
+  await expect(page.getByLabel(/預覽可辨識的小節/)).toHaveCount(0);
+  await expect(page.locator('.notation-measure')).toHaveCount(0);
+});
+
 test('unmetered sheet edits seconds, adjacent boundary, undo, delete and autosave without fake bars',async({page})=>{
   await setup(page,timelineScore);
   await expect(page.getByLabel('和弦時間表',{exact:true})).toBeVisible();

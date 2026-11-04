@@ -16,3 +16,12 @@
 
 .chord-timeline small { white-space:nowrap; }
 .timeline-columns > :last-child,.chord-timeline button > :last-child { text-align:right; }
+
+.partial-preview-toggle { display:flex;align-items:center;gap:8px;margin:16px 0; }
+.partial-region,.partial-unknown { margin:24px 0; }
+.partial-region-label { color:var(--text-muted);font-size:14px;font-variant-numeric:tabular-nums; }
+.unknown-chords { display:flex;flex-wrap:wrap;gap:8px 16px; }
+.chord-product .unknown-chords button { display:flex;align-items:center;gap:8px;background:transparent;border:0;min-height:44px;padding:8px; }
+.unknown-chords small { color:var(--text-muted);font-size:14px; }
+.partial-timing-sheet button.current-chord { box-shadow:inset 0 -2px var(--accent); }
+.partial-timing-sheet strong { overflow-wrap:anywhere; }
