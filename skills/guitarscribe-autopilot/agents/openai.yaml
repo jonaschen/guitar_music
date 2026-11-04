@@ -1,0 +1,6 @@
+interface:
+  display_name: "GuitarScribe 自主開發"
+  short_description: "使用者無暇驗收時，持續修正、跨曲驗證並集中必要的試聽項目"
+  default_prompt: "使用 $guitarscribe-autopilot，我暫時沒空測試；請持續推進可自行驗證的改善，維持 commit 與 push，集中留下真正需要我試聽或判斷 UI 的項目。"
+policy:
+  allow_implicit_invocation: true
