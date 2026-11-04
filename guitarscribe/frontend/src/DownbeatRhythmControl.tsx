@@ -4,6 +4,7 @@ import type {SongScore} from './types';
 export function DownbeatRhythmControl({score,onCommit}:{score:SongScore;onCommit:(base:SongScore,next:SongScore)=>boolean}) {
   if(score.analysis.timing_status==='unmetered'||!['3/4','4/4'].includes(score.analysis.time_signature)||!score.beats.length)return null;
   const selected=score.rhythm.pattern_id==='observed-downbeats-v1';
+  const eachBeat=score.rhythm.pattern_id==='observed-quarter-beats-v1';
   const meter=Number(score.analysis.time_signature[0]);
   return <>
     <button type="button" disabled={selected} onClick={()=>onCommit(score,{...score,rhythm:{
@@ -11,6 +12,12 @@ export function DownbeatRhythmControl({score,onCommit}:{score:SongScore;onCommit
       display:Array.from({length:meter},(_,i)=>i===0?'D':null),
       accents:Array.from({length:meter},(_,i)=>i===0?1:0),confidence:0,
     }})}>{selected?'已選：每小節一下':'每小節一下'}</button>
+    <button type="button" disabled={eachBeat} onClick={()=>onCommit(score,{...score,rhythm:{
+      pattern_id:'observed-quarter-beats-v1',label:'每拍一下',subdivision:4,
+      display:Array.from({length:meter},()=>'D'),
+      accents:Array.from({length:meter},(_,i)=>i===0?1:.7),confidence:0,
+    }})}>{eachBeat?'已選：每拍一下':'每拍一下'}</button>
     {selected?<p className="performance-draft-status" role="status">依目前拍格，在每小節第一拍刷奏；換和弦不加刷。可用「復原」回到原刷法。</p>:null}
+    {eachBeat?<p className="performance-draft-status" role="status">跟著每個已辨識拍點刷奏，第一拍較重；換和弦不加刷，休止保留。可用「復原」回到原刷法。</p>:null}
   </>;
 }

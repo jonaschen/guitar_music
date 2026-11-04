@@ -308,6 +308,10 @@ def create_pipeline(settings: Settings) -> AnalysisPipeline:
     if settings.beat_engine == BeatEngine.BEAT_THIS_SMALL:
         from ..analyzers.beats.beat_this_adapter import BeatThisBeatAnalyzer
         beat_analyzer = BeatThisBeatAnalyzer(recovery_enabled=settings.beat_recovery_enabled)
+    elif settings.beat_engine == BeatEngine.BEAT_THIS_MAIN_DBN:
+        from ..analyzers.beats.beat_this_main import BeatThisMainAnalyzer
+        from ..analyzers.beats.beat_this_adapter import BeatThisBeatAnalyzer
+        beat_analyzer = BeatThisMainAnalyzer(primary=BeatThisBeatAnalyzer(recovery_enabled=settings.beat_recovery_enabled))
     else:
         beat_analyzer = LibrosaBeatAnalyzer()
     

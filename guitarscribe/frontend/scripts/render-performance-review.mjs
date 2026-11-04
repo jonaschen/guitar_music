@@ -16,19 +16,21 @@ try{
   const directory=path.join(input,String(row.number));
   for(const variant of ['a','b']){
    const manifest=JSON.parse(await readFile(path.join(directory,variant+'-manifest.json'),'utf8'));
-   const events=manifest.events.filter(e=>e.track==='guitar');
+   // Include preceding sustained notes, but do not allocate voices for the whole song.
+   const events=manifest.events.filter(e=>e.track==='guitar' && e.start<row.end && (e.sustain_end??e.end)>row.start);
    const rate=22050,duration=manifest.duration_seconds;
    const rendered=await page.evaluate(async({events,rate,duration,start,end})=>{
     const {preparePluckedBuffers,createPluckedVoice}=await import('/src/pluckedTone.ts');
-    const ctx=new OfflineAudioContext(1,Math.round((duration+.35)*rate),rate);
+    const origin=Math.floor(Math.min(start,...events.map(e=>e.start))*rate)/rate;
+    const ctx=new OfflineAudioContext(1,Math.round((end-origin+.35)*rate),rate);
     const buffers=await preparePluckedBuffers(ctx,events.flatMap(e=>e.pitches));
     const onsets=[];
     for(const e of events)for(let i=0;i<e.pitches.length;i++){
      const at=e.start+(e.pitch_offsets[i]??i*.012),until=Math.min(duration,e.sustain_end??e.end);
-     if(createPluckedVoice(ctx,buffers.get(e.pitches[i]),at,until,.24*(e.pitch_velocities[i]??e.velocity)/127/Math.sqrt(e.pitches.length),0,e.stroke))onsets.push(at);
+     if(createPluckedVoice(ctx,buffers.get(e.pitches[i]),at-origin,until-origin,.24*(e.pitch_velocities[i]??e.velocity)/127/Math.sqrt(e.pitches.length),0,e.stroke))onsets.push(at);
     }
     const audio=(await ctx.startRendering()).getChannelData(0);
-    const excerpt=audio.slice(Math.round(start*rate),Math.round(end*rate));
+    const excerpt=audio.slice(Math.round((start-origin)*rate),Math.round((end-origin)*rate));
     const bytes=new Uint8Array(excerpt.buffer),chunks=[];
     for(let i=0;i<bytes.length;i+=32768)chunks.push(String.fromCharCode(...bytes.subarray(i,i+32768)));
     return {audio:btoa(chunks.join('')),onsets};

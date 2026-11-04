@@ -29,6 +29,7 @@ function MeteredChordSongPage({score,sourceAvailable,playing,preparing,playhead,
   const change=(action:()=>void)=>{onStop();action();};
   const play=(from?:number)=>onPlay(mode,start,end,loop,from);
   return <section className="song-sheet" aria-label="和弦核對">
+    {score.provenance.parameters?.timing_candidate && score.provenance.parameters?.timing_candidate_confirmed !== true ? <p className="sheet-hint" role="note">拍格試驗稿 · 拍子尚待確認；原稿保留，和弦內容與時間未改。</p> : null}
     <div className="song-controls">
       <button className="primary-action" type="button" disabled={unavailable && !playing && !preparing} onClick={()=>playing||preparing?onStop():play(playhead>=start&&playhead<end?playhead:undefined)}>{preparing?'取消準備':playing?'暫停':'播放'}</button>
       <label>聲音 <select aria-label="播放聲音" value={mode} onChange={e=>change(()=>setMode(e.target.value as ReviewMode))}><option value="mix">原曲＋吉他</option><option value="source">原曲</option><option value="guitar">吉他</option></select></label>

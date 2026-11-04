@@ -7,6 +7,7 @@ import os
 class BeatEngine(str, Enum):
     LIBROSA = "librosa"
     BEAT_THIS_SMALL = "beat_this_small"
+    BEAT_THIS_MAIN_DBN = "beat_this_main_dbn"
 
 
 class ChordEngine(str, Enum):

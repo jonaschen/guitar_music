@@ -66,6 +66,14 @@ Environment="PYTHONPATH=/home/jonas/.cache/guitarscribe-beat-dbn/python:/home/jo
 
 回退：將 drop-in 中恢復開關設為 `false`，確認工作已完成，再 `systemctl --user daemon-reload` 及重啟對應 API 服務。已完成的工作譜不因回退而變更。GitHub／Docker 安裝不會自動取得上述本機隔離依賴或設定，不能把本次主機啟用當成所有安裝皆已啟用。
 
+## 11-04 的可選主模型恢復（尚未啟用）
+
+程式新增 `GUITARSCRIBE_BEAT_ENGINE=beat_this_main_dbn`；應與既有 `GUITARSCRIBE_BEAT_RECOVERY_ENABLED=true` 一起使用，保留原small0及已接受固定DBN恢復。只有原流程拒絕才載入final0，再按固定全曲工程閘門決定使用原DBN或主速度連續性候選。依賴仍是本機既有Beat This及隔離madmom；首次載入final0會下載官方權重。本機已下載，權重與政策見 [結果](Timing_Batch_Result_2026-11-04.md)。
+
+**本輪只部署程式與三組試聽，沒有修改上述正式引擎設定。** 新模型及連續性機制尚待必要人耳驗收；不得單憑工程通過數啟用。切換只影響新分析，舊job與修訂保持。需要退回時設回 `beat_this_small`，保留原恢復開關；先確認無排隊／進行中工作再重啟服務。runtime保存完整拒絕與恢復報告；可選恢復依賴故障仍沿用時間表路徑。
+
+試聽發佈目錄：`output/web-preview/site/timing-batch-review-2026-11-04/`，只有本輪公開給受邀者的index、packet及11個40秒WAV，未複製整個public或本機診斷目錄。原碼的`frontend/scripts/check-timing-batch-review.mjs`可檢查邀請保護、手機寬度、實播、切換位置與候選原曲播放；帳密只從本機檔案讀入，不輸出。
+
 ## Start and check
 
 ```bash

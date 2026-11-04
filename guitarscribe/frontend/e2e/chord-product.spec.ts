@@ -487,6 +487,26 @@ test('unmetered timeline cannot promise a bar-based strum',async({page})=>{
   await setup(page,timelineScore);
   await page.getByText('練習與編輯',{exact:true}).click();
   await expect(page.getByRole('button',{name:'每小節一下',exact:true})).toHaveCount(0);
+  await expect(page.getByRole('button',{name:'每拍一下',exact:true})).toHaveCount(0);
+});
+
+test('every-beat strums preserve harmony and beats through save, undo, redo and export',async({page})=>{
+  await setup(page);let saved:any,exported:any;
+  await page.route('**/revisions',r=>{saved=r.request().postDataJSON();return r.fulfill({json:{revision_id:'beat-strums'}})});
+  await page.getByText('練習與編輯',{exact:true}).click();
+  await page.getByRole('button',{name:'每拍一下',exact:true}).click();
+  await expect.poll(()=>saved?.score?.rhythm?.pattern_id).toBe('observed-quarter-beats-v1');
+  expect(saved.score.chords).toEqual(score.chords);expect(saved.score.beats).toEqual(score.beats);
+  expect(saved.score.rhythm.accents).toEqual([1,.7,.7,.7]);
+  await page.getByRole('button',{name:'復原',exact:true}).click();
+  await expect.poll(()=>saved?.score?.rhythm?.pattern_id).toBe(score.rhythm.pattern_id);
+  await page.getByRole('button',{name:'重做',exact:true}).click();
+  await expect(page.getByRole('button',{name:'已選：每拍一下',exact:true})).toBeDisabled();
+  await page.route('**/scores/midi',r=>{exported=r.request().postDataJSON();return r.fulfill({body:'midi',contentType:'audio/midi'})});
+  await page.getByText('下載與備份',{exact:true}).click();
+  await page.getByRole('button',{name:'下載伴奏 MIDI',exact:true}).click();
+  await expect.poll(()=>exported?.rhythm?.pattern_id).toBe('observed-quarter-beats-v1');
+  expect(exported.chords).toEqual(score.chords);expect(exported.beats).toEqual(score.beats);
 });
 
 test('a delayed performance draft cannot overwrite a newer manual chord edit',async({page})=>{

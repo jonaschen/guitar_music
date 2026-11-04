@@ -44,9 +44,9 @@ class PlaybackManifest(BaseModel):
 
 
 def compile_playback_manifest(score: SongScore) -> PlaybackManifest:
-    from ..services.downbeat_rhythm import PATTERN_ID, downbeat_events
+    from ..services.downbeat_rhythm import PATTERN_ID, BEAT_PATTERN_ID, downbeat_events, beat_events
     if score.analysis.timing_status == 'unmetered':
-        if score.rhythm.pattern_id == PATTERN_ID:
+        if score.rhythm.pattern_id in (PATTERN_ID, BEAT_PATTERN_ID):
             raise ValueError('拍格尚未確認，無法按小節刷奏。')
         from ..services.chord_inspection import chord_inspection_events
         events, _ = chord_inspection_events(score.chords, score.song.duration_seconds,
@@ -54,6 +54,13 @@ def compile_playback_manifest(score: SongScore) -> PlaybackManifest:
         revision = hashlib.sha256(('unmetered-v1'+score.model_dump_json()).encode()).hexdigest()[:16]
         return PlaybackManifest(revision=revision, duration_seconds=score.song.duration_seconds,
                                 bpm=0, time_signature='', events=tuple(events))
+    # A timing-only draft can retain the original chord-entry inspection pattern.
+    # Resolve it exactly as before adding a grid; changing timing must not mute it.
+    inspection_events = None
+    if score.rhythm.pattern_id == 'unmetered-chord-inspection-v1':
+        from ..services.chord_inspection import chord_inspection_events
+        inspection_events, _ = chord_inspection_events(score.chords, score.song.duration_seconds,
+            tuning=score.guitar.tuning, capo=score.analysis.capo, max_fret=score.guitar.max_fret)
     # Older jobs and manually inserted chords may have no guitar shapes yet.
     # Resolve them on a copy so playback and MIDI work without rewriting edits.
     score = with_default_voicings(score)
@@ -75,8 +82,12 @@ def compile_playback_manifest(score: SongScore) -> PlaybackManifest:
         ))
 
     pattern = score.rhythm.display
-    if score.rhythm.pattern_id == PATTERN_ID:
+    if inspection_events is not None:
+        events.extend(inspection_events)
+    elif score.rhythm.pattern_id == PATTERN_ID:
         events.extend(downbeat_events(score))
+    elif score.rhythm.pattern_id == BEAT_PATTERN_ID:
+        events.extend(beat_events(score))
     elif pattern:
         slots = list(_rhythm_slots(score))
         spans = []

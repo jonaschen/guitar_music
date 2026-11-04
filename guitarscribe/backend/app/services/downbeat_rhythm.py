@@ -8,10 +8,20 @@ import math
 from ..models.score import SongScore
 
 PATTERN_ID = 'observed-downbeats-v1'
+BEAT_PATTERN_ID = 'observed-quarter-beats-v1'
 NO_CHORD = {'n', 'nc', 'n.c.', 'no_chord'}
 
 
 def downbeat_events(score: SongScore):
+    return _observed_events(score, every_beat=False)
+
+
+def beat_events(score: SongScore):
+    """Simple quarter-note downstrokes on observed beats, with a bar accent."""
+    return _observed_events(score, every_beat=True)
+
+
+def _observed_events(score: SongScore, *, every_beat: bool):
     # Local import keeps the playback compiler as the single event schema.
     from ..exporters.midi import PlaybackEvent, _selected_voicing_pitches, _strum_profile
     from .playable_chords import with_default_voicings
@@ -46,7 +56,9 @@ def downbeat_events(score: SongScore):
     for i in range(len(chords) - 2, -1, -1):
         if pitches[i] and pitches[i + 1] and abs(chords[i].end - chords[i + 1].start) < 1e-9:
             ring_limits[i] = ring_limits[i + 1]
-    starts = [b.time for b in beats if b.beat == 1 and b.time < duration]
+    selected = [b for b in beats if (every_beat or b.beat == 1) and b.time < duration]
+    starts = [b.time for b in selected]
+    pattern_id = BEAT_PATTERN_ID if every_beat else PATTERN_ID
     events, index = [], 0
     for position, start in enumerate(starts):
         while index < len(chords) and chords[index].end <= start:
@@ -58,8 +70,10 @@ def downbeat_events(score: SongScore):
             continue
         end = min(ring_limits[index], starts[position + 1] if position + 1 < len(starts) else duration)
         offsets, velocities = _strum_profile('D', len(pitches[index]), min(.06, (end - start) / 2))
+        if every_beat and selected[position].beat != 1:
+            velocities = tuple(max(1, round(v*.7)) for v in velocities)
         events.append(PlaybackEvent(
-            id=f'{PATTERN_ID}:{position}', track='guitar', start=start, end=end, sustain_end=end,
+            id=f'{pattern_id}:{position}', track='guitar', start=start, end=end, sustain_end=end,
             pitches=pitches[index], pitch_offsets=offsets, pitch_velocities=velocities,
             velocity=velocities[0], stroke='D', source_id=chord.id,
         ))
