@@ -158,6 +158,12 @@ class AnalysisJobService:
         directory.mkdir(parents=True, exist_ok=True)
         suffix = safe_audio_suffix(filename)
         (directory / f"input{suffix}").write_bytes(content)
+        # Preserve a display title separately from the safe internal input path.
+        # Browsers may send a Windows fakepath; directory names are never titles.
+        original_name = (filename or '').replace('\\', '/').rsplit('/', 1)[-1]
+        title = ' '.join(re.sub(r'[\x00-\x1f\x7f]', ' ', Path(original_name).stem).split())[:300]
+        if title:
+            (directory / 'source-title.txt').write_text(title, encoding='utf-8')
         self.store.save(job)
         logger.info(
             "analysis_job_submitted job_id=%s bytes=%s melody_mode=%s separate_vocals=%s chord_complexity=%s",
@@ -255,7 +261,7 @@ class AnalysisJobService:
             score.song.source_type = job.source_type.value
             score.song.source_url = job.source_url
             title_path = directory / 'source-title.txt'
-            if job.source_type == SourceType.YOUTUBE and title_path.is_file():
+            if title_path.is_file():
                 try:
                     with title_path.open(encoding='utf-8') as title_file:
                         title = ' '.join(title_file.read(2048).split())[:300]

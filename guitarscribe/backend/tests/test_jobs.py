@@ -42,6 +42,26 @@ class WaitingPipeline:
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize('filename,title',[
+    ('朋友試彈.wav','朋友試彈'),
+    ('C:\\fakepath\\朋友試彈.wav','朋友試彈'),
+    ('../../private/旅行 現場.mp3','旅行 現場'),
+    ('line\nname.wav','line name'),
+])
+async def test_upload_title_survives_internal_rename_without_exposing_directories(tmp_path,filename,title):
+    service=AnalysisJobService(JobStore(tmp_path/'jobs'),StubPipeline)
+    job=await service.submit(filename,b'audio','off','full')
+    await service.tasks[job.id]
+    saved=service.get(job.id)
+    assert saved.status==JobStatus.COMPLETED
+    assert saved.score.song.title==title
+    assert saved.score.song.source_type=='local'
+    directory=service.store.job_dir(job.id)
+    assert (directory/'source-title.txt').read_text()==title
+    assert (directory/('input'+safe_audio_suffix(filename))).read_bytes()==b'audio'
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize('title',['測試歌曲 · 現場版','',None])
 async def test_youtube_identity_and_optional_title_survive_local_audio_processing(tmp_path,title):
     class Downloader:
