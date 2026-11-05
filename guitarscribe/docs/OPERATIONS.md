@@ -68,6 +68,8 @@ Environment="PYTHONPATH=/home/jonas/.cache/guitarscribe-beat-dbn/python:/home/jo
 
 ## 11-04 的可選主模型恢復（尚未啟用）
 
+**11-05更正：使用者拒絕後來連續性候選（半速、第一拍錯）。目前原碼policy改為`fixed-main-dbn-v2`，產品不再嘗試全曲主速度限制；以下連續性描述為11-04歷史。正式服務仍為small0，未啟用此可選主模型。**
+
 程式新增 `GUITARSCRIBE_BEAT_ENGINE=beat_this_main_dbn`；應與既有 `GUITARSCRIBE_BEAT_RECOVERY_ENABLED=true` 一起使用，保留原small0及已接受固定DBN恢復。只有原流程拒絕才載入final0，再按固定全曲工程閘門決定使用原DBN或主速度連續性候選。依賴仍是本機既有Beat This及隔離madmom；首次載入final0會下載官方權重。本機已下載，權重與政策見 [結果](Timing_Batch_Result_2026-11-04.md)。
 
 **本輪只部署程式與三組試聽，沒有修改上述正式引擎設定。** 新模型及連續性機制尚待必要人耳驗收；不得單憑工程通過數啟用。切換只影響新分析，舊job與修訂保持。需要退回時設回 `beat_this_small`，保留原恢復開關；先確認無排隊／進行中工作再重啟服務。runtime保存完整拒絕與恢復報告；可選恢復依賴故障仍沿用時間表路徑。

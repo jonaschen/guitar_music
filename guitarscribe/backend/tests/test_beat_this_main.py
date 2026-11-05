@@ -56,23 +56,18 @@ async def test_existing_valid_primary_is_retained_without_loading_main():
 
 
 @pytest.mark.asyncio
-async def test_continuity_uses_same_frames_and_records_original_failure():
-    frames=('beat frames','downbeat frames')
+async def test_duration_majority_cannot_rescue_rejected_density_after_human_failure():
+    from app.analyzers.beats.tempo_continuity import tempo_reference
     base=[i*.5 for i in range(161)]+[80+i*.25 for i in range(1,41)]
     base_down=[i*2 for i in range(41)]+[80+i for i in range(1,11)]
-    repaired=[i*.5 for i in range(180)];downs=[i*2 for i in range(45)]
-    calls=[]
-    def continuity(b,d,reference):
-        assert (b,d)==frames and reference['eligible']
-        calls.append(reference)
-        return repaired,downs
-    engine=BeatThisMainAnalyzer(frame_predictor=lambda _:frames,decoder=lambda *_:(base,base_down),continuity_decoder=continuity)
-    result=await engine.analyze(NormalizedAudio(path=Path('unused'),duration_seconds=91))
-    assert [b.time for b in result.beats]==repaired
-    assert len(calls)==1
-    assert engine.recovery_report['primary']['engineering_pass'] is False
-    assert engine.recovery_report['candidate']['engineering_pass'] is True
-    assert engine.parameters['main_recovery_decoder']=='continuity'
+    assert tempo_reference(base)['eligible'] # Would qualify under the rejected rule.
+    engine=BeatThisMainAnalyzer(frame_predictor=lambda _:('frames','frames'),decoder=lambda *_:(base,base_down))
+    with pytest.raises(BeatProjectionError):
+        await engine.analyze(NormalizedAudio(path=Path('unused'),duration_seconds=91))
+    assert engine.recovery_report['candidate']['beats']==base
+    assert engine.recovery_report['eligible'] is False
+    assert engine.recovery_report['selected_decoder']=='dbn'
+    assert engine.recovery_report['continuity_status']=='disabled_after_human_rejection'
 
 
 @pytest.mark.asyncio

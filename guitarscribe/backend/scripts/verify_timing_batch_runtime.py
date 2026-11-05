@@ -26,7 +26,8 @@ async def run(main,continuity,output):
     torch.set_num_threads(2);rows=[]
     for case in json.loads((main/'plan.json').read_text())['cases']:
         job=case['job'];report=json.loads((continuity/job/'report.json').read_text())
-        target=report['decoders'][report['selected_decoder']]
+        # Runtime no longer includes the continuity experiment rejected on 11-05.
+        target=report['decoders']['dbn']
         with np.load(main/job/'logits.npz') as data:frames=tuple(torch.from_numpy(data[k]) for k in ('beat','downbeat'))
         engine=BeatThisMainAnalyzer(frame_predictor=lambda _:frames,decoder=Postprocessor('dbn'))
         result=None
@@ -42,7 +43,7 @@ async def run(main,continuity,output):
         score=SongScore.model_validate(json.loads(payload)['score']);candidate=None
         matching_source=score.song.source_url==case['source_url']
         if result is not None and score.analysis.timing_status=='unmetered' and matching_source:
-            candidate=build_checkpoint_candidate(score,report)
+            candidate=build_checkpoint_candidate(score,{**report,'selected_decoder':'dbn'})
             assert candidate.beats==result.beats
             assert candidate.chords==score.chords and candidate.rhythm==score.rhythm
             manifest=compile_playback_manifest(candidate)

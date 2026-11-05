@@ -3,28 +3,25 @@
 The live default remains small0. Engineering checks do not certify musical time.
 """
 import hashlib
-import json
 from importlib.metadata import version
 from pathlib import Path
 
 from ...evaluation.timing_quality import timing_quality
 from ...models.analysis import BeatAnalysis
 from .timing_diagnostics import BeatProjectionError
-from .tempo_continuity import tempo_reference, decode_continuity
 from ..worker import run_blocking_analysis
 
 
 class BeatThisMainAnalyzer:
     def __init__(self, predictor=None, *, primary=None, frame_predictor=None,
-                 decoder=None, continuity_decoder=decode_continuity):
+                 decoder=None):
         self.primary = primary
         self._predictor = predictor
         self._frames = frame_predictor
         self._decoder = decoder
-        self._continuity_decoder = continuity_decoder
         self._version = 'injected' if predictor is not None or frame_predictor is not None else 'not-loaded'
         self._model_parameters = dict(beat_this_checkpoint='final0', beat_this_device='cpu',
-            beat_this_dbn=True, beat_quality_policy='fixed-main-continuity-v1')
+            beat_this_dbn=True, beat_quality_policy='fixed-main-dbn-v2')
         self.parameters = dict(self._model_parameters)
         self.recovery_report = None
 
@@ -65,7 +62,7 @@ class BeatThisMainAnalyzer:
             self.parameters = dict(self.primary.parameters)
             self.parameters['main_recovery_status'] = 'rejected'
             self.recovery_report = dict(primary=prior, main=self.recovery_report,
-                error=str(error), policy='fixed-main-continuity-v1', eligible=False)
+                error=str(error), policy='fixed-main-dbn-v2', eligible=False)
             evidence = dict(prior, main_recovery=self.recovery_report)
             raise BeatProjectionError('Main recovery did not confirm timing', evidence) from error
         if prior is not None:
@@ -80,22 +77,16 @@ class BeatThisMainAnalyzer:
         beats, downbeats = ([float(t) for t in values] for values in raw)
         base = timing_quality(beats, downbeats, audio.duration_seconds, self._version)
         report = base
-        reference = None
+        # 2026-11-05 human review rejected duration-majority tempo recovery:
+        # a structurally stable grid still had half speed and a wrong first beat.
+        # Keep that experiment offline; never retry it in the product pipeline.
         selected = 'dbn'
-        if not base['engineering_pass'] and frames is not None:
-            reference = tempo_reference(beats)
-            if reference['eligible']:
-                candidate = self._continuity_decoder(*frames, reference)
-                beats, downbeats = ([float(t) for t in values] for values in candidate)
-                report = timing_quality(beats, downbeats, audio.duration_seconds, self._version)
-                selected = 'continuity'
-        self.recovery_report = dict(policy='fixed-main-continuity-v1', primary=base,
-            candidate=report, reference=reference, selected_decoder=selected,
+        self.recovery_report = dict(policy='fixed-main-dbn-v2', primary=base,
+            candidate=report, selected_decoder=selected,
+            continuity_status='disabled_after_human_rejection',
             eligible=report['engineering_pass'], musical_verdict='unconfirmed')
         self.parameters.update(beat_quality_status='passed' if report['engineering_pass'] else 'rejected',
                                main_recovery_decoder=selected)
-        if reference is not None:
-            self.parameters['tempo_continuity_reference'] = json.dumps(reference, sort_keys=True)
         if not report['engineering_pass']:
             reason = 'Unconfirmed beat density or meter: '+', '.join(report['issues'])
             evidence = dict(report, engine='beat-this', engine_version=self._version,
