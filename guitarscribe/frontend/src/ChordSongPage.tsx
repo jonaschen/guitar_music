@@ -1,4 +1,4 @@
-import {useMemo, useState, type ComponentProps, type ReactNode} from 'react';
+import {useEffect, useMemo, useState, type ComponentProps, type ReactNode} from 'react';
 import {AccompanimentReview, type ReviewMode} from './AccompanimentReview';
 import {notationBars} from './melodyNotation';
 import {ChordTimelinePage} from './ChordTimelinePage';
@@ -21,6 +21,9 @@ function MeteredChordSongPage({score,sourceAvailable,playing,preparing,playhead,
   },[score]);
   const barName=(number:number)=>number===0?'起始片段':`Bar ${number}`;
   const [mode,setMode]=useState<ReviewMode>('mix'),[loop,setLoop]=useState(false),[editing,setEditing]=useState(false);
+  useEffect(()=>{
+    if(mode==='mix'&&!score.key_context.audio_matches_notation){onStop();setMode('guitar');}
+  },[mode,score.key_context.audio_matches_notation,onStop]);
   const [startIndex,setStartIndex]=useState(0),[count,setCount]=useState(4);
   const index=Math.min(startIndex,Math.max(0,bars.length-1));
   const start=loop ? bars[index]?.start??0 : 0;
@@ -32,11 +35,12 @@ function MeteredChordSongPage({score,sourceAvailable,playing,preparing,playhead,
     {score.provenance.parameters?.timing_candidate && score.provenance.parameters?.timing_candidate_confirmed !== true ? <p className="sheet-hint" role="note">拍格試驗稿 · 拍子尚待確認；原稿保留，和弦內容與時間未改。</p> : null}
     <div className="song-controls">
       <button className="primary-action" type="button" disabled={unavailable && !playing && !preparing} onClick={()=>playing||preparing?onStop():play(playhead>=start&&playhead<end?playhead:undefined)}>{preparing?'取消準備':playing?'暫停':'播放'}</button>
-      <label>聲音 <select aria-label="播放聲音" value={mode} onChange={e=>change(()=>setMode(e.target.value as ReviewMode))}><option value="mix">原曲＋吉他</option><option value="source">原曲</option><option value="guitar">吉他</option></select></label>
+      <label>聲音 <select aria-label="播放聲音" value={mode} onChange={e=>change(()=>setMode(e.target.value as ReviewMode))}><option value="mix" disabled={!score.key_context.audio_matches_notation}>原曲＋吉他</option><option value="source">原曲（原調）</option><option value="guitar">吉他</option></select></label>
       {keyControls}
     </div>
     <p className="playback-status" role="status">{preparing?'正在準備聲音…':playing?'播放中':'已暫停'} · {playhead.toFixed(1)} / {score.song.duration_seconds.toFixed(1)} 秒</p>
     {unavailable?<p role="status">{!sourceAvailable?'原曲暫時無法使用，請選「吉他」播放。':'已移調，與原曲音高不同。請選「吉他」，或回到原調合奏。'}</p>:null}
+    {!score.key_context.audio_matches_notation?<p role="status">伴奏已移調；{mode==='guitar'?'目前以吉他播放。':'目前播放原曲原調。'}回到原調後才能合奏。</p>:null}
     {fingeringGuide}
     <details className="song-options"><summary>練習與編輯</summary>
       <div className="secondary-controls">

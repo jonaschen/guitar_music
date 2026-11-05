@@ -11,6 +11,9 @@ export function ChordTimelinePage({score,sourceAvailable,playing,preparing,playh
   const [mode,setMode]=useState<ReviewMode>(score.song.source_type==='example'?'guitar':'mix'),[editing,setEditing]=useState(false);
   const [loop,setLoop]=useState(false),[start,setStart]=useState('0'),[end,setEnd]=useState(String(score.song.duration_seconds));
   const [follow,setFollow]=useState(true);
+  useEffect(()=>{
+    if(mode==='mix'&&!score.key_context.audio_matches_notation){onStop();setMode('guitar');}
+  },[mode,score.key_context.audio_matches_notation,onStop]);
   const preview=useTimingPreview(score);
   const timingView=new URLSearchParams(window.location.search).get('timingView');
   const autoPreview=timingView==='auto';
@@ -40,13 +43,14 @@ export function ChordTimelinePage({score,sourceAvailable,playing,preparing,playh
   return <section className="song-sheet" aria-label="和弦核對">
     <div className="timeline-transport" ref={transportRef}><div className="song-controls">
       <button className="primary-action" type="button" disabled={!playing&&!preparing&&(unavailable||loop&&!valid)} onClick={()=>playing||preparing?onStop():play(playhead>=rangeStart&&playhead<rangeEnd?playhead:undefined)}>{preparing?'取消準備':playing?'暫停':'播放'}</button>
-      <label>聲音 <select aria-label="播放聲音" value={mode} onChange={e=>change(()=>setMode(e.target.value as ReviewMode))}><option value="mix">原曲＋吉他</option><option value="source">原曲</option><option value="guitar">吉他</option></select></label>
+      <label>聲音 <select aria-label="播放聲音" value={mode} onChange={e=>change(()=>setMode(e.target.value as ReviewMode))}><option value="mix" disabled={!score.key_context.audio_matches_notation}>原曲＋吉他</option><option value="source">原曲（原調）</option><option value="guitar">吉他</option></select></label>
       {keyControls}
     </div>
     {playing?<p className="chord-follow-cue" aria-label="跟彈提示">目前 <strong>{current?.symbol??'休止'}</strong><span>接著 {next?.symbol??'結束'}</span></p>:null}
     </div>
     <p className="playback-status" role="status">{preparing?'正在準備聲音…':playing?'播放中':'已暫停'} · {stamp(playhead)} / {stamp(duration)}</p>
     {unavailable?<p role="status">{!sourceAvailable?'原曲暫時無法使用，請選「吉他」播放。':'已移調，請選「吉他」，或回到原調合奏。'}</p>:null}
+    {!score.key_context.audio_matches_notation?<p role="status">伴奏已移調；{mode==='guitar'?'目前以吉他播放。':'目前播放原曲原調。'}回到原調後才能合奏。</p>:null}
     {autoPreview&&hasPreview?<div className="reading-view-controls" role="group" aria-label="讀譜方式">
       <button type="button" aria-pressed={previewVisible} disabled={editing} onClick={()=>setShowPreview(true)}>局部譜 · 待確認</button>
       <button type="button" aria-pressed={!previewVisible} onClick={()=>setShowPreview(false)}>時間表</button>

@@ -15,6 +15,32 @@ const score = {
 };
 
 const guideShape=(symbol:string,frets:Array<number|null>,capo=0)=>({id:symbol+'-guide',symbol,shape_symbol:symbol,frets,fingers:[null,3,2,null,1,null],base_fret:1,capo,difficulty:1,tags:[]});
+for(const unmetered of [false,true])for(const originalSource of [false,true])test(`transpose preserves clear minor-key meaning and playable mode (${unmetered},source=${originalSource})`,async({page})=>{
+  const key={key:'B',mode:'minor'};
+  const working={...score,analysis:{...score.analysis,key:'B',mode:'minor',timing_status:unmetered?'unmetered':'metered',bpm:unmetered?0:120,time_signature:unmetered?'':'4/4'},beats:unmetered?[]:score.beats,
+    key_context:{...score.key_context,source:key,target:key,shape:key,sounding:key},chords:[{...score.chords[0],symbol:'Bm'}]};
+  await setup(page,working);
+  if(originalSource)await page.getByLabel('播放聲音',{exact:true}).selectOption('source');
+  await page.route('**/scores/transpose',r=>{
+    const body=r.request().postDataJSON();expect(body.semitones).toBe(-4);
+    return r.fulfill({json:{...working,analysis:{...working.analysis,key:'G'},provenance:body.score.provenance,key_context:{...working.key_context,target:{key:'G',mode:'minor'},shape:{key:'G',mode:'minor'},sounding:{key:'G',mode:'minor'},transpose_semitones:-4,audio_matches_notation:false},chords:[{...working.chords[0],symbol:'Gm'}]}});
+  });
+  await expect(page.getByText('原曲推估：B小調（和弦估計，未確認）',{exact:true})).toBeVisible();
+  await page.getByLabel('歌曲調性',{exact:true}).selectOption('G');
+  await expect(page.getByLabel('播放聲音',{exact:true})).toHaveValue(originalSource?'source':'guitar');
+  await expect(page.getByRole('button',{name:'播放',exact:true})).toBeEnabled();
+  await expect(page.getByText(originalSource?'伴奏已移調；目前播放原曲原調。回到原調後才能合奏。':'伴奏已移調；目前以吉他播放。回到原調後才能合奏。',{exact:true})).toBeVisible();
+  await expect(page.getByLabel('播放聲音').locator('option[value=mix]')).toHaveAttribute('disabled','');
+  if(!originalSource){
+    let compiled:any;await page.route('**/scores/playback/manifest',r=>{compiled=r.request().postDataJSON();return r.fulfill({json:{revision:'transposed',duration_seconds:8,bpm:0,time_signature:'',events:[{id:'g',track:'guitar',start:0,end:8,sustain_end:8,pitches:[55,58,62],pitch_offsets:[0,0,0],pitch_velocities:[98,98,98],velocity:98,source_id:'c'}]}})});
+    await page.getByRole('button',{name:'播放',exact:true}).click();await expect(page.getByRole('button',{name:'暫停',exact:true})).toBeVisible();
+    expect(compiled.chords[0].symbol).toBe('Gm');expect(compiled.key_context.source).toEqual(key);
+    await page.getByRole('button',{name:'暫停',exact:true}).click();
+  }
+  await page.getByText('練習與編輯',{exact:true}).click();await page.getByRole('button',{name:'復原',exact:true}).click();
+  await expect(page.getByLabel('歌曲調性',{exact:true})).toHaveValue('B');
+  await expect(page.getByLabel('播放聲音').locator('option[value=mix]')).not.toHaveAttribute('disabled');
+});
 for(const unmetered of [false,true])test(`fingering guide is readable without editing (${unmetered?'timeline':'bars'})`,async({page})=>{
   const working={...score,analysis:{...score.analysis,timing_status:unmetered?'unmetered':'metered',bpm:unmetered?0:120,time_signature:unmetered?'':'4/4'},beats:unmetered?[]:score.beats,
     chords:[{...score.chords[0],end:2},{...score.chords[0],id:'c2',start:2,end:4},{...score.chords[0],id:'g',symbol:'G',start:4,end:8}]};
