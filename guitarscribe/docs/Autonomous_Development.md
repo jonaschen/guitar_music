@@ -2,6 +2,8 @@
 
 更新：2026-11-05。這是接續工作用的短表；最新產品決策仍見 [Next_Decision.md](Next_Decision.md)。
 
+**負責人變更：** 使用者指定 `session-developer` 負責開發交付，原 session 轉顧問；接手狀態、第一段工作及每段審查方式見 [交接文件](Session_Developer_Handoff_2026-11-05.md)。尚待接任確認，不代表背景代理已啟動。
+
 ## 使用方式
 
 在本專案的 Codex session 呼叫 `$guitarscribe-autopilot`，例如：
