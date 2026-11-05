@@ -66,3 +66,24 @@
 可重跑：在 `guitarscribe/frontend` 執行 `npm run test:product`／`npm run build`。既有隔離服務及本機 fixture 可用時，`node scripts/verify-local-reading.mjs` 驗真實頁面，`node scripts/verify-reading-batch.mjs` 驗固定16來源；前者從既有私有設定讀邀請帳密、不輸出，並攔截修訂寫入。
 
 目前只送顧問看實際頁面、截圖及 diff。候選尚未升正式預設，也未重問11-04已取消的單獨UI題目。顧問通過後，才由顧問形成一次完整流程的必要驗收；音樂品質與局部草稿第一拍仍未因此通過。
+
+
+## 顧問退回後修訂：手機暫停操作阻塞
+
+初次提交 `d625fbe` 未通過顧問驗收。390×844、原曲＋吉他、點第二段40.78秒時，自動跟隨與播放控制的捲動互相競爭，正常點暫停30秒仍失敗；原先1440px／吉他／較前區段的驗證漏了此情境。
+
+根因是 `.page-shell` 的 `overflow:hidden` 成為 sticky 的最近捲動祖先，但真正捲動的是文件。初次量測 transport 在 viewport 的 top −777.83px、bottom −622.83px；祖先 scrollTop仍0、HTML scrollTop983。跟隨播放每次更新又把目前和弦捲回，讓正常點擊不斷被拉走。
+
+最小修正只有 `.page-shell.chord-product { overflow:clip; }`：保留裝飾裁界，不建立捲動容器，讓既有 `.timeline-transport` 黏在視窗頂端。未改跟隨演算法、播放、音訊、score、拍格或匯出，沒有用force／DOM click繞過問題。
+
+獨立前圖與正常點擊失敗記錄保存在 `output/evaluation/reading-candidate-2026-11-05/sticky-before-reproduction/`，透過隔離頁套回原 `overflow:hidden` 再次重現，不依賴會被重跑覆寫的顧問 `/tmp` 圖。原顧問腳本在修正後完整通過，且是正常單一瀏覽器邀請登入。
+
+真實新稿於320／390px、草稿／時間表四格，以原曲＋吉他從中段播放，再以滑鼠滾輪捲650px後正常點暫停，均通過。transport四格均為top0、bottom155px；正常點暫停分別約361／280／373／288ms，無橫向溢出、頁面例外或修訂寫入。每格播放編譯收到的和弦及拍點仍等於原稿。
+
+修後播放截圖：[320草稿](../output/evaluation/reading-candidate-2026-11-05/mobile-pause-320-auto.png)、[320時間表](../output/evaluation/reading-candidate-2026-11-05/mobile-pause-320-timeline.png)、[390草稿](../output/evaluation/reading-candidate-2026-11-05/mobile-pause-390-auto.png)、[390時間表](../output/evaluation/reading-candidate-2026-11-05/mobile-pause-390-timeline.png)。已視覺核對390px播放中控制列。
+
+擴充真實腳本期間有驗證環境中斷：保存的response觀測共12筆，9筆200、2筆206、1筆manifest 429。多個fresh context的匿名Basic challenge會耗用InvitationGate既有10次／60秒失敗登入預算；challenge重試總數沒有獨立計量，不把12筆當作全部匿名嘗試。保留失敗截圖／JSON，這次429不計入sticky通過。修正測試為只對精確本機代理 `/backend/**` 預送既有合法邀請認證，未改正式認證、限流，也不把認證送外站。正常單一瀏覽器原重現完整流程成功，目前未證實一般單次使用也會觸發這項限流；不在此段修改auth。
+
+新增四項315秒長譜回歸，在兩視圖明確從120秒播放、手動捲動後正常點暫停，4項通過。另檢查既有完整小節控制：原MeteredChordSongPage的控制本來是static，本次保持原行為；長完整譜可點第60小節進入編輯，欄位可見可輸入、修改可套用、無橫向溢出，1項通過。正式build通過。原有16份score與實際播放manifest在這次真實回歸之後重新核對，仍與初始hash一致。
+
+[本次修訂數值與hash](evaluation/reading-sticky-fix-results-2026-11-05.json) 保留前後量測、四格正常點擊耗時、截圖、429中斷與16來源資料保護。重跑真實手機檢查：`node scripts/verify-mobile-pause.mjs`；定向產品回歸：`npm run test:product -- --grep 'long-sheet pause|complete metered sheet retains'`。候選網址不變，仍未升正式預設，修後再次送顧問驗收。

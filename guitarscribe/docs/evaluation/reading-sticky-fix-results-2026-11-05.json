@@ -1,0 +1,212 @@
+{
+  "previous_delivery": "d625fbe",
+  "consultant_verdict_on_previous": "rejected: mobile middle-section pause scroll race",
+  "fix": "Only .page-shell.chord-product overflow:hidden -> overflow:clip; no audio/score/policy changes",
+  "css_sha256": "724b22fe05b0d97c2133d548a6faa5aba3194d7392bdff842247c3ebe5582686",
+  "before_geometry": {
+    "origin": "Initial pre-patch browser diagnostic on consultant 390px/40.78s reproduction; captured from tool result before source edit",
+    "transport": {
+      "top": -777.828125,
+      "bottom": -622.828125
+    },
+    "ancestor": {
+      "class": "page-shell chord-product focus-workspace",
+      "overflow_x": "hidden",
+      "overflow_y": "hidden",
+      "scroll_top": 0
+    },
+    "document_scroll_top": 983,
+    "viewport_height": 844
+  },
+  "before_reproduction": {
+    "image_sha256": "41c6285a107746a086573ba11ccb29e6cd42c72fcfb688a98cfd341ce6183566",
+    "normal_click_failure_log_sha256": "78d6f4d5986340132f42f25a2007d93410bae6cd251cab22f437b30d986d4a4e",
+    "note": "Independent replay of original overflow:hidden in isolated page; not the overwritten consultant temporary screenshot"
+  },
+  "mobile_real_cells": [
+    {
+      "width": 320,
+      "view": "auto",
+      "mode": "mix",
+      "manual_wheel": 650,
+      "transport": {
+        "top": 0,
+        "bottom": 155
+      },
+      "pause_click_ms": 361.43193600000086,
+      "writes": 0,
+      "errors": [],
+      "playback_input_unchanged": true
+    },
+    {
+      "width": 320,
+      "view": "timeline",
+      "mode": "mix",
+      "manual_wheel": 650,
+      "transport": {
+        "top": 0,
+        "bottom": 155
+      },
+      "pause_click_ms": 280.12225399999807,
+      "writes": 0,
+      "errors": [],
+      "playback_input_unchanged": true
+    },
+    {
+      "width": 390,
+      "view": "auto",
+      "mode": "mix",
+      "manual_wheel": 650,
+      "transport": {
+        "top": 0,
+        "bottom": 155
+      },
+      "pause_click_ms": 373.37978600000133,
+      "writes": 0,
+      "errors": [],
+      "playback_input_unchanged": true
+    },
+    {
+      "width": 390,
+      "view": "timeline",
+      "mode": "mix",
+      "manual_wheel": 650,
+      "transport": {
+        "top": 0,
+        "bottom": 155
+      },
+      "pause_click_ms": 287.61808599999495,
+      "writes": 0,
+      "errors": [],
+      "playback_input_unchanged": true
+    }
+  ],
+  "screenshots": {
+    "320-auto": {
+      "path": "output/evaluation/reading-candidate-2026-11-05/mobile-pause-320-auto.png",
+      "sha256": "8564e7bfb79f326525d4b64da4a306ce8a55b22fae652f9abc56423aa2386a80"
+    },
+    "320-timeline": {
+      "path": "output/evaluation/reading-candidate-2026-11-05/mobile-pause-320-timeline.png",
+      "sha256": "2578a3780661d8c709269892ba80fdc9f4c0e5dfa26a7e229048a5b9017eb867"
+    },
+    "390-auto": {
+      "path": "output/evaluation/reading-candidate-2026-11-05/mobile-pause-390-auto.png",
+      "sha256": "02450ef27aaefe0edb85b5536e968d1ba815b36fc5a42a4acf37a652cdd931a3"
+    },
+    "390-timeline": {
+      "path": "output/evaluation/reading-candidate-2026-11-05/mobile-pause-390-timeline.png",
+      "sha256": "dd9448a1c6704ca16ce75b70eca510b2bde4d4fb302125a3bc7c6aeb531f9548"
+    }
+  },
+  "tests": {
+    "first_new_regressions": "5 passed (10.9s): 4 long sheet + existing metered editing control",
+    "strengthened_middle_seek_regressions": "4 passed (10.1s): both views explicitly seek120s",
+    "build": "npm run build passed, existing large chunk warning"
+  },
+  "consultant_original_script_replay": {
+    "passed": true,
+    "bars": 144,
+    "seek_seconds": 40.78,
+    "writes": 0,
+    "page_errors": 0,
+    "authentication": "normal single browser HTTP Basic challenge, no pre-supplied header"
+  },
+  "auth_test_interruption": {
+    "captured_requests": 12,
+    "status_counts": {
+      "200": 9,
+      "206": 2,
+      "429": 1
+    },
+    "failed_request": "POST /backend/scores/playback/manifest",
+    "cause": "Fresh browser contexts generate unauthenticated Basic challenges against InvitationGate 10/60s budget",
+    "total_unauthenticated_challenges": "not independently counted; browser response observer does not expose all challenge retries",
+    "resolution": "Test-only pre-authentication to exact http://127.0.0.1:4181/backend/** using existing invitation credentials; no live auth or limits modified",
+    "normal_single_browser_flow": "original consultant replay completed successfully; no normal-flow auth defect established"
+  },
+  "unchanged_scores_and_manifests": [
+    {
+      "job_id": "227fa0db8dc5435b9c942a37e093dd96",
+      "score_sha256": "812040ab22c8d59d9f09ffabebc4437dd74f753b19eab57c121288d9f6c1a09c",
+      "manifest_sha256": "2377cbe2c7b76478fbdebc720663530a559aa20ca734696f0f37b6a552d74b06"
+    },
+    {
+      "job_id": "656a21b59b9a4b7e990a8bd586276c28",
+      "score_sha256": "4d766a5ef07882aec73c76eb0d3a9de93c90d4d6a0b3c782c0da7f04d2891449",
+      "manifest_sha256": "5de56b76f62824895ec7133b47441a2c13160630b93adc7f23e36713bb6f1160"
+    },
+    {
+      "job_id": "97501dc47be041be94e391a42dd4c562",
+      "score_sha256": "90f2e3642f364e3585a99314dda57de718f860e01a591b4c907d166cde55cb65",
+      "manifest_sha256": "72dc97f501b2e59ddc7ad2c1e1cd6a0ea418def70851ac1e550d4ce61d33e0b7"
+    },
+    {
+      "job_id": "c06705428794481cb54b75541dc03ece",
+      "score_sha256": "ba74cf7103e3759ddc82030b73acf55501cee4abd596cb0b8ec8fbce44aeadf3",
+      "manifest_sha256": "7f2fbaa67e74e7372bafdb74132a7207a0317e4af0ac4d0d5bc2de2e28018bcb"
+    },
+    {
+      "job_id": "ebdc481345494b95832391262188defb",
+      "score_sha256": "37cea471c61ae1f36c90b2a29bb3d1e708e32178e6ddbb58ec75ff625f380d06",
+      "manifest_sha256": "d631f3641ec06ad454501633c3284c0333e0679f43a5bbde9d4b2c2054a44f45"
+    },
+    {
+      "job_id": "efa50acf438348829dce46dba5df97bd",
+      "score_sha256": "42392979ee7e6537e5878f446c0daca426ac741f6fe6e6c11c6ab2f3e4b6f63e",
+      "manifest_sha256": "a5a16a4bd7bfdf417d5c8f36807ff45e644cc43a4b25e3ad5a6e94f7324895b7"
+    },
+    {
+      "job_id": "fe26276f754d4578849081cf2490064f",
+      "score_sha256": "c5f2633096a47f32c5a96251560bf5d7d7a66693155e04595c60f435ba13049e",
+      "manifest_sha256": "69c8c2d2379322e924463ec8c855ed0ab7435d92a5151dae9440b425182bb0cc"
+    },
+    {
+      "job_id": "043d276fe27347d58e6b6b207841b7ab",
+      "score_sha256": "d76f3c313a1fb5446f934f485faff048eab0f476d6a6c316f53388a725ba80b3",
+      "manifest_sha256": "296fd736643a81606e214f122ba0293eb5f7cdae2562466f118b5e4800c904dd"
+    },
+    {
+      "job_id": "3c4baeb1c84447e6aabf72fa1bd064fd",
+      "score_sha256": "3009fd01208968b908fc1e657ad2b9833170674844e9d7286c8e5531ff152182",
+      "manifest_sha256": "998d83d40c6b6f030b75fe009da1e6f6c6e42a7a899db0eb868dd52cc0f97677"
+    },
+    {
+      "job_id": "a64671ebdd124f908ae46bfb62684647",
+      "score_sha256": "8a06c27374559c40a3082949d6e6b31156f40efe5b8073cb74a92fea0b051cd0",
+      "manifest_sha256": "3a7b87849dc20d25096ee6963d7d1b6a1d6754d416f0d0ed47f86eab6cd82e99"
+    },
+    {
+      "job_id": "605ac74e02b5460fbe253179ed3d3e30",
+      "score_sha256": "1f656b83419fda766ec0414dcc2ce06330bd97c8c67e29a8146c46fe1d9cc22e",
+      "manifest_sha256": "b4c523817c2f6526a65fd802bcace741e66584d91999ba92fc3acec7c3221f3f"
+    },
+    {
+      "job_id": "62127ad66a4342a799153c4861617387",
+      "score_sha256": "67f8a42a5f9bd940152240d618af0e736ccfaf4f9eb2a359cf68ec5484fb9d90",
+      "manifest_sha256": "b69150d7c3e7829c4d2b73980412b408a153d5e18ba56010dcdb4bd3771d79e8"
+    },
+    {
+      "job_id": "e9bfab84ed9d49bf88b9be2753353c94",
+      "score_sha256": "9ebc8eb6cabfaad7eeb7cb0992ca2d210a4378cdede7417dc785437c7b002c00",
+      "manifest_sha256": "11b521af8f2773903d2bdfdf9c14af497b8e3b18dd5c4918bca666729948646b"
+    },
+    {
+      "job_id": "cd754fa6b231407290c076c2351e917c",
+      "score_sha256": "1776a6c966d5ee8e79ecb3f31575b2749e999e843fcc86348750ac9f48efde54",
+      "manifest_sha256": "0d8c0f7f3622de6c5680f841f7e8b33cea2ba2c63f17c3b09db824c7512bc707"
+    },
+    {
+      "job_id": "10de4472b18247d99326c42f41d04b0d",
+      "score_sha256": "acf4cb18ea083635c9fcf41669fe4f66e866091bd27fa952fcd955e3f7e0ab62",
+      "manifest_sha256": "9c6fda7928029f2220b9c3ab9dcd86a060f08af54fee74167db895028354fde4"
+    },
+    {
+      "job_id": "1b4158f1acee4beaa9af7cb42f3f52a0",
+      "score_sha256": "dc5d711075e9ea5444850a5f1ca6e0ce579ed2dcb8f366cb8561b962aa20ebee",
+      "manifest_sha256": "18f69b77444bc7e9b4a94e8c76d7081397966b7e005dc404b0978bfe1d276156"
+    }
+  ],
+  "deployed": false,
+  "new_audio_inferences": 0
+}

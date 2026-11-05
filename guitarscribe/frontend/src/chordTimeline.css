@@ -9,6 +9,8 @@
 .song-options input[type=number] { width:104px;max-width:100%; }
 
 .timeline-transport { position:sticky;top:0;z-index:8;background:#11161c;padding:8px 0; }
+/* Clip decorative overflow without creating a scroll container above sticky controls. */
+.page-shell.chord-product { overflow:clip; }
 .timeline-transport .song-controls { margin-top:0; }
 .chord-follow-cue { display:flex;gap:16px;align-items:center;margin:16px 0 0; }
 .chord-follow-cue strong { color:var(--accent);font-size:1.25rem; }

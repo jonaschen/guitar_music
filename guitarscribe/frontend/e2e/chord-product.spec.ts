@@ -389,6 +389,39 @@ for(const metered of [false,true])test(`automatic local candidate retains origin
   else await expect(page.getByLabel('和弦時間表',{exact:true})).toBeVisible();
 });
 
+for(const width of [320,390])for(const draft of [false,true])test(`long-sheet pause stays clickable after middle seek and manual scroll (${width},${draft?'draft':'timeline'})`,async({page})=>{
+  const long={...timelineScore,song:{...timelineScore.song,duration_seconds:315},chords:Array.from({length:158},(_,i)=>({...score.chords[0],id:`long-${i}`,start:i*2,end:Math.min(315,(i+1)*2)}))};
+  const preview={...partialPreview,duration_seconds:315,covered_seconds:204,regions:[{start:40,end:244,beats_per_bar:4,bars:Array.from({length:51},(_,i)=>({start:40+i*4,end:44+i*4,beats:Array.from({length:5},(_,j)=>40+i*4+j)}))}]};
+  await page.setViewportSize({width,height:844});
+  await page.route('**/timing-preview',r=>r.fulfill({json:preview}));
+  await setup(page,long,draft?'auto':undefined);
+  await page.route('**/scores/playback/manifest',r=>r.fulfill({json:{revision:'long',duration_seconds:315,bpm:0,time_signature:'',events:[{id:'c',track:'guitar',start:0,end:315,sustain_end:315,pitches:[48],pitch_offsets:[0],pitch_velocities:[98],velocity:98,source_id:'c'}]}}));
+  await page.getByLabel('播放聲音',{exact:true}).selectOption('guitar');
+  if(draft)await page.getByLabel('局部小節預覽',{exact:true}).getByRole('button',{name:'播放 120.00 秒的 C',exact:true}).click();
+  else await page.getByRole('button',{name:'播放 120.00 秒的 C',exact:true}).click();
+  const pause=page.getByRole('button',{name:'暫停',exact:true});await expect(pause).toBeVisible();
+  await page.mouse.wheel(0,900);await page.waitForTimeout(250);
+  await expect(pause).toBeInViewport();
+  await pause.click({timeout:3000});
+  await expect(page.getByRole('button',{name:'播放',exact:true})).toBeVisible();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+
+test('complete metered sheet retains normal controls and unclipped editing after page clipping fix',async({page})=>{
+  const long={...score,song:{...score.song,duration_seconds:315},beats:Array.from({length:630},(_,i)=>({time:i*.5,beat:i%4+1,measure:Math.floor(i/4)+1,confidence:1})),chords:[{...score.chords[0],end:315}]};
+  await page.setViewportSize({width:390,height:844});await setup(page,long);
+  await page.getByText('練習與編輯',{exact:true}).click();
+  await page.getByRole('button',{name:'編輯和弦',exact:true}).click();
+  await page.getByRole('button',{name:'編輯 Bar 60 的 C',exact:true}).click();
+  const editor=page.getByRole('region',{name:'修改和弦'});await expect(editor).toBeVisible();
+  await page.getByLabel('和弦名稱',{exact:true}).scrollIntoViewIfNeeded();
+  await expect(page.getByLabel('和弦名稱',{exact:true})).toBeInViewport();
+  await page.getByLabel('和弦名稱',{exact:true}).fill('Em');
+  await page.getByRole('button',{name:'套用和弦修改',exact:true}).click();
+  await expect(page.getByRole('button',{name:'編輯 Bar 60 的 Em',exact:true})).toBeVisible();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+
 test('local bar preview preserves gaps, score and playback; editing uses original seconds',async({page})=>{
   await page.route('**/timing-preview',r=>r.fulfill({json:partialPreview}));
   await setup(page,partialScore);
