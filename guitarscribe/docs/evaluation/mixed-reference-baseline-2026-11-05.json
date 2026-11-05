@@ -1,0 +1,155 @@
+{
+  "date": "2026-11-05",
+  "scope": "published vocal+piano reference baseline; no product promotion",
+  "source": "https://zenodo.org/records/10839767",
+  "plan_sha256": "cef47e5bd7978ad04b42350525c3cc628f7dfe773b8348e5fed384b6f7e1e1a4",
+  "input_hashes": [
+    {
+      "work": "04",
+      "files": {
+        "audio": {
+          "archive_path": "01_RawData/audio_wav/Schubert_D911-04_HU33.wav",
+          "sha256": "4194489027aa84a167e84cdb98f8328a9f65c529dbfc070114b4864e9a262fef",
+          "bytes": 7876652
+        },
+        "chords": {
+          "archive_path": "02_Annotations/ann_audio_chord/Schubert_D911-04_HU33.csv",
+          "sha256": "f99ccffc715e0d34ab4bcf2b0d3081bee2ba81fc70a59024cb0588769ef423e4",
+          "bytes": 6439
+        },
+        "measures": {
+          "archive_path": "02_Annotations/ann_audio_measure/Schubert_D911-04_HU33.csv",
+          "sha256": "473499362d7fe6786d1547d43bdc4b8add7fd1d6831908dbeacec9ebb1d993c3",
+          "bytes": 1929
+        },
+        "clip": {
+          "sha256": "b98a0471f23169a71736a7794851ee2f2c31b3a4bbec9bf2d55b2667160a240f",
+          "duration": 45,
+          "sample_rate": 22050,
+          "frames": 992250,
+          "start": 0
+        }
+      }
+    },
+    {
+      "work": "18",
+      "files": {
+        "audio": {
+          "archive_path": "01_RawData/audio_wav/Schubert_D911-18_HU33.wav",
+          "sha256": "9efd3c100535bb423b8e036e617dfb047915adb38b3a1b7fe9ec44dd8ee49c0e",
+          "bytes": 2101292
+        },
+        "chords": {
+          "archive_path": "02_Annotations/ann_audio_chord/Schubert_D911-18_HU33.csv",
+          "sha256": "1e1cb5c0a02a17cbaacf4ac0ec7275547677881ece74d6e2ca2b99b35efbc2ac",
+          "bytes": 2495
+        },
+        "measures": {
+          "archive_path": "02_Annotations/ann_audio_measure/Schubert_D911-18_HU33.csv",
+          "sha256": "39bc83396f9c25235b2aa526853c28c158c45a97b04d0919059d69cad6e34f18",
+          "bytes": 345
+        },
+        "clip": {
+          "sha256": "65f5246af6c000104f128fdafd1ddf479fa51c832aca36f56a2d59e9c713ac18",
+          "duration": 45,
+          "sample_rate": 22050,
+          "frames": 992250,
+          "start": 0
+        }
+      }
+    },
+    {
+      "work": "21",
+      "files": {
+        "audio": {
+          "archive_path": "01_RawData/audio_wav/Schubert_D911-21_HU33.wav",
+          "sha256": "a0069ccb9aa1163f32bdc83f3adc1a956ea6932eba89bf978127515d9dae6bc8",
+          "bytes": 9754668
+        },
+        "chords": {
+          "archive_path": "02_Annotations/ann_audio_chord/Schubert_D911-21_HU33.csv",
+          "sha256": "72bab0714425984d52ec7c3a08ff937096d5311f7c42b74929cf254ab687056a",
+          "bytes": 5355
+        },
+        "measures": {
+          "archive_path": "02_Annotations/ann_audio_measure/Schubert_D911-21_HU33.csv",
+          "sha256": "5b51aab250c91caa467f2f9eb9e21427bafca736c59a800197139e654294b3f1",
+          "bytes": 569
+        },
+        "clip": {
+          "sha256": "315eef478cf431e1df870f90662da4fd8bcdaa6eb61f7346860ca576fa6629be",
+          "duration": 45,
+          "sample_rate": 22050,
+          "frames": 992250,
+          "start": 0
+        }
+      }
+    }
+  ],
+  "rows": [
+    {
+      "work": "Schubert_D911-04_HU33",
+      "excerpt": [
+        0.46,
+        45.0
+      ],
+      "product_timing": "unmetered",
+      "raw_minimal_downbeat_f1": 0.9523809523809523,
+      "raw_dbn_downbeat_f1": 0.9508196721311476,
+      "product_downbeat_f1": 0.0,
+      "beat_metrics": "not_annotated",
+      "root_weighted_accuracy": 0.6424014899416257,
+      "majmin_weighted_accuracy": 0.6897720492797784,
+      "majmin_scored_fraction": 0.8105074090704987,
+      "raw_chord_metrics_equal_product": false,
+      "reference_chords": 40,
+      "product_chords": 34,
+      "score_sha256": "4767652bff097fd1708c2b21e5a2ba4bc27f045325a5784b52805c650916ac56"
+    },
+    {
+      "work": "Schubert_D911-18_HU33",
+      "excerpt": [
+        0.22,
+        42.7
+      ],
+      "product_timing": "unmetered",
+      "raw_minimal_downbeat_f1": 0.5,
+      "raw_dbn_downbeat_f1": 0.4444444444444444,
+      "product_downbeat_f1": 0.0,
+      "beat_metrics": "not_annotated",
+      "root_weighted_accuracy": 0.583041879472693,
+      "majmin_weighted_accuracy": 0.5670409623974206,
+      "majmin_scored_fraction": 0.803201506591337,
+      "raw_chord_metrics_equal_product": false,
+      "reference_chords": 47,
+      "product_chords": 35,
+      "score_sha256": "cba1bcd1e2e326676cd68e18a74ff72c5d5995e1e99178647f4d6ac549a55204"
+    },
+    {
+      "work": "Schubert_D911-21_HU33",
+      "excerpt": [
+        0.34,
+        45.0
+      ],
+      "product_timing": "unmetered",
+      "raw_minimal_downbeat_f1": 0.37037037037037035,
+      "raw_dbn_downbeat_f1": 0.4210526315789474,
+      "product_downbeat_f1": 0.0,
+      "beat_metrics": "not_annotated",
+      "root_weighted_accuracy": 0.7317073417823555,
+      "majmin_weighted_accuracy": 0.7300064076354679,
+      "majmin_scored_fraction": 1.0,
+      "raw_chord_metrics_equal_product": false,
+      "reference_chords": 16,
+      "product_chords": 22,
+      "score_sha256": "2fa2ace8911e6ad2980d169870bc9e46d5aac6e1584c12330c1a925fd835f47b"
+    }
+  ],
+  "new_external_analysis_jobs": 0,
+  "melody": "off",
+  "neural_inference_count": 3,
+  "reference_adapter_fix": "SWD spelled bass pitches converted to equivalent relative intervals before scoring; first case score/frames reused after format error; no numeric scores existed before fix",
+  "tests_passed": 19,
+  "full_archive_md5_verified": false,
+  "selected_entries_crc_verified": true
+}
