@@ -51,6 +51,16 @@ class HealthResponse(BaseModel):
     status: str = "ok"
 
 
+class MelodyNotesRequest(BaseModel):
+    text: str = Field(max_length=16000)
+    expected_version: int = Field(ge=0)
+
+
+def get_melody_note_store():
+    from .services.melody_notes import MelodyNoteStore
+    return MelodyNoteStore(Settings.from_env().work_dir / 'melody-notes.sqlite3')
+
+
 class SaveRevisionRequest(BaseModel):
     score: SongScore
     revision_id: str | None = None
@@ -365,6 +375,37 @@ async def get_local_timing_preview(job_id: str, job_service: AnalysisJobService 
     if job.status != JobStatus.COMPLETED or job.score is None:
         raise HTTPException(409, 'Timing preview is available after analysis completes')
     return await asyncio.to_thread(preview_for_job, job, job_service.store.job_dir(job_id))
+
+
+def require_note_source(job_id, service):
+    try:
+        job = service.get(job_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(404, 'Analysis job not found') from exc
+    if job.status != JobStatus.COMPLETED or job.score is None:
+        raise HTTPException(409, 'Notes require a completed source')
+
+
+@app.get('/api/v1/jobs/{job_id}/melody-notes')
+async def read_melody_notes(job_id: str, service=Depends(get_job_service), store=Depends(get_melody_note_store)):
+    notes = await asyncio.to_thread(store.read, job_id)
+    # Existing handwritten notes outlive source-audio/job cleanup. A restored
+    # score revision still carries that source job ID.
+    if notes['version'] == 0:
+        require_note_source(job_id, service)
+    return notes
+
+
+@app.put('/api/v1/jobs/{job_id}/melody-notes')
+async def save_melody_notes(job_id: str, body: MelodyNotesRequest, service=Depends(get_job_service), store=Depends(get_melody_note_store)):
+    from .services.melody_notes import NoteConflict
+    notes = await asyncio.to_thread(store.read, job_id)
+    if notes['version'] == 0:
+        require_note_source(job_id, service)
+    try:
+        return await asyncio.to_thread(store.save, job_id, body.text, body.expected_version)
+    except NoteConflict as exc:
+        raise HTTPException(409, 'Notes changed in another browser; reload before saving') from exc
 
 
 @app.post("/api/v1/jobs/{job_id}/cancel", response_model=AnalysisJob, tags=["Analysis jobs"], summary="Cancel a queued or running analysis job")

@@ -346,6 +346,64 @@ const partialScore={...timelineScore,song:{...timelineScore.song,duration_second
 const partialPreview={job_id:'product-job',duration_seconds:12,source_start_seconds:0,covered_seconds:8,
   regions:[{start:2,end:10,beats_per_bar:4,bars:Array.from({length:4},(_,i)=>({start:2+i*2,end:4+i*2,beats:Array.from({length:5},(_,j)=>2+i*2+j*.5)}))}]};
 
+test('text melody notes autosave separately and survive reload, chord Undo and original restore',async({page})=>{
+  let note={job_id:'product-job',text:'',version:0},writes=0;
+  await page.route('**/melody-notes',r=>{
+    if(r.request().method()==='GET')return r.fulfill({json:note});
+    const body=r.request().postDataJSON();expect(body.expected_version).toBe(note.version);note={...note,text:body.text,version:note.version+1};return r.fulfill({json:note});
+  });
+  await setup(page,partialScore);await page.getByText('我的旋律筆記',{exact:true}).click();
+  await page.route('**/revisions',r=>{writes++;return r.fulfill({json:{revision_id:'notes-control'}});});
+  await page.getByLabel('旋律筆記',{exact:true}).fill('自己抓G大調\n旋律 5 6 1');
+  await expect.poll(()=>note.text).toBe('自己抓G大調\n旋律 5 6 1');
+  await expect(page.getByLabel('筆記保存狀態')).toHaveText('已保存');expect(writes).toBe(0);
+  await page.reload();await page.getByText('我的旋律筆記',{exact:true}).click();
+  await expect(page.getByLabel('旋律筆記',{exact:true})).toHaveValue(note.text);
+  await page.getByText('練習與編輯',{exact:true}).click();await page.getByRole('button',{name:'編輯和弦',exact:true}).click();
+  await page.getByRole('button',{name:'編輯 0.00 秒的 C',exact:true}).click();
+  await page.getByLabel('和弦名稱',{exact:true}).fill('Em');await page.getByRole('button',{name:'套用和弦修改',exact:true}).click();
+  await page.getByRole('button',{name:'復原',exact:true}).click();
+  await expect(page.getByLabel('旋律筆記',{exact:true})).toHaveValue(note.text);
+  await page.getByText('版本歷史與還原',{exact:true}).click();page.once('dialog',d=>d.accept());
+  await page.getByRole('button',{name:'還原原始分析',exact:true}).click();
+  await expect(page.getByLabel('旋律筆記',{exact:true})).toHaveValue('自己抓G大調\n旋律 5 6 1');
+});
+
+test('per-tab offline melody draft survives another tab saving and repeated conflict reloads',async({context,page})=>{
+  let note={job_id:'product-job',text:'',version:0},offline=true;
+  await context.route('**/melody-notes',async r=>{
+    if(r.request().method()==='GET'){await r.fulfill({json:note}).catch(()=>{});return;}
+    if(offline&&r.request().frame().page()===page){await r.abort();return;}
+    const body=r.request().postDataJSON();
+    if(body.expected_version!==note.version){await r.fulfill({status:409});return;}
+    note={...note,text:body.text,version:note.version+1};await r.fulfill({json:note});
+  });
+  const other=await context.newPage();await setup(page,partialScore);await setup(other,partialScore);
+  await page.getByText('我的旋律筆記',{exact:true}).click();await other.getByText('我的旋律筆記',{exact:true}).click();
+  await page.getByLabel('旋律筆記',{exact:true}).fill('A分頁離線手記');
+  await expect(page.getByLabel('筆記保存狀態')).toContainText('保存失敗，文字仍保留');
+  await other.getByLabel('旋律筆記',{exact:true}).fill('B分頁已保存');
+  await expect.poll(()=>note.text).toBe('B分頁已保存');
+  offline=false;
+  for(let i=0;i<2;i++){
+    await page.reload();await page.getByText('我的旋律筆記',{exact:true}).click();
+    await expect(page.getByLabel('旋律筆記',{exact:true})).toHaveValue('A分頁離線手記');
+    await expect(page.getByLabel('筆記保存狀態')).toContainText('其他瀏覽器已更新');
+    expect(note.text).toBe('B分頁已保存');
+  }
+  page.once('dialog',d=>d.accept());await page.getByRole('button',{name:'載入最新筆記',exact:true}).click();
+  await expect(page.getByLabel('旋律筆記',{exact:true})).toHaveValue('B分頁已保存');
+  await other.close();
+});
+
+test('failed note loading retains a recoverable per-tab draft and uses plain language',async({page})=>{
+  await page.addInitScript(()=>sessionStorage.setItem('guitarscribe.melodyNoteDraft.product-job',JSON.stringify({text:'先記G調，尚未存',baseVersion:0})));
+  await page.route('**/melody-notes',r=>r.abort());await setup(page,partialScore);
+  await page.getByText('我的旋律筆記',{exact:true}).click();
+  await expect(page.getByLabel('旋律筆記',{exact:true})).toHaveValue('先記G調，尚未存');
+  await expect(page.getByLabel('筆記保存狀態')).toContainText('筆記暫時無法載入');
+});
+
 for(const width of [320,390,1440])test(`automatic local reading candidate starts in draft and preserves source editing (${width})`,async({page})=>{
   await page.setViewportSize({width,height:844});
   await page.route('**/timing-preview',r=>r.fulfill({json:partialPreview}));

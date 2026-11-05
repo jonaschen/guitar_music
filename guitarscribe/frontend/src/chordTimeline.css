@@ -13,6 +13,10 @@
 .page-shell.chord-product { overflow:clip; }
 .timeline-transport .song-controls { margin-top:0; }
 .key-estimate { flex-basis:100%;color:var(--text-muted);font-size:14px; }
+.melody-text-notes { margin:16px 0; }
+.melody-text-notes textarea { display:block;box-sizing:border-box;width:100%;max-width:100%;min-height:130px;margin-top:8px;resize:vertical; }
+.melody-text-notes p { color:var(--text-muted);font-size:14px; }
+.melody-text-notes button { margin-right:8px; }
 .chord-follow-cue { display:flex;gap:16px;align-items:center;margin:16px 0 0; }
 .chord-follow-cue strong { color:var(--accent);font-size:1.25rem; }
 .chord-follow-cue span { color:var(--text-muted); }

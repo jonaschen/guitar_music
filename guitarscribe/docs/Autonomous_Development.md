@@ -34,6 +34,7 @@ Skill 原稿在 [skills/guitarscribe-autopilot](../../skills/guitarscribe-autopi
 | A12-chord-decoder | done | 九份原版觀測事件完全不變；HMM 救回47.782s、損失6.626s，未達解碼修改分支 | 顧問已驗收 6fdbe3c：[報告](Chord_Decoder_Observation_2026-11-05.md)、[計畫](evaluation/chord-decoder-trace-plan-2026-11-05.json)、[數值](evaluation/chord-decoder-trace-results-2026-11-05.json)。3 測試、正規化重建與秒數守恆通過。停止定位段，不調參、不新增分類；下一產品方向需有新的可測機制。 |
 | A13-ismir2019 | rejected | 固定作者五模型 ensemble：Funk2整段N，HU33平均root −5.53百分點，未達門檻 | [報告](ISMIR2019_Candidate_Result_2026-11-05.md)、[計畫](evaluation/ismir2019-plan-2026-11-05.json)、[數值](evaluation/ismir2019-results-2026-11-05.json)。45次音樂子模型forward＋5次合成可行性forward；5測試、原始碼/權重hash與評分域核對通過。候選停止、送顧問驗收，不搜尋下一模型、不改產品。 |
 | A14-local-reading | awaiting_human | 顧問已通過eee41ac及受邀HTTPS手機完整操作；production候選獨立發布，原預設保持 | [發布入口／回滾](Local_Reading_Release_2026-11-05.md)、[最終manifest／驗證](evaluation/reading-release-results-2026-11-05.json)。19必要檔10.16MB，原84檔hash不變、無重啟，匿名401。由顧問交付《出賣》一次完整操作驗收；developer尚未通知使用者。音樂品質不因此通過。 |
+| A15-key-notes | in_progress | 使用者更改B→G後mix禁用；實為B小調→G小調。播放修正6fe644a已審；文字手記獨立來源保存 | [播放修正](Key_Playback_Fix_2026-11-06.md)、[筆記](Melody_Text_Notes_2026-11-06.md)。58產品/46後端/build通過，顧問雙tab及隔離真API已驗；完成commit後備份、沿原受邀候選更新，不改正式預設。 |
 | A01-view | done | 原局部視圖保留；使用者要求共同品質改善，取消單獨閱讀驗收 | 不再要求使用者驗收這一輪；原功能可選，不升預設。 |
 | A01-density | rejected | 後來B人耳確認慢一半、第一拍錯；全曲主速度限制不能判定正確拍速 | 連續性方法從產品恢復程式移除，離線失敗證據保留；不直接加倍或改phase再問同題。 |
 | A01-dbn | done | 你的樣子final0原DBN在15–55秒跟拍／密度／第一拍通過 | 紀錄局部通過，正式新引擎不自動開啟，不擴張全曲。 |

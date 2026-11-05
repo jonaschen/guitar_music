@@ -229,3 +229,12 @@ listening-packet tests may also skip if their local audio packet is absent. A
 passing automated suite checks software behavior, not transcription quality.
 These commands assume dependencies are already installed; do not use them as a
 fresh-machine setup procedure.
+
+
+## 文字旋律筆記持久化（2026-11-06）
+
+文字筆記獨立存於 `GUITARSCRIBE_WORK_DIR/melody-notes.sqlite3`；目前受邀站為 `output/web-preview/work/melody-notes.sqlite3`。備份完整work目錄會包含它；若只備份SQLite，除jobs與revisions資料庫外也必須納入此檔。停服務且確認無分析工作後複製，或使用SQLite備份API取得一致快照；不要把運作中的資料庫一般複製當一致備份。舊部署首次使用筆記前可能尚未建立此檔，請記錄不存在，而非備份腳本因此失敗。
+
+筆記按原source job保存，和弦修訂、Undo、移調及還原原分析不會刪除。已有筆記在原音訊/job到期後仍可由保存稿的source ID讀取；首次建立筆記則須有已完成來源。清空文字也保留遞增版本，避免舊瀏覽器寫回復活內容。此邀請空間是共用筆記，不是個人帳號；文字不會產生或播放旋律，自動旋律仍off。
+
+回滾前端或API時保留notes資料庫及新備份，不用舊備份覆寫已輸入的筆記。原始score/revisions與筆記是兩種獨立資料，都需保管。前端sessionStorage只保護該分頁未存草稿與重新整理，關閉分頁不保證未存文字仍在；跨瀏覽器以伺服器已保存版本為準。
