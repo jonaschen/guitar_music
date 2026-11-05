@@ -1,0 +1,344 @@
+{
+  "schema_version": "1.0",
+  "status": "frozen_before_any_baseline_or_candidate_run",
+  "started_at_utc": "2026-11-05T13:48:32Z",
+  "deadline_utc": "2026-11-05T15:48:32Z",
+  "hypothesis": "Removing the bass chroma contribution may reduce persistent root confusions in inversions/rootless harmony; ablation changes salience concentration and HMM interaction too, so it cannot establish bass as the sole cause.",
+  "variable": {
+    "baseline_bass_contribution": 1,
+    "candidate_bass_contribution": 0,
+    "patch_location": "Chordino.cpp local chord estimation, first 12 chroma bins",
+    "other_changes": "none; no temperature compensation, dictionary/NNLS/treble/normalization/transition changes"
+  },
+  "input_plan": {
+    "path": "docs/evaluation/chord-error-plan-2026-11-05.json",
+    "sha256": "f88841140949189e434feaa7219668b7d261249ad9e12f90dedafd1c0848d29c"
+  },
+  "inputs": [
+    {
+      "recording_id": "00_SS2-88-F_comp",
+      "dataset": "GuitarSet 1.1.0",
+      "audio": {
+        "path": "output/datasets/guitarset-1.1.0/subset/00_SS2-88-F_comp_mic.wav",
+        "sha256": "2f2c5c65d86fd135a15c47d38e9d61e3748c0c31a5ca163632b36eba239811f4"
+      },
+      "annotation": {
+        "path": "output/evaluation/guitarset-pilot-2026-10-24/00_SS2-88-F_comp.annotation.json",
+        "sha256": "616ada9bcf001e317febe2c4141ae095b08da82e0f693aa1e80b4d0a3dd26dd1"
+      },
+      "estimate": {
+        "name": "chordino_chord_only",
+        "layers": [
+          "chord"
+        ],
+        "path": "output/evaluation/chordino-pilot-2026-10-24/00_SS2-88-F_comp.score.json",
+        "sha256": "4ffc86eacf47f8f97992d359c45b071fd11d6016ed8afb5e25484c9d2fbad64f"
+      },
+      "interval": [
+        0.0,
+        43.629200000000026
+      ],
+      "score_time_offset_seconds": 0
+    },
+    {
+      "recording_id": "01_Rock1-90-C#_comp",
+      "dataset": "GuitarSet 1.1.0",
+      "audio": {
+        "path": "output/datasets/guitarset-1.1.0/subset/01_Rock1-90-C#_comp_mic.wav",
+        "sha256": "2dc712e3457bcde208ae59bf8fab8d7f0d7335368271dd211856a13323b50bee"
+      },
+      "annotation": {
+        "path": "output/evaluation/guitarset-pilot-2026-10-24/01_Rock1-90-C#_comp.annotation.json",
+        "sha256": "7b7576308cbcbaa9088209403d10433de02e26c873f6d581047bfead693b9756"
+      },
+      "estimate": {
+        "name": "chordino_chord_only",
+        "layers": [
+          "chord"
+        ],
+        "path": "output/evaluation/chordino-pilot-2026-10-24/01_Rock1-90-C#_comp.score.json",
+        "sha256": "abc9dd11f4e44c5d28ca225caa28b8613671b028ea439455778698973592900a"
+      },
+      "interval": [
+        0.0,
+        31.999999999999993
+      ],
+      "score_time_offset_seconds": 0
+    },
+    {
+      "recording_id": "02_Funk3-112-C#_comp",
+      "dataset": "GuitarSet 1.1.0",
+      "audio": {
+        "path": "output/datasets/guitarset-1.1.0/subset/02_Funk3-112-C#_comp_mic.wav",
+        "sha256": "b85381638984aafa8aff67691ccdd839c2fa4fb10bdc6f18a52810059b0a44f7"
+      },
+      "annotation": {
+        "path": "output/evaluation/guitarset-pilot-2026-10-24/02_Funk3-112-C#_comp.annotation.json",
+        "sha256": "f2376223a03598944e12b315da876f51fc102df2dca01b39c7fe152c1b380f5f"
+      },
+      "estimate": {
+        "name": "chordino_chord_only",
+        "layers": [
+          "chord"
+        ],
+        "path": "output/evaluation/chordino-pilot-2026-10-24/02_Funk3-112-C#_comp.score.json",
+        "sha256": "7b3f689a851b5acbc315941e39be95cf78f57e3bf5a8c779f04a5e2445cb7c65"
+      },
+      "interval": [
+        0.0,
+        34.284399092970524
+      ],
+      "score_time_offset_seconds": 0
+    },
+    {
+      "recording_id": "03_SS3-84-Bb_comp",
+      "dataset": "GuitarSet 1.1.0",
+      "audio": {
+        "path": "output/datasets/guitarset-1.1.0/confirmation/03_SS3-84-Bb_comp_mic.wav",
+        "sha256": "dcd3b1855030c613ea05b2469225ce2ce31587a6d50d7bd287a2989d0754f332"
+      },
+      "annotation": {
+        "path": "output/evaluation/reference-validator-2026-11-05/annotations/03_SS3-84-Bb_comp.annotation.json",
+        "sha256": "c7f15f2c392ea3d156f5466dfaa4a02b8cf7c6e01c9b6a13ca37d3efefe6b413"
+      },
+      "estimate": {
+        "name": "chordino_chord_only",
+        "layers": [
+          "chord"
+        ],
+        "path": "output/evaluation/chordino-additional-2026-10-24/03_SS3-84-Bb_comp.score.json",
+        "sha256": "334cbd582612438a4bbff79b70ea64ffd24d35542abc60de9cdcdd23c9191a3a"
+      },
+      "interval": [
+        0.0,
+        45.70759637188208
+      ],
+      "score_time_offset_seconds": 0
+    },
+    {
+      "recording_id": "04_Rock2-142-D_comp",
+      "dataset": "GuitarSet 1.1.0",
+      "audio": {
+        "path": "output/datasets/guitarset-1.1.0/confirmation/04_Rock2-142-D_comp_mic.wav",
+        "sha256": "77589eeda2dfd7a8e8652b9b0c8a002529d911786e4be29c7bafda31fa32ba99"
+      },
+      "annotation": {
+        "path": "output/evaluation/reference-validator-2026-11-05/annotations/04_Rock2-142-D_comp.annotation.json",
+        "sha256": "d722d0e4f7c6d01b1ab206f7165d0c1e9f905fcc6f127201a07e35e26be56589"
+      },
+      "estimate": {
+        "name": "chordino_chord_only",
+        "layers": [
+          "chord"
+        ],
+        "path": "output/evaluation/chordino-additional-2026-10-24/04_Rock2-142-D_comp.score.json",
+        "sha256": "17469623ea466c0d02867379f4bacab0ff98cbd9b119d602383cc40d6d93c4cc"
+      },
+      "interval": [
+        0.0,
+        27.041600000000003
+      ],
+      "score_time_offset_seconds": 0
+    },
+    {
+      "recording_id": "05_Funk2-119-G_comp",
+      "dataset": "GuitarSet 1.1.0",
+      "audio": {
+        "path": "output/datasets/guitarset-1.1.0/confirmation/05_Funk2-119-G_comp_mic.wav",
+        "sha256": "d8056eeace67f5451907b7a1d779e1ea576fee79f2df73e68909c7e944ac43a2"
+      },
+      "annotation": {
+        "path": "output/evaluation/reference-validator-2026-11-05/annotations/05_Funk2-119-G_comp.annotation.json",
+        "sha256": "4b0ab328a21dd819e97ea97132c20d94e1f7d83d724ff9a1b386ca43bb7f0726"
+      },
+      "estimate": {
+        "name": "chordino_chord_only",
+        "layers": [
+          "chord"
+        ],
+        "path": "output/evaluation/chordino-additional-2026-10-24/05_Funk2-119-G_comp.score.json",
+        "sha256": "eb4988601d9225e2f6839dbfc5b6402f6d6527359248766805db225811d8c97a"
+      },
+      "interval": [
+        0.0,
+        32.26319727891156
+      ],
+      "score_time_offset_seconds": 0
+    },
+    {
+      "recording_id": "SWD_HU33_04",
+      "dataset": "SWD 2.1 HU33",
+      "audio": {
+        "path": "output/evaluation/mixed-reference-2026-11-05/inputs/04/clip.wav",
+        "sha256": "b98a0471f23169a71736a7794851ee2f2c31b3a4bbec9bf2d55b2667160a240f"
+      },
+      "annotation": {
+        "path": "output/evaluation/mixed-reference-2026-11-05/results/04/annotation.json",
+        "sha256": "dbb7cd4df480124235abd82705f3828920afb0543fdc629fc0f7b01004deef42"
+      },
+      "estimate": {
+        "name": "chordino_product_cache",
+        "path": "output/evaluation/mixed-reference-2026-11-05/results/04/score.json",
+        "sha256": "4767652bff097fd1708c2b21e5a2ba4bc27f045325a5784b52805c650916ac56"
+      },
+      "interval": [
+        0.46,
+        45.0
+      ],
+      "score_time_offset_seconds": 0
+    },
+    {
+      "recording_id": "SWD_HU33_18",
+      "dataset": "SWD 2.1 HU33",
+      "audio": {
+        "path": "output/evaluation/mixed-reference-2026-11-05/inputs/18/clip.wav",
+        "sha256": "65f5246af6c000104f128fdafd1ddf479fa51c832aca36f56a2d59e9c713ac18"
+      },
+      "annotation": {
+        "path": "output/evaluation/mixed-reference-2026-11-05/results/18/annotation.json",
+        "sha256": "7707cc009a0a2fe77098849630007391fe6cbaea6d95273bd5e1cc8a3164b2ca"
+      },
+      "estimate": {
+        "name": "chordino_product_cache",
+        "path": "output/evaluation/mixed-reference-2026-11-05/results/18/score.json",
+        "sha256": "cba1bcd1e2e326676cd68e18a74ff72c5d5995e1e99178647f4d6ac549a55204"
+      },
+      "interval": [
+        0.22,
+        42.7
+      ],
+      "score_time_offset_seconds": 0
+    },
+    {
+      "recording_id": "SWD_HU33_21",
+      "dataset": "SWD 2.1 HU33",
+      "audio": {
+        "path": "output/evaluation/mixed-reference-2026-11-05/inputs/21/clip.wav",
+        "sha256": "315eef478cf431e1df870f90662da4fd8bcdaa6eb61f7346860ca576fa6629be"
+      },
+      "annotation": {
+        "path": "output/evaluation/mixed-reference-2026-11-05/results/21/annotation.json",
+        "sha256": "3378877d861d56aa8afd6a8aced05686e22284a8bc9450a541221ac95930a7bf"
+      },
+      "estimate": {
+        "name": "chordino_product_cache",
+        "path": "output/evaluation/mixed-reference-2026-11-05/results/21/score.json",
+        "sha256": "2fa2ace8911e6ad2980d169870bc9e46d5aac6e1584c12330c1a925fd835f47b"
+      },
+      "interval": [
+        0.34,
+        45.0
+      ],
+      "score_time_offset_seconds": 0
+    }
+  ],
+  "source": {
+    "path": "/home/jonas/.cache/guitarscribe-chordino-diagnostic/source",
+    "url": "https://github.com/c4dm/nnls-chroma",
+    "commit": "4c5f214a75cb354f8d8c933e161377c5b4d83713",
+    "tracked_file_sha256": {
+      ".hgignore": "50673678c1427bbbdbc469f336ac0bc23d77b780c2449e2b9e3f6e4b3b5d1f5d",
+      ".hgtags": "73e0e7b11107abbe243aa475d075dbb33bfa04f6536877a6dbc422da9603bb1b",
+      ".travis.yml": "5ed00ed9c5973b5f8da098890b73f89f09958aa4197394a651d6849a9063cbda",
+      "CITATION": "0914fce97c1eb347dd64dc5e082d30d5cce8981a45964c30a8a13c23f3734ed0",
+      "COPYING": "67f82e045cf7acfef853ea0f426575a8359161a0a325e19f02b529a87c4b6c34",
+      "Chordino.cpp": "92b212e8dbe0c044273ad797dc96da9389d56d30ca1db84ef8a8dec898797005",
+      "Chordino.h": "f9c83579bb32f5f7e27277380dbb8d3ad5c577edefc76dd3df42577d48c22681",
+      "Makefile.inc": "a9ec5c2cee314ca437bdaa3650c544202218e8009987a088ce1fd1fe2ace9467",
+      "Makefile.linux": "2f246cc4338c0dc86715c8c2e44dae8e069c5d0ee5c73090ef263fd587bb84cd",
+      "Makefile.mingw": "9f3f31b4467d03a85cd009ebd8725255c7dfc369e590475d6ca7c14930f07698",
+      "Makefile.osx": "b924056bf3b984ceac2d3c79d7fb3fe3639f7eebcbace8d316fc936f6df667c3",
+      "NNLSBase.cpp": "b8e4d169fed528d24db0de7239be3e61292e1b81f25979baec3e7c2e05a7e962",
+      "NNLSBase.h": "3785d521d8258bceb7b88334eb27b54d5ec6631f880da4f297011e9595c0bc9d",
+      "NNLSChroma.cpp": "873a7f6c19f80b2d65d294f9cdc5effa168ae7aa2670abe5ea602ca65adaa4c8",
+      "NNLSChroma.h": "7e2d29fff36952a0e6b8b97c7d6ae17caeaf86e3dd20e425cda36434eb171622",
+      "README": "d0b25c9ec533a2159e865b43ee1dccac7141fce93efdffea58e043cac39c2ade",
+      "Tuning.cpp": "32622a16eac5e2267c28dab202e16fabc814badfc38140116d3cda6955942d48",
+      "Tuning.h": "ce63a12031bd4df6d2bf5d2f906f67eb68e039267699dc55eee1e8d51d9a0e8a",
+      "chord.dictold": "9088198211f5d55263f674baa808287a6d89233275b7c48c7bb8d5992ea32366",
+      "chordextract.cpp": "6c98c8da74b1d79667481f58ebe5181a741fa45320880ddb57024cd518c0ee86",
+      "chordino.png": "f32ebb6138b940377798d97dce6743a426bf44fb44f25963a71ef81eb6564d41",
+      "chromamethods.cpp": "a697d312f3da5ce199a0f93f5637b4f713e44c0e37a505089830f1e556e483fa",
+      "chromamethods.h": "30ac888fec953fbe0c895ac9177ee22269423f0fb4bb1474eb33fc7e45d89498",
+      "nnls-chroma.cat": "10e53533341c68c372ecef69fa542fe8530bad1ee49c38295cc3e12721a64a17",
+      "nnls-chroma.n3": "71f6229c997058ea302e207241059e0753e4b42be9f97429f34cebd796421de6",
+      "nnls.c": "15d687e019bf0f09baf3d2643905b0c01d2cc6cfb72799a4e97a95fb3ae2b9f8",
+      "nnls.f": "fa2e18a979cba7db4dc6b33e29c7d77a8a1c5a628955d9bd4eeb6d73d3459817",
+      "nnls.h": "3ec29d6aae6ba0adf0bf9c82ec6284b3b6846f56298097458d0d19342808cae5",
+      "plugins.cpp": "6df88f930503d0f87d9ff29e66818b17a2eb4d39de7e9507d4566c0a8ed280d8",
+      "regression/expected-v0.2.1.csv": "4d12dbf64bb6bb523b4ec2c115c0fdcc36e62cbcc26fb49796907ee1418dadd5",
+      "regression/expected.csv": "7fcc98d3395411ccd2158c5a7ed378851134d3119999daa360a55ba1d55c911a",
+      "regression/regression.sh": "8b640e78a629ea654cb965837bb8f9a8c14b411d9578c903adcd1cb9211c8882",
+      "releasenotes-0.2.1.txt": "8fd51d2695ec9bf5fd2a33d1069ac9b0e0304c2fd1b3a3444e9486ef81c42f8f",
+      "releasenotes-0.2.txt": "47b337b9f5f0bf27153cd623a90f53fbd52bbe6407f5f2773317d8202ebc6b46",
+      "releasenotes-0.3.txt": "1715468c87630d5a8b3b2dafeccde208ffef38745bfe6e9eb1425bf0f2ffd817",
+      "sv-screenshot-nnls-chroma.png": "a3bc64d8509d93da6fbbb9763f8ca229ccb1873d707c217a1963e10184bea94a",
+      "vamp-plugin.list": "fe7ddec9ec0e215dbcd089cbf685545107fe700b66a30c7d5e1084eb87c4513f",
+      "vamp-plugin.map": "682fcd062cf17e11187879f5776417240427b3ebf5c8ba2363aedb2d276e5abf",
+      "viterbi.cpp": "2ef53e9f8325dcf59bce9fe46bf4948d1803125d6786f0a37a80790660932ccd",
+      "viterbi.h": "ef810f529154217a308c0575594b7459a9ed542346ec4de37b55d56808178674"
+    },
+    "original_library_sha256": "fb7d75cf816d3eab3d97da8e6df51f5642b008a49ff4ec6bc2695c42dfded998"
+  },
+  "dictionary": {
+    "external": false,
+    "policy": "VAMP_PATH restricted to isolated build directory with no chord.dict; built-in dictionary retained",
+    "implementation_sha256": "a697d312f3da5ce199a0f93f5637b4f713e44c0e37a505089830f1e556e483fa"
+  },
+  "build": {
+    "command": [
+      "make",
+      "-f",
+      "Makefile.linux",
+      "-j2",
+      "VAMP_SDK_DIR=/usr/include",
+      "BOOST_ROOT=/home/jonas/.cache/guitarscribe-chordino-diagnostic/boost/usr/include"
+    ],
+    "compiler": "g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+    "vamp_sdk_library_sha256": "d31795962238ea3f6d9b03f67e171062b32c8acfaceef87d1eba4bdb6180c82f"
+  },
+  "audio_policy": {
+    "GuitarSet": "Original mic WAV, librosa mono float32 at native 44100; end clip uses frozen annotation excerpt_end, matching historical pilot",
+    "SWD": "Existing 22050 clip.wav -> identical FFmpegPreprocessor 44100 mono s16 WAV -> librosa.load sr=44100; reuse normalized bytes for baseline/candidate",
+    "preprocessor_sha256": "827f6b74bbbfbd178e26971a49d9fb50eed535a0945752e8ca7f18631424121c",
+    "librosa_sample_rate": 44100
+  },
+  "parameters": {
+    "useNNLS": 1.0,
+    "rollon": 0.0,
+    "tuningmode": 0.0,
+    "whitening": 1.0,
+    "s": 0.699999988079071,
+    "boostn": 0.10000000149011612,
+    "usehartesyntax": 0.0
+  },
+  "baseline_gate": {
+    "all_sources_before_candidate": true,
+    "comparison": "all (symbol,start,end) chord events vs frozen cached score, no relabeling or realignment",
+    "time_absolute_tolerance_seconds": 1e-09,
+    "on_mismatch": "stop experiment; report source/format/build differences, no candidate run"
+  },
+  "success": {
+    "target_guitarset": "05_Funk2-119-G_comp",
+    "hu33_min_improved_sources": 2,
+    "interior_wrong_root_min_relative_reduction": 0.1,
+    "all_source_max_root_accuracy_drop": 0.01,
+    "all_source_max_majmin_accuracy_drop": 0.01,
+    "all_source_max_missed_plus_false_chord_seconds_increase": 0.25,
+    "all_source_max_boundary_precision_drop": 0.05,
+    "all_source_max_boundary_recall_drop": 0.05,
+    "outcome": "all criteria required; otherwise reject fixed ablation without parameter search"
+  },
+  "limits": {
+    "wall_seconds": 7200,
+    "max_baseline_runs": 9,
+    "max_candidate_runs": 9,
+    "threads": 2,
+    "external_requests": 0,
+    "downloads": 0,
+    "paid_resources": 0,
+    "live_mutations": 0,
+    "parallel_inferences": 1
+  },
+  "promotion": "None in this segment. At least two frozen unused confirmation recordings and consultant review before any necessary human review or shared-default consideration."
+}

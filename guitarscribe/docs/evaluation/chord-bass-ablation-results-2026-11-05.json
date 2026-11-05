@@ -1,0 +1,2133 @@
+{
+  "plan_sha256": "f70fb547a0989e6504731db9ba256fd40c55920b965966ee55be9069b548391f",
+  "manifest_sha256": "afb9499c3e1ecc87ce0202ff1e17d374b72b4ff688b3476a3abb55e8176eb0fd",
+  "decision": {
+    "passed": false,
+    "target_passed": false,
+    "hu33_improved_count": 0,
+    "sources": [
+      {
+        "recording_id": "00_SS2-88-F_comp",
+        "changes": {
+          "root_accuracy": -0.024400075135251553,
+          "majmin_accuracy": -0.005502860031425971,
+          "missed_plus_false_seconds": 0.0,
+          "boundary_precision": -0.07619047619047614,
+          "boundary_recall": -0.07692307692307698
+        },
+        "guards": {
+          "root": false,
+          "majmin": true,
+          "missed_false": true,
+          "boundary_precision": false,
+          "boundary_recall": false
+        },
+        "interior_wrong_root_relative_reduction": -0.2609443974802371,
+        "improved": false
+      },
+      {
+        "recording_id": "01_Rock1-90-C#_comp",
+        "changes": {
+          "root_accuracy": 0.0,
+          "majmin_accuracy": 0.0,
+          "missed_plus_false_seconds": 0.0,
+          "boundary_precision": 0.16666666666666674,
+          "boundary_recall": 0.19999999999999996
+        },
+        "guards": {
+          "root": true,
+          "majmin": true,
+          "missed_false": true,
+          "boundary_precision": true,
+          "boundary_recall": true
+        },
+        "interior_wrong_root_relative_reduction": 1.0,
+        "improved": true
+      },
+      {
+        "recording_id": "02_Funk3-112-C#_comp",
+        "changes": {
+          "root_accuracy": -0.0370053877572023,
+          "majmin_accuracy": -0.45511111123333337,
+          "missed_plus_false_seconds": 0.0,
+          "boundary_precision": -0.101010101010101,
+          "boundary_recall": -0.2666666666666667
+        },
+        "guards": {
+          "root": false,
+          "majmin": false,
+          "missed_false": true,
+          "boundary_precision": false,
+          "boundary_recall": false
+        },
+        "interior_wrong_root_relative_reduction": -0.42865200215412963,
+        "improved": false
+      },
+      {
+        "recording_id": "03_SS3-84-Bb_comp",
+        "changes": {
+          "root_accuracy": -0.001539907908746918,
+          "majmin_accuracy": -0.0020411577143572,
+          "missed_plus_false_seconds": 0.0,
+          "boundary_precision": 0.022222222222222254,
+          "boundary_recall": -0.06666666666666665
+        },
+        "guards": {
+          "root": true,
+          "majmin": true,
+          "missed_false": true,
+          "boundary_precision": true,
+          "boundary_recall": false
+        },
+        "interior_wrong_root_relative_reduction": 0.0,
+        "improved": false
+      },
+      {
+        "recording_id": "04_Rock2-142-D_comp",
+        "changes": {
+          "root_accuracy": -0.0453782696925592,
+          "majmin_accuracy": 0.006341022379127148,
+          "missed_plus_false_seconds": 0.0,
+          "boundary_precision": 0.0,
+          "boundary_recall": 0.0
+        },
+        "guards": {
+          "root": false,
+          "majmin": true,
+          "missed_false": true,
+          "boundary_precision": true,
+          "boundary_recall": true
+        },
+        "interior_wrong_root_relative_reduction": -0.7978682101439583,
+        "improved": false
+      },
+      {
+        "recording_id": "05_Funk2-119-G_comp",
+        "changes": {
+          "root_accuracy": -0.012954673412767792,
+          "majmin_accuracy": 0.014396629597181354,
+          "missed_plus_false_seconds": 0.0,
+          "boundary_precision": 0.10571428571428573,
+          "boundary_recall": 0.15384615384615385
+        },
+        "guards": {
+          "root": false,
+          "majmin": true,
+          "missed_false": true,
+          "boundary_precision": true,
+          "boundary_recall": true
+        },
+        "interior_wrong_root_relative_reduction": -0.028615017380800092,
+        "improved": false
+      },
+      {
+        "recording_id": "SWD_HU33_04",
+        "changes": {
+          "root_accuracy": -0.03187941843286912,
+          "majmin_accuracy": 0.017998630692520834,
+          "missed_plus_false_seconds": 0.0,
+          "boundary_precision": -0.007575757575757569,
+          "boundary_recall": -0.026315789473684292
+        },
+        "guards": {
+          "root": false,
+          "majmin": true,
+          "missed_false": true,
+          "boundary_precision": true,
+          "boundary_recall": true
+        },
+        "interior_wrong_root_relative_reduction": -0.1394740560647551,
+        "improved": false
+      },
+      {
+        "recording_id": "SWD_HU33_18",
+        "changes": {
+          "root_accuracy": -0.01776586337099817,
+          "majmin_accuracy": -0.0062085795427899715,
+          "missed_plus_false_seconds": 0.0,
+          "boundary_precision": -0.022058823529411797,
+          "boundary_recall": -0.043478260869565244
+        },
+        "guards": {
+          "root": false,
+          "majmin": true,
+          "missed_false": true,
+          "boundary_precision": true,
+          "boundary_recall": true
+        },
+        "interior_wrong_root_relative_reduction": -0.03069048772640267,
+        "improved": false
+      },
+      {
+        "recording_id": "SWD_HU33_21",
+        "changes": {
+          "root_accuracy": -0.06135142516793546,
+          "majmin_accuracy": -0.06135142516793546,
+          "missed_plus_false_seconds": 0.0,
+          "boundary_precision": -0.1466666666666666,
+          "boundary_recall": -0.06666666666666665
+        },
+        "guards": {
+          "root": false,
+          "majmin": false,
+          "missed_false": true,
+          "boundary_precision": false,
+          "boundary_recall": false
+        },
+        "interior_wrong_root_relative_reduction": -0.28669212167764657,
+        "improved": false
+      }
+    ],
+    "outcome": "reject_fixed_ablation"
+  },
+  "baseline_runs": 9,
+  "reused_baseline_runs": 1,
+  "candidate_runs": 9,
+  "external_requests": 0,
+  "product_modified": false,
+  "all_original_input_hashes_verified_after": true,
+  "pre_inference_manifest": {
+    "plan_sha256": "f70fb547a0989e6504731db9ba256fd40c55920b965966ee55be9069b548391f",
+    "runner_sha256": "2750b83df6f4bb1256c3725ea3a25a6d0f84bf51f9bccda700dae6c2d96de293",
+    "preparation": {
+      "plan_sha256": "e6c1fd77e4369096a9d4b8be240197963820d5b1b9e67d7ffceacf5b8ecbf682",
+      "runner_sha256": "06dd267cfc08313c9832294a64a66880b7b2b68143a9a8b7dbd75d908b47a1c5",
+      "builds": {
+        "baseline": {
+          "library": "/home/jonas/gemini-home/music_analysis/guitarscribe/output/evaluation/chord-bass-ablation-2026-11-05/run/baseline/nnls-chroma.so",
+          "library_sha256": "fb7d75cf816d3eab3d97da8e6df51f5642b008a49ff4ec6bc2695c42dfded998",
+          "source_sha256": {
+            ".hgignore": "50673678c1427bbbdbc469f336ac0bc23d77b780c2449e2b9e3f6e4b3b5d1f5d",
+            ".hgtags": "73e0e7b11107abbe243aa475d075dbb33bfa04f6536877a6dbc422da9603bb1b",
+            ".travis.yml": "5ed00ed9c5973b5f8da098890b73f89f09958aa4197394a651d6849a9063cbda",
+            "CITATION": "0914fce97c1eb347dd64dc5e082d30d5cce8981a45964c30a8a13c23f3734ed0",
+            "COPYING": "67f82e045cf7acfef853ea0f426575a8359161a0a325e19f02b529a87c4b6c34",
+            "Chordino.cpp": "92b212e8dbe0c044273ad797dc96da9389d56d30ca1db84ef8a8dec898797005",
+            "Chordino.h": "f9c83579bb32f5f7e27277380dbb8d3ad5c577edefc76dd3df42577d48c22681",
+            "Makefile.inc": "a9ec5c2cee314ca437bdaa3650c544202218e8009987a088ce1fd1fe2ace9467",
+            "Makefile.linux": "2f246cc4338c0dc86715c8c2e44dae8e069c5d0ee5c73090ef263fd587bb84cd",
+            "Makefile.mingw": "9f3f31b4467d03a85cd009ebd8725255c7dfc369e590475d6ca7c14930f07698",
+            "Makefile.osx": "b924056bf3b984ceac2d3c79d7fb3fe3639f7eebcbace8d316fc936f6df667c3",
+            "NNLSBase.cpp": "b8e4d169fed528d24db0de7239be3e61292e1b81f25979baec3e7c2e05a7e962",
+            "NNLSBase.h": "3785d521d8258bceb7b88334eb27b54d5ec6631f880da4f297011e9595c0bc9d",
+            "NNLSChroma.cpp": "873a7f6c19f80b2d65d294f9cdc5effa168ae7aa2670abe5ea602ca65adaa4c8",
+            "NNLSChroma.h": "7e2d29fff36952a0e6b8b97c7d6ae17caeaf86e3dd20e425cda36434eb171622",
+            "README": "d0b25c9ec533a2159e865b43ee1dccac7141fce93efdffea58e043cac39c2ade",
+            "Tuning.cpp": "32622a16eac5e2267c28dab202e16fabc814badfc38140116d3cda6955942d48",
+            "Tuning.h": "ce63a12031bd4df6d2bf5d2f906f67eb68e039267699dc55eee1e8d51d9a0e8a",
+            "chord.dictold": "9088198211f5d55263f674baa808287a6d89233275b7c48c7bb8d5992ea32366",
+            "chordextract.cpp": "6c98c8da74b1d79667481f58ebe5181a741fa45320880ddb57024cd518c0ee86",
+            "chordino.png": "f32ebb6138b940377798d97dce6743a426bf44fb44f25963a71ef81eb6564d41",
+            "chromamethods.cpp": "a697d312f3da5ce199a0f93f5637b4f713e44c0e37a505089830f1e556e483fa",
+            "chromamethods.h": "30ac888fec953fbe0c895ac9177ee22269423f0fb4bb1474eb33fc7e45d89498",
+            "nnls-chroma.cat": "10e53533341c68c372ecef69fa542fe8530bad1ee49c38295cc3e12721a64a17",
+            "nnls-chroma.n3": "71f6229c997058ea302e207241059e0753e4b42be9f97429f34cebd796421de6",
+            "nnls.c": "15d687e019bf0f09baf3d2643905b0c01d2cc6cfb72799a4e97a95fb3ae2b9f8",
+            "nnls.f": "fa2e18a979cba7db4dc6b33e29c7d77a8a1c5a628955d9bd4eeb6d73d3459817",
+            "nnls.h": "3ec29d6aae6ba0adf0bf9c82ec6284b3b6846f56298097458d0d19342808cae5",
+            "plugins.cpp": "6df88f930503d0f87d9ff29e66818b17a2eb4d39de7e9507d4566c0a8ed280d8",
+            "regression/expected-v0.2.1.csv": "4d12dbf64bb6bb523b4ec2c115c0fdcc36e62cbcc26fb49796907ee1418dadd5",
+            "regression/expected.csv": "7fcc98d3395411ccd2158c5a7ed378851134d3119999daa360a55ba1d55c911a",
+            "regression/regression.sh": "8b640e78a629ea654cb965837bb8f9a8c14b411d9578c903adcd1cb9211c8882",
+            "releasenotes-0.2.1.txt": "8fd51d2695ec9bf5fd2a33d1069ac9b0e0304c2fd1b3a3444e9486ef81c42f8f",
+            "releasenotes-0.2.txt": "47b337b9f5f0bf27153cd623a90f53fbd52bbe6407f5f2773317d8202ebc6b46",
+            "releasenotes-0.3.txt": "1715468c87630d5a8b3b2dafeccde208ffef38745bfe6e9eb1425bf0f2ffd817",
+            "sv-screenshot-nnls-chroma.png": "a3bc64d8509d93da6fbbb9763f8ca229ccb1873d707c217a1963e10184bea94a",
+            "vamp-plugin.list": "fe7ddec9ec0e215dbcd089cbf685545107fe700b66a30c7d5e1084eb87c4513f",
+            "vamp-plugin.map": "682fcd062cf17e11187879f5776417240427b3ebf5c8ba2363aedb2d276e5abf",
+            "viterbi.cpp": "2ef53e9f8325dcf59bce9fe46bf4948d1803125d6786f0a37a80790660932ccd",
+            "viterbi.h": "ef810f529154217a308c0575594b7459a9ed542346ec4de37b55d56808178674"
+          }
+        },
+        "candidate": {
+          "library": "/home/jonas/gemini-home/music_analysis/guitarscribe/output/evaluation/chord-bass-ablation-2026-11-05/run/candidate/nnls-chroma.so",
+          "library_sha256": "f3780253c798724ff51d85e91ebf571b934356e0a2c555d3a0fb2274317f6e12",
+          "source_sha256": {
+            ".hgignore": "50673678c1427bbbdbc469f336ac0bc23d77b780c2449e2b9e3f6e4b3b5d1f5d",
+            ".hgtags": "73e0e7b11107abbe243aa475d075dbb33bfa04f6536877a6dbc422da9603bb1b",
+            ".travis.yml": "5ed00ed9c5973b5f8da098890b73f89f09958aa4197394a651d6849a9063cbda",
+            "CITATION": "0914fce97c1eb347dd64dc5e082d30d5cce8981a45964c30a8a13c23f3734ed0",
+            "COPYING": "67f82e045cf7acfef853ea0f426575a8359161a0a325e19f02b529a87c4b6c34",
+            "Chordino.cpp": "6115ddb1ecaad4ad2226654b14adec6b6fcd8eaf72076730cf287d4c98abe5a1",
+            "Chordino.h": "f9c83579bb32f5f7e27277380dbb8d3ad5c577edefc76dd3df42577d48c22681",
+            "Makefile.inc": "a9ec5c2cee314ca437bdaa3650c544202218e8009987a088ce1fd1fe2ace9467",
+            "Makefile.linux": "2f246cc4338c0dc86715c8c2e44dae8e069c5d0ee5c73090ef263fd587bb84cd",
+            "Makefile.mingw": "9f3f31b4467d03a85cd009ebd8725255c7dfc369e590475d6ca7c14930f07698",
+            "Makefile.osx": "b924056bf3b984ceac2d3c79d7fb3fe3639f7eebcbace8d316fc936f6df667c3",
+            "NNLSBase.cpp": "b8e4d169fed528d24db0de7239be3e61292e1b81f25979baec3e7c2e05a7e962",
+            "NNLSBase.h": "3785d521d8258bceb7b88334eb27b54d5ec6631f880da4f297011e9595c0bc9d",
+            "NNLSChroma.cpp": "873a7f6c19f80b2d65d294f9cdc5effa168ae7aa2670abe5ea602ca65adaa4c8",
+            "NNLSChroma.h": "7e2d29fff36952a0e6b8b97c7d6ae17caeaf86e3dd20e425cda36434eb171622",
+            "README": "d0b25c9ec533a2159e865b43ee1dccac7141fce93efdffea58e043cac39c2ade",
+            "Tuning.cpp": "32622a16eac5e2267c28dab202e16fabc814badfc38140116d3cda6955942d48",
+            "Tuning.h": "ce63a12031bd4df6d2bf5d2f906f67eb68e039267699dc55eee1e8d51d9a0e8a",
+            "chord.dictold": "9088198211f5d55263f674baa808287a6d89233275b7c48c7bb8d5992ea32366",
+            "chordextract.cpp": "6c98c8da74b1d79667481f58ebe5181a741fa45320880ddb57024cd518c0ee86",
+            "chordino.png": "f32ebb6138b940377798d97dce6743a426bf44fb44f25963a71ef81eb6564d41",
+            "chromamethods.cpp": "a697d312f3da5ce199a0f93f5637b4f713e44c0e37a505089830f1e556e483fa",
+            "chromamethods.h": "30ac888fec953fbe0c895ac9177ee22269423f0fb4bb1474eb33fc7e45d89498",
+            "nnls-chroma.cat": "10e53533341c68c372ecef69fa542fe8530bad1ee49c38295cc3e12721a64a17",
+            "nnls-chroma.n3": "71f6229c997058ea302e207241059e0753e4b42be9f97429f34cebd796421de6",
+            "nnls.c": "15d687e019bf0f09baf3d2643905b0c01d2cc6cfb72799a4e97a95fb3ae2b9f8",
+            "nnls.f": "fa2e18a979cba7db4dc6b33e29c7d77a8a1c5a628955d9bd4eeb6d73d3459817",
+            "nnls.h": "3ec29d6aae6ba0adf0bf9c82ec6284b3b6846f56298097458d0d19342808cae5",
+            "plugins.cpp": "6df88f930503d0f87d9ff29e66818b17a2eb4d39de7e9507d4566c0a8ed280d8",
+            "regression/expected-v0.2.1.csv": "4d12dbf64bb6bb523b4ec2c115c0fdcc36e62cbcc26fb49796907ee1418dadd5",
+            "regression/expected.csv": "7fcc98d3395411ccd2158c5a7ed378851134d3119999daa360a55ba1d55c911a",
+            "regression/regression.sh": "8b640e78a629ea654cb965837bb8f9a8c14b411d9578c903adcd1cb9211c8882",
+            "releasenotes-0.2.1.txt": "8fd51d2695ec9bf5fd2a33d1069ac9b0e0304c2fd1b3a3444e9486ef81c42f8f",
+            "releasenotes-0.2.txt": "47b337b9f5f0bf27153cd623a90f53fbd52bbe6407f5f2773317d8202ebc6b46",
+            "releasenotes-0.3.txt": "1715468c87630d5a8b3b2dafeccde208ffef38745bfe6e9eb1425bf0f2ffd817",
+            "sv-screenshot-nnls-chroma.png": "a3bc64d8509d93da6fbbb9763f8ca229ccb1873d707c217a1963e10184bea94a",
+            "vamp-plugin.list": "fe7ddec9ec0e215dbcd089cbf685545107fe700b66a30c7d5e1084eb87c4513f",
+            "vamp-plugin.map": "682fcd062cf17e11187879f5776417240427b3ebf5c8ba2363aedb2d276e5abf",
+            "viterbi.cpp": "2ef53e9f8325dcf59bce9fe46bf4948d1803125d6786f0a37a80790660932ccd",
+            "viterbi.h": "ef810f529154217a308c0575594b7459a9ed542346ec4de37b55d56808178674"
+          }
+        }
+      },
+      "audio": {
+        "00_SS2-88-F_comp": {
+          "path": "/home/jonas/gemini-home/music_analysis/guitarscribe/output/datasets/guitarset-1.1.0/subset/00_SS2-88-F_comp_mic.wav",
+          "sha256": "2f2c5c65d86fd135a15c47d38e9d61e3748c0c31a5ca163632b36eba239811f4",
+          "duration_seconds": 43.629200000000026
+        },
+        "01_Rock1-90-C#_comp": {
+          "path": "/home/jonas/gemini-home/music_analysis/guitarscribe/output/datasets/guitarset-1.1.0/subset/01_Rock1-90-C#_comp_mic.wav",
+          "sha256": "2dc712e3457bcde208ae59bf8fab8d7f0d7335368271dd211856a13323b50bee",
+          "duration_seconds": 31.999999999999993
+        },
+        "02_Funk3-112-C#_comp": {
+          "path": "/home/jonas/gemini-home/music_analysis/guitarscribe/output/datasets/guitarset-1.1.0/subset/02_Funk3-112-C#_comp_mic.wav",
+          "sha256": "b85381638984aafa8aff67691ccdd839c2fa4fb10bdc6f18a52810059b0a44f7",
+          "duration_seconds": 34.284399092970524
+        },
+        "03_SS3-84-Bb_comp": {
+          "path": "/home/jonas/gemini-home/music_analysis/guitarscribe/output/datasets/guitarset-1.1.0/confirmation/03_SS3-84-Bb_comp_mic.wav",
+          "sha256": "dcd3b1855030c613ea05b2469225ce2ce31587a6d50d7bd287a2989d0754f332",
+          "duration_seconds": 45.70759637188208
+        },
+        "04_Rock2-142-D_comp": {
+          "path": "/home/jonas/gemini-home/music_analysis/guitarscribe/output/datasets/guitarset-1.1.0/confirmation/04_Rock2-142-D_comp_mic.wav",
+          "sha256": "77589eeda2dfd7a8e8652b9b0c8a002529d911786e4be29c7bafda31fa32ba99",
+          "duration_seconds": 27.041600000000003
+        },
+        "05_Funk2-119-G_comp": {
+          "path": "/home/jonas/gemini-home/music_analysis/guitarscribe/output/datasets/guitarset-1.1.0/confirmation/05_Funk2-119-G_comp_mic.wav",
+          "sha256": "d8056eeace67f5451907b7a1d779e1ea576fee79f2df73e68909c7e944ac43a2",
+          "duration_seconds": 32.26319727891156
+        },
+        "SWD_HU33_04": {
+          "path": "/home/jonas/gemini-home/music_analysis/guitarscribe/output/evaluation/chord-bass-ablation-2026-11-05/run/audio/SWD_HU33_04.wav",
+          "sha256": "f5c8313927269b9f999634acf0f65f3a32d3289392bcf8a1ceec9443c4c4635b",
+          "duration_seconds": 45.0
+        },
+        "SWD_HU33_18": {
+          "path": "/home/jonas/gemini-home/music_analysis/guitarscribe/output/evaluation/chord-bass-ablation-2026-11-05/run/audio/SWD_HU33_18.wav",
+          "sha256": "2cf647a281802f8f5a4d380efc991d0b2fe36db87627506aac80c72458c4cb53",
+          "duration_seconds": 45.0
+        },
+        "SWD_HU33_21": {
+          "path": "/home/jonas/gemini-home/music_analysis/guitarscribe/output/evaluation/chord-bass-ablation-2026-11-05/run/audio/SWD_HU33_21.wav",
+          "sha256": "117954dc9baa140cc3ce65125b26d6fe53325022093e83b8fb3894332cc8a013",
+          "duration_seconds": 45.0
+        }
+      },
+      "ffmpeg_sha256": "ed16af623947494a72e284b6eb8ff225f2da22b38b5d5069c2fd4b4ba3384e41",
+      "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+      "packages": {
+        "numpy": "1.26.4",
+        "librosa": "0.11.0",
+        "mir_eval": "0.8.2",
+        "soundfile": "0.14.0"
+      }
+    },
+    "reused_event_sha256": "566f1bc3c9d2bf1de2fb4edcc89a6657145cef08e5307e6bc8df628fee19675d"
+  },
+  "verification": {
+    "all_passed": true,
+    "baseline_matches_a09_all_nine": true,
+    "all_nine_three_layer_event_parity": true,
+    "source_files_different": [
+      "Chordino.cpp"
+    ],
+    "baseline_library_equals_original": true,
+    "original_live_library_unchanged": true,
+    "all_original_input_hashes_match": true,
+    "baseline_inferences_total": 9,
+    "candidate_inferences_total": 9,
+    "reused_first_baseline": true,
+    "score_coverage_unchanged": true
+  },
+  "test_log": "cwd: guitarscribe/backend\ncommand: /home/jonas/.cache/guitarscribe-runtime/bin/python -m pytest -q tests/test_chord_bass_ablation.py\nRecorded executed test output before run-v2 (runner unchanged since that run):\n.....                                                                    [100%]\n5 passed in 0.99s\nexit_code: 0\n",
+  "initial_failure": {
+    "type": "ValueError",
+    "error": "Baseline failed event parity: 00_SS2-88-F_comp",
+    "plan_sha256": "e6c1fd77e4369096a9d4b8be240197963820d5b1b9e67d7ffceacf5b8ecbf682",
+    "completed_event_artifacts": [
+      "00_SS2-88-F_comp-baseline-events.json"
+    ],
+    "candidate_inference_started": false,
+    "action": "stop; no retry or parameter search"
+  },
+  "comparison_investigation": {
+    "candidate_inferences": 0,
+    "baseline_inferences": 1,
+    "reason": "Cache representation differs: historical GuitarSet uses merged(_mir_eval_chord_label(...).split(/)[0]) and evaluation crop; old raw cache includes plugin padding. Same binary hash, no timing drift on first case after original crop.",
+    "cases": [
+      {
+        "recording_id": "00_SS2-88-F_comp",
+        "raw_cache": {
+          "path": "output/evaluation/chordino-pilot-2026-10-24/00_SS2-88-F_comp.chord-analysis.json",
+          "sha256": "fa76a80fbf06aa0a78ab82b3805cb29b0c02bec8570249e6390a6a7fd276c7e6"
+        },
+        "raw_engine_version": "1.0",
+        "raw_last_end": 43.792834467,
+        "cached_score_last_end": 43.629200000000026,
+        "raw_slash_chords": 1
+      },
+      {
+        "recording_id": "01_Rock1-90-C#_comp",
+        "raw_cache": {
+          "path": "output/evaluation/chordino-pilot-2026-10-24/01_Rock1-90-C#_comp.chord-analysis.json",
+          "sha256": "003ff98495b88453fdd14a1031219b31c36ecd22f8fc0d59065387681657f82a"
+        },
+        "raw_engine_version": "1.0",
+        "raw_last_end": 32.182857142,
+        "cached_score_last_end": 31.999999999999993,
+        "raw_slash_chords": 0
+      },
+      {
+        "recording_id": "02_Funk3-112-C#_comp",
+        "raw_cache": {
+          "path": "output/evaluation/chordino-pilot-2026-10-24/02_Funk3-112-C#_comp.chord-analysis.json",
+          "sha256": "fc1c1ee5c747a3f71ac1980bd99097d996ee7f827e061e78c91726736d0ab759"
+        },
+        "raw_engine_version": "1.0",
+        "raw_last_end": 34.458412698,
+        "cached_score_last_end": 34.284399092970524,
+        "raw_slash_chords": 3
+      },
+      {
+        "recording_id": "03_SS3-84-Bb_comp",
+        "raw_cache": {
+          "path": "output/evaluation/chordino-additional-2026-10-24/03_SS3-84-Bb_comp.chord-analysis.json",
+          "sha256": "82eb83d3a9a910bd4e13859c031d7fe8e408cc8f570880021b911667ef5a2beb"
+        },
+        "raw_engine_version": "1.0",
+        "raw_last_end": 45.882630385,
+        "cached_score_last_end": 45.70759637188208,
+        "raw_slash_chords": 0
+      },
+      {
+        "recording_id": "04_Rock2-142-D_comp",
+        "raw_cache": {
+          "path": "output/evaluation/chordino-additional-2026-10-24/04_Rock2-142-D_comp.chord-analysis.json",
+          "sha256": "5900fd722e3adec6cfb0d967d4a03795b401ea22f7e3f3a9d840fe286dc0a8e6"
+        },
+        "raw_engine_version": "1.0",
+        "raw_last_end": 27.213786848,
+        "cached_score_last_end": 27.041600000000003,
+        "raw_slash_chords": 0
+      },
+      {
+        "recording_id": "05_Funk2-119-G_comp",
+        "raw_cache": {
+          "path": "output/evaluation/chordino-additional-2026-10-24/05_Funk2-119-G_comp.chord-analysis.json",
+          "sha256": "5bca7ab5abfa27833a14e4352f673057092dabd8a057669c71bd3e1fa220926f"
+        },
+        "raw_engine_version": "1.0",
+        "raw_last_end": 32.415056689,
+        "cached_score_last_end": 32.26319727891156,
+        "raw_slash_chords": 11
+      },
+      {
+        "recording_id": "SWD_HU33_04",
+        "raw_cache": {
+          "path": "output/evaluation/mixed-reference-2026-11-05/results/04/chord-analysis.json",
+          "sha256": "0c4ac783b64b7feb0a1bdb2ffd058bcf094fd1d1decc8caf8ac02a4cceeeacf8"
+        },
+        "raw_engine_version": "1.2-audio-bounds",
+        "raw_last_end": 45.0,
+        "cached_score_last_end": 45.0,
+        "raw_slash_chords": 7
+      },
+      {
+        "recording_id": "SWD_HU33_18",
+        "raw_cache": {
+          "path": "output/evaluation/mixed-reference-2026-11-05/results/18/chord-analysis.json",
+          "sha256": "854d8b26c5c4ed0cb6e08c3bfea0288333790ae475935a060e247e80cc4daa34"
+        },
+        "raw_engine_version": "1.2-audio-bounds",
+        "raw_last_end": 45.0,
+        "cached_score_last_end": 45.0,
+        "raw_slash_chords": 1
+      },
+      {
+        "recording_id": "SWD_HU33_21",
+        "raw_cache": {
+          "path": "output/evaluation/mixed-reference-2026-11-05/results/21/chord-analysis.json",
+          "sha256": "40aa14aa5bc739af664b7061102d09b3967f34c6d4e2e53ff59217fe83660435"
+        },
+        "raw_engine_version": "1.2-audio-bounds",
+        "raw_last_end": 45.0,
+        "cached_score_last_end": 45.0,
+        "raw_slash_chords": 2
+      }
+    ],
+    "first_case_historical_projection_parity": {
+      "passed": true,
+      "events": 20
+    },
+    "first_case_raw_after_original_crop_parity": {
+      "passed": true,
+      "events": 20
+    }
+  },
+  "artifact_directory": "output/evaluation/chord-bass-ablation-2026-11-05/run-v2",
+  "artifact_sha256": {
+    "00_SS2-88-F_comp-baseline-diagnostic.json": "8d1cac2681f127d98c2eda4c157233e572172cb2e5658212d16d9069bcb54e3e",
+    "04_Rock2-142-D_comp-baseline-historical-raw.json": "dede9149fa3b1067643019600ac338b8afd6c0682a0e8a4732102fdc402cfe4d",
+    "SWD_HU33_21-baseline-historical-raw.json": "e85509155425023b28701d15adfb534e3e2b5e98e8107d66e6eb81326b1ac2f1",
+    "04_Rock2-142-D_comp-candidate-historical-raw.json": "fd242e1e0567e15182414c879fd70c6c34e54d84425bdb938354621001bbc579",
+    "02_Funk3-112-C#_comp-candidate-historical-raw.json": "53df578df358e9b8ec27e61a3afd3e796be1bea8cdeb1472b7b6f36f60d55012",
+    "00_SS2-88-F_comp-baseline-events.json": "566f1bc3c9d2bf1de2fb4edcc89a6657145cef08e5307e6bc8df628fee19675d",
+    "02_Funk3-112-C#_comp-baseline-run.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "03_SS3-84-Bb_comp-baseline-diagnostic.json": "6cb15947ce5de77a04844c0519edfff42c7986fe40fb96177cce66f693d956d3",
+    "05_Funk2-119-G_comp-baseline-events.json": "f105b5c6fd89842a7d9bd5ab3af5cdd39f0a43d035de9855ca548d19b6984a94",
+    "SWD_HU33_18-candidate-run.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "SWD_HU33_21-candidate-run.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "00_SS2-88-F_comp-candidate-events.json": "43b4dc510fad1e27843ab64f315e610e3855541008bc839ae39fd00f66cb38d1",
+    "03_SS3-84-Bb_comp-candidate-historical-raw.json": "82a81d0d0959e07a666ef02e7a1b3284f2ea4f728ab7e206c6722dbeea80ba10",
+    "01_Rock1-90-C#_comp-parity.json": "138271e64ebd119c3efce5b4a638a5dd1999d6aa0f606292f0ce5c1c7f5108cf",
+    "03_SS3-84-Bb_comp-candidate-run.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "02_Funk3-112-C#_comp-candidate-events.json": "64e65483791a64ff9006d8db5fe0a7d419233bbb342258a2e078c1ab58a4904c",
+    "05_Funk2-119-G_comp-parity.json": "f959f711c44de2572f3b56057d45264afbed64ab1f8d5da0d34dbdd1f19718db",
+    "SWD_HU33_21-candidate-config.json": "9e5a925fe820ef1f17fd9cdab7d0b5c6aad517eac44137b081be48b17d6af920",
+    "05_Funk2-119-G_comp-baseline-config.json": "a7d0f1c776002a4f2fb2bddd47eecc4d2879a181ef7bc3b253c1d71d1e311c16",
+    "04_Rock2-142-D_comp-candidate-run.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "SWD_HU33_21-baseline-events.json": "24d931ae7d4a38a7de4cae733e75f49b0835611baceebf60827e05dea992771d",
+    "SWD_HU33_04-parity.json": "6a4447f20b57308773c398856b0407c4a2e927678edbc469c1380a6898364421",
+    "SWD_HU33_21-parity.json": "d359cf1953c2194a9b99669f40563cc782d85fb23f34cf65f0bef434ce84b19e",
+    "03_SS3-84-Bb_comp-candidate-events.json": "808dadba174a41ecb494d149c17d1a39a81b1f5c26fbdea6203addb5c847dd43",
+    "SWD_HU33_18-baseline-events.json": "03453bdffd5910b01a10ba8d5715dae3b362b481d5c173792e85975f3535e9e4",
+    "SWD_HU33_04-candidate-config.json": "3337c75eb05c54410d447bc0f4d2c841b52759c0c6eadb10f3afdfc580d5fa70",
+    "SWD_HU33_04-baseline-config.json": "42bf1ebad18b32637e9d61f2787b57bf1800f01251cc17ff14f9003472d52450",
+    "SWD_HU33_04-candidate-run.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "SWD_HU33_18-candidate-config.json": "eb8278d8d350dd1f646b79768dfdf180e281294c803eb36cf1aee76b9f1beda0",
+    "00_SS2-88-F_comp-candidate-historical-raw.json": "14f1a1044068b0a711aecf99865a166c7c91c2dbf505481d59fcdddc0dbb2154",
+    "04_Rock2-142-D_comp-baseline-events.json": "d5b4a18017fa2daba8827252f1f0ea7aef8fbab64e13af52e1bd868df4675606",
+    "05_Funk2-119-G_comp-candidate-run.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "01_Rock1-90-C#_comp-baseline-events.json": "dfb1c07718be55f5c75a0b7cc22f3975f71effd5115f002b72e3d92caeb3772b",
+    "SWD_HU33_18-candidate-diagnostic.json": "12a1829661c8e1dd74737a92920c9a959f742b49873a1ac2c82dfd03c8287262",
+    "result.json": "435bb9453459461e1ed4a2be271ad862411edf8197caf48b4f328ce3687fa662",
+    "02_Funk3-112-C#_comp-candidate-run.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "03_SS3-84-Bb_comp-parity.json": "20cd4f5b42f175d2b15ac8899db4181405d078e2d06b2f25b44b1757ad1854a1",
+    "SWD_HU33_04-candidate-historical-raw.json": "b9b2fc79ed9cfec2e074c2b012dffea8c3cf720561a290efd657c85fa477a345",
+    "00_SS2-88-F_comp-baseline-historical-raw.json": "87bb5a211130202705196ae1078094e2c7a72797021871f6e44651fd3e879f74",
+    "03_SS3-84-Bb_comp-baseline-historical-raw.json": "dbe2293e302850615c3530abcd5615d1be79d2776dd2e4138c7001aa8737b4ad",
+    "03_SS3-84-Bb_comp-baseline-run.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "00_SS2-88-F_comp-candidate-diagnostic.json": "558a4c6319b8c3fb379c22f0e8f93d031a02407b953a1978fd67d9940f356490",
+    "02_Funk3-112-C#_comp-candidate-config.json": "5d561930366a93bf0aee3eecd33480191fbeb1538788d4d715d1468c8e3beb9a",
+    "02_Funk3-112-C#_comp-baseline-historical-raw.json": "2f62eacd6a5732acae488524beb46e11bf655b712b82aab15ed23ad23a9bce79",
+    "04_Rock2-142-D_comp-baseline-config.json": "8988b290923a2d3fc30467b44acbd938ffa1ab10aacfaabaef7615adc761fa29",
+    "01_Rock1-90-C#_comp-candidate-run.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "verification-delivery.json": "310108276bb2b4e93434c12ca88431ad6795c6b7553b2e78764a306ecb6f3f8a",
+    "04_Rock2-142-D_comp-baseline-run.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "SWD_HU33_21-candidate-events.json": "24bc221eca2a172b8791e7638b83e7a1190d8ce1fcb962f7e0679f73ec1da3a4",
+    "SWD_HU33_18-baseline-config.json": "000d5b534be8dbf4a7bbf888342c4be83b93075e3463eb5a8bbf1b2536733eaf",
+    "SWD_HU33_18-baseline-run.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "01_Rock1-90-C#_comp-baseline-config.json": "fdad36c8c48463db0b56502d854495625066b49440bc1db22a457a4981fc6c91",
+    "04_Rock2-142-D_comp-candidate-config.json": "4ec720dfd8e79a29515fd1da0afb7ae00912f83fae09a0dadb1e94a9dfd49a85",
+    "05_Funk2-119-G_comp-candidate-diagnostic.json": "3dcdbb1007f7f0d3a8f4e6a69faf42a55d9a576b3cfc57f03610aed40b597e0b",
+    "03_SS3-84-Bb_comp-candidate-config.json": "9150f2b621ec8220e463dcf019b7a3a7680462e7ad07795cff96af5ade785352",
+    "05_Funk2-119-G_comp-baseline-historical-raw.json": "f90c924b91576f451efb3bc4427ff5d48ce49c0317b980606c001d8a7fe76ead",
+    "SWD_HU33_21-baseline-config.json": "926605d408a5b65558e0d4290941087976fd9098dc9f14430a988eff4ca3fd87",
+    "00_SS2-88-F_comp-candidate-run.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "SWD_HU33_21-baseline-run.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "04_Rock2-142-D_comp-baseline-diagnostic.json": "3611365abe581d6435c37c75e06df9102f6e958ae6c0d725a52298184279da73",
+    "01_Rock1-90-C#_comp-baseline-diagnostic.json": "e9714ea8d1e0141d059a44fb6abd5f3209a6e30390da7bc59eed069bbdcf8609",
+    "SWD_HU33_04-baseline-events.json": "fd1ffadd249116ce6e5574ee45804ede5148351affb39df076cc6722249486e3",
+    "SWD_HU33_18-parity.json": "6a4447f20b57308773c398856b0407c4a2e927678edbc469c1380a6898364421",
+    "05_Funk2-119-G_comp-candidate-historical-raw.json": "841cf6d3dafbbcdc627205a6c4818807b28463a798b7808537b2373eaa8c999b",
+    "SWD_HU33_04-baseline-diagnostic.json": "59cff05ef31cf0737a555f0cc8d43da390b963c3f449dbb8e6873b93035694da",
+    "00_SS2-88-F_comp-candidate-config.json": "62581f25c381bb490778d2593cac987f20ab796402af6b05513bfe3ee6a27f79",
+    "01_Rock1-90-C#_comp-candidate-config.json": "caa6e503874d88a87ca6968454ca2212b894424eaa9704621b8889983c8f89bc",
+    "03_SS3-84-Bb_comp-candidate-diagnostic.json": "d6c1885fd3f09fe1ff4c6d9e2323003b247c3594ff07fa8402e2b5dfc8f724e0",
+    "01_Rock1-90-C#_comp-baseline-historical-raw.json": "be8f8ca0216dd9558078791a70d35679e8e8a7ee0c88e060265eea04dd40c598",
+    "SWD_HU33_04-candidate-events.json": "1a2236183913a85c9a8245d20a4cd467e80af3495e35d7b27a259a9216492bec",
+    "SWD_HU33_04-baseline-run.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "00_SS2-88-F_comp-parity.json": "20cd4f5b42f175d2b15ac8899db4181405d078e2d06b2f25b44b1757ad1854a1",
+    "01_Rock1-90-C#_comp-candidate-diagnostic.json": "e032ddfc77fe4a3a41105fd6638ede85146d178cd7c6285414d398f03016049b",
+    "03_SS3-84-Bb_comp-baseline-events.json": "658062a9161f8294787a791acc695959e69ab69a5fcca11d4059f550e65c5f3f",
+    "02_Funk3-112-C#_comp-baseline-config.json": "5cd4221b229d18763b121f1fb3fcb285c3195c750500ad7a9ad52c710bf65e28",
+    "SWD_HU33_21-candidate-diagnostic.json": "7c80a863a32d0d42c019ac0db4f48dbe52cf46ac9cb928e41b21a776247ab536",
+    "05_Funk2-119-G_comp-candidate-config.json": "4c86e7c1cea3865f11459ad129b6422c483fae796265d31ee7ad6243daeedeab",
+    "05_Funk2-119-G_comp-baseline-run.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "before-inference-manifest.json": "afb9499c3e1ecc87ce0202ff1e17d374b72b4ff688b3476a3abb55e8176eb0fd",
+    "SWD_HU33_04-candidate-diagnostic.json": "c2cb0e69bf2eaf2f9a8272e91a3dc46a05a5dd21678513ecc826048305884fee",
+    "SWD_HU33_18-baseline-diagnostic.json": "de898910b9987da18a4e6ac98cab7db4e1bd6068d07fb8fa3bd645591d881b16",
+    "04_Rock2-142-D_comp-candidate-events.json": "07a3354ea70704d7e2974dbca5f0af38cca7a1ae1912b0e5414ac36835a62a4a",
+    "SWD_HU33_18-candidate-events.json": "f84e41802f19e24daacf60b00067fe8e2a573ad149b659f2b654a0fe37d72bbd",
+    "04_Rock2-142-D_comp-candidate-diagnostic.json": "a6a5d074b74182d8458b6d9af489bd53a74fbb9f44be65477d792d4e978798a0",
+    "02_Funk3-112-C#_comp-baseline-events.json": "2dd20027935ef8db26f93590b40072573910aeacb97bb287d42d394c33c01789",
+    "05_Funk2-119-G_comp-candidate-events.json": "55e3f450a831c59a9300821a529ca8dd5e260b6add2b53d9db59881058549eae",
+    "02_Funk3-112-C#_comp-baseline-diagnostic.json": "b8309d221035b0636d6caac3b0291bec6337ab3fe3ce1839a6b960735453e1a0",
+    "SWD_HU33_18-candidate-historical-raw.json": "d717d8d1f3224b16e91f9984449357e0ffc3fbe3867296b4fae1558ebe5aaeb0",
+    "SWD_HU33_04-baseline-historical-raw.json": "02f6a1b52d401918e7cf55e514626f7f46aa4a21e799737a3adc46bfecef20a3",
+    "verification-tests.txt": "73d5a87cf7a6996da6a3c1f96a44aff7217d7b7d69580591e78fe62d6a5e2e00",
+    "01_Rock1-90-C#_comp-baseline-run.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "02_Funk3-112-C#_comp-parity.json": "d359cf1953c2194a9b99669f40563cc782d85fb23f34cf65f0bef434ce84b19e",
+    "SWD_HU33_21-baseline-diagnostic.json": "6f28f269ef23e62a1f2f1fc85f0dd92cad38c7f36a13c7d999b26eead943a8f8",
+    "01_Rock1-90-C#_comp-candidate-historical-raw.json": "5d4795ac88debf5675eee115fffefb04de861e7cc5630c7a418194f82fefe945",
+    "01_Rock1-90-C#_comp-candidate-events.json": "3938ac4c80de5974f97cd48f952dc801aa01520d503e9262e5906d7f355fc12d",
+    "SWD_HU33_18-baseline-historical-raw.json": "dc96402514e21cffcc735c904b3ea136e736f73e3c0d5636132d22940c513717",
+    "03_SS3-84-Bb_comp-baseline-config.json": "c7e4cfbdaf7594908651e54174853a4b5d75eab5c2ed71e3ba25bcaa58cb85d9",
+    "04_Rock2-142-D_comp-parity.json": "91e24fa502a126f0fd747602124173e8703df9673dec2cc3f7e31880d74f39ed",
+    "SWD_HU33_21-candidate-historical-raw.json": "fd6864ebe07261d12ce2fd566974918d1c484ad96fd3c7e6c44f52f78c332c7e",
+    "05_Funk2-119-G_comp-baseline-diagnostic.json": "ee742dbdae6aea2eec0bf57759fa5ece7726a791024ec85578c5aae357a5b890",
+    "02_Funk3-112-C#_comp-candidate-diagnostic.json": "e3286b4b35fb03cd0962d768908fd979a711a9c37520f4f0e3a7d572ac76e838"
+  },
+  "candidate_patch": "--- a/Chordino.cpp\n+++ b/Chordino.cpp\n@@ -493,9 +493,7 @@\n \t        \n         for (int iChord = 0; iChord < nChord; iChord++) {\n             tempchordvalue = 0;\n-            for (int iBin = 0; iBin < 12; iBin++) {\n-                tempchordvalue += m_chorddict[24 * iChord + iBin] * chroma[iBin];\n-            }\n+            // Fixed ablation: zero contribution from bass bins 0..11.\n             for (int iBin = 12; iBin < 24; iBin++) {\n                 tempchordvalue += m_chorddict[24 * iChord + iBin] * chroma[iBin];\n             }\n",
+  "sources": [
+    {
+      "recording_id": "00_SS2-88-F_comp",
+      "parity": {
+        "complete_historical_decoder": {
+          "passed": true,
+          "event_count": 20
+        },
+        "fixed_domain_raw": {
+          "passed": true,
+          "event_count": 20
+        },
+        "historical_projected_score": {
+          "passed": true,
+          "event_count": 20
+        }
+      },
+      "crop_audit": {
+        "original_audio_duration": 43.62920634920635,
+        "analysis_duration": 43.629200000000026,
+        "evaluation_interval": [
+          0.0,
+          43.629200000000026
+        ],
+        "historical_raw_event_count": 20,
+        "historical_raw_last_end": 43.792834467,
+        "raw_slash_chord_count": 1,
+        "outside_evaluation_events": [
+          {
+            "start": 38.127165532,
+            "end": 43.792834467,
+            "symbol": "Fm",
+            "excluded_seconds": 0.16363446699997297
+          }
+        ]
+      },
+      "raw_change": {
+        "baseline_event_count": 20,
+        "candidate_event_count": 21,
+        "first_difference": {
+          "passed": false,
+          "reason": "event_count",
+          "expected": 20,
+          "actual": 21
+        }
+      },
+      "baseline": {
+        "summary": {
+          "interval": [
+            0.0,
+            43.629200000000026
+          ],
+          "duration_seconds": 43.629200000000026,
+          "known_reference_seconds": 43.629200000000026,
+          "reference_unknown_seconds": 0.0,
+          "label_error_seconds": 13.239117708909088,
+          "category_seconds": {
+            "reference_unknown": 0.0,
+            "estimate_unknown": 0.0,
+            "correct_no_chord": 0.0,
+            "missed_chord": 0.232199546,
+            "false_chord": 0.0,
+            "wrong_root": 3.190583389272721,
+            "same_root_wrong_quality": 9.816334773636369,
+            "bass_only": 0.0,
+            "exact_match": 30.390082291090938
+          },
+          "overlays_not_additive": {
+            "wrong_root_interior_seconds": 1.6432550004545519,
+            "wrong_root_shared_pitch_set_seconds": 0,
+            "wrong_root_is_reference_tone_seconds": 0.46011131709091124,
+            "reference_omits_root_seconds": 0
+          },
+          "metrics": {
+            "root": {
+              "scored_seconds": 43.629200000000026,
+              "unscored_seconds": 0.0,
+              "correct_seconds": 40.206417064727304,
+              "error_seconds": 3.4227829352727213,
+              "scored_fraction": 1.0,
+              "accuracy": 0.921548345253346
+            },
+            "majmin": {
+              "scored_seconds": 29.992836363636393,
+              "unscored_seconds": 13.636363636363633,
+              "correct_seconds": 28.01754054718185,
+              "error_seconds": 1.975295816454544,
+              "scored_fraction": 0.687448689493192,
+              "accuracy": 0.9341410798063297
+            }
+          }
+        },
+        "boundaries": {
+          "tolerance_seconds": 0.25,
+          "matching": "one-to-one maximum-cardinality, label-independent; positive lag means estimate late",
+          "reference_count": 13,
+          "estimated_count": 20,
+          "matched_count": 12,
+          "precision": 0.6,
+          "recall": 0.9230769230769231,
+          "unmatched_reference_count": 1,
+          "unmatched_estimate_count": 8,
+          "excluded_estimate_unknown_reference_count": 0,
+          "matched_mean_absolute_lag_seconds": 0.08686593846212028
+        },
+        "inference_seconds": 2.1254571769968607
+      },
+      "candidate": {
+        "summary": {
+          "interval": [
+            0.0,
+            43.629200000000026
+          ],
+          "duration_seconds": 43.629200000000026,
+          "known_reference_seconds": 43.629200000000026,
+          "reference_unknown_seconds": 0.0,
+          "label_error_seconds": 14.012170685272732,
+          "category_seconds": {
+            "reference_unknown": 0.0,
+            "estimate_unknown": 0.0,
+            "correct_no_chord": 0.0,
+            "missed_chord": 0.232199546,
+            "false_chord": 0.0,
+            "wrong_root": 4.2551391473636375,
+            "same_root_wrong_quality": 9.524831991909094,
+            "bass_only": 0.0,
+            "exact_match": 29.617029314727294
+          },
+          "overlays_not_additive": {
+            "wrong_root_interior_seconds": 2.0720531864545517,
+            "wrong_root_shared_pitch_set_seconds": 0,
+            "wrong_root_is_reference_tone_seconds": 0.8780705000909172,
+            "reference_omits_root_seconds": 0
+          },
+          "metrics": {
+            "root": {
+              "scored_seconds": 43.629200000000026,
+              "unscored_seconds": 0.0,
+              "correct_seconds": 39.141861306636386,
+              "error_seconds": 4.48733869336364,
+              "scored_fraction": 1.0,
+              "accuracy": 0.8971482701180944
+            },
+            "majmin": {
+              "scored_seconds": 29.992836363636393,
+              "unscored_seconds": 13.636363636363633,
+              "correct_seconds": 27.852494166727297,
+              "error_seconds": 2.1403421969090957,
+              "scored_fraction": 0.687448689493192,
+              "accuracy": 0.9286382197749037
+            }
+          }
+        },
+        "boundaries": {
+          "tolerance_seconds": 0.25,
+          "matching": "one-to-one maximum-cardinality, label-independent; positive lag means estimate late",
+          "reference_count": 13,
+          "estimated_count": 21,
+          "matched_count": 11,
+          "precision": 0.5238095238095238,
+          "recall": 0.8461538461538461,
+          "unmatched_reference_count": 2,
+          "unmatched_estimate_count": 10,
+          "excluded_estimate_unknown_reference_count": 0,
+          "matched_mean_absolute_lag_seconds": 0.08482599644628053
+        },
+        "inference_seconds": 2.082005702017341
+      }
+    },
+    {
+      "recording_id": "01_Rock1-90-C#_comp",
+      "parity": {
+        "complete_historical_decoder": {
+          "passed": true,
+          "event_count": 6
+        },
+        "fixed_domain_raw": {
+          "passed": true,
+          "event_count": 6
+        },
+        "historical_projected_score": {
+          "passed": true,
+          "event_count": 6
+        }
+      },
+      "crop_audit": {
+        "original_audio_duration": 32.0,
+        "analysis_duration": 31.999999999999993,
+        "evaluation_interval": [
+          0.0,
+          31.999999999999993
+        ],
+        "historical_raw_event_count": 6,
+        "historical_raw_last_end": 32.182857142,
+        "raw_slash_chord_count": 0,
+        "outside_evaluation_events": [
+          {
+            "start": 26.563628117,
+            "end": 32.182857142,
+            "symbol": "C#",
+            "excluded_seconds": 0.18285714200001024
+          }
+        ]
+      },
+      "raw_change": {
+        "baseline_event_count": 6,
+        "candidate_event_count": 6,
+        "first_difference": {
+          "passed": false,
+          "reason": "event",
+          "index": 0,
+          "expected": {
+            "symbol": "C#",
+            "start": 0.232199546,
+            "end": 10.402539682
+          },
+          "actual": {
+            "symbol": "C#",
+            "start": 0.232199546,
+            "end": 10.448979591
+          }
+        }
+      },
+      "baseline": {
+        "summary": {
+          "interval": [
+            0.0,
+            31.999999999999993
+          ],
+          "duration_seconds": 31.999999999999993,
+          "known_reference_seconds": 31.999999999999993,
+          "reference_unknown_seconds": 0.0,
+          "label_error_seconds": 0.8177777796666632,
+          "category_seconds": {
+            "reference_unknown": 0.0,
+            "estimate_unknown": 0.0,
+            "correct_no_chord": 0.0,
+            "missed_chord": 0.232199546,
+            "false_chord": 0.0,
+            "wrong_root": 0.5855782336666646,
+            "same_root_wrong_quality": 0.0,
+            "bass_only": 0.0,
+            "exact_match": 31.18222222033333
+          },
+          "overlays_not_additive": {
+            "wrong_root_interior_seconds": 0.01412698466666562,
+            "wrong_root_shared_pitch_set_seconds": 0,
+            "wrong_root_is_reference_tone_seconds": 0.2844444459999984,
+            "reference_omits_root_seconds": 0
+          },
+          "metrics": {
+            "root": {
+              "scored_seconds": 31.999999999999993,
+              "unscored_seconds": 0.0,
+              "correct_seconds": 31.18222222033333,
+              "error_seconds": 0.8177777796666632,
+              "scored_fraction": 1.0,
+              "accuracy": 0.9744444443854168
+            },
+            "majmin": {
+              "scored_seconds": 31.999999999999993,
+              "unscored_seconds": 0.0,
+              "correct_seconds": 31.18222222033333,
+              "error_seconds": 0.8177777796666632,
+              "scored_fraction": 1.0,
+              "accuracy": 0.9744444443854168
+            }
+          }
+        },
+        "boundaries": {
+          "tolerance_seconds": 0.25,
+          "matching": "one-to-one maximum-cardinality, label-independent; positive lag means estimate late",
+          "reference_count": 5,
+          "estimated_count": 6,
+          "matched_count": 4,
+          "precision": 0.6666666666666666,
+          "recall": 0.8,
+          "unmatched_reference_count": 1,
+          "unmatched_estimate_count": 2,
+          "excluded_estimate_unknown_reference_count": 0,
+          "matched_mean_absolute_lag_seconds": 0.08036281224999975
+        },
+        "inference_seconds": 1.8356868000118993
+      },
+      "candidate": {
+        "summary": {
+          "interval": [
+            0.0,
+            31.999999999999993
+          ],
+          "duration_seconds": 31.999999999999993,
+          "known_reference_seconds": 31.999999999999993,
+          "reference_unknown_seconds": 0.0,
+          "label_error_seconds": 0.8177777796666632,
+          "category_seconds": {
+            "reference_unknown": 0.0,
+            "estimate_unknown": 0.0,
+            "correct_no_chord": 0.0,
+            "missed_chord": 0.232199546,
+            "false_chord": 0.0,
+            "wrong_root": 0.5855782336666646,
+            "same_root_wrong_quality": 0.0,
+            "bass_only": 0.0,
+            "exact_match": 31.18222222033333
+          },
+          "overlays_not_additive": {
+            "wrong_root_interior_seconds": 0.0,
+            "wrong_root_shared_pitch_set_seconds": 0,
+            "wrong_root_is_reference_tone_seconds": 0.33088435499999846,
+            "reference_omits_root_seconds": 0
+          },
+          "metrics": {
+            "root": {
+              "scored_seconds": 31.999999999999993,
+              "unscored_seconds": 0.0,
+              "correct_seconds": 31.18222222033333,
+              "error_seconds": 0.8177777796666632,
+              "scored_fraction": 1.0,
+              "accuracy": 0.9744444443854168
+            },
+            "majmin": {
+              "scored_seconds": 31.999999999999993,
+              "unscored_seconds": 0.0,
+              "correct_seconds": 31.18222222033333,
+              "error_seconds": 0.8177777796666632,
+              "scored_fraction": 1.0,
+              "accuracy": 0.9744444443854168
+            }
+          }
+        },
+        "boundaries": {
+          "tolerance_seconds": 0.25,
+          "matching": "one-to-one maximum-cardinality, label-independent; positive lag means estimate late",
+          "reference_count": 5,
+          "estimated_count": 6,
+          "matched_count": 5,
+          "precision": 0.8333333333333334,
+          "recall": 1.0,
+          "unmatched_reference_count": 0,
+          "unmatched_estimate_count": 1,
+          "excluded_estimate_unknown_reference_count": 0,
+          "matched_mean_absolute_lag_seconds": 0.11711564673333293
+        },
+        "inference_seconds": 1.8368650589836761
+      }
+    },
+    {
+      "recording_id": "02_Funk3-112-C#_comp",
+      "parity": {
+        "complete_historical_decoder": {
+          "passed": true,
+          "event_count": 22
+        },
+        "fixed_domain_raw": {
+          "passed": true,
+          "event_count": 22
+        },
+        "historical_projected_score": {
+          "passed": true,
+          "event_count": 22
+        }
+      },
+      "crop_audit": {
+        "original_audio_duration": 34.284399092970524,
+        "analysis_duration": 34.284399092970524,
+        "evaluation_interval": [
+          0.0,
+          34.284399092970524
+        ],
+        "historical_raw_event_count": 22,
+        "historical_raw_last_end": 34.458412698,
+        "raw_slash_chord_count": 3,
+        "outside_evaluation_events": [
+          {
+            "start": 33.66893424,
+            "end": 34.458412698,
+            "symbol": "Dm7b5",
+            "excluded_seconds": 0.17401360502947227
+          }
+        ]
+      },
+      "raw_change": {
+        "baseline_event_count": 22,
+        "candidate_event_count": 18,
+        "first_difference": {
+          "passed": false,
+          "reason": "event_count",
+          "expected": 22,
+          "actual": 18
+        }
+      },
+      "baseline": {
+        "summary": {
+          "interval": [
+            0.0,
+            34.284399092970524
+          ],
+          "duration_seconds": 34.284399092970524,
+          "known_reference_seconds": 34.284399092970524,
+          "reference_unknown_seconds": 0.0,
+          "label_error_seconds": 30.575827664827667,
+          "category_seconds": {
+            "reference_unknown": 0.0,
+            "estimate_unknown": 0.0,
+            "correct_no_chord": 0.0,
+            "missed_chord": 0.232199546,
+            "false_chord": 0.0,
+            "wrong_root": 5.80195012025623,
+            "same_root_wrong_quality": 24.541677998571437,
+            "bass_only": 0.0,
+            "exact_match": 3.7085714281428572
+          },
+          "overlays_not_additive": {
+            "wrong_root_interior_seconds": 2.814285716541953,
+            "wrong_root_shared_pitch_set_seconds": 0,
+            "wrong_root_is_reference_tone_seconds": 0.5368707514285682,
+            "reference_omits_root_seconds": 0
+          },
+          "metrics": {
+            "root": {
+              "scored_seconds": 34.284399092970524,
+              "unscored_seconds": 0.0,
+              "correct_seconds": 28.250249426714294,
+              "error_seconds": 6.03414966625623,
+              "scored_fraction": 1.0,
+              "accuracy": 0.8239972166380062
+            },
+            "majmin": {
+              "scored_seconds": 4.285714285714286,
+              "unscored_seconds": 29.99868480725624,
+              "correct_seconds": 3.7085714281428572,
+              "error_seconds": 0.5771428575714284,
+              "scored_fraction": 0.1250047951574862,
+              "accuracy": 0.8653333332333334
+            }
+          }
+        },
+        "boundaries": {
+          "tolerance_seconds": 0.25,
+          "matching": "one-to-one maximum-cardinality, label-independent; positive lag means estimate late",
+          "reference_count": 15,
+          "estimated_count": 22,
+          "matched_count": 12,
+          "precision": 0.5454545454545454,
+          "recall": 0.8,
+          "unmatched_reference_count": 3,
+          "unmatched_estimate_count": 10,
+          "excluded_estimate_unknown_reference_count": 0,
+          "matched_mean_absolute_lag_seconds": 0.1231821622619043
+        },
+        "inference_seconds": 1.9144362619845197
+      },
+      "candidate": {
+        "summary": {
+          "interval": [
+            0.0,
+            34.284399092970524
+          ],
+          "duration_seconds": 34.284399092970524,
+          "known_reference_seconds": 34.284399092970524,
+          "reference_unknown_seconds": 0.0,
+          "label_error_seconds": 32.52630385582766,
+          "category_seconds": {
+            "reference_unknown": 0.0,
+            "estimate_unknown": 0.0,
+            "correct_no_chord": 0.0,
+            "missed_chord": 0.232199546,
+            "false_chord": 0.0,
+            "wrong_root": 7.070657602714277,
+            "same_root_wrong_quality": 25.22344670711339,
+            "bass_only": 0.0,
+            "exact_match": 1.7580952371428573
+          },
+          "overlays_not_additive": {
+            "wrong_root_interior_seconds": 4.02063492357143,
+            "wrong_root_shared_pitch_set_seconds": 0,
+            "wrong_root_is_reference_tone_seconds": 2.4873469414285685,
+            "reference_omits_root_seconds": 0
+          },
+          "metrics": {
+            "root": {
+              "scored_seconds": 34.284399092970524,
+              "unscored_seconds": 0.0,
+              "correct_seconds": 26.981541944256247,
+              "error_seconds": 7.302857148714278,
+              "scored_fraction": 1.0,
+              "accuracy": 0.7869918288808039
+            },
+            "majmin": {
+              "scored_seconds": 4.285714285714286,
+              "unscored_seconds": 29.99868480725624,
+              "correct_seconds": 1.7580952371428573,
+              "error_seconds": 2.5276190485714283,
+              "scored_fraction": 0.1250047951574862,
+              "accuracy": 0.410222222
+            }
+          }
+        },
+        "boundaries": {
+          "tolerance_seconds": 0.25,
+          "matching": "one-to-one maximum-cardinality, label-independent; positive lag means estimate late",
+          "reference_count": 15,
+          "estimated_count": 18,
+          "matched_count": 8,
+          "precision": 0.4444444444444444,
+          "recall": 0.5333333333333333,
+          "unmatched_reference_count": 7,
+          "unmatched_estimate_count": 10,
+          "excluded_estimate_unknown_reference_count": 0,
+          "matched_mean_absolute_lag_seconds": 0.11598639512499909
+        },
+        "inference_seconds": 1.9039596150396392
+      }
+    },
+    {
+      "recording_id": "03_SS3-84-Bb_comp",
+      "parity": {
+        "complete_historical_decoder": {
+          "passed": true,
+          "event_count": 20
+        },
+        "fixed_domain_raw": {
+          "passed": true,
+          "event_count": 20
+        },
+        "historical_projected_score": {
+          "passed": true,
+          "event_count": 20
+        }
+      },
+      "crop_audit": {
+        "original_audio_duration": 45.70759637188208,
+        "analysis_duration": 45.70759637188208,
+        "evaluation_interval": [
+          0.0,
+          45.70759637188208
+        ],
+        "historical_raw_event_count": 20,
+        "historical_raw_last_end": 45.882630385,
+        "raw_slash_chord_count": 0,
+        "outside_evaluation_events": [
+          {
+            "start": 42.771156462,
+            "end": 45.882630385,
+            "symbol": "F",
+            "excluded_seconds": 0.17503401311791578
+          }
+        ]
+      },
+      "raw_change": {
+        "baseline_event_count": 20,
+        "candidate_event_count": 18,
+        "first_difference": {
+          "passed": false,
+          "reason": "event_count",
+          "expected": 20,
+          "actual": 18
+        }
+      },
+      "baseline": {
+        "summary": {
+          "interval": [
+            0.0,
+            45.70759637188208
+          ],
+          "duration_seconds": 45.70759637188208,
+          "known_reference_seconds": 45.70759637188208,
+          "reference_unknown_seconds": 0.0,
+          "label_error_seconds": 8.034829937285728,
+          "category_seconds": {
+            "reference_unknown": 0.0,
+            "estimate_unknown": 0.0,
+            "correct_no_chord": 0.0,
+            "missed_chord": 0.232199546,
+            "false_chord": 0.0,
+            "wrong_root": 2.4025396885714363,
+            "same_root_wrong_quality": 5.400090702714286,
+            "bass_only": 0.0,
+            "exact_match": 37.672766434596355
+          },
+          "overlays_not_additive": {
+            "wrong_root_interior_seconds": 0.2865306152857112,
+            "wrong_root_shared_pitch_set_seconds": 0,
+            "wrong_root_is_reference_tone_seconds": 0.6142403654285795,
+            "reference_omits_root_seconds": 0
+          },
+          "metrics": {
+            "root": {
+              "scored_seconds": 45.70759637188208,
+              "unscored_seconds": 0.0,
+              "correct_seconds": 43.07285713731065,
+              "error_seconds": 2.634739234571434,
+              "scored_fraction": 1.0,
+              "accuracy": 0.9423566443281134
+            },
+            "majmin": {
+              "scored_seconds": 39.993310657596375,
+              "unscored_seconds": 5.714285714285708,
+              "correct_seconds": 37.67276643459636,
+              "error_seconds": 2.320544223000013,
+              "scored_fraction": 0.8749817061524381,
+              "accuracy": 0.9419766909804641
+            }
+          }
+        },
+        "boundaries": {
+          "tolerance_seconds": 0.25,
+          "matching": "one-to-one maximum-cardinality, label-independent; positive lag means estimate late",
+          "reference_count": 15,
+          "estimated_count": 20,
+          "matched_count": 14,
+          "precision": 0.7,
+          "recall": 0.9333333333333333,
+          "unmatched_reference_count": 1,
+          "unmatched_estimate_count": 6,
+          "excluded_estimate_unknown_reference_count": 0,
+          "matched_mean_absolute_lag_seconds": 0.09010690022449028
+        },
+        "inference_seconds": 2.1387989060021937
+      },
+      "candidate": {
+        "summary": {
+          "interval": [
+            0.0,
+            45.70759637188208
+          ],
+          "duration_seconds": 45.70759637188208,
+          "known_reference_seconds": 45.70759637188208,
+          "reference_unknown_seconds": 0.0,
+          "label_error_seconds": 8.116462591857164,
+          "category_seconds": {
+            "reference_unknown": 0.0,
+            "estimate_unknown": 0.0,
+            "correct_no_chord": 0.0,
+            "missed_chord": 0.232199546,
+            "false_chord": 0.0,
+            "wrong_root": 2.4729251777143046,
+            "same_root_wrong_quality": 5.411337868142854,
+            "bass_only": 0.0,
+            "exact_match": 37.59113378002492
+          },
+          "overlays_not_additive": {
+            "wrong_root_interior_seconds": 0.2865306152857112,
+            "wrong_root_shared_pitch_set_seconds": 0,
+            "wrong_root_is_reference_tone_seconds": 0.6494331100000119,
+            "reference_omits_root_seconds": 0
+          },
+          "metrics": {
+            "root": {
+              "scored_seconds": 45.70759637188208,
+              "unscored_seconds": 0.0,
+              "correct_seconds": 43.00247164816778,
+              "error_seconds": 2.705124723714306,
+              "scored_fraction": 1.0,
+              "accuracy": 0.9408167364193665
+            },
+            "majmin": {
+              "scored_seconds": 39.993310657596375,
+              "unscored_seconds": 5.714285714285708,
+              "correct_seconds": 37.591133780024926,
+              "error_seconds": 2.402176877571449,
+              "scored_fraction": 0.8749817061524381,
+              "accuracy": 0.9399355332661069
+            }
+          }
+        },
+        "boundaries": {
+          "tolerance_seconds": 0.25,
+          "matching": "one-to-one maximum-cardinality, label-independent; positive lag means estimate late",
+          "reference_count": 15,
+          "estimated_count": 18,
+          "matched_count": 13,
+          "precision": 0.7222222222222222,
+          "recall": 0.8666666666666667,
+          "unmatched_reference_count": 2,
+          "unmatched_estimate_count": 5,
+          "excluded_estimate_unknown_reference_count": 0,
+          "matched_mean_absolute_lag_seconds": 0.10008023763736397
+        },
+        "inference_seconds": 2.138387989019975
+      }
+    },
+    {
+      "recording_id": "04_Rock2-142-D_comp",
+      "parity": {
+        "complete_historical_decoder": {
+          "passed": true,
+          "event_count": 14
+        },
+        "fixed_domain_raw": {
+          "passed": true,
+          "event_count": 14
+        },
+        "historical_projected_score": {
+          "passed": true,
+          "event_count": 14
+        }
+      },
+      "crop_audit": {
+        "original_audio_duration": 27.041609977324264,
+        "analysis_duration": 27.041600000000003,
+        "evaluation_interval": [
+          0.0,
+          27.041600000000003
+        ],
+        "historical_raw_event_count": 14,
+        "historical_raw_last_end": 27.213786848,
+        "raw_slash_chord_count": 0,
+        "outside_evaluation_events": [
+          {
+            "start": 23.591473922,
+            "end": 27.213786848,
+            "symbol": "Dm",
+            "excluded_seconds": 0.17218684799999906
+          }
+        ]
+      },
+      "raw_change": {
+        "baseline_event_count": 14,
+        "candidate_event_count": 14,
+        "first_difference": {
+          "passed": false,
+          "reason": "event",
+          "index": 1,
+          "expected": {
+            "symbol": "C",
+            "start": 1.486077097,
+            "end": 3.204353741
+          },
+          "actual": {
+            "symbol": "C",
+            "start": 1.486077097,
+            "end": 3.343673469
+          }
+        }
+      },
+      "baseline": {
+        "summary": {
+          "interval": [
+            0.0,
+            27.041600000000003
+          ],
+          "duration_seconds": 27.041600000000003,
+          "known_reference_seconds": 27.041600000000003,
+          "reference_unknown_seconds": 0.0,
+          "label_error_seconds": 9.840140529732398,
+          "category_seconds": {
+            "reference_unknown": 0.0,
+            "estimate_unknown": 0.0,
+            "correct_no_chord": 0.0,
+            "missed_chord": 0.232199546,
+            "false_chord": 0.0,
+            "wrong_root": 4.040905758647891,
+            "same_root_wrong_quality": 5.567035225084506,
+            "bass_only": 0.0,
+            "exact_match": 17.201459470267604
+          },
+          "overlays_not_additive": {
+            "wrong_root_interior_seconds": 1.3992545780422505,
+            "wrong_root_shared_pitch_set_seconds": 0,
+            "wrong_root_is_reference_tone_seconds": 2.0630193867183095,
+            "reference_omits_root_seconds": 0
+          },
+          "metrics": {
+            "root": {
+              "scored_seconds": 27.041600000000003,
+              "unscored_seconds": 0.0,
+              "correct_seconds": 22.76849469535211,
+              "error_seconds": 4.273105304647892,
+              "scored_fraction": 1.0,
+              "accuracy": 0.8419803079459836
+            },
+            "majmin": {
+              "scored_seconds": 21.971177464788738,
+              "unscored_seconds": 5.070422535211264,
+              "correct_seconds": 18.715672366197182,
+              "error_seconds": 3.2555050985915557,
+              "scored_fraction": 0.8124954686404923,
+              "accuracy": 0.8518283736131637
+            }
+          }
+        },
+        "boundaries": {
+          "tolerance_seconds": 0.25,
+          "matching": "one-to-one maximum-cardinality, label-independent; positive lag means estimate late",
+          "reference_count": 13,
+          "estimated_count": 14,
+          "matched_count": 8,
+          "precision": 0.5714285714285714,
+          "recall": 0.6153846153846154,
+          "unmatched_reference_count": 5,
+          "unmatched_estimate_count": 6,
+          "excluded_estimate_unknown_reference_count": 0,
+          "matched_mean_absolute_lag_seconds": 0.14270639757570502
+        },
+        "inference_seconds": 1.7328143020276912
+      },
+      "candidate": {
+        "summary": {
+          "interval": [
+            0.0,
+            27.041600000000003
+          ],
+          "duration_seconds": 27.041600000000003,
+          "known_reference_seconds": 27.041600000000003,
+          "reference_unknown_seconds": 0.0,
+          "label_error_seconds": 9.840140529732398,
+          "category_seconds": {
+            "reference_unknown": 0.0,
+            "estimate_unknown": 0.0,
+            "correct_no_chord": 0.0,
+            "missed_chord": 0.232199546,
+            "false_chord": 0.0,
+            "wrong_root": 5.2680067763662,
+            "same_root_wrong_quality": 4.339934207366197,
+            "bass_only": 0.0,
+            "exact_match": 17.201459470267604
+          },
+          "overlays_not_additive": {
+            "wrong_root_interior_seconds": 2.5156753237605605,
+            "wrong_root_shared_pitch_set_seconds": 0,
+            "wrong_root_is_reference_tone_seconds": 3.4294401324366195,
+            "reference_omits_root_seconds": 0
+          },
+          "metrics": {
+            "root": {
+              "scored_seconds": 27.041600000000003,
+              "unscored_seconds": 0.0,
+              "correct_seconds": 21.541393677633803,
+              "error_seconds": 5.5002063223662,
+              "scored_fraction": 1.0,
+              "accuracy": 0.7966020382534243
+            },
+            "majmin": {
+              "scored_seconds": 21.971177464788738,
+              "unscored_seconds": 5.070422535211264,
+              "correct_seconds": 18.854992094197183,
+              "error_seconds": 3.1161853705915554,
+              "scored_fraction": 0.8124954686404923,
+              "accuracy": 0.8581693959922908
+            }
+          }
+        },
+        "boundaries": {
+          "tolerance_seconds": 0.25,
+          "matching": "one-to-one maximum-cardinality, label-independent; positive lag means estimate late",
+          "reference_count": 13,
+          "estimated_count": 14,
+          "matched_count": 8,
+          "precision": 0.5714285714285714,
+          "recall": 0.6153846153846154,
+          "unmatched_reference_count": 5,
+          "unmatched_estimate_count": 6,
+          "excluded_estimate_unknown_reference_count": 0,
+          "matched_mean_absolute_lag_seconds": 0.125291431575705
+        },
+        "inference_seconds": 1.7430463040363975
+      }
+    },
+    {
+      "recording_id": "05_Funk2-119-G_comp",
+      "parity": {
+        "complete_historical_decoder": {
+          "passed": true,
+          "event_count": 28
+        },
+        "fixed_domain_raw": {
+          "passed": true,
+          "event_count": 28
+        },
+        "historical_projected_score": {
+          "passed": true,
+          "event_count": 28
+        }
+      },
+      "crop_audit": {
+        "original_audio_duration": 32.26319727891156,
+        "analysis_duration": 32.26319727891156,
+        "evaluation_interval": [
+          0.0,
+          32.26319727891156
+        ],
+        "historical_raw_event_count": 28,
+        "historical_raw_last_end": 32.415056689,
+        "raw_slash_chord_count": 11,
+        "outside_evaluation_events": [
+          {
+            "start": 31.532698412,
+            "end": 32.415056689,
+            "symbol": "Fdim",
+            "excluded_seconds": 0.1518594100884343
+          }
+        ]
+      },
+      "raw_change": {
+        "baseline_event_count": 28,
+        "candidate_event_count": 25,
+        "first_difference": {
+          "passed": false,
+          "reason": "event_count",
+          "expected": 28,
+          "actual": 25
+        }
+      },
+      "baseline": {
+        "summary": {
+          "interval": [
+            0.0,
+            32.26319727891156
+          ],
+          "duration_seconds": 32.26319727891156,
+          "known_reference_seconds": 32.26319727891156,
+          "reference_unknown_seconds": 0.0,
+          "label_error_seconds": 30.823560090911563,
+          "category_seconds": {
+            "reference_unknown": 0.0,
+            "estimate_unknown": 0.0,
+            "correct_no_chord": 0.0,
+            "missed_chord": 0.232199546,
+            "false_chord": 0.0,
+            "wrong_root": 24.91245965084434,
+            "same_root_wrong_quality": 5.6789008940672225,
+            "bass_only": 0.0,
+            "exact_match": 1.439637187999999
+          },
+          "overlays_not_additive": {
+            "wrong_root_interior_seconds": 18.706894757331735,
+            "wrong_root_shared_pitch_set_seconds": 1.784607176689074,
+            "wrong_root_is_reference_tone_seconds": 11.58386421413845,
+            "reference_omits_root_seconds": 14.111936774709882
+          },
+          "metrics": {
+            "root": {
+              "scored_seconds": 32.26319727891156,
+              "unscored_seconds": 0.0,
+              "correct_seconds": 7.1185380820672215,
+              "error_seconds": 25.14465919684434,
+              "scored_fraction": 1.0,
+              "accuracy": 0.22063957333578235
+            },
+            "majmin": {
+              "scored_seconds": 16.128743497398958,
+              "unscored_seconds": 16.134453781512605,
+              "correct_seconds": 3.065034013999997,
+              "error_seconds": 13.063709483398961,
+              "scored_fraction": 0.49991150467722895,
+              "accuracy": 0.19003551110440112
+            }
+          }
+        },
+        "boundaries": {
+          "tolerance_seconds": 0.25,
+          "matching": "one-to-one maximum-cardinality, label-independent; positive lag means estimate late",
+          "reference_count": 13,
+          "estimated_count": 28,
+          "matched_count": 6,
+          "precision": 0.21428571428571427,
+          "recall": 0.46153846153846156,
+          "unmatched_reference_count": 7,
+          "unmatched_estimate_count": 22,
+          "excluded_estimate_unknown_reference_count": 0,
+          "matched_mean_absolute_lag_seconds": 0.12160597576330545
+        },
+        "inference_seconds": 1.870279322960414
+      },
+      "candidate": {
+        "summary": {
+          "interval": [
+            0.0,
+            32.26319727891156
+          ],
+          "duration_seconds": 32.26319727891156,
+          "known_reference_seconds": 32.26319727891156,
+          "reference_unknown_seconds": 0.0,
+          "label_error_seconds": 30.823560090911563,
+          "category_seconds": {
+            "reference_unknown": 0.0,
+            "estimate_unknown": 0.0,
+            "correct_no_chord": 0.0,
+            "missed_chord": 0.232199546,
+            "false_chord": 0.0,
+            "wrong_root": 25.330418834844338,
+            "same_root_wrong_quality": 5.260941710067224,
+            "bass_only": 0.0,
+            "exact_match": 1.439637187999999
+          },
+          "overlays_not_additive": {
+            "wrong_root_interior_seconds": 19.24219287595358,
+            "wrong_root_shared_pitch_set_seconds": 1.784607176689074,
+            "wrong_root_is_reference_tone_seconds": 15.199433108340129,
+            "reference_omits_root_seconds": 14.111936774709882
+          },
+          "metrics": {
+            "root": {
+              "scored_seconds": 32.26319727891156,
+              "unscored_seconds": 0.0,
+              "correct_seconds": 6.700578898067223,
+              "error_seconds": 25.562618380844338,
+              "scored_fraction": 1.0,
+              "accuracy": 0.20768489992301456
+            },
+            "majmin": {
+              "scored_seconds": 16.128743497398958,
+              "unscored_seconds": 16.134453781512605,
+              "correct_seconds": 3.297233559999997,
+              "error_seconds": 12.83150993739896,
+              "scored_fraction": 0.49991150467722895,
+              "accuracy": 0.20443214070158247
+            }
+          }
+        },
+        "boundaries": {
+          "tolerance_seconds": 0.25,
+          "matching": "one-to-one maximum-cardinality, label-independent; positive lag means estimate late",
+          "reference_count": 13,
+          "estimated_count": 25,
+          "matched_count": 8,
+          "precision": 0.32,
+          "recall": 0.6153846153846154,
+          "unmatched_reference_count": 5,
+          "unmatched_estimate_count": 17,
+          "excluded_estimate_unknown_reference_count": 0,
+          "matched_mean_absolute_lag_seconds": 0.1534373748802524
+        },
+        "inference_seconds": 1.8652957130107097
+      }
+    },
+    {
+      "recording_id": "SWD_HU33_04",
+      "parity": {
+        "complete_historical_decoder": {
+          "passed": true,
+          "event_count": 34
+        },
+        "fixed_domain_raw": {
+          "passed": true,
+          "event_count": 34
+        },
+        "historical_projected_score": {
+          "passed": true,
+          "event_count": 34
+        }
+      },
+      "crop_audit": {
+        "original_audio_duration": 45.0,
+        "analysis_duration": 45.0,
+        "evaluation_interval": [
+          0.46,
+          45.0
+        ],
+        "historical_raw_event_count": 34,
+        "historical_raw_last_end": 45.0,
+        "raw_slash_chord_count": 7,
+        "outside_evaluation_events": [
+          {
+            "start": 0.232199546,
+            "end": 5.619229024,
+            "symbol": "Am",
+            "excluded_seconds": 0.2278004539999996
+          }
+        ]
+      },
+      "raw_change": {
+        "baseline_event_count": 34,
+        "candidate_event_count": 33,
+        "first_difference": {
+          "passed": false,
+          "reason": "event_count",
+          "expected": 34,
+          "actual": 33
+        }
+      },
+      "baseline": {
+        "summary": {
+          "interval": [
+            0.46,
+            45.0
+          ],
+          "duration_seconds": 44.54,
+          "known_reference_seconds": 44.54,
+          "reference_unknown_seconds": 0.0,
+          "label_error_seconds": 26.88376417199999,
+          "category_seconds": {
+            "reference_unknown": 0.0,
+            "estimate_unknown": 0.0,
+            "correct_no_chord": 0.0,
+            "missed_chord": 0.0,
+            "false_chord": 0.0,
+            "wrong_root": 15.92743763799999,
+            "same_root_wrong_quality": 7.736145126999998,
+            "bass_only": 3.220181407000002,
+            "exact_match": 17.65623582800001
+          },
+          "overlays_not_additive": {
+            "wrong_root_interior_seconds": 7.863197277999987,
+            "wrong_root_shared_pitch_set_seconds": 1.3467573700000006,
+            "wrong_root_is_reference_tone_seconds": 9.305850340999987,
+            "reference_omits_root_seconds": 0
+          },
+          "metrics": {
+            "root": {
+              "scored_seconds": 44.54,
+              "unscored_seconds": 0.0,
+              "correct_seconds": 28.61256236200001,
+              "error_seconds": 15.92743763799999,
+              "scored_fraction": 1.0,
+              "accuracy": 0.6424014899416257
+            },
+            "majmin": {
+              "scored_seconds": 36.10000000000001,
+              "unscored_seconds": 8.43999999999999,
+              "correct_seconds": 24.90077097900001,
+              "error_seconds": 11.199229020999997,
+              "scored_fraction": 0.8105074090704987,
+              "accuracy": 0.6897720492797785
+            }
+          }
+        },
+        "boundaries": {
+          "tolerance_seconds": 0.25,
+          "matching": "one-to-one maximum-cardinality, label-independent; positive lag means estimate late",
+          "reference_count": 38,
+          "estimated_count": 33,
+          "matched_count": 25,
+          "precision": 0.7575757575757576,
+          "recall": 0.6578947368421053,
+          "unmatched_reference_count": 13,
+          "unmatched_estimate_count": 8,
+          "excluded_estimate_unknown_reference_count": 0,
+          "matched_mean_absolute_lag_seconds": 0.06301496575999987
+        },
+        "inference_seconds": 2.151504520967137
+      },
+      "candidate": {
+        "summary": {
+          "interval": [
+            0.46,
+            45.0
+          ],
+          "duration_seconds": 44.54,
+          "known_reference_seconds": 44.54,
+          "reference_unknown_seconds": 0.0,
+          "label_error_seconds": 26.650022673999995,
+          "category_seconds": {
+            "reference_unknown": 0.0,
+            "estimate_unknown": 0.0,
+            "correct_no_chord": 0.0,
+            "missed_chord": 0.0,
+            "false_chord": 0.0,
+            "wrong_root": 17.347346934999983,
+            "same_root_wrong_quality": 4.57024943300001,
+            "bass_only": 4.732426306000004,
+            "exact_match": 17.889977326000004
+          },
+          "overlays_not_additive": {
+            "wrong_root_interior_seconds": 8.959909295999987,
+            "wrong_root_shared_pitch_set_seconds": 0,
+            "wrong_root_is_reference_tone_seconds": 9.50031746099999,
+            "reference_omits_root_seconds": 0
+          },
+          "metrics": {
+            "root": {
+              "scored_seconds": 44.54,
+              "unscored_seconds": 0.0,
+              "correct_seconds": 27.192653065000016,
+              "error_seconds": 17.347346934999983,
+              "scored_fraction": 1.0,
+              "accuracy": 0.6105220715087566
+            },
+            "majmin": {
+              "scored_seconds": 36.10000000000001,
+              "unscored_seconds": 8.43999999999999,
+              "correct_seconds": 25.550521547000013,
+              "error_seconds": 10.549478452999995,
+              "scored_fraction": 0.8105074090704987,
+              "accuracy": 0.7077706799722994
+            }
+          }
+        },
+        "boundaries": {
+          "tolerance_seconds": 0.25,
+          "matching": "one-to-one maximum-cardinality, label-independent; positive lag means estimate late",
+          "reference_count": 38,
+          "estimated_count": 32,
+          "matched_count": 24,
+          "precision": 0.75,
+          "recall": 0.631578947368421,
+          "unmatched_reference_count": 14,
+          "unmatched_estimate_count": 8,
+          "excluded_estimate_unknown_reference_count": 0,
+          "matched_mean_absolute_lag_seconds": 0.054930082875000154
+        },
+        "inference_seconds": 2.1380062319803983
+      }
+    },
+    {
+      "recording_id": "SWD_HU33_18",
+      "parity": {
+        "complete_historical_decoder": {
+          "passed": true,
+          "event_count": 34
+        },
+        "fixed_domain_raw": {
+          "passed": true,
+          "event_count": 34
+        },
+        "historical_projected_score": {
+          "passed": true,
+          "event_count": 34
+        }
+      },
+      "crop_audit": {
+        "original_audio_duration": 45.0,
+        "analysis_duration": 45.0,
+        "evaluation_interval": [
+          0.22,
+          42.7
+        ],
+        "historical_raw_event_count": 34,
+        "historical_raw_last_end": 45.0,
+        "raw_slash_chord_count": 1,
+        "outside_evaluation_events": [
+          {
+            "start": 42.028117913,
+            "end": 45.0,
+            "symbol": "Dm",
+            "excluded_seconds": 2.299999999999997
+          }
+        ]
+      },
+      "raw_change": {
+        "baseline_event_count": 34,
+        "candidate_event_count": 32,
+        "first_difference": {
+          "passed": false,
+          "reason": "event_count",
+          "expected": 34,
+          "actual": 32
+        }
+      },
+      "baseline": {
+        "summary": {
+          "interval": [
+            0.22,
+            42.7
+          ],
+          "duration_seconds": 42.480000000000004,
+          "known_reference_seconds": 42.480000000000004,
+          "reference_unknown_seconds": 0.0,
+          "label_error_seconds": 26.109977328000014,
+          "category_seconds": {
+            "reference_unknown": 0.0,
+            "estimate_unknown": 0.0,
+            "correct_no_chord": 0.0,
+            "missed_chord": 0.012199546000000006,
+            "false_chord": 0.0,
+            "wrong_root": 17.700181414,
+            "same_root_wrong_quality": 8.102947842000006,
+            "bass_only": 0.29464852600000313,
+            "exact_match": 16.37002267199999
+          },
+          "overlays_not_additive": {
+            "wrong_root_interior_seconds": 8.227120183,
+            "wrong_root_shared_pitch_set_seconds": 0,
+            "wrong_root_is_reference_tone_seconds": 10.266848069000007,
+            "reference_omits_root_seconds": 0
+          },
+          "metrics": {
+            "root": {
+              "scored_seconds": 42.480000000000004,
+              "unscored_seconds": 0.0,
+              "correct_seconds": 24.767619040000003,
+              "error_seconds": 17.71238096,
+              "scored_fraction": 1.0,
+              "accuracy": 0.583041879472693
+            },
+            "majmin": {
+              "scored_seconds": 34.120000000000005,
+              "unscored_seconds": 8.36,
+              "correct_seconds": 19.347437636999995,
+              "error_seconds": 14.77256236300001,
+              "scored_fraction": 0.8032015065913372,
+              "accuracy": 0.5670409623974206
+            }
+          }
+        },
+        "boundaries": {
+          "tolerance_seconds": 0.25,
+          "matching": "one-to-one maximum-cardinality, label-independent; positive lag means estimate late",
+          "reference_count": 46,
+          "estimated_count": 34,
+          "matched_count": 22,
+          "precision": 0.6470588235294118,
+          "recall": 0.4782608695652174,
+          "unmatched_reference_count": 24,
+          "unmatched_estimate_count": 12,
+          "excluded_estimate_unknown_reference_count": 0,
+          "matched_mean_absolute_lag_seconds": 0.07647289254545454
+        },
+        "inference_seconds": 2.136355345021002
+      },
+      "candidate": {
+        "summary": {
+          "interval": [
+            0.22,
+            42.7
+          ],
+          "duration_seconds": 42.480000000000004,
+          "known_reference_seconds": 42.480000000000004,
+          "reference_unknown_seconds": 0.0,
+          "label_error_seconds": 26.001814062000008,
+          "category_seconds": {
+            "reference_unknown": 0.0,
+            "estimate_unknown": 0.0,
+            "correct_no_chord": 0.0,
+            "missed_chord": 0.012199546000000006,
+            "false_chord": 0.0,
+            "wrong_root": 18.454875290000004,
+            "same_root_wrong_quality": 7.2400907,
+            "bass_only": 0.29464852600000313,
+            "exact_match": 16.478185937999996
+          },
+          "overlays_not_additive": {
+            "wrong_root_interior_seconds": 8.479614514000001,
+            "wrong_root_shared_pitch_set_seconds": 0,
+            "wrong_root_is_reference_tone_seconds": 11.704852605000008,
+            "reference_omits_root_seconds": 0
+          },
+          "metrics": {
+            "root": {
+              "scored_seconds": 42.480000000000004,
+              "unscored_seconds": 0.0,
+              "correct_seconds": 24.012925164,
+              "error_seconds": 18.467074836000005,
+              "scored_fraction": 1.0,
+              "accuracy": 0.5652760161016949
+            },
+            "majmin": {
+              "scored_seconds": 34.120000000000005,
+              "unscored_seconds": 8.36,
+              "correct_seconds": 19.135600903,
+              "error_seconds": 14.984399097000004,
+              "scored_fraction": 0.8032015065913372,
+              "accuracy": 0.5608323828546307
+            }
+          }
+        },
+        "boundaries": {
+          "tolerance_seconds": 0.25,
+          "matching": "one-to-one maximum-cardinality, label-independent; positive lag means estimate late",
+          "reference_count": 46,
+          "estimated_count": 32,
+          "matched_count": 20,
+          "precision": 0.625,
+          "recall": 0.43478260869565216,
+          "unmatched_reference_count": 26,
+          "unmatched_estimate_count": 12,
+          "excluded_estimate_unknown_reference_count": 0,
+          "matched_mean_absolute_lag_seconds": 0.07641043120000024
+        },
+        "inference_seconds": 2.1546527669997886
+      }
+    },
+    {
+      "recording_id": "SWD_HU33_21",
+      "parity": {
+        "complete_historical_decoder": {
+          "passed": true,
+          "event_count": 22
+        },
+        "fixed_domain_raw": {
+          "passed": true,
+          "event_count": 22
+        },
+        "historical_projected_score": {
+          "passed": true,
+          "event_count": 22
+        }
+      },
+      "crop_audit": {
+        "original_audio_duration": 45.0,
+        "analysis_duration": 45.0,
+        "evaluation_interval": [
+          0.34,
+          45.0
+        ],
+        "historical_raw_event_count": 22,
+        "historical_raw_last_end": 45.0,
+        "raw_slash_chord_count": 2,
+        "outside_evaluation_events": [
+          {
+            "start": 0.232199546,
+            "end": 6.965986394,
+            "symbol": "F",
+            "excluded_seconds": 0.10780045399999949
+          }
+        ]
+      },
+      "raw_change": {
+        "baseline_event_count": 22,
+        "candidate_event_count": 26,
+        "first_difference": {
+          "passed": false,
+          "reason": "event_count",
+          "expected": 22,
+          "actual": 26
+        }
+      },
+      "baseline": {
+        "summary": {
+          "interval": [
+            0.34,
+            45.0
+          ],
+          "duration_seconds": 44.66,
+          "known_reference_seconds": 44.66,
+          "reference_unknown_seconds": 0.0,
+          "label_error_seconds": 17.754693879999998,
+          "category_seconds": {
+            "reference_unknown": 0.0,
+            "estimate_unknown": 0.0,
+            "correct_no_chord": 0.0,
+            "missed_chord": 0.0,
+            "false_chord": 0.0,
+            "wrong_root": 11.981950116000004,
+            "same_root_wrong_quality": 1.0834467109999988,
+            "bass_only": 4.689297053000001,
+            "exact_match": 26.90530612
+          },
+          "overlays_not_additive": {
+            "wrong_root_interior_seconds": 9.395147391,
+            "wrong_root_shared_pitch_set_seconds": 0,
+            "wrong_root_is_reference_tone_seconds": 4.9841723349999985,
+            "reference_omits_root_seconds": 0
+          },
+          "metrics": {
+            "root": {
+              "scored_seconds": 44.66,
+              "unscored_seconds": 0.0,
+              "correct_seconds": 32.678049883999996,
+              "error_seconds": 11.981950116,
+              "scored_fraction": 1.0,
+              "accuracy": 0.7317073417823555
+            },
+            "majmin": {
+              "scored_seconds": 44.66,
+              "unscored_seconds": 0.0,
+              "correct_seconds": 32.602086164999996,
+              "error_seconds": 12.057913835,
+              "scored_fraction": 1.0,
+              "accuracy": 0.730006407635468
+            }
+          }
+        },
+        "boundaries": {
+          "tolerance_seconds": 0.25,
+          "matching": "one-to-one maximum-cardinality, label-independent; positive lag means estimate late",
+          "reference_count": 15,
+          "estimated_count": 21,
+          "matched_count": 14,
+          "precision": 0.6666666666666666,
+          "recall": 0.9333333333333333,
+          "unmatched_reference_count": 1,
+          "unmatched_estimate_count": 7,
+          "excluded_estimate_unknown_reference_count": 0,
+          "matched_mean_absolute_lag_seconds": 0.06516682892857174
+        },
+        "inference_seconds": 2.1528800849919207
+      },
+      "candidate": {
+        "summary": {
+          "interval": [
+            0.34,
+            45.0
+          ],
+          "duration_seconds": 44.66,
+          "known_reference_seconds": 44.66,
+          "reference_unknown_seconds": 0.0,
+          "label_error_seconds": 18.633333335,
+          "category_seconds": {
+            "reference_unknown": 0.0,
+            "estimate_unknown": 0.0,
+            "correct_no_chord": 0.0,
+            "missed_chord": 0.0,
+            "false_chord": 0.0,
+            "wrong_root": 14.721904764,
+            "same_root_wrong_quality": 0.20108843499999907,
+            "bass_only": 3.710340136000003,
+            "exact_match": 26.026666664999997
+          },
+          "overlays_not_additive": {
+            "wrong_root_interior_seconds": 12.088662129999996,
+            "wrong_root_shared_pitch_set_seconds": 0,
+            "wrong_root_is_reference_tone_seconds": 7.817006801999993,
+            "reference_omits_root_seconds": 0
+          },
+          "metrics": {
+            "root": {
+              "scored_seconds": 44.66,
+              "unscored_seconds": 0.0,
+              "correct_seconds": 29.938095236,
+              "error_seconds": 14.721904763999998,
+              "scored_fraction": 1.0,
+              "accuracy": 0.6703559166144201
+            },
+            "majmin": {
+              "scored_seconds": 44.66,
+              "unscored_seconds": 0.0,
+              "correct_seconds": 29.862131516999998,
+              "error_seconds": 14.797868482999998,
+              "scored_fraction": 1.0,
+              "accuracy": 0.6686549824675325
+            }
+          }
+        },
+        "boundaries": {
+          "tolerance_seconds": 0.25,
+          "matching": "one-to-one maximum-cardinality, label-independent; positive lag means estimate late",
+          "reference_count": 15,
+          "estimated_count": 25,
+          "matched_count": 13,
+          "precision": 0.52,
+          "recall": 0.8666666666666667,
+          "unmatched_reference_count": 2,
+          "unmatched_estimate_count": 12,
+          "excluded_estimate_unknown_reference_count": 0,
+          "matched_mean_absolute_lag_seconds": 0.07346589953846164
+        },
+        "inference_seconds": 2.1494828540016897
+      }
+    }
+  ],
+  "offline_audit": {
+    "verified_sources": 9,
+    "verified_diagnostics": 18,
+    "all_baseline_gates_pass": true,
+    "outcome": "reject_fixed_ablation",
+    "new_inferences": 0,
+    "writes": 0,
+    "audit_script_sha256": "5930724588014d210ca4beba28e5bf96766702d6cc96b757beb9e280a37e2218"
+  }
+}
