@@ -16,8 +16,10 @@ systemctl --user status guitarscribe-friends-web guitarscribe-friends-tunnel
 journalctl --user -u guitarscribe-friends-web -n 60 --no-pager
 # 維護前先確認沒有分析工作；停止對外入口與後端
 systemctl --user stop guitarscribe-friends-tunnel guitarscribe-friends-web
-# 啟動仍存在的暫時服務
-systemctl --user start guitarscribe-friends-web guitarscribe-friends-tunnel
+# web若仍存在可start；若stop後被systemd回收，使用重建腳本
+bash backend/scripts/start_invited_web.sh
+# tunnel仍存在時才可start；若也被回收，按既有ngrok設定另行重建
+systemctl --user start guitarscribe-friends-tunnel
 ```
 
 暫時服務不依附開發 shell，但**沒有設定開機自動啟動**；主機關機、休眠或斷線便無法使用。重開機後須重建服務，不能保證上述 `start` 仍有效。目前完整啟動參數可用 `systemctl --user cat guitarscribe-friends-web guitarscribe-friends-tunnel` 查看；不要輸出或分享 ngrok 帳戶 token。後續常駐部署需另行完成。
@@ -238,3 +240,12 @@ fresh-machine setup procedure.
 筆記按原source job保存，和弦修訂、Undo、移調及還原原分析不會刪除。已有筆記在原音訊/job到期後仍可由保存稿的source ID讀取；首次建立筆記則須有已完成來源。清空文字也保留遞增版本，避免舊瀏覽器寫回復活內容。此邀請空間是共用筆記，不是個人帳號；文字不會產生或播放旋律，自動旋律仍off。
 
 回滾前端或API時保留notes資料庫及新備份，不用舊備份覆寫已輸入的筆記。原始score/revisions與筆記是兩種獨立資料，都需保管。前端sessionStorage只保護該分頁未存草稿與重新整理，關閉分頁不保證未存文字仍在；跨瀏覽器以伺服器已保存版本為準。
+
+
+### 暫時服務備份後重建（2026-11-06 更正）
+
+systemd transient unit可能在stop後立即被回收，並非只有重開機才會失去；本次停機一致備份後，直接start曾回Unit not found。已用原factory/5273/cwd及原資料、邀請路徑重建，tunnel未動，jobs/revisions每表資料hash不變。以 `bash backend/scripts/start_invited_web.sh` 重建（從guitarscribe目錄執行）；已運行時只回報、不變更。此腳本不enable開機啟動，不新增排程。
+
+保持TTL31536000、small0／Chordino／DBN恢復、旋律off，並帶原DBN/Chordino Python路徑與Node執行檔。不要拿run_local_preview.sh重建web，它是8000/app.api且會覆寫不同TTL/旋律設定。維護前仍先保存完整service啟動資料與目前環境（私下保管，不提交憑證），確認無分析工作再停機。
+
+本次重建未取到停機前submission rate的直接runtime證據：舊文字寫20/hr，但重建時未帶該值而採預設5/hr。依顧問決策保持5/hr、不未經證據擴大，這個差異明列而不宣稱全部環境完全相同；引擎、TTL及資料路徑已逐項核對。重建腳本預設亦為5，可在有新明確決策時指定GUITARSCRIBE_SUBMISSION_RATE_LIMIT。

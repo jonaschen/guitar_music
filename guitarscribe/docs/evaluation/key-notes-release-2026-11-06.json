@@ -1,0 +1,237 @@
+{
+  "candidate_url": "https://occupier-disgrace-stammer.ngrok-free.dev/reading-candidate-2026-11-05/?job=1b4158f1acee4beaa9af7cb42f3f52a0&timingView=auto",
+  "feature_revision": "755b9d2",
+  "deployment": {
+    "revision": "755b9d2",
+    "prefix": "/reading-candidate-2026-11-05/",
+    "files": {
+      "index.html": {
+        "sha256": "0c34a0088f364a823abf09e9090bdaa09d536faaf3815229a6aff80d433500df",
+        "bytes": 770
+      },
+      "soundfont/sonivox.sf3": {
+        "sha256": "d39beb7cd349278455b44e7689e35e3c1f5ed9ef80118485846537929df8f7c0",
+        "bytes": 977208
+      },
+      "soundfont/README.md": {
+        "sha256": "ca9d6da8f8861658f8aff476ce138b236bd4fb44a1731523475eda64f5a760c7",
+        "bytes": 1061
+      },
+      "soundfont/LICENSE": {
+        "sha256": "57d801cd718614be838c71f35cf3dcbf5c011fa20130c194a447483dfa2771c5",
+        "bytes": 561
+      },
+      "soundfont/sonivox.sf2": {
+        "sha256": "4978cf37e7164206f2d22dc4fdf4020ffe040787210bf781e31bdc79961f59ef",
+        "bytes": 1351896
+      },
+      "font/Bravura-FONTLOG.txt": {
+        "sha256": "32693de63580f14dbaf167e9a06224e8350c84ddc4f1f38878edef4dee193e1e",
+        "bytes": 42255
+      },
+      "font/Bravura.otf": {
+        "sha256": "883a86a8cfe77db6597b8ef56b9cf6efb079b0631a283a323945a41f976fb483",
+        "bytes": 507976
+      },
+      "font/Bravura.svg": {
+        "sha256": "c8d841b64e65b032c19f4e4a77625fca3baf16a0a4e0371041ddb34965bb4d70",
+        "bytes": 1842740
+      },
+      "font/Bravura-OFL.txt": {
+        "sha256": "c24929be7028026a65ee8894da1e3c36d2a4ccce0548d9ba8ba64509f46319ee",
+        "bytes": 4420
+      },
+      "font/Bravura.eot": {
+        "sha256": "67f0f9985e14d3c8b50886cbf02bc33c39e41f44ed93ae4f830d99776bff15f3",
+        "bytes": 409551
+      },
+      "font/Bravura.woff": {
+        "sha256": "22a46a8480b8eecaa43ece95ec63b45599c8ef6d1ab24f0621834a8be01d4dd9",
+        "bytes": 550388
+      },
+      "font/Bravura-OFL-FAQ.txt": {
+        "sha256": "10403b7bed7e8846d47c030050c0c6c8d53cb52bcb13afa1f4044b0936c7f288",
+        "bytes": 43780
+      },
+      "font/Bravura.woff2": {
+        "sha256": "181e0e7c4889f9ad57dde0a11988fa61b941617aa499ecdb9dfd4713896c2b19",
+        "bytes": 313348
+      },
+      "assets/alphaTab.worklet-C9PLHa2u.js": {
+        "sha256": "f47e9cd065a042e2327bef9fb88c9fd48eacb4594f2793bc020baa2b889cdfcd",
+        "bytes": 1157646
+      },
+      "assets/alphaTab.worker-BQCj0a_w.js": {
+        "sha256": "e48f42ed0c6e5ac6df54ce21dafb771972ac600357567a4eb2174da876ced3b2",
+        "bytes": 1157640
+      },
+      "assets/AlphaTabScore-5wkzRERp.js": {
+        "sha256": "c7ff573853476b27b445226e6e56484bbc709641cce7ab2357554a0e5281555b",
+        "bytes": 1160927
+      },
+      "assets/index-BMhpPWcl.css": {
+        "sha256": "4e959cd5dcbb93e168a4cdddd9c3e86ae2bc25f6f93f41dd8abc5e1149c080b8",
+        "bytes": 38637
+      },
+      "assets/Bravura-BVtSfpnN.woff2": {
+        "sha256": "181e0e7c4889f9ad57dde0a11988fa61b941617aa499ecdb9dfd4713896c2b19",
+        "bytes": 313348
+      },
+      "assets/index-noDJOSjL.js": {
+        "sha256": "9d4aaab3953145a70019a979ad4e2cfc043b199008377083ce6080b7a1597638",
+        "bytes": 290161
+      }
+    },
+    "bytes": 10164313,
+    "original_site_files_unchanged": 84,
+    "rollback_bundle": "guitarscribe/output/evaluation/key-notes-release-2026-11-06/previous-candidate-live",
+    "no_old_public_or_song_audio": true,
+    "api_notes_database": "output/web-preview/work/melody-notes.sqlite3"
+  },
+  "backup": {
+    "backup_directory": "/home/jonas/gemini-home/music_analysis/guitarscribe/output/backups/key-notes-2026-11-06",
+    "source_revision": "755b9d2",
+    "active_jobs_before_stop": 0,
+    "notes_initially_absent": true,
+    "databases": {
+      "jobs.sqlite3": {
+        "sha256": "b3c1107fb4a7fa9048d472a304eb7b7662bfde2b03e108de4d7797a73476e149",
+        "logical": {
+          "jobs": "fff42981bdfc7aa943ed5915ca0553c41b9ce7fd5418a83a82dfbd8907997eb7"
+        },
+        "live_rows_unchanged": true
+      },
+      "guitarscribe.sqlite3": {
+        "sha256": "bb797cf542531cacf75ec43210bd55614977d85c7b5165966add6a8c2e228212",
+        "logical": {
+          "revisions": "0756c974bea939183331b164a0bc103dde07089081a0cb347be0c5b2f5af5254",
+          "scores": "c079192baf22ac240ec9f82319a2d271ac7461acbc7c663dd54795a59ae2b60a"
+        },
+        "live_rows_unchanged": true
+      }
+    },
+    "candidate_bundle_backed_up": true,
+    "service_settings_preserved": {
+      "GUITARSCRIBE_WORK_DIR": "/home/jonas/gemini-home/music_analysis/guitarscribe/output/web-preview/work",
+      "GUITARSCRIBE_JOB_TTL_SECONDS": "31536000",
+      "GUITARSCRIBE_BEAT_ENGINE": "beat_this_small",
+      "GUITARSCRIBE_CHORD_ENGINE": "chordino",
+      "GUITARSCRIBE_MELODY_SEPARATOR": "off",
+      "GUITARSCRIBE_BEAT_RECOVERY_ENABLED": "true"
+    },
+    "transient_unit_recreated_after_stop_start_failed": true
+  },
+  "https_checks": {
+    "requests": [
+      {
+        "path": "/reading-candidate-2026-11-05/",
+        "authenticated": false,
+        "status": 401,
+        "bytes": 39,
+        "sha256": "4af6de03a767108c9735487c6f5deb7484004bdf7167ff32d5ba0371be33f63d"
+      },
+      {
+        "path": "/backend/api/v1/jobs/1b4158f1acee4beaa9af7cb42f3f52a0/melody-notes",
+        "authenticated": false,
+        "status": 401,
+        "bytes": 39,
+        "sha256": "4af6de03a767108c9735487c6f5deb7484004bdf7167ff32d5ba0371be33f63d"
+      },
+      {
+        "path": "/reading-candidate-2026-11-05/",
+        "authenticated": true,
+        "status": 200,
+        "bytes": 770,
+        "sha256": "0c34a0088f364a823abf09e9090bdaa09d536faaf3815229a6aff80d433500df"
+      },
+      {
+        "path": "/reading-candidate-2026-11-05/assets/index-noDJOSjL.js",
+        "authenticated": true,
+        "status": 200,
+        "bytes": 290161,
+        "sha256": "9d4aaab3953145a70019a979ad4e2cfc043b199008377083ce6080b7a1597638"
+      },
+      {
+        "path": "/reading-candidate-2026-11-05/assets/index-BMhpPWcl.css",
+        "authenticated": true,
+        "status": 200,
+        "bytes": 38637,
+        "sha256": "4e959cd5dcbb93e168a4cdddd9c3e86ae2bc25f6f93f41dd8abc5e1149c080b8"
+      },
+      {
+        "path": "/backend/api/v1/jobs/1b4158f1acee4beaa9af7cb42f3f52a0/melody-notes",
+        "authenticated": true,
+        "status": 200,
+        "bytes": 85,
+        "sha256": "3f6803ae126bb3178fe748b9c0144b9d6ad0702e9e5d19cd490a5e6ac447f9cb"
+      },
+      {
+        "path": "/backend/api/v1/capabilities",
+        "authenticated": true,
+        "status": 200,
+        "bytes": 203,
+        "sha256": "483dd189ca502b877ba139b248611ec60efa89107074916d99d174922bf479b1"
+      },
+      {
+        "path": "/",
+        "authenticated": true,
+        "status": 200,
+        "bytes": 712,
+        "sha256": "b200c14f5cb54eb260f49398171ff7ac1636fd46b27bfda6dd6a98d5bbe4d901"
+      }
+    ],
+    "notes_read_only_check": {
+      "status": 200,
+      "version": 0,
+      "text_length": 0,
+      "write_performed": false
+    },
+    "engine_capabilities": {
+      "beat_engine": "beat_this_small",
+      "chord_engine": "chordino",
+      "improved_accompaniment": true,
+      "youtube_enabled": true
+    },
+    "old_homepage_unchanged": true
+  },
+  "production_note_rows_at_readonly_verification": 0,
+  "notes_initial_poststart_backup_sha256": "fded8969edc31fdf3cb2470cd56c0a43f3372343953201342242d6602fa09d07",
+  "tests": {
+    "backend_related": {
+      "passed": 46,
+      "seconds": 15.34
+    },
+    "product_full": {
+      "passed": 58,
+      "minutes": 2.2
+    },
+    "final_build_passed": true
+  },
+  "independent_review": {
+    "isolated_dual_tab_conflict_passed": true,
+    "isolated_cross_browser_persistence_passed": true,
+    "isolated_transpose_undo_original_restore_reload_preserved_notes": true,
+    "public_guitar_and_source_play_pause_passed": true,
+    "public_notes_readonly": true,
+    "public_note_puts": 0,
+    "public_revision_attempts_intercepted": 2,
+    "public_page_errors": 0,
+    "public_widths": [
+      320,
+      390,
+      1440
+    ],
+    "public_source_first_30s_wait_failed_then_45s_wait_passed": true,
+    "source_cold_load_cause": "Unknown; full source WAV is 60516082 bytes, large cold download is plausible but not established from first attempt"
+  },
+  "runtime_submission_rate": {
+    "effective_limit": 5,
+    "window_seconds": 3600,
+    "old_docs_limit": 20,
+    "pre_stop_runtime_limit": "unknown; not captured",
+    "decision": "retain current 5/hr per consultant, do not expand without evidence"
+  },
+  "automatic_melody_enabled": false,
+  "formal_frontend_default_changed": false,
+  "user_notes_test_writes_on_production": 0
+}
