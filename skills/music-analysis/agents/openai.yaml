@@ -1,0 +1,3 @@
+interface:
+  display_name: "Music Analysis"
+  short_description: "Analyze GuitarScribe melody, rhythm, and chord quality"
