@@ -1,0 +1,202 @@
+{
+  "url": "https://occupier-disgrace-stammer.ngrok-free.dev/reading-candidate-2026-11-05/?job=1b4158f1acee4beaa9af7cb42f3f52a0&timingView=auto",
+  "deployment": {
+    "source_revision": "eee41ac03c459141c4d7e16d22a9560ec72fb040",
+    "prefix": "/reading-candidate-2026-11-05/",
+    "destination": "guitarscribe/output/web-preview/site/reading-candidate-2026-11-05",
+    "allowed_top_level": [
+      "assets",
+      "font",
+      "index.html",
+      "soundfont"
+    ],
+    "omitted_new_candidate_entries": [
+      "review.html",
+      "listening",
+      "external-checkpoint-2026-10-25"
+    ],
+    "files": {
+      "index.html": {
+        "sha256": "08e9543d79afe2604676fe6c928118fda4c1fbd2efaf072f308bf0a1b31762a2",
+        "bytes": 770
+      },
+      "soundfont/sonivox.sf3": {
+        "sha256": "d39beb7cd349278455b44e7689e35e3c1f5ed9ef80118485846537929df8f7c0",
+        "bytes": 977208
+      },
+      "soundfont/README.md": {
+        "sha256": "ca9d6da8f8861658f8aff476ce138b236bd4fb44a1731523475eda64f5a760c7",
+        "bytes": 1061
+      },
+      "soundfont/LICENSE": {
+        "sha256": "57d801cd718614be838c71f35cf3dcbf5c011fa20130c194a447483dfa2771c5",
+        "bytes": 561
+      },
+      "soundfont/sonivox.sf2": {
+        "sha256": "4978cf37e7164206f2d22dc4fdf4020ffe040787210bf781e31bdc79961f59ef",
+        "bytes": 1351896
+      },
+      "font/Bravura-FONTLOG.txt": {
+        "sha256": "32693de63580f14dbaf167e9a06224e8350c84ddc4f1f38878edef4dee193e1e",
+        "bytes": 42255
+      },
+      "font/Bravura.otf": {
+        "sha256": "883a86a8cfe77db6597b8ef56b9cf6efb079b0631a283a323945a41f976fb483",
+        "bytes": 507976
+      },
+      "font/Bravura.svg": {
+        "sha256": "c8d841b64e65b032c19f4e4a77625fca3baf16a0a4e0371041ddb34965bb4d70",
+        "bytes": 1842740
+      },
+      "font/Bravura-OFL.txt": {
+        "sha256": "c24929be7028026a65ee8894da1e3c36d2a4ccce0548d9ba8ba64509f46319ee",
+        "bytes": 4420
+      },
+      "font/Bravura.eot": {
+        "sha256": "67f0f9985e14d3c8b50886cbf02bc33c39e41f44ed93ae4f830d99776bff15f3",
+        "bytes": 409551
+      },
+      "font/Bravura.woff": {
+        "sha256": "22a46a8480b8eecaa43ece95ec63b45599c8ef6d1ab24f0621834a8be01d4dd9",
+        "bytes": 550388
+      },
+      "font/Bravura-OFL-FAQ.txt": {
+        "sha256": "10403b7bed7e8846d47c030050c0c6c8d53cb52bcb13afa1f4044b0936c7f288",
+        "bytes": 43780
+      },
+      "font/Bravura.woff2": {
+        "sha256": "181e0e7c4889f9ad57dde0a11988fa61b941617aa499ecdb9dfd4713896c2b19",
+        "bytes": 313348
+      },
+      "assets/alphaTab.worklet-C9PLHa2u.js": {
+        "sha256": "f47e9cd065a042e2327bef9fb88c9fd48eacb4594f2793bc020baa2b889cdfcd",
+        "bytes": 1157646
+      },
+      "assets/alphaTab.worker-BQCj0a_w.js": {
+        "sha256": "e48f42ed0c6e5ac6df54ce21dafb771972ac600357567a4eb2174da876ced3b2",
+        "bytes": 1157640
+      },
+      "assets/AlphaTabScore-7Tq6gTpt.js": {
+        "sha256": "d33f69a2e8f3730a6b0b24ea84781462fd8619d09527d75e0038862b67805a35",
+        "bytes": 1160927
+      },
+      "assets/index-CHQWD_aP.js": {
+        "sha256": "e6184b1ab5480a958aabbb5ff612423f9a3f1cf59b6dfb1bd1242380fcf90916",
+        "bytes": 284435
+      },
+      "assets/Bravura-BVtSfpnN.woff2": {
+        "sha256": "181e0e7c4889f9ad57dde0a11988fa61b941617aa499ecdb9dfd4713896c2b19",
+        "bytes": 313348
+      },
+      "assets/index-C46mUJGt.css": {
+        "sha256": "454ced03635ebd7cb22820f6c36678dd58e6f0385978d4fe35e38d6550ab9eb8",
+        "bytes": 38294
+      }
+    },
+    "total_bytes": 10158244,
+    "original_site_files_unchanged": 84,
+    "no_historical_listening_or_song_audio": true,
+    "restart_performed": false,
+    "rollback_directory_withdraw_restore_verified": true,
+    "rollback_command": "mv guitarscribe/output/web-preview/site/reading-candidate-2026-11-05 guitarscribe/output/web-preview/reading-candidate-2026-11-05-withdrawn"
+  },
+  "https_checks": {
+    "origin": "https://occupier-disgrace-stammer.ngrok-free.dev",
+    "requests": [
+      {
+        "path": "/reading-candidate-2026-11-05/",
+        "authenticated": false,
+        "status": 401,
+        "content_type": "text/plain; charset=utf-8",
+        "sha256": "4af6de03a767108c9735487c6f5deb7484004bdf7167ff32d5ba0371be33f63d",
+        "bytes": 39
+      },
+      {
+        "path": "/reading-candidate-2026-11-05/assets/index-CHQWD_aP.js",
+        "authenticated": false,
+        "status": 401,
+        "content_type": "text/plain; charset=utf-8",
+        "sha256": "4af6de03a767108c9735487c6f5deb7484004bdf7167ff32d5ba0371be33f63d",
+        "bytes": 39
+      },
+      {
+        "path": "/backend/api/v1/jobs/1b4158f1acee4beaa9af7cb42f3f52a0",
+        "authenticated": false,
+        "status": 401,
+        "content_type": "text/plain; charset=utf-8",
+        "sha256": "4af6de03a767108c9735487c6f5deb7484004bdf7167ff32d5ba0371be33f63d",
+        "bytes": 39
+      },
+      {
+        "path": "/reading-candidate-2026-11-05/",
+        "authenticated": true,
+        "status": 200,
+        "content_type": "text/html; charset=utf-8",
+        "sha256": "08e9543d79afe2604676fe6c928118fda4c1fbd2efaf072f308bf0a1b31762a2",
+        "bytes": 770
+      },
+      {
+        "path": "/reading-candidate-2026-11-05/assets/index-CHQWD_aP.js",
+        "authenticated": true,
+        "status": 200,
+        "content_type": "text/javascript; charset=utf-8",
+        "sha256": "e6184b1ab5480a958aabbb5ff612423f9a3f1cf59b6dfb1bd1242380fcf90916",
+        "bytes": 284435
+      },
+      {
+        "path": "/reading-candidate-2026-11-05/assets/index-C46mUJGt.css",
+        "authenticated": true,
+        "status": 200,
+        "content_type": "text/css; charset=utf-8",
+        "sha256": "454ced03635ebd7cb22820f6c36678dd58e6f0385978d4fe35e38d6550ab9eb8",
+        "bytes": 38294
+      },
+      {
+        "path": "/backend/api/v1/jobs/1b4158f1acee4beaa9af7cb42f3f52a0",
+        "authenticated": true,
+        "status": 200,
+        "content_type": "application/json",
+        "sha256": "7ae291f9b63f47e3ef18874b5b4c9d4f30fd6d3f19f3ef84562816ad3683990f",
+        "bytes": 158383
+      },
+      {
+        "path": "/",
+        "authenticated": true,
+        "status": 200,
+        "content_type": "text/html; charset=utf-8",
+        "sha256": "b200c14f5cb54eb260f49398171ff7ac1636fd46b27bfda6dd6a98d5bbe4d901",
+        "bytes": 712
+      }
+    ],
+    "anonymous_checks": 3,
+    "all_anonymous_401": true,
+    "credential_not_logged": true,
+    "original_homepage_unchanged": true
+  },
+  "consultant_independent_browser": {
+    "bars": 144,
+    "seek": 40.78,
+    "view_switch": true,
+    "edit_return": true,
+    "default_unchanged": true,
+    "widths": [
+      320,
+      390,
+      1440
+    ],
+    "writes": 0,
+    "errors": []
+  },
+  "consultant_screenshot_sha256": "2ac1712a198ff536519b1aee7091e7b3c16e4ae0d30d7230c5ec91f00208769c",
+  "service": {
+    "pid_before": 801721,
+    "pid_after": 801721,
+    "active_since": "2026-11-04 20:45:40 CST",
+    "restarted": false,
+    "active_jobs_at_preflight": 0
+  },
+  "artifact_directory": "output/evaluation/reading-release-2026-11-05",
+  "scope": "Invited HTTPS isolated UI candidate; normal default unchanged; no music quality acceptance",
+  "candidate_ready_for_consultant_handoff": true,
+  "user_notified": false
+}
