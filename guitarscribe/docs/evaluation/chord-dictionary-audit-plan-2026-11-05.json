@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.0",
+  "status": "frozen_before_dictionary_match_results",
+  "started_at_utc": "2026-11-05T14:08:16Z",
+  "deadline_utc": "2026-11-05T14:53:16Z",
+  "resource_limit": "45 minutes, zero audio inference/API/download, no product/default change",
+  "input_plan": {
+    "path": "docs/evaluation/chord-error-plan-2026-11-05.json",
+    "sha256": "f88841140949189e434feaa7219668b7d261249ad9e12f90dedafd1c0848d29c"
+  },
+  "diagnostic_results": {
+    "path": "docs/evaluation/chord-error-results-2026-11-05.json",
+    "sha256": "36fd609c7845c8a920c624b2820f341b7104b8aa6abfe30006e62d1234adbec3"
+  },
+  "source": {
+    "commit": "4c5f214a75cb354f8d8c933e161377c5b4d83713",
+    "path": "/home/jonas/.cache/guitarscribe-chordino-diagnostic/source",
+    "files": {
+      "chromamethods.cpp": "a697d312f3da5ce199a0f93f5637b4f713e44c0e37a505089830f1e556e483fa",
+      "chromamethods.h": "30ac888fec953fbe0c895ac9177ee22269423f0fb4bb1474eb33fc7e45d89498",
+      "nnls.h": "3ec29d6aae6ba0adf0bf9c82ec6284b3b6846f56298097458d0d19342808cae5",
+      "Makefile.linux": "2f246cc4338c0dc86715c8c2e44dae8e069c5d0ee5c73090ef263fd587bb84cd",
+      "Makefile.inc": "a9ec5c2cee314ca437bdaa3650c544202218e8009987a088ce1fd1fe2ace9467",
+      "nnls-chroma.so": "fb7d75cf816d3eab3d97da8e6df51f5642b008a49ff4ec6bc2695c42dfded998"
+    }
+  },
+  "extraction": {
+    "method": "Compile a small harness calling the actual chordDictionary function from frozen source; VAMP_PATH is an isolated directory without chord.dict; preserve duplicate profiles, all 24 weights and labels",
+    "boostN": 0.1,
+    "harte_syntax": 0,
+    "chroma_order": "A Bb B C C# D Eb E F F# G Ab, bass then treble",
+    "compiler": "g++",
+    "flags": [
+      "-Wall",
+      "-O3",
+      "-ftree-vectorize",
+      "-ffast-math",
+      "-fPIC"
+    ],
+    "boost_include": "/home/jonas/.cache/guitarscribe-chordino-diagnostic/boost/usr/include",
+    "vamp_include": "/usr/include"
+  },
+  "classification": {
+    "identity": "Root pitch class + base quality pitch-class bitmap preserving explicit omissions + bass interval; enharmonic spelling equivalent",
+    "exclusive_priority": [
+      "reference_unknown",
+      "no_chord",
+      "strict_label_match",
+      "missing_inversion_only",
+      "missing_omission_only",
+      "missing_omission_and_inversion",
+      "different_root_same_pitch_set_only",
+      "candidate_pattern_absent"
+    ],
+    "omission_rule": "Remove only explicit *degree tokens from reference; do not remove extensions or alter roots. This is an availability diagnostic, never a scoring exemption.",
+    "same_pitch_set": "Theoretical absolute pitch classes including explicit bass. Orthogonal alternate-root flag retained even when same-root quality exists. Never auditory or harmonic-function equivalence.",
+    "template_overlay": "Compare actual positive treble weight pitch classes with reference base pitch classes under same root, separate from symbolic label availability; not a bass/voicing/acoustic match claim.",
+    "historical_scoring": "Do not alter A09 scores or treat available root alone as representable full chord"
+  },
+  "aggregation": {
+    "per_source": "reference seconds, existing wrong-root seconds and their fractions for each exclusive category; orthogonal flags explicitly non-additive",
+    "cross_source": "report GuitarSet and HU33 separately; no unseen-song claims"
+  },
+  "decision_branches": {
+    "strict_available_majority": "If strict_label_match accounts for >50% of existing wrong-root seconds over all nine and on at least two HU33, reject dictionary expansion as a sufficient general solution; missing patterns remain local limitations.",
+    "absent_majority": "If candidate_pattern_absent accounts for >50% of existing wrong-root seconds over all nine and on at least two HU33, this supports only designing a separate preregistered dictionary experiment, not adopting it.",
+    "otherwise": "Mixed evidence: name concrete missing acoustic candidate-ranking evidence; do not launch another subdivision or tune dictionary from these results.",
+    "common_rule": "Preserve each source including Funk2; no improvement or listening claim from symbolic/template availability."
+  }
+}

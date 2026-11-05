@@ -1,0 +1,4872 @@
+{
+  "plan_sha256": "b3d75cc0a598a63e5ef493b1b1636f2f7bce5ff0f8f0eae13a12e41d90a81d7f",
+  "extraction_manifest_sha256": "cbacb3f0188cbf91b245113ef0b0e1e0fb6491c0c449ce43265c2af0babb350a",
+  "runner_sha256": "347db5513db72bbf88b71af01aa3ea74754f9d239b20460239b990aeabe08808",
+  "classifier_sha256": "295263ed0363526268974b70b0499249e019355522f6bcfb27d7044059f4b320",
+  "dictionary_entries": 217,
+  "aggregates": {
+    "all": {
+      "reference_seconds": 346.6059927437642,
+      "wrong_root_seconds": 86.54358600925927,
+      "categories": {
+        "reference_unknown": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "no_chord": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "strict_label_match": {
+          "reference_seconds": 238.90481111703755,
+          "wrong_root_seconds": 32.91383487494961,
+          "reference_fraction": 0.6892691301320141,
+          "wrong_root_fraction": 0.38031512666262945
+        },
+        "missing_inversion_only": {
+          "reference_seconds": 9.780000000000001,
+          "wrong_root_seconds": 5.128435372999991,
+          "reference_fraction": 0.028216476935613955,
+          "wrong_root_fraction": 0.05925841081338254
+        },
+        "missing_omission_only": {
+          "reference_seconds": 14.226528065771761,
+          "wrong_root_seconds": 6.42015412386267,
+          "reference_fraction": 0.04104524550528768,
+          "wrong_root_fraction": 0.07418405476259995
+        },
+        "missing_omission_and_inversion": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "different_root_same_pitch_set_only": {
+          "reference_seconds": 8.067226890756302,
+          "wrong_root_seconds": 7.835027344756302,
+          "reference_fraction": 0.02327492039850612,
+          "wrong_root_fraction": 0.09053273276563828
+        },
+        "candidate_pattern_absent": {
+          "reference_seconds": 75.62742667019859,
+          "wrong_root_seconds": 34.246134292690705,
+          "reference_fraction": 0.21819422702857813,
+          "wrong_root_fraction": 0.39570967499574977
+        }
+      }
+    },
+    "GuitarSet": {
+      "reference_seconds": 214.9259927437642,
+      "wrong_root_seconds": 40.93401684125928,
+      "categories": {
+        "reference_unknown": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "no_chord": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "strict_label_match": {
+          "reference_seconds": 141.76481111703754,
+          "wrong_root_seconds": 10.3300706949496,
+          "reference_fraction": 0.6595982612770817,
+          "wrong_root_fraction": 0.25235907668209695
+        },
+        "missing_inversion_only": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "missing_omission_only": {
+          "reference_seconds": 14.226528065771761,
+          "wrong_root_seconds": 6.42015412386267,
+          "reference_fraction": 0.06619268281213755,
+          "wrong_root_fraction": 0.15684153716845842
+        },
+        "missing_omission_and_inversion": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "different_root_same_pitch_set_only": {
+          "reference_seconds": 8.067226890756302,
+          "wrong_root_seconds": 7.835027344756302,
+          "reference_fraction": 0.03753490579603412,
+          "wrong_root_fraction": 0.19140626670332087
+        },
+        "candidate_pattern_absent": {
+          "reference_seconds": 50.8674266701986,
+          "wrong_root_seconds": 16.348764677690713,
+          "reference_fraction": 0.23667415011474666,
+          "wrong_root_fraction": 0.3993931194461239
+        }
+      }
+    },
+    "HU33": {
+      "reference_seconds": 131.68,
+      "wrong_root_seconds": 45.60956916799999,
+      "categories": {
+        "reference_unknown": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "no_chord": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "strict_label_match": {
+          "reference_seconds": 97.14000000000001,
+          "wrong_root_seconds": 22.58376418000001,
+          "reference_fraction": 0.7376974483596599,
+          "wrong_root_fraction": 0.4951540782333227
+        },
+        "missing_inversion_only": {
+          "reference_seconds": 9.780000000000001,
+          "wrong_root_seconds": 5.128435372999991,
+          "reference_fraction": 0.07427095990279466,
+          "wrong_root_fraction": 0.11244209201165047
+        },
+        "missing_omission_only": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "missing_omission_and_inversion": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "different_root_same_pitch_set_only": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "candidate_pattern_absent": {
+          "reference_seconds": 24.759999999999998,
+          "wrong_root_seconds": 17.89736961499999,
+          "reference_fraction": 0.18803159173754555,
+          "wrong_root_fraction": 0.39240382975502686
+        }
+      }
+    }
+  },
+  "sources": [
+    {
+      "recording_id": "00_SS2-88-F_comp",
+      "reference_seconds": 43.62920000000002,
+      "wrong_root_seconds": 3.190583389272721,
+      "categories": {
+        "reference_unknown": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "no_chord": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "strict_label_match": {
+          "reference_seconds": 35.44738181818184,
+          "wrong_root_seconds": 2.1185405103636334,
+          "reference_fraction": 0.8124692136959152,
+          "wrong_root_fraction": 0.6639978498874293
+        },
+        "missing_inversion_only": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "missing_omission_only": {
+          "reference_seconds": 8.181818181818182,
+          "wrong_root_seconds": 1.0720428789090874,
+          "reference_fraction": 0.18753078630408485,
+          "wrong_root_fraction": 0.33600215011257073
+        },
+        "missing_omission_and_inversion": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "different_root_same_pitch_set_only": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "candidate_pattern_absent": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        }
+      },
+      "overlays_not_additive": {
+        "different_root_same_pitch_set": {
+          "reference_seconds": 5.454545454545453,
+          "wrong_root_seconds": 0.3754442399090898
+        },
+        "same_root_template_treble": {
+          "reference_seconds": 35.44738181818184,
+          "wrong_root_seconds": 2.1185405103636334
+        }
+      }
+    },
+    {
+      "recording_id": "01_Rock1-90-C#_comp",
+      "reference_seconds": 31.999999999999993,
+      "wrong_root_seconds": 0.5855782336666646,
+      "categories": {
+        "reference_unknown": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "no_chord": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "strict_label_match": {
+          "reference_seconds": 31.999999999999993,
+          "wrong_root_seconds": 0.5855782336666646,
+          "reference_fraction": 1.0,
+          "wrong_root_fraction": 1.0
+        },
+        "missing_inversion_only": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "missing_omission_only": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "missing_omission_and_inversion": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "different_root_same_pitch_set_only": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "candidate_pattern_absent": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        }
+      },
+      "overlays_not_additive": {
+        "different_root_same_pitch_set": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0
+        },
+        "same_root_template_treble": {
+          "reference_seconds": 31.999999999999993,
+          "wrong_root_seconds": 0.5855782336666646
+        }
+      }
+    },
+    {
+      "recording_id": "02_Funk3-112-C#_comp",
+      "reference_seconds": 34.284399092970524,
+      "wrong_root_seconds": 5.80195012025623,
+      "categories": {
+        "reference_unknown": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "no_chord": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "strict_label_match": {
+          "reference_seconds": 4.285714285714286,
+          "wrong_root_seconds": 0.34494331157142843,
+          "reference_fraction": 0.1250047951574862,
+          "wrong_root_fraction": 0.059452995014061726
+        },
+        "missing_inversion_only": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "missing_omission_only": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "missing_omission_and_inversion": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "different_root_same_pitch_set_only": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "candidate_pattern_absent": {
+          "reference_seconds": 29.99868480725624,
+          "wrong_root_seconds": 5.457006808684802,
+          "reference_fraction": 0.8749952048425138,
+          "wrong_root_fraction": 0.9405470049859384
+        }
+      },
+      "overlays_not_additive": {
+        "different_root_same_pitch_set": {
+          "reference_seconds": 2.142857142857143,
+          "wrong_root_seconds": 0.006621315857142651
+        },
+        "same_root_template_treble": {
+          "reference_seconds": 4.285714285714286,
+          "wrong_root_seconds": 0.34494331157142843
+        }
+      }
+    },
+    {
+      "recording_id": "03_SS3-84-Bb_comp",
+      "reference_seconds": 45.70759637188209,
+      "wrong_root_seconds": 2.4025396885714363,
+      "categories": {
+        "reference_unknown": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "no_chord": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "strict_label_match": {
+          "reference_seconds": 39.993310657596375,
+          "wrong_root_seconds": 2.3205442230000113,
+          "reference_fraction": 0.874981706152438,
+          "wrong_root_fraction": 0.9658713377508531
+        },
+        "missing_inversion_only": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "missing_omission_only": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "missing_omission_and_inversion": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "different_root_same_pitch_set_only": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "candidate_pattern_absent": {
+          "reference_seconds": 5.714285714285712,
+          "wrong_root_seconds": 0.08199546557142501,
+          "reference_fraction": 0.12501829384756194,
+          "wrong_root_fraction": 0.03412866224914685
+        }
+      },
+      "overlays_not_additive": {
+        "different_root_same_pitch_set": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0
+        },
+        "same_root_template_treble": {
+          "reference_seconds": 39.993310657596375,
+          "wrong_root_seconds": 2.3205442230000113
+        }
+      }
+    },
+    {
+      "recording_id": "04_Rock2-142-D_comp",
+      "reference_seconds": 27.041600000000003,
+      "wrong_root_seconds": 4.040905758647891,
+      "categories": {
+        "reference_unknown": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "no_chord": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "strict_label_match": {
+          "reference_seconds": 21.971177464788738,
+          "wrong_root_seconds": 1.7694280015915558,
+          "reference_fraction": 0.8124954686404923,
+          "wrong_root_fraction": 0.4378790566458586
+        },
+        "missing_inversion_only": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "missing_omission_only": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "missing_omission_and_inversion": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "different_root_same_pitch_set_only": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "candidate_pattern_absent": {
+          "reference_seconds": 5.070422535211264,
+          "wrong_root_seconds": 2.271477757056335,
+          "reference_fraction": 0.18750453135950773,
+          "wrong_root_fraction": 0.5621209433541414
+        }
+      },
+      "overlays_not_additive": {
+        "different_root_same_pitch_set": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0
+        },
+        "same_root_template_treble": {
+          "reference_seconds": 21.971177464788738,
+          "wrong_root_seconds": 1.7694280015915558
+        }
+      }
+    },
+    {
+      "recording_id": "05_Funk2-119-G_comp",
+      "reference_seconds": 32.26319727891156,
+      "wrong_root_seconds": 24.91245965084434,
+      "categories": {
+        "reference_unknown": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "no_chord": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "strict_label_match": {
+          "reference_seconds": 8.067226890756302,
+          "wrong_root_seconds": 3.1910364147563057,
+          "reference_fraction": 0.25004424766138555,
+          "wrong_root_fraction": 0.12808997824701562
+        },
+        "missing_inversion_only": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "missing_omission_only": {
+          "reference_seconds": 6.04470988395358,
+          "wrong_root_seconds": 5.348111244953582,
+          "reference_fraction": 0.18735619510049703,
+          "wrong_root_fraction": 0.21467616284818838
+        },
+        "missing_omission_and_inversion": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "different_root_same_pitch_set_only": {
+          "reference_seconds": 8.067226890756302,
+          "wrong_root_seconds": 7.835027344756302,
+          "reference_fraction": 0.25004424766138555,
+          "wrong_root_fraction": 0.31450235964519685
+        },
+        "candidate_pattern_absent": {
+          "reference_seconds": 10.084033613445378,
+          "wrong_root_seconds": 8.538284646378152,
+          "reference_fraction": 0.3125553095767319,
+          "wrong_root_fraction": 0.34273149925959917
+        }
+      },
+      "overlays_not_additive": {
+        "different_root_same_pitch_set": {
+          "reference_seconds": 16.128743497398958,
+          "wrong_root_seconds": 14.27114712539896
+        },
+        "same_root_template_treble": {
+          "reference_seconds": 8.067226890756302,
+          "wrong_root_seconds": 3.1910364147563057
+        }
+      }
+    },
+    {
+      "recording_id": "SWD_HU33_04",
+      "reference_seconds": 44.54,
+      "wrong_root_seconds": 15.92743763799999,
+      "categories": {
+        "reference_unknown": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "no_chord": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "strict_label_match": {
+          "reference_seconds": 30.44000000000001,
+          "wrong_root_seconds": 8.007256234000002,
+          "reference_fraction": 0.6834306241580603,
+          "wrong_root_fraction": 0.5027334851963968
+        },
+        "missing_inversion_only": {
+          "reference_seconds": 6.239999999999997,
+          "wrong_root_seconds": 4.189115644999996,
+          "reference_fraction": 0.14009878760664565,
+          "wrong_root_fraction": 0.2630125284562736
+        },
+        "missing_omission_only": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "missing_omission_and_inversion": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "different_root_same_pitch_set_only": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "candidate_pattern_absent": {
+          "reference_seconds": 7.859999999999996,
+          "wrong_root_seconds": 3.7310657589999927,
+          "reference_fraction": 0.17647058823529402,
+          "wrong_root_fraction": 0.23425398634732955
+        }
+      },
+      "overlays_not_additive": {
+        "different_root_same_pitch_set": {
+          "reference_seconds": 3.1599999999999984,
+          "wrong_root_seconds": 3.1599999999999984
+        },
+        "same_root_template_treble": {
+          "reference_seconds": 36.68000000000001,
+          "wrong_root_seconds": 12.196371878999997
+        }
+      }
+    },
+    {
+      "recording_id": "SWD_HU33_18",
+      "reference_seconds": 42.480000000000004,
+      "wrong_root_seconds": 17.700181414,
+      "categories": {
+        "reference_unknown": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "no_chord": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "strict_label_match": {
+          "reference_seconds": 26.94,
+          "wrong_root_seconds": 5.448526084000004,
+          "reference_fraction": 0.634180790960452,
+          "wrong_root_fraction": 0.3078231774331126
+        },
+        "missing_inversion_only": {
+          "reference_seconds": 1.44,
+          "wrong_root_seconds": 0.8853514739999953,
+          "reference_fraction": 0.033898305084745756,
+          "wrong_root_fraction": 0.05001934462093843
+        },
+        "missing_omission_only": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "missing_omission_and_inversion": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "different_root_same_pitch_set_only": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "candidate_pattern_absent": {
+          "reference_seconds": 14.100000000000003,
+          "wrong_root_seconds": 11.366303856000002,
+          "reference_fraction": 0.3319209039548023,
+          "wrong_root_fraction": 0.642157477945949
+        }
+      },
+      "overlays_not_additive": {
+        "different_root_same_pitch_set": {
+          "reference_seconds": 0.5999999999999979,
+          "wrong_root_seconds": 0.5999999999999979
+        },
+        "same_root_template_treble": {
+          "reference_seconds": 28.38,
+          "wrong_root_seconds": 6.333877557999999
+        }
+      }
+    },
+    {
+      "recording_id": "SWD_HU33_21",
+      "reference_seconds": 44.66,
+      "wrong_root_seconds": 11.981950116000004,
+      "categories": {
+        "reference_unknown": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "no_chord": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "strict_label_match": {
+          "reference_seconds": 39.76,
+          "wrong_root_seconds": 9.127981862000006,
+          "reference_fraction": 0.890282131661442,
+          "wrong_root_fraction": 0.7618110385730138
+        },
+        "missing_inversion_only": {
+          "reference_seconds": 2.100000000000005,
+          "wrong_root_seconds": 0.053968254000000826,
+          "reference_fraction": 0.047021943573667825,
+          "wrong_root_fraction": 0.0045041294177927465
+        },
+        "missing_omission_only": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "missing_omission_and_inversion": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "different_root_same_pitch_set_only": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0,
+          "reference_fraction": 0.0,
+          "wrong_root_fraction": 0.0
+        },
+        "candidate_pattern_absent": {
+          "reference_seconds": 2.799999999999997,
+          "wrong_root_seconds": 2.799999999999997,
+          "reference_fraction": 0.06269592476489022,
+          "wrong_root_fraction": 0.2336848320091935
+        }
+      },
+      "overlays_not_additive": {
+        "different_root_same_pitch_set": {
+          "reference_seconds": 0.0,
+          "wrong_root_seconds": 0.0
+        },
+        "same_root_template_treble": {
+          "reference_seconds": 41.86,
+          "wrong_root_seconds": 9.181950116000007
+        }
+      }
+    }
+  ],
+  "labels": [
+    {
+      "label": "C:maj",
+      "reference_seconds": 14.610140845070426,
+      "wrong_root_seconds": 5.356009070000003,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 3,
+            "label": "C"
+          },
+          {
+            "index": 15,
+            "label": "C"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 3,
+            "label": "C"
+          },
+          {
+            "index": 15,
+            "label": "C"
+          },
+          {
+            "index": 135,
+            "label": "C/E"
+          },
+          {
+            "index": 147,
+            "label": "C/G"
+          },
+          {
+            "index": 183,
+            "label": "C/D"
+          },
+          {
+            "index": 195,
+            "label": "C/Bb"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 3,
+            "label": "C"
+          },
+          {
+            "index": 15,
+            "label": "C"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 3,
+            "label": "C"
+          },
+          {
+            "index": 15,
+            "label": "C"
+          },
+          {
+            "index": 135,
+            "label": "C/E"
+          },
+          {
+            "index": 147,
+            "label": "C/G"
+          },
+          {
+            "index": 183,
+            "label": "C/D"
+          },
+          {
+            "index": 195,
+            "label": "C/Bb"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 3,
+            "label": "C"
+          },
+          {
+            "index": 15,
+            "label": "C"
+          },
+          {
+            "index": 135,
+            "label": "C/E"
+          },
+          {
+            "index": 147,
+            "label": "C/G"
+          },
+          {
+            "index": 183,
+            "label": "C/D"
+          },
+          {
+            "index": 195,
+            "label": "C/Bb"
+          }
+        ]
+      }
+    },
+    {
+      "label": "A:(3,5,b7,b9)/3",
+      "reference_seconds": 4.180000000000003,
+      "wrong_root_seconds": 4.180000000000003,
+      "category": "candidate_pattern_absent",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "G:min7(*1)",
+      "reference_seconds": 4.027903161264504,
+      "wrong_root_seconds": 4.027903161264504,
+      "category": "missing_omission_only",
+      "different_root_same_pitch_set": true,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [
+          {
+            "index": 118,
+            "label": "Gm7"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 118,
+            "label": "Gm7"
+          }
+        ],
+        "different_root_same_pitch_set": [
+          {
+            "index": 1,
+            "label": "Bb"
+          },
+          {
+            "index": 13,
+            "label": "Bb"
+          },
+          {
+            "index": 133,
+            "label": "Bb/D"
+          },
+          {
+            "index": 145,
+            "label": "Bb/F"
+          }
+        ],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "A#:maj",
+      "reference_seconds": 22.911710261569414,
+      "wrong_root_seconds": 3.458716109269619,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 1,
+            "label": "Bb"
+          },
+          {
+            "index": 13,
+            "label": "Bb"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 1,
+            "label": "Bb"
+          },
+          {
+            "index": 13,
+            "label": "Bb"
+          },
+          {
+            "index": 133,
+            "label": "Bb/D"
+          },
+          {
+            "index": 145,
+            "label": "Bb/F"
+          },
+          {
+            "index": 181,
+            "label": "Bb/C"
+          },
+          {
+            "index": 193,
+            "label": "Bb/Ab"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 1,
+            "label": "Bb"
+          },
+          {
+            "index": 13,
+            "label": "Bb"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 1,
+            "label": "Bb"
+          },
+          {
+            "index": 13,
+            "label": "Bb"
+          },
+          {
+            "index": 133,
+            "label": "Bb/D"
+          },
+          {
+            "index": 145,
+            "label": "Bb/F"
+          },
+          {
+            "index": 181,
+            "label": "Bb/C"
+          },
+          {
+            "index": 193,
+            "label": "Bb/Ab"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 1,
+            "label": "Bb"
+          },
+          {
+            "index": 13,
+            "label": "Bb"
+          },
+          {
+            "index": 133,
+            "label": "Bb/D"
+          },
+          {
+            "index": 145,
+            "label": "Bb/F"
+          },
+          {
+            "index": 181,
+            "label": "Bb/C"
+          },
+          {
+            "index": 193,
+            "label": "Bb/Ab"
+          }
+        ]
+      }
+    },
+    {
+      "label": "A:maj",
+      "reference_seconds": 7.16,
+      "wrong_root_seconds": 3.3639909319999965,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 0,
+            "label": "A"
+          },
+          {
+            "index": 12,
+            "label": "A"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 0,
+            "label": "A"
+          },
+          {
+            "index": 12,
+            "label": "A"
+          },
+          {
+            "index": 132,
+            "label": "A/C#"
+          },
+          {
+            "index": 144,
+            "label": "A/E"
+          },
+          {
+            "index": 180,
+            "label": "A/B"
+          },
+          {
+            "index": 192,
+            "label": "A/G"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 0,
+            "label": "A"
+          },
+          {
+            "index": 12,
+            "label": "A"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 0,
+            "label": "A"
+          },
+          {
+            "index": 12,
+            "label": "A"
+          },
+          {
+            "index": 132,
+            "label": "A/C#"
+          },
+          {
+            "index": 144,
+            "label": "A/E"
+          },
+          {
+            "index": 180,
+            "label": "A/B"
+          },
+          {
+            "index": 192,
+            "label": "A/G"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 0,
+            "label": "A"
+          },
+          {
+            "index": 12,
+            "label": "A"
+          },
+          {
+            "index": 132,
+            "label": "A/C#"
+          },
+          {
+            "index": 144,
+            "label": "A/E"
+          },
+          {
+            "index": 180,
+            "label": "A/B"
+          },
+          {
+            "index": 192,
+            "label": "A/G"
+          }
+        ]
+      }
+    },
+    {
+      "label": "B:hdim7/b3",
+      "reference_seconds": 3.1599999999999984,
+      "wrong_root_seconds": 3.1599999999999984,
+      "category": "missing_inversion_only",
+      "different_root_same_pitch_set": true,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [
+          {
+            "index": 50,
+            "label": "Bm7b5/A"
+          },
+          {
+            "index": 62,
+            "label": "Bm7b5"
+          }
+        ],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 50,
+            "label": "Bm7b5/A"
+          },
+          {
+            "index": 62,
+            "label": "Bm7b5"
+          }
+        ],
+        "different_root_same_pitch_set": [
+          {
+            "index": 125,
+            "label": "Dm6"
+          }
+        ],
+        "same_root_template_treble": [
+          {
+            "index": 50,
+            "label": "Bm7b5/A"
+          },
+          {
+            "index": 62,
+            "label": "Bm7b5"
+          }
+        ]
+      }
+    },
+    {
+      "label": "D#:dim7/b3",
+      "reference_seconds": 2.9199999999999946,
+      "wrong_root_seconds": 2.9199999999999946,
+      "category": "candidate_pattern_absent",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "D:min",
+      "reference_seconds": 22.43705271629779,
+      "wrong_root_seconds": 2.5774532951348106,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 29,
+            "label": "Dm"
+          },
+          {
+            "index": 41,
+            "label": "Dm"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 29,
+            "label": "Dm"
+          },
+          {
+            "index": 41,
+            "label": "Dm"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 29,
+            "label": "Dm"
+          },
+          {
+            "index": 41,
+            "label": "Dm"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 29,
+            "label": "Dm"
+          },
+          {
+            "index": 41,
+            "label": "Dm"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 29,
+            "label": "Dm"
+          },
+          {
+            "index": 41,
+            "label": "Dm"
+          }
+        ]
+      }
+    },
+    {
+      "label": "A:(3,5,b7,b9)",
+      "reference_seconds": 2.480000000000002,
+      "wrong_root_seconds": 2.480000000000002,
+      "category": "candidate_pattern_absent",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "F:maj",
+      "reference_seconds": 29.44216377630864,
+      "wrong_root_seconds": 2.2077742671388387,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 8,
+            "label": "F"
+          },
+          {
+            "index": 20,
+            "label": "F"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 8,
+            "label": "F"
+          },
+          {
+            "index": 20,
+            "label": "F"
+          },
+          {
+            "index": 140,
+            "label": "F/A"
+          },
+          {
+            "index": 152,
+            "label": "F/C"
+          },
+          {
+            "index": 188,
+            "label": "F/G"
+          },
+          {
+            "index": 200,
+            "label": "F/Eb"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 8,
+            "label": "F"
+          },
+          {
+            "index": 20,
+            "label": "F"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 8,
+            "label": "F"
+          },
+          {
+            "index": 20,
+            "label": "F"
+          },
+          {
+            "index": 140,
+            "label": "F/A"
+          },
+          {
+            "index": 152,
+            "label": "F/C"
+          },
+          {
+            "index": 188,
+            "label": "F/G"
+          },
+          {
+            "index": 200,
+            "label": "F/Eb"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 8,
+            "label": "F"
+          },
+          {
+            "index": 20,
+            "label": "F"
+          },
+          {
+            "index": 140,
+            "label": "F/A"
+          },
+          {
+            "index": 152,
+            "label": "F/C"
+          },
+          {
+            "index": 188,
+            "label": "F/G"
+          },
+          {
+            "index": 200,
+            "label": "F/Eb"
+          }
+        ]
+      }
+    },
+    {
+      "label": "A#:(1,5,6)",
+      "reference_seconds": 4.873949579831933,
+      "wrong_root_seconds": 2.087555022831933,
+      "category": "candidate_pattern_absent",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "F#:dim7/6",
+      "reference_seconds": 2.019999999999996,
+      "wrong_root_seconds": 2.019999999999996,
+      "category": "candidate_pattern_absent",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "D#:maj9(*1)",
+      "reference_seconds": 2.0168067226890756,
+      "wrong_root_seconds": 2.0168067226890756,
+      "category": "different_root_same_pitch_set_only",
+      "different_root_same_pitch_set": true,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [],
+        "different_root_same_pitch_set": [
+          {
+            "index": 73,
+            "label": "Bb6"
+          },
+          {
+            "index": 118,
+            "label": "Gm7"
+          }
+        ],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "A:dim7",
+      "reference_seconds": 2.0168067226890756,
+      "wrong_root_seconds": 2.0168067226890756,
+      "category": "candidate_pattern_absent",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "D:7(b2,*1)",
+      "reference_seconds": 2.0168067226890756,
+      "wrong_root_seconds": 2.0168067226890756,
+      "category": "candidate_pattern_absent",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "D#:sus2(*1)",
+      "reference_seconds": 2.0168067226890756,
+      "wrong_root_seconds": 2.0168067226890756,
+      "category": "candidate_pattern_absent",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "A:(1,6,b5)",
+      "reference_seconds": 2.0168067226890756,
+      "wrong_root_seconds": 2.0168067226890756,
+      "category": "different_root_same_pitch_set_only",
+      "different_root_same_pitch_set": true,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [],
+        "different_root_same_pitch_set": [
+          {
+            "index": 162,
+            "label": "Ebdim"
+          }
+        ],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "D:7(b2,*1,*5)",
+      "reference_seconds": 2.0168067226890756,
+      "wrong_root_seconds": 2.0168067226890756,
+      "category": "different_root_same_pitch_set_only",
+      "different_root_same_pitch_set": true,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [],
+        "different_root_same_pitch_set": [
+          {
+            "index": 159,
+            "label": "Cdim"
+          }
+        ],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "E:hdim7(11)",
+      "reference_seconds": 3.3802816901408423,
+      "wrong_root_seconds": 2.0138609444225324,
+      "category": "candidate_pattern_absent",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "C:min9(*1)",
+      "reference_seconds": 2.0168067226890756,
+      "wrong_root_seconds": 1.7846071766890754,
+      "category": "different_root_same_pitch_set_only",
+      "different_root_same_pitch_set": true,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [],
+        "different_root_same_pitch_set": [
+          {
+            "index": 102,
+            "label": "Ebmaj7"
+          }
+        ],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "G:min",
+      "reference_seconds": 12.73804000473429,
+      "wrong_root_seconds": 1.675772433877147,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 34,
+            "label": "Gm"
+          },
+          {
+            "index": 46,
+            "label": "Gm"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 34,
+            "label": "Gm"
+          },
+          {
+            "index": 46,
+            "label": "Gm"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 34,
+            "label": "Gm"
+          },
+          {
+            "index": 46,
+            "label": "Gm"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 34,
+            "label": "Gm"
+          },
+          {
+            "index": 46,
+            "label": "Gm"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 34,
+            "label": "Gm"
+          },
+          {
+            "index": 46,
+            "label": "Gm"
+          }
+        ]
+      }
+    },
+    {
+      "label": "F:maj6",
+      "reference_seconds": 2.3168067226890763,
+      "wrong_root_seconds": 1.5273282646890762,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": true,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 80,
+            "label": "F6"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 80,
+            "label": "F6"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 80,
+            "label": "F6"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 80,
+            "label": "F6"
+          }
+        ],
+        "different_root_same_pitch_set": [
+          {
+            "index": 113,
+            "label": "Dm7"
+          }
+        ],
+        "same_root_template_treble": [
+          {
+            "index": 80,
+            "label": "F6"
+          }
+        ]
+      }
+    },
+    {
+      "label": "E:maj/5",
+      "reference_seconds": 1.5199999999999996,
+      "wrong_root_seconds": 1.5199999999999996,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 151,
+            "label": "E/B"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 7,
+            "label": "E"
+          },
+          {
+            "index": 19,
+            "label": "E"
+          },
+          {
+            "index": 139,
+            "label": "E/G#"
+          },
+          {
+            "index": 151,
+            "label": "E/B"
+          },
+          {
+            "index": 187,
+            "label": "E/F#"
+          },
+          {
+            "index": 199,
+            "label": "E/D"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 151,
+            "label": "E/B"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 7,
+            "label": "E"
+          },
+          {
+            "index": 19,
+            "label": "E"
+          },
+          {
+            "index": 139,
+            "label": "E/G#"
+          },
+          {
+            "index": 151,
+            "label": "E/B"
+          },
+          {
+            "index": 187,
+            "label": "E/F#"
+          },
+          {
+            "index": 199,
+            "label": "E/D"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 7,
+            "label": "E"
+          },
+          {
+            "index": 19,
+            "label": "E"
+          },
+          {
+            "index": 139,
+            "label": "E/G#"
+          },
+          {
+            "index": 151,
+            "label": "E/B"
+          },
+          {
+            "index": 187,
+            "label": "E/F#"
+          },
+          {
+            "index": 199,
+            "label": "E/D"
+          }
+        ]
+      }
+    },
+    {
+      "label": "F:(1,5)",
+      "reference_seconds": 4.285714285714288,
+      "wrong_root_seconds": 1.4792743761428566,
+      "category": "candidate_pattern_absent",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "G#:(1,5)",
+      "reference_seconds": 6.42725623582767,
+      "wrong_root_seconds": 1.4312471673990927,
+      "category": "candidate_pattern_absent",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "F:7(*5)",
+      "reference_seconds": 2.0168067226890756,
+      "wrong_root_seconds": 1.320208083689078,
+      "category": "missing_omission_only",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [
+          {
+            "index": 92,
+            "label": "F7"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 92,
+            "label": "F7"
+          },
+          {
+            "index": 212,
+            "label": "F7/A"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "E:(3,5,b7,b9)/3",
+      "reference_seconds": 3.4400000000000013,
+      "wrong_root_seconds": 1.2399999999999984,
+      "category": "candidate_pattern_absent",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "F#:dim7",
+      "reference_seconds": 1.7000000000000046,
+      "wrong_root_seconds": 1.1975056690000034,
+      "category": "candidate_pattern_absent",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "C:min7",
+      "reference_seconds": 2.0168067226890756,
+      "wrong_root_seconds": 1.1808883546890776,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": true,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 111,
+            "label": "Cm7"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 111,
+            "label": "Cm7"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 111,
+            "label": "Cm7"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 111,
+            "label": "Cm7"
+          }
+        ],
+        "different_root_same_pitch_set": [
+          {
+            "index": 78,
+            "label": "Eb6"
+          }
+        ],
+        "same_root_template_treble": [
+          {
+            "index": 111,
+            "label": "Cm7"
+          }
+        ]
+      }
+    },
+    {
+      "label": "A:min",
+      "reference_seconds": 11.300000000000002,
+      "wrong_root_seconds": 1.1765532869999973,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 24,
+            "label": "Am"
+          },
+          {
+            "index": 36,
+            "label": "Am"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 24,
+            "label": "Am"
+          },
+          {
+            "index": 36,
+            "label": "Am"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 24,
+            "label": "Am"
+          },
+          {
+            "index": 36,
+            "label": "Am"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 24,
+            "label": "Am"
+          },
+          {
+            "index": 36,
+            "label": "Am"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 24,
+            "label": "Am"
+          },
+          {
+            "index": 36,
+            "label": "Am"
+          }
+        ]
+      }
+    },
+    {
+      "label": "D:(3,5,b7,b9)/b6",
+      "reference_seconds": 0.8999999999999986,
+      "wrong_root_seconds": 0.8999999999999986,
+      "category": "candidate_pattern_absent",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "C#:(1,5)",
+      "reference_seconds": 4.2857142857142865,
+      "wrong_root_seconds": 0.8887981868571408,
+      "category": "candidate_pattern_absent",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "F:min",
+      "reference_seconds": 10.9019272727273,
+      "wrong_root_seconds": 0.8823582760000015,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 32,
+            "label": "Fm"
+          },
+          {
+            "index": 44,
+            "label": "Fm"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 32,
+            "label": "Fm"
+          },
+          {
+            "index": 44,
+            "label": "Fm"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 32,
+            "label": "Fm"
+          },
+          {
+            "index": 44,
+            "label": "Fm"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 32,
+            "label": "Fm"
+          },
+          {
+            "index": 44,
+            "label": "Fm"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 32,
+            "label": "Fm"
+          },
+          {
+            "index": 44,
+            "label": "Fm"
+          }
+        ]
+      }
+    },
+    {
+      "label": "F#:(1,5)",
+      "reference_seconds": 8.571428571428566,
+      "wrong_root_seconds": 0.8685714312857105,
+      "category": "candidate_pattern_absent",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "E:maj",
+      "reference_seconds": 0.8399999999999999,
+      "wrong_root_seconds": 0.8399999999999999,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 7,
+            "label": "E"
+          },
+          {
+            "index": 19,
+            "label": "E"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 7,
+            "label": "E"
+          },
+          {
+            "index": 19,
+            "label": "E"
+          },
+          {
+            "index": 139,
+            "label": "E/G#"
+          },
+          {
+            "index": 151,
+            "label": "E/B"
+          },
+          {
+            "index": 187,
+            "label": "E/F#"
+          },
+          {
+            "index": 199,
+            "label": "E/D"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 7,
+            "label": "E"
+          },
+          {
+            "index": 19,
+            "label": "E"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 7,
+            "label": "E"
+          },
+          {
+            "index": 19,
+            "label": "E"
+          },
+          {
+            "index": 139,
+            "label": "E/G#"
+          },
+          {
+            "index": 151,
+            "label": "E/B"
+          },
+          {
+            "index": 187,
+            "label": "E/F#"
+          },
+          {
+            "index": 199,
+            "label": "E/D"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 7,
+            "label": "E"
+          },
+          {
+            "index": 19,
+            "label": "E"
+          },
+          {
+            "index": 139,
+            "label": "E/G#"
+          },
+          {
+            "index": 151,
+            "label": "E/B"
+          },
+          {
+            "index": 187,
+            "label": "E/F#"
+          },
+          {
+            "index": 199,
+            "label": "E/D"
+          }
+        ]
+      }
+    },
+    {
+      "label": "E:(3,b5,b7)/3",
+      "reference_seconds": 0.8399999999999963,
+      "wrong_root_seconds": 0.8399999999999963,
+      "category": "candidate_pattern_absent",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "A:min/b3",
+      "reference_seconds": 1.1399999999999988,
+      "wrong_root_seconds": 0.7799999999999994,
+      "category": "missing_inversion_only",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [
+          {
+            "index": 24,
+            "label": "Am"
+          },
+          {
+            "index": 36,
+            "label": "Am"
+          }
+        ],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 24,
+            "label": "Am"
+          },
+          {
+            "index": 36,
+            "label": "Am"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 24,
+            "label": "Am"
+          },
+          {
+            "index": 36,
+            "label": "Am"
+          }
+        ]
+      }
+    },
+    {
+      "label": "F:maj7",
+      "reference_seconds": 0.7600000000000002,
+      "wrong_root_seconds": 0.7600000000000002,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 104,
+            "label": "Fmaj7"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 104,
+            "label": "Fmaj7"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 104,
+            "label": "Fmaj7"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 104,
+            "label": "Fmaj7"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 104,
+            "label": "Fmaj7"
+          }
+        ]
+      }
+    },
+    {
+      "label": "G#:dim7",
+      "reference_seconds": 3.7799999999999994,
+      "wrong_root_seconds": 0.7201360539999992,
+      "category": "candidate_pattern_absent",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "G#:maj7(*5)",
+      "reference_seconds": 2.7272727272727266,
+      "wrong_root_seconds": 0.6964172339999983,
+      "category": "missing_omission_only",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [
+          {
+            "index": 107,
+            "label": "Abmaj7"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 107,
+            "label": "Abmaj7"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "F:(3,5,b7,b9)",
+      "reference_seconds": 0.6600000000000001,
+      "wrong_root_seconds": 0.6600000000000001,
+      "category": "candidate_pattern_absent",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "F:maj/3",
+      "reference_seconds": 1.5599999999999987,
+      "wrong_root_seconds": 0.6371428569999935,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 140,
+            "label": "F/A"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 8,
+            "label": "F"
+          },
+          {
+            "index": 20,
+            "label": "F"
+          },
+          {
+            "index": 140,
+            "label": "F/A"
+          },
+          {
+            "index": 152,
+            "label": "F/C"
+          },
+          {
+            "index": 188,
+            "label": "F/G"
+          },
+          {
+            "index": 200,
+            "label": "F/Eb"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 140,
+            "label": "F/A"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 8,
+            "label": "F"
+          },
+          {
+            "index": 20,
+            "label": "F"
+          },
+          {
+            "index": 140,
+            "label": "F/A"
+          },
+          {
+            "index": 152,
+            "label": "F/C"
+          },
+          {
+            "index": 188,
+            "label": "F/G"
+          },
+          {
+            "index": 200,
+            "label": "F/Eb"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 8,
+            "label": "F"
+          },
+          {
+            "index": 20,
+            "label": "F"
+          },
+          {
+            "index": 140,
+            "label": "F/A"
+          },
+          {
+            "index": 152,
+            "label": "F/C"
+          },
+          {
+            "index": 188,
+            "label": "F/G"
+          },
+          {
+            "index": 200,
+            "label": "F/Eb"
+          }
+        ]
+      }
+    },
+    {
+      "label": "D#:maj",
+      "reference_seconds": 11.748571428571434,
+      "wrong_root_seconds": 0.5877551030000117,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 6,
+            "label": "Eb"
+          },
+          {
+            "index": 18,
+            "label": "Eb"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 6,
+            "label": "Eb"
+          },
+          {
+            "index": 18,
+            "label": "Eb"
+          },
+          {
+            "index": 138,
+            "label": "Eb/G"
+          },
+          {
+            "index": 150,
+            "label": "Eb/Bb"
+          },
+          {
+            "index": 186,
+            "label": "Eb/F"
+          },
+          {
+            "index": 198,
+            "label": "Eb/Db"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 6,
+            "label": "Eb"
+          },
+          {
+            "index": 18,
+            "label": "Eb"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 6,
+            "label": "Eb"
+          },
+          {
+            "index": 18,
+            "label": "Eb"
+          },
+          {
+            "index": 138,
+            "label": "Eb/G"
+          },
+          {
+            "index": 150,
+            "label": "Eb/Bb"
+          },
+          {
+            "index": 186,
+            "label": "Eb/F"
+          },
+          {
+            "index": 198,
+            "label": "Eb/Db"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 6,
+            "label": "Eb"
+          },
+          {
+            "index": 18,
+            "label": "Eb"
+          },
+          {
+            "index": 138,
+            "label": "Eb/G"
+          },
+          {
+            "index": 150,
+            "label": "Eb/Bb"
+          },
+          {
+            "index": 186,
+            "label": "Eb/F"
+          },
+          {
+            "index": 198,
+            "label": "Eb/Db"
+          }
+        ]
+      }
+    },
+    {
+      "label": "C#:(1,5,b7)",
+      "reference_seconds": 2.1428571428571423,
+      "wrong_root_seconds": 0.5570975060000016,
+      "category": "candidate_pattern_absent",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "C#:maj",
+      "reference_seconds": 24.060606060606055,
+      "wrong_root_seconds": 0.5094537220909086,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 4,
+            "label": "C#"
+          },
+          {
+            "index": 16,
+            "label": "C#"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 4,
+            "label": "C#"
+          },
+          {
+            "index": 16,
+            "label": "C#"
+          },
+          {
+            "index": 136,
+            "label": "C#/E#"
+          },
+          {
+            "index": 148,
+            "label": "C#/G#"
+          },
+          {
+            "index": 184,
+            "label": "C#/D#"
+          },
+          {
+            "index": 196,
+            "label": "C#/B"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 4,
+            "label": "C#"
+          },
+          {
+            "index": 16,
+            "label": "C#"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 4,
+            "label": "C#"
+          },
+          {
+            "index": 16,
+            "label": "C#"
+          },
+          {
+            "index": 136,
+            "label": "C#/E#"
+          },
+          {
+            "index": 148,
+            "label": "C#/G#"
+          },
+          {
+            "index": 184,
+            "label": "C#/D#"
+          },
+          {
+            "index": 196,
+            "label": "C#/B"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 4,
+            "label": "C#"
+          },
+          {
+            "index": 16,
+            "label": "C#"
+          },
+          {
+            "index": 136,
+            "label": "C#/E#"
+          },
+          {
+            "index": 148,
+            "label": "C#/G#"
+          },
+          {
+            "index": 184,
+            "label": "C#/D#"
+          },
+          {
+            "index": 196,
+            "label": "C#/B"
+          }
+        ]
+      }
+    },
+    {
+      "label": "A#:maj(2)",
+      "reference_seconds": 2.0168067226890756,
+      "wrong_root_seconds": 0.4710577556218487,
+      "category": "candidate_pattern_absent",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "B:7",
+      "reference_seconds": 0.46000000000000085,
+      "wrong_root_seconds": 0.46000000000000085,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 86,
+            "label": "B7"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 86,
+            "label": "B7"
+          },
+          {
+            "index": 206,
+            "label": "B7/D#"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 86,
+            "label": "B7"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 86,
+            "label": "B7"
+          },
+          {
+            "index": 206,
+            "label": "B7/D#"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 86,
+            "label": "B7"
+          },
+          {
+            "index": 206,
+            "label": "B7/D#"
+          }
+        ]
+      }
+    },
+    {
+      "label": "G:maj/3",
+      "reference_seconds": 1.1799999999999997,
+      "wrong_root_seconds": 0.4005442170000002,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 142,
+            "label": "G/B"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 10,
+            "label": "G"
+          },
+          {
+            "index": 22,
+            "label": "G"
+          },
+          {
+            "index": 142,
+            "label": "G/B"
+          },
+          {
+            "index": 154,
+            "label": "G/D"
+          },
+          {
+            "index": 190,
+            "label": "G/A"
+          },
+          {
+            "index": 202,
+            "label": "G/F"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 142,
+            "label": "G/B"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 10,
+            "label": "G"
+          },
+          {
+            "index": 22,
+            "label": "G"
+          },
+          {
+            "index": 142,
+            "label": "G/B"
+          },
+          {
+            "index": 154,
+            "label": "G/D"
+          },
+          {
+            "index": 190,
+            "label": "G/A"
+          },
+          {
+            "index": 202,
+            "label": "G/F"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 10,
+            "label": "G"
+          },
+          {
+            "index": 22,
+            "label": "G"
+          },
+          {
+            "index": 142,
+            "label": "G/B"
+          },
+          {
+            "index": 154,
+            "label": "G/D"
+          },
+          {
+            "index": 190,
+            "label": "G/A"
+          },
+          {
+            "index": 202,
+            "label": "G/F"
+          }
+        ]
+      }
+    },
+    {
+      "label": "C:maj/3",
+      "reference_seconds": 0.40000000000000036,
+      "wrong_root_seconds": 0.40000000000000036,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 135,
+            "label": "C/E"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 3,
+            "label": "C"
+          },
+          {
+            "index": 15,
+            "label": "C"
+          },
+          {
+            "index": 135,
+            "label": "C/E"
+          },
+          {
+            "index": 147,
+            "label": "C/G"
+          },
+          {
+            "index": 183,
+            "label": "C/D"
+          },
+          {
+            "index": 195,
+            "label": "C/Bb"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 135,
+            "label": "C/E"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 3,
+            "label": "C"
+          },
+          {
+            "index": 15,
+            "label": "C"
+          },
+          {
+            "index": 135,
+            "label": "C/E"
+          },
+          {
+            "index": 147,
+            "label": "C/G"
+          },
+          {
+            "index": 183,
+            "label": "C/D"
+          },
+          {
+            "index": 195,
+            "label": "C/Bb"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 3,
+            "label": "C"
+          },
+          {
+            "index": 15,
+            "label": "C"
+          },
+          {
+            "index": 135,
+            "label": "C/E"
+          },
+          {
+            "index": 147,
+            "label": "C/G"
+          },
+          {
+            "index": 183,
+            "label": "C/D"
+          },
+          {
+            "index": 195,
+            "label": "C/Bb"
+          }
+        ]
+      }
+    },
+    {
+      "label": "G#:dim7/b3",
+      "reference_seconds": 1.48,
+      "wrong_root_seconds": 0.379727892,
+      "category": "candidate_pattern_absent",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "C:7(*5)",
+      "reference_seconds": 5.454545454545455,
+      "wrong_root_seconds": 0.3756256449090891,
+      "category": "missing_omission_only",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [
+          {
+            "index": 87,
+            "label": "C7"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 87,
+            "label": "C7"
+          },
+          {
+            "index": 207,
+            "label": "C7/E"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "G:hdim7",
+      "reference_seconds": 5.454545454545453,
+      "wrong_root_seconds": 0.3754442399090898,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": true,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 70,
+            "label": "Gm7b5"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 58,
+            "label": "Gm7b5/F"
+          },
+          {
+            "index": 70,
+            "label": "Gm7b5"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 70,
+            "label": "Gm7b5"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 58,
+            "label": "Gm7b5/F"
+          },
+          {
+            "index": 70,
+            "label": "Gm7b5"
+          }
+        ],
+        "different_root_same_pitch_set": [
+          {
+            "index": 121,
+            "label": "Bbm6"
+          }
+        ],
+        "same_root_template_treble": [
+          {
+            "index": 58,
+            "label": "Gm7b5/F"
+          },
+          {
+            "index": 70,
+            "label": "Gm7b5"
+          }
+        ]
+      }
+    },
+    {
+      "label": "D#:dim7",
+      "reference_seconds": 0.35999999999999943,
+      "wrong_root_seconds": 0.35999999999999943,
+      "category": "candidate_pattern_absent",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "C:maj/5",
+      "reference_seconds": 1.0800000000000018,
+      "wrong_root_seconds": 0.34594104299999984,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 147,
+            "label": "C/G"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 3,
+            "label": "C"
+          },
+          {
+            "index": 15,
+            "label": "C"
+          },
+          {
+            "index": 135,
+            "label": "C/E"
+          },
+          {
+            "index": 147,
+            "label": "C/G"
+          },
+          {
+            "index": 183,
+            "label": "C/D"
+          },
+          {
+            "index": 195,
+            "label": "C/Bb"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 147,
+            "label": "C/G"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 3,
+            "label": "C"
+          },
+          {
+            "index": 15,
+            "label": "C"
+          },
+          {
+            "index": 135,
+            "label": "C/E"
+          },
+          {
+            "index": 147,
+            "label": "C/G"
+          },
+          {
+            "index": 183,
+            "label": "C/D"
+          },
+          {
+            "index": 195,
+            "label": "C/Bb"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 3,
+            "label": "C"
+          },
+          {
+            "index": 15,
+            "label": "C"
+          },
+          {
+            "index": 135,
+            "label": "C/E"
+          },
+          {
+            "index": 147,
+            "label": "C/G"
+          },
+          {
+            "index": 183,
+            "label": "C/D"
+          },
+          {
+            "index": 195,
+            "label": "C/Bb"
+          }
+        ]
+      }
+    },
+    {
+      "label": "G#:min",
+      "reference_seconds": 2.142857142857143,
+      "wrong_root_seconds": 0.3383219957142858,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 35,
+            "label": "Abm"
+          },
+          {
+            "index": 47,
+            "label": "Abm"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 35,
+            "label": "Abm"
+          },
+          {
+            "index": 47,
+            "label": "Abm"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 35,
+            "label": "Abm"
+          },
+          {
+            "index": 47,
+            "label": "Abm"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 35,
+            "label": "Abm"
+          },
+          {
+            "index": 47,
+            "label": "Abm"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 35,
+            "label": "Abm"
+          },
+          {
+            "index": 47,
+            "label": "Abm"
+          }
+        ]
+      }
+    },
+    {
+      "label": "F:7",
+      "reference_seconds": 3.4599999999999973,
+      "wrong_root_seconds": 0.3200000000000003,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 92,
+            "label": "F7"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 92,
+            "label": "F7"
+          },
+          {
+            "index": 212,
+            "label": "F7/A"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 92,
+            "label": "F7"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 92,
+            "label": "F7"
+          },
+          {
+            "index": 212,
+            "label": "F7/A"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 92,
+            "label": "F7"
+          },
+          {
+            "index": 212,
+            "label": "F7/A"
+          }
+        ]
+      }
+    },
+    {
+      "label": "C:7",
+      "reference_seconds": 5.5301408450704255,
+      "wrong_root_seconds": 0.3141592421408492,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 87,
+            "label": "C7"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 87,
+            "label": "C7"
+          },
+          {
+            "index": 207,
+            "label": "C7/E"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 87,
+            "label": "C7"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 87,
+            "label": "C7"
+          },
+          {
+            "index": 207,
+            "label": "C7/E"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 87,
+            "label": "C7"
+          },
+          {
+            "index": 207,
+            "label": "C7/E"
+          }
+        ]
+      }
+    },
+    {
+      "label": "F:7/5",
+      "reference_seconds": 0.3000000000000007,
+      "wrong_root_seconds": 0.3000000000000007,
+      "category": "missing_inversion_only",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [
+          {
+            "index": 92,
+            "label": "F7"
+          },
+          {
+            "index": 212,
+            "label": "F7/A"
+          }
+        ],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 92,
+            "label": "F7"
+          },
+          {
+            "index": 212,
+            "label": "F7/A"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 92,
+            "label": "F7"
+          },
+          {
+            "index": 212,
+            "label": "F7/A"
+          }
+        ]
+      }
+    },
+    {
+      "label": "D#:maj/3",
+      "reference_seconds": 0.3000000000000007,
+      "wrong_root_seconds": 0.3000000000000007,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 138,
+            "label": "Eb/G"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 6,
+            "label": "Eb"
+          },
+          {
+            "index": 18,
+            "label": "Eb"
+          },
+          {
+            "index": 138,
+            "label": "Eb/G"
+          },
+          {
+            "index": 150,
+            "label": "Eb/Bb"
+          },
+          {
+            "index": 186,
+            "label": "Eb/F"
+          },
+          {
+            "index": 198,
+            "label": "Eb/Db"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 138,
+            "label": "Eb/G"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 6,
+            "label": "Eb"
+          },
+          {
+            "index": 18,
+            "label": "Eb"
+          },
+          {
+            "index": 138,
+            "label": "Eb/G"
+          },
+          {
+            "index": 150,
+            "label": "Eb/Bb"
+          },
+          {
+            "index": 186,
+            "label": "Eb/F"
+          },
+          {
+            "index": 198,
+            "label": "Eb/Db"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 6,
+            "label": "Eb"
+          },
+          {
+            "index": 18,
+            "label": "Eb"
+          },
+          {
+            "index": 138,
+            "label": "Eb/G"
+          },
+          {
+            "index": 150,
+            "label": "Eb/Bb"
+          },
+          {
+            "index": 186,
+            "label": "Eb/F"
+          },
+          {
+            "index": 198,
+            "label": "Eb/Db"
+          }
+        ]
+      }
+    },
+    {
+      "label": "C:hdim7/b5",
+      "reference_seconds": 0.29999999999999716,
+      "wrong_root_seconds": 0.29999999999999716,
+      "category": "missing_inversion_only",
+      "different_root_same_pitch_set": true,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [
+          {
+            "index": 51,
+            "label": "Cm7b5/Bb"
+          },
+          {
+            "index": 63,
+            "label": "Cm7b5"
+          }
+        ],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 51,
+            "label": "Cm7b5/Bb"
+          },
+          {
+            "index": 63,
+            "label": "Cm7b5"
+          }
+        ],
+        "different_root_same_pitch_set": [
+          {
+            "index": 126,
+            "label": "Ebm6"
+          }
+        ],
+        "same_root_template_treble": [
+          {
+            "index": 51,
+            "label": "Cm7b5/Bb"
+          },
+          {
+            "index": 63,
+            "label": "Cm7b5"
+          }
+        ]
+      }
+    },
+    {
+      "label": "D#:7",
+      "reference_seconds": 5.454545454545453,
+      "wrong_root_seconds": 0.2784580499999958,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 90,
+            "label": "Eb7"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 90,
+            "label": "Eb7"
+          },
+          {
+            "index": 210,
+            "label": "Eb7/G"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 90,
+            "label": "Eb7"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 90,
+            "label": "Eb7"
+          },
+          {
+            "index": 210,
+            "label": "Eb7/G"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 90,
+            "label": "Eb7"
+          },
+          {
+            "index": 210,
+            "label": "Eb7/G"
+          }
+        ]
+      }
+    },
+    {
+      "label": "C#:7",
+      "reference_seconds": 2.72727272727273,
+      "wrong_root_seconds": 0.2657761292727301,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 88,
+            "label": "C#7"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 88,
+            "label": "C#7"
+          },
+          {
+            "index": 208,
+            "label": "C#7/E#"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 88,
+            "label": "C#7"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 88,
+            "label": "C#7"
+          },
+          {
+            "index": 208,
+            "label": "C#7/E#"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 88,
+            "label": "C#7"
+          },
+          {
+            "index": 208,
+            "label": "C#7/E#"
+          }
+        ]
+      }
+    },
+    {
+      "label": "D:min/5",
+      "reference_seconds": 0.26000000000000023,
+      "wrong_root_seconds": 0.26000000000000023,
+      "category": "missing_inversion_only",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [
+          {
+            "index": 29,
+            "label": "Dm"
+          },
+          {
+            "index": 41,
+            "label": "Dm"
+          }
+        ],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 29,
+            "label": "Dm"
+          },
+          {
+            "index": 41,
+            "label": "Dm"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 29,
+            "label": "Dm"
+          },
+          {
+            "index": 41,
+            "label": "Dm"
+          }
+        ]
+      }
+    },
+    {
+      "label": "G:(1,5)",
+      "reference_seconds": 1.690140845070422,
+      "wrong_root_seconds": 0.25761681263380254,
+      "category": "candidate_pattern_absent",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "A#:(1,5)",
+      "reference_seconds": 4.285714285714286,
+      "wrong_root_seconds": 0.2320181409999993,
+      "category": "candidate_pattern_absent",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "F#:maj",
+      "reference_seconds": 7.999999999999998,
+      "wrong_root_seconds": 0.22058957066666451,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 9,
+            "label": "F#"
+          },
+          {
+            "index": 21,
+            "label": "F#"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 9,
+            "label": "F#"
+          },
+          {
+            "index": 21,
+            "label": "F#"
+          },
+          {
+            "index": 141,
+            "label": "F#/A#"
+          },
+          {
+            "index": 153,
+            "label": "F#/C#"
+          },
+          {
+            "index": 189,
+            "label": "F#/G#"
+          },
+          {
+            "index": 201,
+            "label": "F#/E"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 9,
+            "label": "F#"
+          },
+          {
+            "index": 21,
+            "label": "F#"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 9,
+            "label": "F#"
+          },
+          {
+            "index": 21,
+            "label": "F#"
+          },
+          {
+            "index": 141,
+            "label": "F#/A#"
+          },
+          {
+            "index": 153,
+            "label": "F#/C#"
+          },
+          {
+            "index": 189,
+            "label": "F#/G#"
+          },
+          {
+            "index": 201,
+            "label": "F#/E"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 9,
+            "label": "F#"
+          },
+          {
+            "index": 21,
+            "label": "F#"
+          },
+          {
+            "index": 141,
+            "label": "F#/A#"
+          },
+          {
+            "index": 153,
+            "label": "F#/C#"
+          },
+          {
+            "index": 189,
+            "label": "F#/G#"
+          },
+          {
+            "index": 201,
+            "label": "F#/E"
+          }
+        ]
+      }
+    },
+    {
+      "label": "A:7",
+      "reference_seconds": 3.3802816901408477,
+      "wrong_root_seconds": 0.1803225714084533,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 84,
+            "label": "A7"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 84,
+            "label": "A7"
+          },
+          {
+            "index": 204,
+            "label": "A7/C#"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 84,
+            "label": "A7"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 84,
+            "label": "A7"
+          },
+          {
+            "index": 204,
+            "label": "A7/C#"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 84,
+            "label": "A7"
+          },
+          {
+            "index": 204,
+            "label": "A7/C#"
+          }
+        ]
+      }
+    },
+    {
+      "label": "E:min/5",
+      "reference_seconds": 0.3999999999999986,
+      "wrong_root_seconds": 0.1370521539999956,
+      "category": "missing_inversion_only",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [
+          {
+            "index": 31,
+            "label": "Em"
+          },
+          {
+            "index": 43,
+            "label": "Em"
+          }
+        ],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 31,
+            "label": "Em"
+          },
+          {
+            "index": 43,
+            "label": "Em"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 31,
+            "label": "Em"
+          },
+          {
+            "index": 43,
+            "label": "Em"
+          }
+        ]
+      }
+    },
+    {
+      "label": "A#:min",
+      "reference_seconds": 5.454545454545453,
+      "wrong_root_seconds": 0.12663780727272567,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 25,
+            "label": "Bbm"
+          },
+          {
+            "index": 37,
+            "label": "Bbm"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 25,
+            "label": "Bbm"
+          },
+          {
+            "index": 37,
+            "label": "Bbm"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 25,
+            "label": "Bbm"
+          },
+          {
+            "index": 37,
+            "label": "Bbm"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 25,
+            "label": "Bbm"
+          },
+          {
+            "index": 37,
+            "label": "Bbm"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 25,
+            "label": "Bbm"
+          },
+          {
+            "index": 37,
+            "label": "Bbm"
+          }
+        ]
+      }
+    },
+    {
+      "label": "F:maj/5",
+      "reference_seconds": 1.7399999999999984,
+      "wrong_root_seconds": 0.0756916099999998,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 152,
+            "label": "F/C"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 8,
+            "label": "F"
+          },
+          {
+            "index": 20,
+            "label": "F"
+          },
+          {
+            "index": 140,
+            "label": "F/A"
+          },
+          {
+            "index": 152,
+            "label": "F/C"
+          },
+          {
+            "index": 188,
+            "label": "F/G"
+          },
+          {
+            "index": 200,
+            "label": "F/Eb"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 152,
+            "label": "F/C"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 8,
+            "label": "F"
+          },
+          {
+            "index": 20,
+            "label": "F"
+          },
+          {
+            "index": 140,
+            "label": "F/A"
+          },
+          {
+            "index": 152,
+            "label": "F/C"
+          },
+          {
+            "index": 188,
+            "label": "F/G"
+          },
+          {
+            "index": 200,
+            "label": "F/Eb"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 8,
+            "label": "F"
+          },
+          {
+            "index": 20,
+            "label": "F"
+          },
+          {
+            "index": 140,
+            "label": "F/A"
+          },
+          {
+            "index": 152,
+            "label": "F/C"
+          },
+          {
+            "index": 188,
+            "label": "F/G"
+          },
+          {
+            "index": 200,
+            "label": "F/Eb"
+          }
+        ]
+      }
+    },
+    {
+      "label": "A:min/5",
+      "reference_seconds": 0.7200000000000006,
+      "wrong_root_seconds": 0.06662131500000079,
+      "category": "missing_inversion_only",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [
+          {
+            "index": 24,
+            "label": "Am"
+          },
+          {
+            "index": 36,
+            "label": "Am"
+          }
+        ],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 24,
+            "label": "Am"
+          },
+          {
+            "index": 36,
+            "label": "Am"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 24,
+            "label": "Am"
+          },
+          {
+            "index": 36,
+            "label": "Am"
+          }
+        ]
+      }
+    },
+    {
+      "label": "G:7",
+      "reference_seconds": 0.3999999999999986,
+      "wrong_root_seconds": 0.06494331100000039,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 94,
+            "label": "G7"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 94,
+            "label": "G7"
+          },
+          {
+            "index": 214,
+            "label": "G7/B"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 94,
+            "label": "G7"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 94,
+            "label": "G7"
+          },
+          {
+            "index": 214,
+            "label": "G7/B"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 94,
+            "label": "G7"
+          },
+          {
+            "index": 214,
+            "label": "G7/B"
+          }
+        ]
+      }
+    },
+    {
+      "label": "C:min",
+      "reference_seconds": 1.0,
+      "wrong_root_seconds": 0.0542857149999989,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 27,
+            "label": "Cm"
+          },
+          {
+            "index": 39,
+            "label": "Cm"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 27,
+            "label": "Cm"
+          },
+          {
+            "index": 39,
+            "label": "Cm"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 27,
+            "label": "Cm"
+          },
+          {
+            "index": 39,
+            "label": "Cm"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 27,
+            "label": "Cm"
+          },
+          {
+            "index": 39,
+            "label": "Cm"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 27,
+            "label": "Cm"
+          },
+          {
+            "index": 39,
+            "label": "Cm"
+          }
+        ]
+      }
+    },
+    {
+      "label": "G:min/b3",
+      "reference_seconds": 1.0400000000000027,
+      "wrong_root_seconds": 0.053968254000000826,
+      "category": "missing_inversion_only",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [
+          {
+            "index": 34,
+            "label": "Gm"
+          },
+          {
+            "index": 46,
+            "label": "Gm"
+          }
+        ],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 34,
+            "label": "Gm"
+          },
+          {
+            "index": 46,
+            "label": "Gm"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 34,
+            "label": "Gm"
+          },
+          {
+            "index": 46,
+            "label": "Gm"
+          }
+        ]
+      }
+    },
+    {
+      "label": "E:min/b3",
+      "reference_seconds": 0.8200000000000003,
+      "wrong_root_seconds": 0.045442176000001666,
+      "category": "missing_inversion_only",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [
+          {
+            "index": 31,
+            "label": "Em"
+          },
+          {
+            "index": 43,
+            "label": "Em"
+          }
+        ],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 31,
+            "label": "Em"
+          },
+          {
+            "index": 43,
+            "label": "Em"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 31,
+            "label": "Em"
+          },
+          {
+            "index": 43,
+            "label": "Em"
+          }
+        ]
+      }
+    },
+    {
+      "label": "G#:maj",
+      "reference_seconds": 5.393939393939395,
+      "wrong_root_seconds": 0.04540094881818213,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 11,
+            "label": "Ab"
+          },
+          {
+            "index": 23,
+            "label": "Ab"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 11,
+            "label": "Ab"
+          },
+          {
+            "index": 23,
+            "label": "Ab"
+          },
+          {
+            "index": 143,
+            "label": "Ab/C"
+          },
+          {
+            "index": 155,
+            "label": "Ab/Eb"
+          },
+          {
+            "index": 191,
+            "label": "Ab/Bb"
+          },
+          {
+            "index": 203,
+            "label": "Ab/Gb"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 11,
+            "label": "Ab"
+          },
+          {
+            "index": 23,
+            "label": "Ab"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 11,
+            "label": "Ab"
+          },
+          {
+            "index": 23,
+            "label": "Ab"
+          },
+          {
+            "index": 143,
+            "label": "Ab/C"
+          },
+          {
+            "index": 155,
+            "label": "Ab/Eb"
+          },
+          {
+            "index": 191,
+            "label": "Ab/Bb"
+          },
+          {
+            "index": 203,
+            "label": "Ab/Gb"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 11,
+            "label": "Ab"
+          },
+          {
+            "index": 23,
+            "label": "Ab"
+          },
+          {
+            "index": 143,
+            "label": "Ab/C"
+          },
+          {
+            "index": 155,
+            "label": "Ab/Eb"
+          },
+          {
+            "index": 191,
+            "label": "Ab/Bb"
+          },
+          {
+            "index": 203,
+            "label": "Ab/Gb"
+          }
+        ]
+      }
+    },
+    {
+      "label": "A:7/3",
+      "reference_seconds": 2.200000000000003,
+      "wrong_root_seconds": 0.042675737000003267,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 204,
+            "label": "A7/C#"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 84,
+            "label": "A7"
+          },
+          {
+            "index": 204,
+            "label": "A7/C#"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 204,
+            "label": "A7/C#"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 84,
+            "label": "A7"
+          },
+          {
+            "index": 204,
+            "label": "A7/C#"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 84,
+            "label": "A7"
+          },
+          {
+            "index": 204,
+            "label": "A7/C#"
+          }
+        ]
+      }
+    },
+    {
+      "label": "E:7",
+      "reference_seconds": 3.0199999999999996,
+      "wrong_root_seconds": 0.030113379999999523,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 91,
+            "label": "E7"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 91,
+            "label": "E7"
+          },
+          {
+            "index": 211,
+            "label": "E7/G#"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 91,
+            "label": "E7"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 91,
+            "label": "E7"
+          },
+          {
+            "index": 211,
+            "label": "E7/G#"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 91,
+            "label": "E7"
+          },
+          {
+            "index": 211,
+            "label": "E7/G#"
+          }
+        ]
+      }
+    },
+    {
+      "label": "G:min/5",
+      "reference_seconds": 1.3800000000000026,
+      "wrong_root_seconds": 0.025351473999997154,
+      "category": "missing_inversion_only",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [
+          {
+            "index": 34,
+            "label": "Gm"
+          },
+          {
+            "index": 46,
+            "label": "Gm"
+          }
+        ],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 34,
+            "label": "Gm"
+          },
+          {
+            "index": 46,
+            "label": "Gm"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 34,
+            "label": "Gm"
+          },
+          {
+            "index": 46,
+            "label": "Gm"
+          }
+        ]
+      }
+    },
+    {
+      "label": "D:sus2",
+      "reference_seconds": 2.857142857142854,
+      "wrong_root_seconds": 0.01124716542856774,
+      "category": "candidate_pattern_absent",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": false,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": []
+      }
+    },
+    {
+      "label": "E:min",
+      "reference_seconds": 1.4200000000000017,
+      "wrong_root_seconds": 0.006712019000005398,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 31,
+            "label": "Em"
+          },
+          {
+            "index": 43,
+            "label": "Em"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 31,
+            "label": "Em"
+          },
+          {
+            "index": 43,
+            "label": "Em"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 31,
+            "label": "Em"
+          },
+          {
+            "index": 43,
+            "label": "Em"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 31,
+            "label": "Em"
+          },
+          {
+            "index": 43,
+            "label": "Em"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 31,
+            "label": "Em"
+          },
+          {
+            "index": 43,
+            "label": "Em"
+          }
+        ]
+      }
+    },
+    {
+      "label": "C#:min7",
+      "reference_seconds": 2.142857142857143,
+      "wrong_root_seconds": 0.006621315857142651,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": true,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 112,
+            "label": "C#m7"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 112,
+            "label": "C#m7"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 112,
+            "label": "C#m7"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 112,
+            "label": "C#m7"
+          }
+        ],
+        "different_root_same_pitch_set": [
+          {
+            "index": 79,
+            "label": "E6"
+          }
+        ],
+        "same_root_template_treble": [
+          {
+            "index": 112,
+            "label": "C#m7"
+          }
+        ]
+      }
+    },
+    {
+      "label": "G#:dim",
+      "reference_seconds": 0.23999999999999977,
+      "wrong_root_seconds": 0.0,
+      "category": "strict_label_match",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [
+          {
+            "index": 167,
+            "label": "Abdim"
+          }
+        ],
+        "same_root_quality": [
+          {
+            "index": 167,
+            "label": "Abdim"
+          }
+        ],
+        "restored_omissions_strict": [
+          {
+            "index": 167,
+            "label": "Abdim"
+          }
+        ],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 167,
+            "label": "Abdim"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 167,
+            "label": "Abdim"
+          }
+        ]
+      }
+    },
+    {
+      "label": "A#:7/b7",
+      "reference_seconds": 0.26000000000000156,
+      "wrong_root_seconds": 0.0,
+      "category": "missing_inversion_only",
+      "different_root_same_pitch_set": false,
+      "same_root_template_treble": true,
+      "matches": {
+        "strict": [],
+        "same_root_quality": [
+          {
+            "index": 85,
+            "label": "Bb7"
+          },
+          {
+            "index": 205,
+            "label": "Bb7/D"
+          }
+        ],
+        "restored_omissions_strict": [],
+        "restored_omissions_same_root_quality": [
+          {
+            "index": 85,
+            "label": "Bb7"
+          },
+          {
+            "index": 205,
+            "label": "Bb7/D"
+          }
+        ],
+        "different_root_same_pitch_set": [],
+        "same_root_template_treble": [
+          {
+            "index": 85,
+            "label": "Bb7"
+          },
+          {
+            "index": 205,
+            "label": "Bb7/D"
+          }
+        ]
+      }
+    }
+  ],
+  "decision": {
+    "branch": "otherwise",
+    "meaning": "Mixed evidence: name concrete missing acoustic candidate-ranking evidence; do not launch another subdivision or tune dictionary from these results.",
+    "strict_match_majority_hu33_sources": 2,
+    "absent_pattern_majority_hu33_sources": 1
+  },
+  "new_inferences": 0,
+  "external_requests": 0,
+  "product_changed": false,
+  "extraction_manifest": {
+    "plan_sha256": "b3d75cc0a598a63e5ef493b1b1636f2f7bce5ff0f8f0eae13a12e41d90a81d7f",
+    "source_hashes": {
+      "chromamethods.cpp": "a697d312f3da5ce199a0f93f5637b4f713e44c0e37a505089830f1e556e483fa",
+      "chromamethods.h": "30ac888fec953fbe0c895ac9177ee22269423f0fb4bb1474eb33fc7e45d89498",
+      "nnls.h": "3ec29d6aae6ba0adf0bf9c82ec6284b3b6846f56298097458d0d19342808cae5",
+      "Makefile.linux": "2f246cc4338c0dc86715c8c2e44dae8e069c5d0ee5c73090ef263fd587bb84cd",
+      "Makefile.inc": "a9ec5c2cee314ca437bdaa3650c544202218e8009987a088ce1fd1fe2ace9467",
+      "nnls-chroma.so": "fb7d75cf816d3eab3d97da8e6df51f5642b008a49ff4ec6bc2695c42dfded998"
+    },
+    "harness_sha256": "afd9f0f0d9b13fe8844f24034882d99fcd963090ce5e6e6f7bb6ce0be89401da",
+    "compiler": "g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+    "build_command": [
+      "g++",
+      "-Wall",
+      "-O3",
+      "-ftree-vectorize",
+      "-ffast-math",
+      "-fPIC",
+      "-I/home/jonas/.cache/guitarscribe-chordino-diagnostic/source",
+      "-I/home/jonas/.cache/guitarscribe-chordino-diagnostic/boost/usr/include",
+      "-I/usr/include",
+      "/home/jonas/gemini-home/music_analysis/guitarscribe/backend/scripts/chord_dictionary_dump.cpp",
+      "/home/jonas/.cache/guitarscribe-chordino-diagnostic/source/chromamethods.cpp",
+      "-o",
+      "/home/jonas/gemini-home/music_analysis/guitarscribe/output/evaluation/chord-dictionary-audit-2026-11-05/dictionary-dump"
+    ],
+    "binary_sha256": "7a29858a4e0a8aa8950c55acdaea3e797ba5dd7aea20599f24c4eb0f5fa44179",
+    "dictionary_sha256": "c0efd1c9cf97ed64c43caf86bbf9b43302e589fdcc90a76bff38577a0ca8e988",
+    "external_dictionary": false,
+    "vamp_path": "/home/jonas/gemini-home/music_analysis/guitarscribe/output/evaluation/chord-dictionary-audit-2026-11-05",
+    "entry_count": 217,
+    "frozen_before_matching": true
+  },
+  "verification": {
+    "all_reference_and_wrong_root_seconds_conserved": true,
+    "all_nine_original_input_hashes_verified": true,
+    "dictionary_source_harness_and_classifier_hashes_verified": true
+  },
+  "test_log": "cwd: guitarscribe/backend\ncommand: /home/jonas/.cache/guitarscribe-runtime/bin/python -m pytest -q tests/test_chord_dictionary.py\n.......                                                                  [100%]\n7 passed in 1.04s\nexit_code: 0\n",
+  "artifact_directory": "output/evaluation/chord-dictionary-audit-2026-11-05",
+  "artifact_sha256": {
+    "extraction-manifest.json": "cbacb3f0188cbf91b245113ef0b0e1e0fb6491c0c449ce43265c2af0babb350a",
+    "dictionary.json": "c0efd1c9cf97ed64c43caf86bbf9b43302e589fdcc90a76bff38577a0ca8e988",
+    "plan.json": "b3d75cc0a598a63e5ef493b1b1636f2f7bce5ff0f8f0eae13a12e41d90a81d7f",
+    "reports/05_Funk2-119-G_comp.json": "bd6c8aec62b7f7da6207398742368eabccbd6394e8394d4cde73f2c175d64f86",
+    "reports/result.json": "334a6f9f8648939dd2714e9c4127f468a50dbc0f21164d2068dfb039e06cc691",
+    "reports/03_SS3-84-Bb_comp.json": "211fd656670e268317f27b6223425369d7df882a0cfd01eddde3844c62d86707",
+    "reports/01_Rock1-90-C#_comp.json": "65dff4a4cedad6b9bfa6ec33c99c1824ead30ac9afdc0cba3651b514ae96e295",
+    "reports/02_Funk3-112-C#_comp.json": "3f2d36cb8dafa0932520a11bf37164a99a2f0efa2b8022ed4ec4ef6dea2a050f",
+    "reports/SWD_HU33_04.json": "808dc209d1ad91700ae06b06bfdf6906268839bfe0a03b3ad229401c9f328029",
+    "reports/00_SS2-88-F_comp.json": "2bcf513d3510f17ec8c0bc9842188530eaced3a5b7e334ba29ac85809985be01",
+    "reports/04_Rock2-142-D_comp.json": "3f2bcc0aede299265c00619e5ab7875998a6ed5a8b3bb70d3193e8537e24514f",
+    "reports/SWD_HU33_21.json": "73a412785164fe98d394cfc00e9c6159c46b00aacef125a84f0ee265cb005c26",
+    "reports/SWD_HU33_18.json": "0dd6b2f438ffe7dc477ea2a28886fcb2cb9d5572aeb7346da212d60cd5169b4a"
+  }
+}
