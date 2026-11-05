@@ -1,0 +1,225 @@
+{
+  "plan": {
+    "hypothesis": "When the existing guard rejects solely for missing a continuous primary 3/4 or 4/4 reference, test whether primary 2-pulse bars are nested in candidate 4-pulse bars with unchanged downbeats. Read-only; never override product.",
+    "inherited_parameters": {
+      "minimum_continuous_bars": 4,
+      "match_tolerance_seconds": 0.07
+    },
+    "additional_parameters": null,
+    "required_conditions": [
+      "Existing rejection reasons exactly [no_continuous_primary_reference]",
+      "At least one run of four primary intervals with exactly two pulses per bar",
+      "For every such run: downbeats matched one-to-one within 70ms, DBN four pulses in each bar, every alternate DBN pulse preserves each original primary pulse within 70ms"
+    ],
+    "cases": "13 frozen small0 cache recordings plus the 3 SWD development excerpts; missing two corpus caches remain excluded",
+    "stop_conditions": [
+      "If either already-known poor SWD case 18 or 21 becomes eligible with reference downbeat F1 below 0.8, reject mechanism without threshold retuning",
+      "If case04 remains rejected, mechanism has not explained this useful counterexample; do not promote",
+      "If it survives, require unseen reference recordings before a product proposal"
+    ],
+    "automatic_promotion": false,
+    "new_model_inference": 0
+  },
+  "result": {
+    "plan_sha256": "970034c9426e50eff6dcec3d952d749ac04e14ed76b97865d9800abee0bb9b13",
+    "rows": [
+      {
+        "original_eligible": false,
+        "original_reasons": [
+          "continuous_primary_beats_changed",
+          "continuous_primary_downbeats_changed"
+        ],
+        "hypothetical_eligible": false,
+        "spans": [],
+        "case": "227fa0db8dc5435b9c942a37e093dd96",
+        "reference_downbeat_f1": "not_annotated",
+        "cohort": "existing13"
+      },
+      {
+        "original_eligible": true,
+        "original_reasons": [],
+        "hypothetical_eligible": true,
+        "spans": [],
+        "case": "656a21b59b9a4b7e990a8bd586276c28",
+        "reference_downbeat_f1": "not_annotated",
+        "cohort": "existing13"
+      },
+      {
+        "original_eligible": true,
+        "original_reasons": [],
+        "hypothetical_eligible": true,
+        "spans": [],
+        "case": "97501dc47be041be94e391a42dd4c562",
+        "reference_downbeat_f1": "not_annotated",
+        "cohort": "existing13"
+      },
+      {
+        "original_eligible": true,
+        "original_reasons": [],
+        "hypothetical_eligible": true,
+        "spans": [],
+        "case": "c06705428794481cb54b75541dc03ece",
+        "reference_downbeat_f1": "not_annotated",
+        "cohort": "existing13"
+      },
+      {
+        "original_eligible": false,
+        "original_reasons": [
+          "continuous_primary_downbeats_changed",
+          "continuous_primary_beats_changed"
+        ],
+        "hypothetical_eligible": false,
+        "spans": [],
+        "case": "ebdc481345494b95832391262188defb",
+        "reference_downbeat_f1": "not_annotated",
+        "cohort": "existing13"
+      },
+      {
+        "original_eligible": true,
+        "original_reasons": [],
+        "hypothetical_eligible": true,
+        "spans": [],
+        "case": "efa50acf438348829dce46dba5df97bd",
+        "reference_downbeat_f1": "not_annotated",
+        "cohort": "existing13"
+      },
+      {
+        "original_eligible": true,
+        "original_reasons": [],
+        "hypothetical_eligible": true,
+        "spans": [],
+        "case": "fe26276f754d4578849081cf2490064f",
+        "reference_downbeat_f1": "not_annotated",
+        "cohort": "existing13"
+      },
+      {
+        "original_eligible": false,
+        "original_reasons": [
+          "candidate_pulse_density_ambiguity",
+          "continuous_primary_downbeats_changed",
+          "continuous_primary_beats_changed"
+        ],
+        "hypothetical_eligible": false,
+        "spans": [],
+        "case": "043d276fe27347d58e6b6b207841b7ab",
+        "reference_downbeat_f1": "not_annotated",
+        "cohort": "existing13"
+      },
+      {
+        "original_eligible": true,
+        "original_reasons": [],
+        "hypothetical_eligible": true,
+        "spans": [],
+        "case": "3c4baeb1c84447e6aabf72fa1bd064fd",
+        "reference_downbeat_f1": "not_annotated",
+        "cohort": "existing13"
+      },
+      {
+        "original_eligible": false,
+        "original_reasons": [
+          "candidate_pulse_density_ambiguity",
+          "continuous_primary_beats_changed",
+          "continuous_primary_downbeats_changed"
+        ],
+        "hypothetical_eligible": false,
+        "spans": [],
+        "case": "a64671ebdd124f908ae46bfb62684647",
+        "reference_downbeat_f1": "not_annotated",
+        "cohort": "existing13"
+      },
+      {
+        "original_eligible": true,
+        "original_reasons": [],
+        "hypothetical_eligible": true,
+        "spans": [],
+        "case": "605ac74e02b5460fbe253179ed3d3e30",
+        "reference_downbeat_f1": "not_annotated",
+        "cohort": "existing13"
+      },
+      {
+        "original_eligible": false,
+        "original_reasons": [
+          "candidate_pulse_density_ambiguity",
+          "continuous_primary_beats_changed",
+          "continuous_primary_downbeats_changed"
+        ],
+        "hypothetical_eligible": false,
+        "spans": [],
+        "case": "62127ad66a4342a799153c4861617387",
+        "reference_downbeat_f1": "not_annotated",
+        "cohort": "existing13"
+      },
+      {
+        "original_eligible": false,
+        "original_reasons": [
+          "candidate_pulse_density_ambiguity"
+        ],
+        "hypothetical_eligible": false,
+        "spans": [],
+        "case": "e9bfab84ed9d49bf88b9be2753353c94",
+        "reference_downbeat_f1": "not_annotated",
+        "cohort": "existing13"
+      },
+      {
+        "original_eligible": false,
+        "original_reasons": [
+          "no_continuous_primary_reference"
+        ],
+        "hypothetical_eligible": false,
+        "spans": [
+          {
+            "start": 9.52,
+            "end": 44.38,
+            "bars": 23,
+            "downbeats_and_four_pulse_bars_preserved": false,
+            "primary_pulses_preserved": false
+          }
+        ],
+        "case": "SWD_HU33_04",
+        "cohort": "development3",
+        "reference_downbeat_f1": 0.9508196721311476
+      },
+      {
+        "original_eligible": false,
+        "original_reasons": [
+          "no_continuous_primary_reference"
+        ],
+        "hypothetical_eligible": false,
+        "spans": [
+          {
+            "start": 4.66,
+            "end": 15.14,
+            "bars": 10,
+            "downbeats_and_four_pulse_bars_preserved": false,
+            "primary_pulses_preserved": false
+          },
+          {
+            "start": 19.86,
+            "end": 38.84,
+            "bars": 16,
+            "downbeats_and_four_pulse_bars_preserved": false,
+            "primary_pulses_preserved": false
+          }
+        ],
+        "case": "SWD_HU33_18",
+        "cohort": "development3",
+        "reference_downbeat_f1": 0.4444444444444444
+      },
+      {
+        "original_eligible": false,
+        "original_reasons": [
+          "no_continuous_primary_reference"
+        ],
+        "hypothetical_eligible": false,
+        "spans": [],
+        "case": "SWD_HU33_21",
+        "cohort": "development3",
+        "reference_downbeat_f1": 0.4210526315789474
+      }
+    ],
+    "false_accepts": [],
+    "case04_recovered": false,
+    "decision": "rejected",
+    "product_modified": false
+  }
+}
