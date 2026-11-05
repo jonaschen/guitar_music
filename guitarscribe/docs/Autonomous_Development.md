@@ -28,6 +28,7 @@ Skill 原稿在 [skills/guitarscribe-autopilot](../../skills/guitarscribe-autopi
 
 | ID | 狀態 | 問題／證據 | 下一步與完成條件 |
 | --- | --- | --- | --- |
+| A09-chord-errors | in_progress | 固定九份快取已完成逐區間定位；Funk2 內部錯根音 18.707s，HU33 三份 7.863／8.227／9.395s；產品尚未改善 | 實作完成、顧問待審：[交付報告](Chord_Error_Localization_2026-11-05.md)、[計畫](evaluation/chord-error-plan-2026-11-05.json)、[數值／64 測試／9 份歷史指標一致性](evaluation/chord-error-results-2026-11-05.json)。先審查，再依固定 bass 貢獻消融的唯一提案決策；無新增人耳驗收。 |
 | A01-view | done | 原局部視圖保留；使用者要求共同品質改善，取消單獨閱讀驗收 | 不再要求使用者驗收這一輪；原功能可選，不升預設。 |
 | A01-density | rejected | 後來B人耳確認慢一半、第一拍錯；全曲主速度限制不能判定正確拍速 | 連續性方法從產品恢復程式移除，離線失敗證據保留；不直接加倍或改phase再問同題。 |
 | A01-dbn | done | 你的樣子final0原DBN在15–55秒跟拍／密度／第一拍通過 | 紀錄局部通過，正式新引擎不自動開啟，不擴張全曲。 |

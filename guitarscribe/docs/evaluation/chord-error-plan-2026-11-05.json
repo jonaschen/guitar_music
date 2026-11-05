@@ -1,0 +1,235 @@
+{
+  "schema_version": "1.0",
+  "purpose": "Frozen chord error localization; development/regression only, no inference or preset changes",
+  "selection_rule": "All six previously calibrated GuitarSet Chordino recordings, including Funk2, and all three existing HU33 excerpts. No new holdout claim.",
+  "boundary_tolerance_seconds": 0.25,
+  "boundary_policy": "Label-independent one-to-one maximum matching within 250ms after collapsing semantically identical adjacent labels; signed estimate-reference lag. Never added to label error seconds.",
+  "category_policy": "Mutually exclusive: reference_unknown, estimate_unknown, correct_no_chord, missed_chord, false_chord, wrong_root, same_root_wrong_quality, bass_only, exact_match. Quality compares base-chord pitch classes with extensions folded into an octave, bass evaluated separately. Majmin out-of-vocabulary is an orthogonal coverage flag.",
+  "metrics_policy": "Historical root/majmin projection retained for comparability; full labels preserved separately for inversion diagnosis. No score tuning or realignment.",
+  "resource_limit": "Cached JSON and hashing only; no audio inference/API/upload; initial diagnostic segment <=2 hours",
+  "followup_rule": "Fix reproducible engineering defects; otherwise propose one common mechanism with evidence. Before a musical experiment freeze variable, outcomes, controls and resource ceiling; before promotion freeze at least two unused confirmation sources.",
+  "cases": [
+    {
+      "recording_id": "00_SS2-88-F_comp",
+      "dataset": "GuitarSet 1.1.0",
+      "audio": {
+        "path": "output/datasets/guitarset-1.1.0/subset/00_SS2-88-F_comp_mic.wav",
+        "sha256": "2f2c5c65d86fd135a15c47d38e9d61e3748c0c31a5ca163632b36eba239811f4"
+      },
+      "annotation": {
+        "path": "output/evaluation/guitarset-pilot-2026-10-24/00_SS2-88-F_comp.annotation.json",
+        "sha256": "616ada9bcf001e317febe2c4141ae095b08da82e0f693aa1e80b4d0a3dd26dd1"
+      },
+      "estimate": {
+        "name": "chordino_chord_only",
+        "layers": [
+          "chord"
+        ],
+        "path": "output/evaluation/chordino-pilot-2026-10-24/00_SS2-88-F_comp.score.json",
+        "sha256": "4ffc86eacf47f8f97992d359c45b071fd11d6016ed8afb5e25484c9d2fbad64f"
+      },
+      "interval": [
+        0.0,
+        43.629200000000026
+      ],
+      "score_time_offset_seconds": 0
+    },
+    {
+      "recording_id": "01_Rock1-90-C#_comp",
+      "dataset": "GuitarSet 1.1.0",
+      "audio": {
+        "path": "output/datasets/guitarset-1.1.0/subset/01_Rock1-90-C#_comp_mic.wav",
+        "sha256": "2dc712e3457bcde208ae59bf8fab8d7f0d7335368271dd211856a13323b50bee"
+      },
+      "annotation": {
+        "path": "output/evaluation/guitarset-pilot-2026-10-24/01_Rock1-90-C#_comp.annotation.json",
+        "sha256": "7b7576308cbcbaa9088209403d10433de02e26c873f6d581047bfead693b9756"
+      },
+      "estimate": {
+        "name": "chordino_chord_only",
+        "layers": [
+          "chord"
+        ],
+        "path": "output/evaluation/chordino-pilot-2026-10-24/01_Rock1-90-C#_comp.score.json",
+        "sha256": "abc9dd11f4e44c5d28ca225caa28b8613671b028ea439455778698973592900a"
+      },
+      "interval": [
+        0.0,
+        31.999999999999993
+      ],
+      "score_time_offset_seconds": 0
+    },
+    {
+      "recording_id": "02_Funk3-112-C#_comp",
+      "dataset": "GuitarSet 1.1.0",
+      "audio": {
+        "path": "output/datasets/guitarset-1.1.0/subset/02_Funk3-112-C#_comp_mic.wav",
+        "sha256": "b85381638984aafa8aff67691ccdd839c2fa4fb10bdc6f18a52810059b0a44f7"
+      },
+      "annotation": {
+        "path": "output/evaluation/guitarset-pilot-2026-10-24/02_Funk3-112-C#_comp.annotation.json",
+        "sha256": "f2376223a03598944e12b315da876f51fc102df2dca01b39c7fe152c1b380f5f"
+      },
+      "estimate": {
+        "name": "chordino_chord_only",
+        "layers": [
+          "chord"
+        ],
+        "path": "output/evaluation/chordino-pilot-2026-10-24/02_Funk3-112-C#_comp.score.json",
+        "sha256": "7b3f689a851b5acbc315941e39be95cf78f57e3bf5a8c779f04a5e2445cb7c65"
+      },
+      "interval": [
+        0.0,
+        34.284399092970524
+      ],
+      "score_time_offset_seconds": 0
+    },
+    {
+      "recording_id": "03_SS3-84-Bb_comp",
+      "dataset": "GuitarSet 1.1.0",
+      "audio": {
+        "path": "output/datasets/guitarset-1.1.0/confirmation/03_SS3-84-Bb_comp_mic.wav",
+        "sha256": "dcd3b1855030c613ea05b2469225ce2ce31587a6d50d7bd287a2989d0754f332"
+      },
+      "annotation": {
+        "path": "output/evaluation/reference-validator-2026-11-05/annotations/03_SS3-84-Bb_comp.annotation.json",
+        "sha256": "c7f15f2c392ea3d156f5466dfaa4a02b8cf7c6e01c9b6a13ca37d3efefe6b413"
+      },
+      "estimate": {
+        "name": "chordino_chord_only",
+        "layers": [
+          "chord"
+        ],
+        "path": "output/evaluation/chordino-additional-2026-10-24/03_SS3-84-Bb_comp.score.json",
+        "sha256": "334cbd582612438a4bbff79b70ea64ffd24d35542abc60de9cdcdd23c9191a3a"
+      },
+      "interval": [
+        0.0,
+        45.70759637188208
+      ],
+      "score_time_offset_seconds": 0
+    },
+    {
+      "recording_id": "04_Rock2-142-D_comp",
+      "dataset": "GuitarSet 1.1.0",
+      "audio": {
+        "path": "output/datasets/guitarset-1.1.0/confirmation/04_Rock2-142-D_comp_mic.wav",
+        "sha256": "77589eeda2dfd7a8e8652b9b0c8a002529d911786e4be29c7bafda31fa32ba99"
+      },
+      "annotation": {
+        "path": "output/evaluation/reference-validator-2026-11-05/annotations/04_Rock2-142-D_comp.annotation.json",
+        "sha256": "d722d0e4f7c6d01b1ab206f7165d0c1e9f905fcc6f127201a07e35e26be56589"
+      },
+      "estimate": {
+        "name": "chordino_chord_only",
+        "layers": [
+          "chord"
+        ],
+        "path": "output/evaluation/chordino-additional-2026-10-24/04_Rock2-142-D_comp.score.json",
+        "sha256": "17469623ea466c0d02867379f4bacab0ff98cbd9b119d602383cc40d6d93c4cc"
+      },
+      "interval": [
+        0.0,
+        27.041600000000003
+      ],
+      "score_time_offset_seconds": 0
+    },
+    {
+      "recording_id": "05_Funk2-119-G_comp",
+      "dataset": "GuitarSet 1.1.0",
+      "audio": {
+        "path": "output/datasets/guitarset-1.1.0/confirmation/05_Funk2-119-G_comp_mic.wav",
+        "sha256": "d8056eeace67f5451907b7a1d779e1ea576fee79f2df73e68909c7e944ac43a2"
+      },
+      "annotation": {
+        "path": "output/evaluation/reference-validator-2026-11-05/annotations/05_Funk2-119-G_comp.annotation.json",
+        "sha256": "4b0ab328a21dd819e97ea97132c20d94e1f7d83d724ff9a1b386ca43bb7f0726"
+      },
+      "estimate": {
+        "name": "chordino_chord_only",
+        "layers": [
+          "chord"
+        ],
+        "path": "output/evaluation/chordino-additional-2026-10-24/05_Funk2-119-G_comp.score.json",
+        "sha256": "eb4988601d9225e2f6839dbfc5b6402f6d6527359248766805db225811d8c97a"
+      },
+      "interval": [
+        0.0,
+        32.26319727891156
+      ],
+      "score_time_offset_seconds": 0
+    },
+    {
+      "recording_id": "SWD_HU33_04",
+      "dataset": "SWD 2.1 HU33",
+      "audio": {
+        "path": "output/evaluation/mixed-reference-2026-11-05/inputs/04/clip.wav",
+        "sha256": "b98a0471f23169a71736a7794851ee2f2c31b3a4bbec9bf2d55b2667160a240f"
+      },
+      "annotation": {
+        "path": "output/evaluation/mixed-reference-2026-11-05/results/04/annotation.json",
+        "sha256": "dbb7cd4df480124235abd82705f3828920afb0543fdc629fc0f7b01004deef42"
+      },
+      "estimate": {
+        "name": "chordino_product_cache",
+        "path": "output/evaluation/mixed-reference-2026-11-05/results/04/score.json",
+        "sha256": "4767652bff097fd1708c2b21e5a2ba4bc27f045325a5784b52805c650916ac56"
+      },
+      "interval": [
+        0.46,
+        45.0
+      ],
+      "score_time_offset_seconds": 0
+    },
+    {
+      "recording_id": "SWD_HU33_18",
+      "dataset": "SWD 2.1 HU33",
+      "audio": {
+        "path": "output/evaluation/mixed-reference-2026-11-05/inputs/18/clip.wav",
+        "sha256": "65f5246af6c000104f128fdafd1ddf479fa51c832aca36f56a2d59e9c713ac18"
+      },
+      "annotation": {
+        "path": "output/evaluation/mixed-reference-2026-11-05/results/18/annotation.json",
+        "sha256": "7707cc009a0a2fe77098849630007391fe6cbaea6d95273bd5e1cc8a3164b2ca"
+      },
+      "estimate": {
+        "name": "chordino_product_cache",
+        "path": "output/evaluation/mixed-reference-2026-11-05/results/18/score.json",
+        "sha256": "cba1bcd1e2e326676cd68e18a74ff72c5d5995e1e99178647f4d6ac549a55204"
+      },
+      "interval": [
+        0.22,
+        42.7
+      ],
+      "score_time_offset_seconds": 0
+    },
+    {
+      "recording_id": "SWD_HU33_21",
+      "dataset": "SWD 2.1 HU33",
+      "audio": {
+        "path": "output/evaluation/mixed-reference-2026-11-05/inputs/21/clip.wav",
+        "sha256": "315eef478cf431e1df870f90662da4fd8bcdaa6eb61f7346860ca576fa6629be"
+      },
+      "annotation": {
+        "path": "output/evaluation/mixed-reference-2026-11-05/results/21/annotation.json",
+        "sha256": "3378877d861d56aa8afd6a8aced05686e22284a8bc9450a541221ac95930a7bf"
+      },
+      "estimate": {
+        "name": "chordino_product_cache",
+        "path": "output/evaluation/mixed-reference-2026-11-05/results/21/score.json",
+        "sha256": "2fa2ace8911e6ad2980d169870bc9e46d5aac6e1584c12330c1a925fd835f47b"
+      },
+      "interval": [
+        0.34,
+        45.0
+      ],
+      "score_time_offset_seconds": 0
+    }
+  ],
+  "diagnostic_refinement": {
+    "after_initial_report": true,
+    "initial_plan_sha256": "5cd40c32cce0842eaabdea97888eec01ccd764a617cec436b8423408cab630e9",
+    "reason": "Initial confusions include rootless, omitted-tone and equivalent-pitch-set labels. Preserve explicit omissions in diagnostic quality; add orthogonal pitch-set/root-tone and transition-interior overlays. No change to input selection, historical metrics, music output or success thresholds.",
+    "interior_policy": "Wrong-root duration outside union of reference transition +/-250ms windows, using existing boundary tolerance; not proof of causal timing versus naming error."
+  }
+}
