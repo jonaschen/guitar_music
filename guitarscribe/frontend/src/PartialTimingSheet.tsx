@@ -7,6 +7,22 @@ export type TimingPreview = {job_id:string;duration_seconds:number;source_start_
   regions:Array<{start:number;end:number;beats_per_bar:number;bars:LocalBar[]}>};
 export const timeLabel=(seconds:number)=>`${Math.floor(seconds/60)}:${(seconds%60).toFixed(1).padStart(4,'0')}`;
 
+function validRegions(data:TimingPreview){
+  let cursor=0,total=0;
+  if(!Number.isFinite(data.covered_seconds)||data.covered_seconds<0)return false;
+  for(const region of data.regions){
+    if(!region||!Number.isFinite(region.start)||!Number.isFinite(region.end)||region.start<cursor||region.end<=region.start||region.end>data.duration_seconds||![3,4].includes(region.beats_per_bar)||!Array.isArray(region.bars)||!region.bars.length)return false;
+    let barStart=region.start;
+    for(const bar of region.bars){
+      if(!bar||bar.start!==barStart||!Number.isFinite(bar.end)||bar.end<=bar.start||bar.end>region.end||!Array.isArray(bar.beats)||bar.beats.length!==region.beats_per_bar+1||bar.beats[0]!==bar.start||bar.beats.at(-1)!==bar.end||bar.beats.some((beat,i)=>!Number.isFinite(beat)||i>0&&beat<=bar.beats[i-1]))return false;
+      barStart=bar.end;
+    }
+    if(barStart!==region.end)return false;
+    total+=region.end-region.start;cursor=region.end;
+  }
+  return Math.abs(total-data.covered_seconds)<1e-6;
+}
+
 export function useTimingPreview(score:SongScore){
   const job=sourceJobId(score),duration=score.song.duration_seconds,offset=score.song.source_start_seconds??0;
   const key=`${job}:${duration}:${offset}`;
@@ -16,7 +32,7 @@ export function useTimingPreview(score:SongScore){
     const controller=new AbortController();
     void fetch(`/backend/api/v1/jobs/${encodeURIComponent(job)}/timing-preview`,{signal:controller.signal})
       .then(r=>r.ok?r.json():null).then((data:TimingPreview|null)=>{
-        if(!controller.signal.aborted&&data?.job_id===job&&data.duration_seconds===duration&&data.source_start_seconds===offset&&Array.isArray(data.regions))
+        if(!controller.signal.aborted&&data?.job_id===job&&data.duration_seconds===duration&&data.source_start_seconds===offset&&Array.isArray(data.regions)&&validRegions(data))
           setLoaded({key,data});
       }).catch(()=>{/* Missing older diagnostics leave the existing time sheet usable. */});
     return ()=>controller.abort();

@@ -18,6 +18,10 @@
 .timeline-columns > :last-child,.chord-timeline button > :last-child { text-align:right; }
 
 .partial-preview-toggle { display:flex;align-items:center;gap:8px;margin:16px 0; }
+.reading-view-controls { display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:16px 0 8px; }
+.reading-view-controls button { min-height:44px; }
+.reading-view-controls button[aria-pressed=true] { border-color:var(--accent);background:rgba(241,143,59,.12); }
+.reading-view-controls small { color:var(--text-muted);font-variant-numeric:tabular-nums; }
 .partial-region,.partial-unknown { margin:24px 0; }
 .partial-region-label { color:var(--text-muted);font-size:14px;font-variant-numeric:tabular-nums; }
 .unknown-chords { display:flex;flex-wrap:wrap;gap:8px 16px; }

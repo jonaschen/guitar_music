@@ -1,0 +1,686 @@
+{
+  "candidate_parameter": "timingView=auto",
+  "normal_default_changed": false,
+  "policy": "observed-local-bars-v1",
+  "policy_source_sha256": "4e31b65ba02d697963f76658fc553918439061e2e1833aa713015122ac62b97e",
+  "frozen_sources_sha256": "0ee2a33564b5cafb7a93f6273a051fb85909c888b4ee2c0a54903ad7e0d19018",
+  "real_browser": {
+    "job": "1b4158f1acee4beaa9af7cb42f3f52a0",
+    "evidence": [
+      {
+        "width": 320,
+        "bars": 144,
+        "overflow": false
+      },
+      {
+        "width": 390,
+        "bars": 144,
+        "overflow": false
+      },
+      {
+        "width": 1440,
+        "bars": 144,
+        "overflow": false
+      }
+    ],
+    "revision_write_attempts": 0,
+    "page_errors": [],
+    "playback_input_unchanged": true
+  },
+  "cross_recording_browser": {
+    "source_count": 16,
+    "rows": [
+      {
+        "job_id": "227fa0db8dc5435b9c942a37e093dd96",
+        "expected_local_bars": 117,
+        "metered": false,
+        "viewports": [
+          320,
+          390,
+          1440
+        ],
+        "writes": 0,
+        "page_errors": []
+      },
+      {
+        "job_id": "656a21b59b9a4b7e990a8bd586276c28",
+        "expected_local_bars": 50,
+        "metered": false,
+        "viewports": [
+          320,
+          390,
+          1440
+        ],
+        "writes": 0,
+        "page_errors": []
+      },
+      {
+        "job_id": "97501dc47be041be94e391a42dd4c562",
+        "expected_local_bars": 128,
+        "metered": false,
+        "viewports": [
+          320,
+          390,
+          1440
+        ],
+        "writes": 0,
+        "page_errors": []
+      },
+      {
+        "job_id": "c06705428794481cb54b75541dc03ece",
+        "expected_local_bars": 129,
+        "metered": false,
+        "viewports": [
+          320,
+          390,
+          1440
+        ],
+        "writes": 0,
+        "page_errors": []
+      },
+      {
+        "job_id": "ebdc481345494b95832391262188defb",
+        "expected_local_bars": 37,
+        "metered": false,
+        "viewports": [
+          320,
+          390,
+          1440
+        ],
+        "writes": 0,
+        "page_errors": []
+      },
+      {
+        "job_id": "efa50acf438348829dce46dba5df97bd",
+        "expected_local_bars": 105,
+        "metered": false,
+        "viewports": [
+          320,
+          390,
+          1440
+        ],
+        "writes": 0,
+        "page_errors": []
+      },
+      {
+        "job_id": "fe26276f754d4578849081cf2490064f",
+        "expected_local_bars": 132,
+        "metered": false,
+        "viewports": [
+          320,
+          390,
+          1440
+        ],
+        "writes": 0,
+        "page_errors": []
+      },
+      {
+        "job_id": "043d276fe27347d58e6b6b207841b7ab",
+        "expected_local_bars": 43,
+        "metered": false,
+        "viewports": [
+          320,
+          390,
+          1440
+        ],
+        "writes": 0,
+        "page_errors": []
+      },
+      {
+        "job_id": "3c4baeb1c84447e6aabf72fa1bd064fd",
+        "expected_local_bars": 124,
+        "metered": false,
+        "viewports": [
+          320,
+          390,
+          1440
+        ],
+        "writes": 0,
+        "page_errors": []
+      },
+      {
+        "job_id": "a64671ebdd124f908ae46bfb62684647",
+        "expected_local_bars": 52,
+        "metered": false,
+        "viewports": [
+          320,
+          390,
+          1440
+        ],
+        "writes": 0,
+        "page_errors": []
+      },
+      {
+        "job_id": "605ac74e02b5460fbe253179ed3d3e30",
+        "expected_local_bars": 0,
+        "metered": true,
+        "viewports": [
+          320,
+          390,
+          1440
+        ],
+        "writes": 0,
+        "page_errors": []
+      },
+      {
+        "job_id": "62127ad66a4342a799153c4861617387",
+        "expected_local_bars": 22,
+        "metered": false,
+        "viewports": [
+          320,
+          390,
+          1440
+        ],
+        "writes": 0,
+        "page_errors": []
+      },
+      {
+        "job_id": "e9bfab84ed9d49bf88b9be2753353c94",
+        "expected_local_bars": 19,
+        "metered": false,
+        "viewports": [
+          320,
+          390,
+          1440
+        ],
+        "writes": 0,
+        "page_errors": []
+      },
+      {
+        "job_id": "cd754fa6b231407290c076c2351e917c",
+        "expected_local_bars": 52,
+        "metered": false,
+        "viewports": [
+          320,
+          390,
+          1440
+        ],
+        "writes": 0,
+        "page_errors": []
+      },
+      {
+        "job_id": "10de4472b18247d99326c42f41d04b0d",
+        "expected_local_bars": 75,
+        "metered": false,
+        "viewports": [
+          320,
+          390,
+          1440
+        ],
+        "writes": 0,
+        "page_errors": []
+      },
+      {
+        "job_id": "1b4158f1acee4beaa9af7cb42f3f52a0",
+        "expected_local_bars": 144,
+        "metered": false,
+        "viewports": [
+          320,
+          390,
+          1440
+        ],
+        "writes": 0,
+        "page_errors": []
+      }
+    ]
+  },
+  "data_protection": {
+    "sources": [
+      {
+        "job_id": "227fa0db8dc5435b9c942a37e093dd96",
+        "score_sha256": "812040ab22c8d59d9f09ffabebc4437dd74f753b19eab57c121288d9f6c1a09c",
+        "manifest_sha256": "2377cbe2c7b76478fbdebc720663530a559aa20ca734696f0f37b6a552d74b06",
+        "unchanged": true
+      },
+      {
+        "job_id": "656a21b59b9a4b7e990a8bd586276c28",
+        "score_sha256": "4d766a5ef07882aec73c76eb0d3a9de93c90d4d6a0b3c782c0da7f04d2891449",
+        "manifest_sha256": "5de56b76f62824895ec7133b47441a2c13160630b93adc7f23e36713bb6f1160",
+        "unchanged": true
+      },
+      {
+        "job_id": "97501dc47be041be94e391a42dd4c562",
+        "score_sha256": "90f2e3642f364e3585a99314dda57de718f860e01a591b4c907d166cde55cb65",
+        "manifest_sha256": "72dc97f501b2e59ddc7ad2c1e1cd6a0ea418def70851ac1e550d4ce61d33e0b7",
+        "unchanged": true
+      },
+      {
+        "job_id": "c06705428794481cb54b75541dc03ece",
+        "score_sha256": "ba74cf7103e3759ddc82030b73acf55501cee4abd596cb0b8ec8fbce44aeadf3",
+        "manifest_sha256": "7f2fbaa67e74e7372bafdb74132a7207a0317e4af0ac4d0d5bc2de2e28018bcb",
+        "unchanged": true
+      },
+      {
+        "job_id": "ebdc481345494b95832391262188defb",
+        "score_sha256": "37cea471c61ae1f36c90b2a29bb3d1e708e32178e6ddbb58ec75ff625f380d06",
+        "manifest_sha256": "d631f3641ec06ad454501633c3284c0333e0679f43a5bbde9d4b2c2054a44f45",
+        "unchanged": true
+      },
+      {
+        "job_id": "efa50acf438348829dce46dba5df97bd",
+        "score_sha256": "42392979ee7e6537e5878f446c0daca426ac741f6fe6e6c11c6ab2f3e4b6f63e",
+        "manifest_sha256": "a5a16a4bd7bfdf417d5c8f36807ff45e644cc43a4b25e3ad5a6e94f7324895b7",
+        "unchanged": true
+      },
+      {
+        "job_id": "fe26276f754d4578849081cf2490064f",
+        "score_sha256": "c5f2633096a47f32c5a96251560bf5d7d7a66693155e04595c60f435ba13049e",
+        "manifest_sha256": "69c8c2d2379322e924463ec8c855ed0ab7435d92a5151dae9440b425182bb0cc",
+        "unchanged": true
+      },
+      {
+        "job_id": "043d276fe27347d58e6b6b207841b7ab",
+        "score_sha256": "d76f3c313a1fb5446f934f485faff048eab0f476d6a6c316f53388a725ba80b3",
+        "manifest_sha256": "296fd736643a81606e214f122ba0293eb5f7cdae2562466f118b5e4800c904dd",
+        "unchanged": true
+      },
+      {
+        "job_id": "3c4baeb1c84447e6aabf72fa1bd064fd",
+        "score_sha256": "3009fd01208968b908fc1e657ad2b9833170674844e9d7286c8e5531ff152182",
+        "manifest_sha256": "998d83d40c6b6f030b75fe009da1e6f6c6e42a7a899db0eb868dd52cc0f97677",
+        "unchanged": true
+      },
+      {
+        "job_id": "a64671ebdd124f908ae46bfb62684647",
+        "score_sha256": "8a06c27374559c40a3082949d6e6b31156f40efe5b8073cb74a92fea0b051cd0",
+        "manifest_sha256": "3a7b87849dc20d25096ee6963d7d1b6a1d6754d416f0d0ed47f86eab6cd82e99",
+        "unchanged": true
+      },
+      {
+        "job_id": "605ac74e02b5460fbe253179ed3d3e30",
+        "score_sha256": "1f656b83419fda766ec0414dcc2ce06330bd97c8c67e29a8146c46fe1d9cc22e",
+        "manifest_sha256": "b4c523817c2f6526a65fd802bcace741e66584d91999ba92fc3acec7c3221f3f",
+        "unchanged": true
+      },
+      {
+        "job_id": "62127ad66a4342a799153c4861617387",
+        "score_sha256": "67f8a42a5f9bd940152240d618af0e736ccfaf4f9eb2a359cf68ec5484fb9d90",
+        "manifest_sha256": "b69150d7c3e7829c4d2b73980412b408a153d5e18ba56010dcdb4bd3771d79e8",
+        "unchanged": true
+      },
+      {
+        "job_id": "e9bfab84ed9d49bf88b9be2753353c94",
+        "score_sha256": "9ebc8eb6cabfaad7eeb7cb0992ca2d210a4378cdede7417dc785437c7b002c00",
+        "manifest_sha256": "11b521af8f2773903d2bdfdf9c14af497b8e3b18dd5c4918bca666729948646b",
+        "unchanged": true
+      },
+      {
+        "job_id": "cd754fa6b231407290c076c2351e917c",
+        "score_sha256": "1776a6c966d5ee8e79ecb3f31575b2749e999e843fcc86348750ac9f48efde54",
+        "manifest_sha256": "0d8c0f7f3622de6c5680f841f7e8b33cea2ba2c63f17c3b09db824c7512bc707",
+        "unchanged": true
+      },
+      {
+        "job_id": "10de4472b18247d99326c42f41d04b0d",
+        "score_sha256": "acf4cb18ea083635c9fcf41669fe4f66e866091bd27fa952fcd955e3f7e0ab62",
+        "manifest_sha256": "9c6fda7928029f2220b9c3ab9dcd86a060f08af54fee74167db895028354fde4",
+        "unchanged": true
+      },
+      {
+        "job_id": "1b4158f1acee4beaa9af7cb42f3f52a0",
+        "score_sha256": "dc5d711075e9ea5444850a5f1ca6e0ce579ed2dcb8f366cb8561b962aa20ebee",
+        "manifest_sha256": "18f69b77444bc7e9b4a94e8c76d7081397966b7e005dc404b0978bfe1d276156",
+        "unchanged": true
+      }
+    ],
+    "unchanged_sources": 16
+  },
+  "frozen_preview_manifest": {
+    "policy": "observed-local-bars-v1",
+    "policy_source_sha256": "4e31b65ba02d697963f76658fc553918439061e2e1833aa713015122ac62b97e",
+    "sources_file_sha256": "0ee2a33564b5cafb7a93f6273a051fb85909c888b4ee2c0a54903ad7e0d19018",
+    "comparison": "Expected previews computed by unchanged backend policy/cached original fifteen, independently of frontend rendering; sources.json written before successful real browser comparison. No policy changes.",
+    "sources": [
+      {
+        "job_id": "227fa0db8dc5435b9c942a37e093dd96",
+        "score_sha256": "812040ab22c8d59d9f09ffabebc4437dd74f753b19eab57c121288d9f6c1a09c",
+        "playback_manifest_sha256": "2377cbe2c7b76478fbdebc720663530a559aa20ca734696f0f37b6a552d74b06",
+        "preview_sha256": "c091f8abca410173843ecfa54d0aadcf41323fcbd2e861a1c97d89ac9127960b",
+        "regions": [
+          {
+            "start": 0.96,
+            "end": 263.5,
+            "bars": 117
+          }
+        ]
+      },
+      {
+        "job_id": "656a21b59b9a4b7e990a8bd586276c28",
+        "score_sha256": "4d766a5ef07882aec73c76eb0d3a9de93c90d4d6a0b3c782c0da7f04d2891449",
+        "playback_manifest_sha256": "5de56b76f62824895ec7133b47441a2c13160630b93adc7f23e36713bb6f1160",
+        "preview_sha256": "4ada81c8ced3bbf4a9fa88ecdfda231f62f0b1f3d3dc56f1c5f17f1088ee6fd3",
+        "regions": [
+          {
+            "start": 25.72,
+            "end": 51.74,
+            "bars": 10
+          },
+          {
+            "start": 54.84,
+            "end": 88.96,
+            "bars": 13
+          },
+          {
+            "start": 107.24,
+            "end": 177.68,
+            "bars": 27
+          }
+        ]
+      },
+      {
+        "job_id": "97501dc47be041be94e391a42dd4c562",
+        "score_sha256": "90f2e3642f364e3585a99314dda57de718f860e01a591b4c907d166cde55cb65",
+        "playback_manifest_sha256": "72dc97f501b2e59ddc7ad2c1e1cd6a0ea418def70851ac1e550d4ce61d33e0b7",
+        "preview_sha256": "a52aa8f01e613ce8d1c3b8144310ba02543fed2db6f637ccd52aa3d75f9cf384",
+        "regions": [
+          {
+            "start": 1.22,
+            "end": 296.78,
+            "bars": 128
+          }
+        ]
+      },
+      {
+        "job_id": "c06705428794481cb54b75541dc03ece",
+        "score_sha256": "ba74cf7103e3759ddc82030b73acf55501cee4abd596cb0b8ec8fbce44aeadf3",
+        "playback_manifest_sha256": "7f2fbaa67e74e7372bafdb74132a7207a0317e4af0ac4d0d5bc2de2e28018bcb",
+        "preview_sha256": "142c00ffe3f0bf6508a96453c3b80620ba18087d2f47aa0eb7157d5e3b6cca4a",
+        "regions": [
+          {
+            "start": 21.74,
+            "end": 259.92,
+            "bars": 129
+          }
+        ]
+      },
+      {
+        "job_id": "ebdc481345494b95832391262188defb",
+        "score_sha256": "37cea471c61ae1f36c90b2a29bb3d1e708e32178e6ddbb58ec75ff625f380d06",
+        "playback_manifest_sha256": "d631f3641ec06ad454501633c3284c0333e0679f43a5bbde9d4b2c2054a44f45",
+        "preview_sha256": "84568d704fc870d2e7cdf7dc08137629a9685603c3f00fd829fc1d971c9d80d3",
+        "regions": [
+          {
+            "start": 54.02,
+            "end": 72.5,
+            "bars": 5
+          },
+          {
+            "start": 102.02,
+            "end": 142.64,
+            "bars": 11
+          },
+          {
+            "start": 185.1,
+            "end": 262.68,
+            "bars": 21
+          }
+        ]
+      },
+      {
+        "job_id": "efa50acf438348829dce46dba5df97bd",
+        "score_sha256": "42392979ee7e6537e5878f446c0daca426ac741f6fe6e6c11c6ab2f3e4b6f63e",
+        "playback_manifest_sha256": "a5a16a4bd7bfdf417d5c8f36807ff45e644cc43a4b25e3ad5a6e94f7324895b7",
+        "preview_sha256": "8c22004797c789562f58f3eb022587367c048a170eefb6a1689b7f22608a2e93",
+        "regions": [
+          {
+            "start": 0.92,
+            "end": 236.42,
+            "bars": 105
+          }
+        ]
+      },
+      {
+        "job_id": "fe26276f754d4578849081cf2490064f",
+        "score_sha256": "c5f2633096a47f32c5a96251560bf5d7d7a66693155e04595c60f435ba13049e",
+        "playback_manifest_sha256": "69c8c2d2379322e924463ec8c855ed0ab7435d92a5151dae9440b425182bb0cc",
+        "preview_sha256": "784c21e2190b4a8e9d32289d6e3af3335c0fc40fa9cb3ab57ccafed42607c594",
+        "regions": [
+          {
+            "start": 0.64,
+            "end": 223.82,
+            "bars": 132
+          }
+        ]
+      },
+      {
+        "job_id": "043d276fe27347d58e6b6b207841b7ab",
+        "score_sha256": "d76f3c313a1fb5446f934f485faff048eab0f476d6a6c316f53388a725ba80b3",
+        "playback_manifest_sha256": "296fd736643a81606e214f122ba0293eb5f7cdae2562466f118b5e4800c904dd",
+        "preview_sha256": "352564a4c7b7b642b1f9f4b8e22d587b5ee766dbd4f6c4b78dfaf702fd667293",
+        "regions": [
+          {
+            "start": 0.12,
+            "end": 47.34,
+            "bars": 24
+          },
+          {
+            "start": 61.08,
+            "end": 80.76,
+            "bars": 10
+          },
+          {
+            "start": 128.42,
+            "end": 146.12,
+            "bars": 9
+          }
+        ]
+      },
+      {
+        "job_id": "3c4baeb1c84447e6aabf72fa1bd064fd",
+        "score_sha256": "3009fd01208968b908fc1e657ad2b9833170674844e9d7286c8e5531ff152182",
+        "playback_manifest_sha256": "998d83d40c6b6f030b75fe009da1e6f6c6e42a7a899db0eb868dd52cc0f97677",
+        "preview_sha256": "32c153bbd692a7b93bee9b6d30d852423da975a35189373687d7cf14aa53807c",
+        "regions": [
+          {
+            "start": 13.68,
+            "end": 236.82,
+            "bars": 119
+          },
+          {
+            "start": 244.74,
+            "end": 258.22,
+            "bars": 5
+          }
+        ]
+      },
+      {
+        "job_id": "a64671ebdd124f908ae46bfb62684647",
+        "score_sha256": "8a06c27374559c40a3082949d6e6b31156f40efe5b8073cb74a92fea0b051cd0",
+        "playback_manifest_sha256": "3a7b87849dc20d25096ee6963d7d1b6a1d6754d416f0d0ed47f86eab6cd82e99",
+        "preview_sha256": "e1d4e431b599eefe5fc2f34252f87816a6c4598ce34aa51a0f6a5cb09bf77863",
+        "regions": [
+          {
+            "start": 59.38,
+            "end": 82.96,
+            "bars": 12
+          },
+          {
+            "start": 88.9,
+            "end": 116.42,
+            "bars": 14
+          },
+          {
+            "start": 150.3,
+            "end": 177.82,
+            "bars": 14
+          },
+          {
+            "start": 211.3,
+            "end": 234.88,
+            "bars": 12
+          }
+        ]
+      },
+      {
+        "job_id": "605ac74e02b5460fbe253179ed3d3e30",
+        "score_sha256": "1f656b83419fda766ec0414dcc2ce06330bd97c8c67e29a8146c46fe1d9cc22e",
+        "playback_manifest_sha256": "b4c523817c2f6526a65fd802bcace741e66584d91999ba92fc3acec7c3221f3f",
+        "preview_sha256": "60a7c0853164ca5d33b0237a172b8ea0dac36bf93f1c8af0840f8f88516722d5",
+        "regions": [
+          {
+            "start": 1.1,
+            "end": 149.18,
+            "bars": 82
+          }
+        ]
+      },
+      {
+        "job_id": "62127ad66a4342a799153c4861617387",
+        "score_sha256": "67f8a42a5f9bd940152240d618af0e736ccfaf4f9eb2a359cf68ec5484fb9d90",
+        "playback_manifest_sha256": "b69150d7c3e7829c4d2b73980412b408a153d5e18ba56010dcdb4bd3771d79e8",
+        "preview_sha256": "4fc940dfef3d994882c5af1676eebbfe048a50183173fb340b9f7ca9d1fb52ae",
+        "regions": [
+          {
+            "start": 0.62,
+            "end": 20.28,
+            "bars": 10
+          },
+          {
+            "start": 24.22,
+            "end": 47.82,
+            "bars": 12
+          }
+        ]
+      },
+      {
+        "job_id": "e9bfab84ed9d49bf88b9be2753353c94",
+        "score_sha256": "9ebc8eb6cabfaad7eeb7cb0992ca2d210a4378cdede7417dc785437c7b002c00",
+        "playback_manifest_sha256": "11b521af8f2773903d2bdfdf9c14af497b8e3b18dd5c4918bca666729948646b",
+        "preview_sha256": "21d4cde3d85de649c05166b48199c33f1c5321d06dca86d08af6b702c9d44014",
+        "regions": [
+          {
+            "start": 39.12,
+            "end": 58.16,
+            "bars": 5
+          },
+          {
+            "start": 141.98,
+            "end": 161.04,
+            "bars": 5
+          },
+          {
+            "start": 164.84,
+            "end": 199.12,
+            "bars": 9
+          }
+        ]
+      },
+      {
+        "job_id": "cd754fa6b231407290c076c2351e917c",
+        "score_sha256": "1776a6c966d5ee8e79ecb3f31575b2749e999e843fcc86348750ac9f48efde54",
+        "playback_manifest_sha256": "0d8c0f7f3622de6c5680f841f7e8b33cea2ba2c63f17c3b09db824c7512bc707",
+        "preview_sha256": "cfc1bc1788ebedbc6a123480c759b054b9f6ff6de806a2f79e0190cd6130f36e",
+        "regions": [
+          {
+            "start": 58.16,
+            "end": 115.3,
+            "bars": 30
+          },
+          {
+            "start": 149.6,
+            "end": 191.48,
+            "bars": 22
+          }
+        ]
+      },
+      {
+        "job_id": "10de4472b18247d99326c42f41d04b0d",
+        "score_sha256": "acf4cb18ea083635c9fcf41669fe4f66e866091bd27fa952fcd955e3f7e0ab62",
+        "playback_manifest_sha256": "9c6fda7928029f2220b9c3ab9dcd86a060f08af54fee74167db895028354fde4",
+        "preview_sha256": "5cefc33ccef2062ea26433fc4f9b46176ef8130e7feaddd184e3d4b054b12aab",
+        "regions": [
+          {
+            "start": 4.56,
+            "end": 17.52,
+            "bars": 4
+          },
+          {
+            "start": 20.7,
+            "end": 235.04,
+            "bars": 66
+          },
+          {
+            "start": 299.96,
+            "end": 316.52,
+            "bars": 5
+          }
+        ]
+      },
+      {
+        "job_id": "1b4158f1acee4beaa9af7cb42f3f52a0",
+        "score_sha256": "dc5d711075e9ea5444850a5f1ca6e0ce579ed2dcb8f366cb8561b962aa20ebee",
+        "playback_manifest_sha256": "18f69b77444bc7e9b4a94e8c76d7081397966b7e005dc404b0978bfe1d276156",
+        "preview_sha256": "6536020ce391523d5e416bf0f4323381d0dda564b11607e9d8a5bc1e2700d29c",
+        "regions": [
+          {
+            "start": 15.22,
+            "end": 26.6,
+            "bars": 6
+          },
+          {
+            "start": 40.78,
+            "end": 243.06,
+            "bars": 107
+          },
+          {
+            "start": 244.96,
+            "end": 262.0,
+            "bars": 9
+          },
+          {
+            "start": 265.8,
+            "end": 292.2,
+            "bars": 14
+          },
+          {
+            "start": 296.96,
+            "end": 312.16,
+            "bars": 8
+          }
+        ]
+      }
+    ]
+  },
+  "build": "npm run build passed; pre-existing AlphaTab large chunk warning",
+  "product_tests": {
+    "first_full_suite": {
+      "passed": 43,
+      "failed": 1,
+      "reason": "New revision-switch fixture omitted per-job saved revision index; no restore button was available"
+    },
+    "corrected_revision_switch": {
+      "passed": 1,
+      "duration_seconds": 5.6
+    },
+    "additional_missing_or_metered": {
+      "passed": 2,
+      "duration_seconds": 5.0
+    },
+    "initial_relevant_subset": {
+      "passed": 10
+    }
+  },
+  "initial_real_browser_failure": "Initial browser assertion expected 107 total bars, actual 144. This was an incorrect test assumption: unchanged backend policy returns five regions with bars 6/107/9/14/8. First run stopped before screenshots/playback; fixed expected count from independently computed frozen backend preview, then full browser rerun passed. No algorithm changed.\n",
+  "screenshots": {
+    "320": {
+      "path": "output/evaluation/reading-candidate-2026-11-05/new-job-320.png",
+      "sha256": "58d1256a325e0cd363552e4fbc285d5b5aee77a539298d3e87700ddbb2e68943"
+    },
+    "390": {
+      "path": "output/evaluation/reading-candidate-2026-11-05/new-job-390.png",
+      "sha256": "570e174e18c6283dff832bd24234373acf478540e4c5d2f559a347c770a6b5c7"
+    },
+    "1440": {
+      "path": "output/evaluation/reading-candidate-2026-11-05/new-job-1440.png",
+      "sha256": "7959d1ce0af89ec3b423edbc8c94a137bf57a8fe578d31a28e8b67a2b3eadbab"
+    }
+  },
+  "source_sha256": {
+    "frontend/src/ChordTimelinePage.tsx": "1df05e0d8d8cc3d90f2899df885c6e5ea8e7265de9d4e8a2c46d3930d05b2f40",
+    "frontend/src/PartialTimingSheet.tsx": "b2fa185d590634885d42469c117afea3fd1b55d4600378cd7005370a26051721",
+    "frontend/src/chordTimeline.css": "630b41abbe981d9a4496bae707ec9b20ec5dda771d83af5c575dca7e17d87ec8"
+  },
+  "new_model_inferences": 0,
+  "product_deployed": false,
+  "human_review": "consultant review first; no user acceptance requested"
+}

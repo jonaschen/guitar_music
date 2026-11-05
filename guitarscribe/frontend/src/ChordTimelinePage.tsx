@@ -3,6 +3,7 @@ import {type ChordSongPage} from './ChordSongPage';
 import {type ReviewMode} from './AccompanimentReview';
 import {PartialTimingSheet,useTimingPreview} from './PartialTimingSheet';
 import './chordTimeline.css';
+import {sourceJobId} from './scoreVersion';
 
 const stamp=(seconds:number)=>`${Math.floor(seconds/60)}:${(seconds%60).toFixed(1).padStart(4,'0')}`;
 /** A seconds-based chord sheet. Never derives measures from rejected timing. */
@@ -11,7 +12,13 @@ export function ChordTimelinePage({score,sourceAvailable,playing,preparing,playh
   const [loop,setLoop]=useState(false),[start,setStart]=useState('0'),[end,setEnd]=useState(String(score.song.duration_seconds));
   const [follow,setFollow]=useState(true);
   const preview=useTimingPreview(score);
-  const [showPreview,setShowPreview]=useState(()=>new URLSearchParams(window.location.search).get('timingView')==='partial');
+  const timingView=new URLSearchParams(window.location.search).get('timingView');
+  const autoPreview=timingView==='auto';
+  const viewKey=`${sourceJobId(score)}:${score.song.duration_seconds}:${score.song.source_start_seconds??0}`;
+  const [viewChoice,setViewChoice]=useState<{key:string;preview:boolean}|null>(null);
+  const showPreview=viewChoice?.key===viewKey?viewChoice.preview:autoPreview||timingView==='partial';
+  const setShowPreview=(preview:boolean)=>setViewChoice({key:viewKey,preview});
+  useEffect(()=>{if(autoPreview)setEditing(false);},[autoPreview,viewKey]);
   const hasPreview=!!preview?.regions.length;
   const previewVisible=showPreview&&hasPreview&&!editing;
   const sheetRef=useRef<HTMLDivElement>(null),transportRef=useRef<HTMLDivElement>(null);
@@ -40,9 +47,14 @@ export function ChordTimelinePage({score,sourceAvailable,playing,preparing,playh
     </div>
     <p className="playback-status" role="status">{preparing?'正在準備聲音…':playing?'播放中':'已暫停'} · {stamp(playhead)} / {stamp(duration)}</p>
     {unavailable?<p role="status">{!sourceAvailable?'原曲暫時無法使用，請選「吉他」播放。':'已移調，請選「吉他」，或回到原調合奏。'}</p>:null}
-    <p className="sheet-hint">{previewVisible?'小節草稿尚待確認；不確定處按時間顯示，各段重新編號。':'這首歌的小節位置尚未確認，先顯示和弦時間表。每列是一段和弦，不是一小節；目前每段彈一次。'}</p>
-    {hasPreview?<label className="partial-preview-toggle"><input type="checkbox" checked={showPreview} onChange={e=>setShowPreview(e.target.checked)}/>預覽可辨識的小節（{Math.round(preview!.covered_seconds)} 秒）</label>:null}
-    {previewVisible?<p className="sheet-hint">看譜預覽不改變聲音；吉他仍在換和弦時彈一次。編輯時回到時間表。</p>:null}
+    {autoPreview&&hasPreview?<div className="reading-view-controls" role="group" aria-label="讀譜方式">
+      <button type="button" aria-pressed={previewVisible} disabled={editing} onClick={()=>setShowPreview(true)}>局部譜 · 待確認</button>
+      <button type="button" aria-pressed={!previewVisible} onClick={()=>setShowPreview(false)}>時間表</button>
+      <small>{Math.round(preview!.covered_seconds)} 秒小節草稿</small>
+    </div>:null}
+    <p className="sheet-hint">{previewVisible?(autoPreview?'小節草稿待確認；未知段按時間排列。看譜方式不改變聲音。':'小節草稿尚待確認；不確定處按時間顯示，各段重新編號。'):editing&&autoPreview?'正在來源時間表編輯；完成後可回局部譜。':'這首歌的小節位置尚未確認，先顯示和弦時間表。每列是一段和弦，不是一小節；目前每段彈一次。'}</p>
+    {hasPreview&&!autoPreview?<label className="partial-preview-toggle"><input type="checkbox" checked={showPreview} onChange={e=>setShowPreview(e.target.checked)}/>預覽可辨識的小節（{Math.round(preview!.covered_seconds)} 秒）</label>:null}
+    {previewVisible&&!autoPreview?<p className="sheet-hint">看譜預覽不改變聲音；吉他仍在換和弦時彈一次。編輯時回到時間表。</p>:null}
     {fingeringGuide}
     <details className="song-options"><summary>練習與編輯</summary>
       <div className="secondary-controls">
@@ -51,7 +63,7 @@ export function ChordTimelinePage({score,sourceAvailable,playing,preparing,playh
         {loop?<><label>從（秒）<input type="number" min="0" step="0.1" value={start} onChange={e=>change(()=>setStart(e.target.value))}/></label><label>到（秒）<input type="number" min="0" step="0.1" max={duration} value={end} onChange={e=>change(()=>setEnd(e.target.value))}/></label></>:null}
         <label>吉他練習速度 <select aria-label="吉他練習速度" disabled={mode!=='guitar'} value={mode==='guitar'?speed:1} onChange={e=>change(()=>onSpeed?.(Number(e.target.value)))}>{[.5,.75,1,1.25].map(n=><option key={n} value={n}>{n*100}%</option>)}</select></label>
         <label>吉他音量 <input aria-label="核對吉他音量" type="range" min="0" max="1" step=".01" value={guitarVolume} onChange={e=>change(()=>onVolume(Number(e.target.value)))}/></label>
-        <button type="button" onClick={()=>change(()=>setEditing(v=>!v))} aria-pressed={editing}>{editing?'完成編輯':'編輯和弦'}</button>
+        <button type="button" onClick={()=>change(()=>setEditing(v=>!v))} aria-pressed={editing}>{editing?'完成編輯':autoPreview&&hasPreview?'到時間表編輯':'編輯和弦'}</button>
         <button type="button" disabled={unavailable||preparing||loop&&!valid} onClick={()=>{onStop();play(rangeStart);}}>從頭播放</button>
         {secondaryActions}
       </div>
