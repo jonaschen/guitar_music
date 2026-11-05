@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0",
+  "provider": "Klangio",
+  "uploaded": false,
+  "plan_sha256": "a7a629f5ed77c6f13472b536608c1d7add8c4ed949b289f394e0eacf199fa1e4",
+  "license": "GuitarSet 1.1.0, CC BY 4.0",
+  "attribution": "Xi et al., https://zenodo.org/records/3371780; cropped to 0\u201315s, PCM16; no other audio changes",
+  "maximum_job_creations": 6,
+  "total_unique_audio_seconds": 45,
+  "requests": [
+    {
+      "path": "/beat-tracking",
+      "query": {}
+    },
+    {
+      "path": "/chord-recognition",
+      "query": {
+        "vocabulary": "major-minor"
+      }
+    }
+  ],
+  "upload_only": "Only listed WAV files, never reference labels or project data",
+  "cost_status": "unverified; no paid request authorized",
+  "cases": [
+    {
+      "recording_id": "00_SS2-88-F_comp",
+      "clip": "00_SS2-88-F_comp.wav",
+      "clip_sha256": "2f263f826bf18add537669f03c1fe4600c437c452545e39582c9a8231660c0cd",
+      "reference": "00_SS2-88-F_comp.reference.json",
+      "reference_sha256": "d7c07520a8ce6507bb3419c57c37989bc387d6422e5d96ab33426b4fdb042fba",
+      "source_sha256": "2f2c5c65d86fd135a15c47d38e9d61e3748c0c31a5ca163632b36eba239811f4",
+      "start": 0,
+      "end": 15,
+      "sample_rate": 44100,
+      "frames": 661500,
+      "bytes": 1323044
+    },
+    {
+      "recording_id": "01_Rock1-90-C#_comp",
+      "clip": "01_Rock1-90-C#_comp.wav",
+      "clip_sha256": "f0662b69258895cf8cfb41f0ba50bbf51b5dd514d25a63d068f9173e91d2e323",
+      "reference": "01_Rock1-90-C#_comp.reference.json",
+      "reference_sha256": "43850303f9dbae48b0469f642ecbd86bd593fb0510892748a33b843aad38fd82",
+      "source_sha256": "2dc712e3457bcde208ae59bf8fab8d7f0d7335368271dd211856a13323b50bee",
+      "start": 0,
+      "end": 15,
+      "sample_rate": 44100,
+      "frames": 661500,
+      "bytes": 1323044
+    },
+    {
+      "recording_id": "02_Funk3-112-C#_comp",
+      "clip": "02_Funk3-112-C#_comp.wav",
+      "clip_sha256": "bf487e40cee828616166a9648dc7c7994ea6d31f60b967903d4defaf1ff7e9a8",
+      "reference": "02_Funk3-112-C#_comp.reference.json",
+      "reference_sha256": "c938314c2cbedfc6005ce40818cf70bada9e19fb086159d0e5d3fb760c545734",
+      "source_sha256": "b85381638984aafa8aff67691ccdd839c2fa4fb10bdc6f18a52810059b0a44f7",
+      "start": 0,
+      "end": 15,
+      "sample_rate": 44100,
+      "frames": 661500,
+      "bytes": 1323044
+    }
+  ]
+}

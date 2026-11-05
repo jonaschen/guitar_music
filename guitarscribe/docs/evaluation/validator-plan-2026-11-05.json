@@ -1,0 +1,95 @@
+{
+  "schema_version": "1.0",
+  "protocol": "Validator_Protocol_2026-11-05.md",
+  "cases": [
+    {
+      "recording_id": "00_SS2-88-F_comp",
+      "annotation": {
+        "path": "output/evaluation/guitarset-pilot-2026-10-24/00_SS2-88-F_comp.annotation.json",
+        "sha256": "616ada9bcf001e317febe2c4141ae095b08da82e0f693aa1e80b4d0a3dd26dd1"
+      },
+      "audio": {
+        "path": "output/datasets/guitarset-1.1.0/subset/00_SS2-88-F_comp_mic.wav",
+        "sha256": "2f2c5c65d86fd135a15c47d38e9d61e3748c0c31a5ca163632b36eba239811f4"
+      },
+      "estimates": [
+        {
+          "name": "librosa_chromagram",
+          "path": "output/evaluation/guitarset-pilot-2026-10-24/00_SS2-88-F_comp.automatic-score.json",
+          "sha256": "13a2fe608b98ce744be4d88e7871f40fa3e60cab0069b060ead3cd9a278e5a42"
+        },
+        {
+          "name": "reference_beats_chromagram",
+          "path": "output/evaluation/guitarset-pilot-2026-10-24/00_SS2-88-F_comp.reference-beat-score.json",
+          "sha256": "76a95e805d20f5e6f174de65a2fd4216fe42885ac5f04497ee62775f7e18434f"
+        },
+        {
+          "name": "small0_training_overlap",
+          "path": "output/evaluation/beat-this-small0-2026-10-24/diagnostic-v2/00_SS2-88-F_comp.score.json",
+          "sha256": "97864cf8c52c30303211df27a50fb525ff042cfb41341f71d402cfe4ac6cdb3e"
+        }
+      ]
+    },
+    {
+      "recording_id": "01_Rock1-90-C#_comp",
+      "annotation": {
+        "path": "output/evaluation/guitarset-pilot-2026-10-24/01_Rock1-90-C#_comp.annotation.json",
+        "sha256": "7b7576308cbcbaa9088209403d10433de02e26c873f6d581047bfead693b9756"
+      },
+      "audio": {
+        "path": "output/datasets/guitarset-1.1.0/subset/01_Rock1-90-C#_comp_mic.wav",
+        "sha256": "2dc712e3457bcde208ae59bf8fab8d7f0d7335368271dd211856a13323b50bee"
+      },
+      "estimates": [
+        {
+          "name": "librosa_chromagram",
+          "path": "output/evaluation/guitarset-pilot-2026-10-24/01_Rock1-90-C#_comp.automatic-score.json",
+          "sha256": "48db88d49e55371a9a3bf1d3a90b553863482a8d4e5de7c79da0af931a019e6f"
+        },
+        {
+          "name": "reference_beats_chromagram",
+          "path": "output/evaluation/guitarset-pilot-2026-10-24/01_Rock1-90-C#_comp.reference-beat-score.json",
+          "sha256": "1d8fd202de4b8a67ede1fab6411a649bbc7d55808c37e61c9684342777aa7684"
+        },
+        {
+          "name": "small0_training_overlap",
+          "path": "output/evaluation/beat-this-small0-2026-10-24/diagnostic-v2/01_Rock1-90-C#_comp.score.json",
+          "sha256": "9f72a989ba0585dc3daf307eee2980f2ee2a1010f7e1680be6cbcf2675985329"
+        }
+      ]
+    },
+    {
+      "recording_id": "02_Funk3-112-C#_comp",
+      "annotation": {
+        "path": "output/evaluation/guitarset-pilot-2026-10-24/02_Funk3-112-C#_comp.annotation.json",
+        "sha256": "f2376223a03598944e12b315da876f51fc102df2dca01b39c7fe152c1b380f5f"
+      },
+      "audio": {
+        "path": "output/datasets/guitarset-1.1.0/subset/02_Funk3-112-C#_comp_mic.wav",
+        "sha256": "b85381638984aafa8aff67691ccdd839c2fa4fb10bdc6f18a52810059b0a44f7"
+      },
+      "estimates": [
+        {
+          "name": "librosa_chromagram",
+          "path": "output/evaluation/guitarset-pilot-2026-10-24/02_Funk3-112-C#_comp.automatic-score.json",
+          "sha256": "447194d8540fbcaee0e249366a38500ef9e4a6c82290df7980c6f22e15dd543c"
+        },
+        {
+          "name": "reference_beats_chromagram",
+          "path": "output/evaluation/guitarset-pilot-2026-10-24/02_Funk3-112-C#_comp.reference-beat-score.json",
+          "sha256": "c2c26e20339ef2ea52a47ddd323b50e3b04f4fc8b9eddc20aba309bd8083d1f6"
+        },
+        {
+          "name": "small0_training_overlap",
+          "path": "output/evaluation/beat-this-small0-2026-10-24/diagnostic-v2/02_Funk3-112-C#_comp.score.json",
+          "sha256": "a952c0dace7d196e0c15146fe7e94b6a3f343da56802e0cd345d16dfd257c6f7"
+        },
+        {
+          "name": "fold3_recording_excluded",
+          "path": "output/evaluation/beat-this-small0-2026-10-24/fold3-excluded/02_Funk3-112-C#_comp.score.json",
+          "sha256": "9fe8e33e0ab8afabf2277cd6bbd95706a72b70fffdad554ed9c0caff8fadeade"
+        }
+      ]
+    }
+  ]
+}

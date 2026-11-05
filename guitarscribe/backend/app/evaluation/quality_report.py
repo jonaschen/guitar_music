@@ -9,6 +9,7 @@ import mir_eval
 import numpy as np
 
 from .annotations import QualityAnnotation
+from .reference_timing import reference_timing_metrics
 from ..models.analysis import MelodyNote
 from ..models.score import SongScore
 
@@ -192,18 +193,14 @@ def _candidate_lattice_accuracy(
 
 def evaluate_quality_layers(score: SongScore, annotation: QualityAnnotation) -> dict[str, Any]:
     """Return separate timing/chord/melody metrics with no synthetic overall score."""
-    reference_beats = np.asarray([point.time for point in annotation.beats], dtype=float)
-    estimated_beats = np.asarray([beat.time for beat in score.beats], dtype=float)
-    reference_downbeats = np.asarray([point.time for point in annotation.downbeats], dtype=float)
-    estimated_downbeats = np.asarray([beat.time for beat in score.beats if beat.beat == 1], dtype=float)
-    timing: dict[str, float | str] = {
-        "beat_f_measure": float(mir_eval.beat.f_measure(reference_beats, estimated_beats)) if len(reference_beats) else "not_annotated",
-        "downbeat_f_measure": float(mir_eval.beat.f_measure(reference_downbeats, estimated_downbeats)) if len(reference_downbeats) else "not_annotated",
-    }
+    timing = reference_timing_metrics(
+        (point.time for point in annotation.beats), (beat.time for beat in score.beats),
+        (point.time for point in annotation.downbeats),
+        (beat.time for beat in score.beats if beat.beat == 1),
+        start=annotation.excerpt_start, end=annotation.excerpt_end,
+    )
     if annotation.tempo_bpm is not None:
         timing["bpm_relative_error"] = abs(score.analysis.bpm - annotation.tempo_bpm) / annotation.tempo_bpm
-    if len(reference_downbeats) and len(estimated_downbeats):
-        timing["first_downbeat_phase_error_seconds"] = float(abs(reference_downbeats[0] - estimated_downbeats[np.argmin(abs(estimated_downbeats - reference_downbeats[0]))]))
 
     chord: dict[str, float | str] = {"status": "not_annotated"}
     if annotation.chords:
@@ -278,7 +275,7 @@ def evaluate_quality_layers(score: SongScore, annotation: QualityAnnotation) -> 
         }
 
     return {
-        "schema_version": "1.3",
+        "schema_version": "1.4",
         "recording_id": annotation.recording_id,
         "timing": timing,
         "chord": chord,

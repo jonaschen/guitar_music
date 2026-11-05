@@ -1,0 +1,242 @@
+{
+  "schema_version": "1.0",
+  "report_sha256": "fa731d483cb6e5434ff1dd3494dc1f9d76a66c26dabd7cde5109f8cd4b17d7e9",
+  "plan_sha256": "555d2163fcabd463a60866bc34c029cca2567e230e7ad8ec8f340d0ef4a99772",
+  "recordings": 6,
+  "controls_count": 42,
+  "controls_detected": 42,
+  "real_cached_predictions": 16,
+  "product_accuracy_claim": false,
+  "results": [
+    {
+      "recording_id": "00_SS2-88-F_comp",
+      "engine": "librosa_chromagram",
+      "timing": {
+        "beat_f_measure": 0.23809523809523808,
+        "downbeat_f_measure": 0.0,
+        "beat_cml_total": 0.234375,
+        "beat_aml_total": 0.3333333333333333,
+        "beat_count_ratio": 0.96875
+      },
+      "chord": {
+        "root_weighted_accuracy": 0.871221489246639,
+        "majmin_weighted_accuracy": 0.9262920263103686,
+        "boundary_f_measure": 0.7142857142857142,
+        "fragmentation_ratio": 1.1428571428571428
+      }
+    },
+    {
+      "recording_id": "00_SS2-88-F_comp",
+      "engine": "reference_beats_chromagram",
+      "timing": {
+        "beat_f_measure": 1.0,
+        "downbeat_f_measure": 1.0,
+        "beat_cml_total": 1.0,
+        "beat_aml_total": 1.0,
+        "beat_count_ratio": 1.0
+      },
+      "chord": {
+        "root_weighted_accuracy": 0.921862172373298,
+        "majmin_weighted_accuracy": 0.9772672989792716,
+        "boundary_f_measure": 0.896551724137931,
+        "fragmentation_ratio": 1.2142857142857142
+      }
+    },
+    {
+      "recording_id": "00_SS2-88-F_comp",
+      "engine": "small0_training_overlap",
+      "timing": {
+        "beat_f_measure": 0.883720930232558,
+        "downbeat_f_measure": 0.7272727272727272,
+        "beat_cml_total": 0.9846153846153847,
+        "beat_aml_total": 0.9846153846153847,
+        "beat_count_ratio": 1.015625
+      },
+      "chord": {
+        "root_weighted_accuracy": 0.909193425920755,
+        "majmin_weighted_accuracy": 0.9630820935423365,
+        "boundary_f_measure": 0.896551724137931,
+        "fragmentation_ratio": 1.2142857142857142
+      }
+    },
+    {
+      "recording_id": "00_SS2-88-F_comp",
+      "engine": "chordino_chord_only",
+      "chord": {
+        "root_weighted_accuracy": 0.921548345253346,
+        "majmin_weighted_accuracy": 0.9341410798063297,
+        "boundary_f_measure": 0.7272727272727274,
+        "fragmentation_ratio": 1.5
+      }
+    },
+    {
+      "recording_id": "01_Rock1-90-C#_comp",
+      "engine": "librosa_chromagram",
+      "timing": {
+        "beat_f_measure": 0.8541666666666666,
+        "downbeat_f_measure": 0.16666666666666666,
+        "beat_cml_total": 0.8333333333333334,
+        "beat_aml_total": 0.8333333333333334,
+        "beat_count_ratio": 1.0
+      },
+      "chord": {
+        "root_weighted_accuracy": 0.969002267573696,
+        "majmin_weighted_accuracy": 0.969002267573696,
+        "boundary_f_measure": 0.6,
+        "fragmentation_ratio": 1.0
+      }
+    },
+    {
+      "recording_id": "01_Rock1-90-C#_comp",
+      "engine": "reference_beats_chromagram",
+      "timing": {
+        "beat_f_measure": 1.0,
+        "downbeat_f_measure": 1.0,
+        "beat_cml_total": 1.0,
+        "beat_aml_total": 1.0,
+        "beat_count_ratio": 1.0
+      },
+      "chord": {
+        "root_weighted_accuracy": 0.9791666666666665,
+        "majmin_weighted_accuracy": 0.9791666666666665,
+        "boundary_f_measure": 0.8000000000000002,
+        "fragmentation_ratio": 1.0
+      }
+    },
+    {
+      "recording_id": "01_Rock1-90-C#_comp",
+      "engine": "small0_training_overlap",
+      "timing": {
+        "beat_f_measure": 1.0,
+        "downbeat_f_measure": 1.0,
+        "beat_cml_total": 1.0,
+        "beat_aml_total": 1.0,
+        "beat_count_ratio": 1.0
+      },
+      "chord": {
+        "root_weighted_accuracy": 0.97875,
+        "majmin_weighted_accuracy": 0.97875,
+        "boundary_f_measure": 0.8000000000000002,
+        "fragmentation_ratio": 1.0
+      }
+    },
+    {
+      "recording_id": "01_Rock1-90-C#_comp",
+      "engine": "chordino_chord_only",
+      "chord": {
+        "root_weighted_accuracy": 0.9744444443854166,
+        "majmin_weighted_accuracy": 0.9744444443854166,
+        "boundary_f_measure": 0.7272727272727272,
+        "fragmentation_ratio": 1.1666666666666667
+      }
+    },
+    {
+      "recording_id": "02_Funk3-112-C#_comp",
+      "engine": "librosa_chromagram",
+      "timing": {
+        "beat_f_measure": 0.9523809523809523,
+        "downbeat_f_measure": 0.0,
+        "beat_cml_total": 0.96875,
+        "beat_aml_total": 0.96875,
+        "beat_count_ratio": 0.96875
+      },
+      "chord": {
+        "root_weighted_accuracy": 0.7944947623652229,
+        "majmin_weighted_accuracy": 0.0,
+        "boundary_f_measure": 0.6666666666666666,
+        "fragmentation_ratio": 1.0
+      }
+    },
+    {
+      "recording_id": "02_Funk3-112-C#_comp",
+      "engine": "reference_beats_chromagram",
+      "timing": {
+        "beat_f_measure": 1.0,
+        "downbeat_f_measure": 1.0,
+        "beat_cml_total": 1.0,
+        "beat_aml_total": 1.0,
+        "beat_count_ratio": 1.0
+      },
+      "chord": {
+        "root_weighted_accuracy": 0.7969055691289744,
+        "majmin_weighted_accuracy": 0.0,
+        "boundary_f_measure": 0.6666666666666666,
+        "fragmentation_ratio": 1.0
+      }
+    },
+    {
+      "recording_id": "02_Funk3-112-C#_comp",
+      "engine": "small0_training_overlap",
+      "timing": {
+        "beat_f_measure": 1.0,
+        "downbeat_f_measure": 1.0,
+        "beat_cml_total": 1.0,
+        "beat_aml_total": 1.0,
+        "beat_count_ratio": 1.0
+      },
+      "chord": {
+        "root_weighted_accuracy": 0.7786965373010339,
+        "majmin_weighted_accuracy": 0.0,
+        "boundary_f_measure": 0.6451612903225806,
+        "fragmentation_ratio": 1.0625
+      }
+    },
+    {
+      "recording_id": "02_Funk3-112-C#_comp",
+      "engine": "fold3_recording_excluded",
+      "timing": {
+        "beat_f_measure": 1.0,
+        "downbeat_f_measure": 1.0,
+        "beat_cml_total": 1.0,
+        "beat_aml_total": 1.0,
+        "beat_count_ratio": 1.0
+      },
+      "chord": {
+        "root_weighted_accuracy": 0.7779465085300892,
+        "majmin_weighted_accuracy": 0.0,
+        "boundary_f_measure": 0.6451612903225806,
+        "fragmentation_ratio": 1.0625
+      }
+    },
+    {
+      "recording_id": "02_Funk3-112-C#_comp",
+      "engine": "chordino_chord_only",
+      "chord": {
+        "root_weighted_accuracy": 0.8239972166380062,
+        "majmin_weighted_accuracy": 0.8653333332333334,
+        "boundary_f_measure": 0.6486486486486486,
+        "fragmentation_ratio": 1.4375
+      }
+    },
+    {
+      "recording_id": "03_SS3-84-Bb_comp",
+      "engine": "chordino_chord_only",
+      "chord": {
+        "root_weighted_accuracy": 0.9423566443281133,
+        "majmin_weighted_accuracy": 0.9419766909804639,
+        "boundary_f_measure": 0.8,
+        "fragmentation_ratio": 1.3125
+      }
+    },
+    {
+      "recording_id": "04_Rock2-142-D_comp",
+      "engine": "chordino_chord_only",
+      "chord": {
+        "root_weighted_accuracy": 0.8419803079459837,
+        "majmin_weighted_accuracy": 0.8518283736131638,
+        "boundary_f_measure": 0.5925925925925927,
+        "fragmentation_ratio": 1.0714285714285714
+      }
+    },
+    {
+      "recording_id": "05_Funk2-119-G_comp",
+      "engine": "chordino_chord_only",
+      "chord": {
+        "root_weighted_accuracy": 0.22063957333578235,
+        "majmin_weighted_accuracy": 0.19003551110440112,
+        "boundary_f_measure": 0.2926829268292683,
+        "fragmentation_ratio": 2.0714285714285716
+      }
+    }
+  ]
+}
