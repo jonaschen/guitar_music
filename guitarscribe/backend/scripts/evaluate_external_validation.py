@@ -15,7 +15,7 @@ def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def run(packet, results, output):
+def run(packet, results, output, *, beats_directory=None):
     if output.exists():
         raise FileExistsError(output)
     manifest_path = packet / "manifest.json"
@@ -29,12 +29,27 @@ def run(packet, results, output):
         if ann.source_sha256 != sha(audio):
             raise ValueError("Reference is for different audio")
         prefix = case["recording_id"]
-        beat_path, chord_path = results / (prefix+".beats.json"), results / (prefix+".chords.json")
+        beat_path = (beats_directory or results) / (prefix+".beats.json")
+        chord_path = results / (prefix+".chords.json")
+        bindings = []
+        for result_path in (beat_path, chord_path):
+            journal = result_path.with_suffix(".job.json")
+            if not journal.exists():
+                bindings.append(False)
+                continue
+            job = json.loads(journal.read_text())
+            if (job.get("manifest_sha256") != sha(manifest_path)
+                    or job.get("clip_sha256") != case["clip_sha256"]
+                    or job.get("result_sha256") != sha(result_path)
+                    or job.get("state") != "collected" or not job.get("job_id")):
+                raise ValueError("Result journal does not match the approved audio and downloaded output")
+            bindings.append(True)
         # Require both outputs; missing files do not become successful empty responses.
         score = import_klangio_results(beats=json.loads(beat_path.read_text()),
                                        chords=json.loads(chord_path.read_text()), duration=case["end"]-case["start"])
         report = evaluate_quality_layers(score, ann)
         rows.append({"recording_id": prefix, "timing": report["timing"], "chord": report["chord"],
+                     "download_journal_verified": all(bindings),
                      "unknown_chord_seconds": sum(c.end-c.start for c in score.chords if c.symbol == "X"),
                      "beat_result_sha256": sha(beat_path), "chord_result_sha256": sha(chord_path)})
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -51,5 +66,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     for key in ["packet", "results", "output"]:
         parser.add_argument(key, type=Path)
+    parser.add_argument("--beats-directory", type=Path, help="Reuse prior results on the identical clip; no new beat jobs")
     args = parser.parse_args()
-    run(args.packet, args.results, args.output)
+    run(args.packet, args.results, args.output, beats_directory=args.beats_directory)

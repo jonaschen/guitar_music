@@ -199,7 +199,7 @@ def evaluate_quality_layers(score: SongScore, annotation: QualityAnnotation) -> 
         (beat.time for beat in score.beats if beat.beat == 1),
         start=annotation.excerpt_start, end=annotation.excerpt_end,
     )
-    if annotation.tempo_bpm is not None:
+    if annotation.tempo_bpm is not None and score.analysis.bpm > 0:
         timing["bpm_relative_error"] = abs(score.analysis.bpm - annotation.tempo_bpm) / annotation.tempo_bpm
 
     chord: dict[str, float | str] = {"status": "not_annotated"}
@@ -245,6 +245,18 @@ def evaluate_quality_layers(score: SongScore, annotation: QualityAnnotation) -> 
                 "review_event_count": review_count,
                 "review_event_ratio": review_count / len(estimated_regions) if estimated_regions else 0.0,
             }
+            # mir_eval excludes out-of-vocabulary reference qualities from the
+            # weighted denominator. Expose that coverage so a high score on a
+            # small major/minor subset cannot be mistaken for whole-clip quality.
+            durations = mir_eval.util.intervals_to_durations(reference_intervals)
+            for name, comparator in (("majmin", mir_eval.chord.majmin), ("root", mir_eval.chord.root)):
+                valid = comparator(reference_labels, reference_labels) >= 0
+                scored = float(durations[valid].sum())
+                total = float(durations.sum())
+                chord[f"{name}_scored_seconds"] = scored
+                chord[f"{name}_unscored_seconds"] = total - scored
+                chord[f"{name}_scored_fraction"] = scored / total if total else 0.0
+                chord[f"{name}_status"] = "scored" if scored > 0 else "not_comparable"
             chord.update(_silence_metrics(reference_intervals, reference_labels, estimated_intervals, estimated_labels))
             # SongScore gaps have no acoustic evidence. Do not invent candidate
             # recall for the discarded N regions; those live in the artifact.
@@ -275,7 +287,7 @@ def evaluate_quality_layers(score: SongScore, annotation: QualityAnnotation) -> 
         }
 
     return {
-        "schema_version": "1.4",
+        "schema_version": "1.5",
         "recording_id": annotation.recording_id,
         "timing": timing,
         "chord": chord,

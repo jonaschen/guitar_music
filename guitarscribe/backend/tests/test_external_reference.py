@@ -40,3 +40,10 @@ def test_independent_output_can_be_wrong_and_reference_scorer_exposes_it():
     report = evaluate_quality_layers(external, ref)
     assert report["timing"]["beat_cml_total"] == 0
     assert report["chord"]["root_weighted_accuracy"] == 0
+
+
+def test_unreported_bpm_is_not_scored_as_an_estimated_zero_tempo():
+    ref = QualityAnnotation(recording_id="tempo", source_sha256="a"*64, rights_note="fixture",
+                            difficulty="easy", excerpt_start=0, excerpt_end=2, tempo_bpm=120)
+    score = import_klangio_results(beats=[], chords=None, duration=2)
+    assert "bpm_relative_error" not in evaluate_quality_layers(score, ref)["timing"]

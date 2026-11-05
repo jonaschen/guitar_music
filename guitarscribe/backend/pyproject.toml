@@ -35,6 +35,7 @@ chordino = [
 ]
 quality = [
     "mir_eval>=0.8,<1",
+    "requests>=2.31,<3",
 ]
 dev = [
     "pytest>=7",

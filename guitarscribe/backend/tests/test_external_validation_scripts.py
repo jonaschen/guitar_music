@@ -45,10 +45,16 @@ def test_local_packet_and_saved_result_evaluation_preserve_source_and_refuse_tam
     report = json.loads(output.read_text())
     assert report["external_output_is_ground_truth"] is False
     assert report["recordings"][0]["timing"]["beat_f_measure"] == 1
+    assert report["recordings"][0]["download_journal_verified"] is False
     with pytest.raises(FileExistsError):
         evaluate(packet, results, output)
     with pytest.raises(FileExistsError):
         prepare(tmp_path, plan, packet)
+    journal = results / "fixture.beats.job.json"
+    journal.write_text(json.dumps({"manifest_sha256": "wrong-packet"}))
+    with pytest.raises(ValueError, match="journal"):
+        evaluate(packet, results, tmp_path / "wrong-job.json")
+    journal.unlink()
     (packet / "fixture.reference.json").write_text("{}")
     with pytest.raises(ValueError, match="packet has changed"):
         evaluate(packet, results, tmp_path / "tampered.json")

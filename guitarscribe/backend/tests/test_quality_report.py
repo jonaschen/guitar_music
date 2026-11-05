@@ -75,6 +75,28 @@ def test_layered_quality_report_scores_perfect_match_without_combining_layers():
     assert report["human_review"]["required"] is True
 
 
+def test_major_minor_score_exposes_excluded_power_chord_duration():
+    annotation = make_annotation()
+    annotation.chords[1].label = "C:(1,5)"
+    score = make_score()
+    score.chords[1].symbol = "C:maj"
+    chord = evaluate_quality_layers(score, annotation)["chord"]
+    assert chord["majmin_weighted_accuracy"] == pytest.approx(1)
+    assert chord["majmin_scored_seconds"] == 1
+    assert chord["majmin_unscored_seconds"] == 1
+    assert chord["majmin_scored_fraction"] == .5
+    assert chord["root_scored_fraction"] == 1
+
+
+def test_chord_scoring_coverage_respects_excerpt():
+    annotation = make_annotation()
+    annotation.chords[1].label = "C:(1,5)"
+    annotation.excerpt_end = 1
+    chord = evaluate_quality_layers(make_score(), annotation)["chord"]
+    assert chord["majmin_scored_seconds"] == 1
+    assert chord["majmin_scored_fraction"] == 1
+
+
 def test_quality_report_cli_writes_versioned_report(tmp_path):
     score_path = tmp_path / "score.json"
     annotation_path = tmp_path / "annotation.json"
@@ -98,7 +120,7 @@ def test_quality_report_cli_writes_versioned_report(tmp_path):
 
     assert result.exit_code == 0, result.output
     report = json.loads(output_path.read_text())
-    assert report["schema_version"] == "1.4"
+    assert report["schema_version"] == "1.5"
     assert report["recording_id"] == "legal-easy-01"
     assert set(report["sonifications"]) == {
         "reference_timing", "estimated_timing", "reference_chords",
