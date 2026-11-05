@@ -24,7 +24,57 @@ systemctl --user start guitarscribe-friends-web guitarscribe-friends-tunnel
 
 備份前停止 web 服務，再複製整個 `output/web-preview/work`；邀請檔另以受限權限備份。不要將運行中的 SQLite 檔直接複製當作一致備份。修改邀請檔後需重啟 web 服務，舊瀏覽器快取帳密也需更新。
 
-`compose.web.yml` 是後續容器部署配置；`compose.trial.yml` 只供維護者本機開發試跑。兩者使用獨立 named volumes，不能套用下方舊 Compose 的 `./output` 備份路徑。目前 Docker build／設定檢查通過，但**尚未完成容器端到端啟動與分析驗證**；線上試用使用的是上列既有 Python 環境。
+`compose.web.yml` 是後續容器部署配置；`compose.trial.yml` 只供維護者本機開發試跑。兩者使用獨立 named volumes，不能套用下方舊 Compose 的 `./output` 備份路徑。2026-11-05 已完成 `compose.web.yml` 的獨立容器啟動、實際分析、保存／重啟與備份還原，見 [驗證報告](Container_Release_Verification_2026-11-05.md)。線上試用仍使用上列既有 Python 環境；測過容器不代表已搬站。
+
+## 容器備份、還原與回退（2026-11-05）
+
+以下供維護者在 `guitarscribe/` 執行，沿用啟動時的 Compose project／`GUITARSCRIBE_WEB_AUTH_FILE`。若啟動曾用 `-p`、`--env-file` 或額外 `-f`，後續命令也須帶相同參數。確認分析工作已完成再停機；不要使用 `down -v` 刪除歌曲與修訂。
+
+停機備份範例（備份路徑每次須不同）：
+
+```bash
+GUITARSCRIBE_BACKUP_DIR="$PWD/output/backups/$(date -u +%Y%m%dT%H%M%SZ)"
+install -d -m 700 "$GUITARSCRIBE_BACKUP_DIR"
+GUITARSCRIBE_BACKEND_ID=$(docker compose -f compose.web.yml ps -a -q backend)
+docker inspect --format '{{.Image}}' "$GUITARSCRIBE_BACKEND_ID" > "$GUITARSCRIBE_BACKUP_DIR/backend-image.txt"
+docker compose -f compose.web.yml stop backend
+mkdir "$GUITARSCRIBE_BACKUP_DIR/data"
+docker cp "$GUITARSCRIBE_BACKEND_ID:/app/output/." "$GUITARSCRIBE_BACKUP_DIR/data/"
+docker compose -f compose.web.yml start backend
+```
+
+另行保管 Git commit、前端映像 ID 及邀請檔，勿提交密碼或備份。Docker 的 `restart: unless-stopped` 可處理程序退出；主機／Docker 本身仍須常駐，家用電腦休眠不能靠此設定解決。
+
+**還原先建新 volume，保留原 volume 回退。** 在相同主機上使用備份中的已驗證後端映像，複製到空的還原 volume：
+
+```bash
+GUITARSCRIBE_RELEASE_IMAGE=$(cat "$GUITARSCRIBE_BACKUP_DIR/backend-image.txt")
+docker volume create guitarscribe-restored-data
+docker run --rm \
+  --mount type=bind,src="$GUITARSCRIBE_BACKUP_DIR/data",dst=/backup,readonly \
+  --mount type=volume,src=guitarscribe-restored-data,dst=/restore \
+  "$GUITARSCRIBE_RELEASE_IMAGE" python -c \
+  "from pathlib import Path; import shutil; assert not any(Path('/restore').iterdir()); shutil.copytree('/backup','/restore',dirs_exist_ok=True)"
+```
+
+複製命令拒絕非空目的地，不會覆蓋已有還原資料。在私人維運目錄準備 override：
+
+```yaml
+services:
+  backend:
+    volumes:
+      - restored-data:/app/output
+volumes:
+  restored-data:
+    external: true
+    name: guitarscribe-restored-data
+```
+
+確認沒有工作進行，再以原 Compose 參數加上此 override 重建後端；以同一修訂／job確認譜面、原曲、播放 manifest 與備份一致，檢查 SQLite 完整性後才切換對外入口。回退時停止候選，移除還原 override，使用原映像／原 volume；不要同時讓兩個後端寫同一 volume。跨主機須先移送受保護備份及已驗證映像，不能只複製 SQLite 而漏掉音訊。
+
+本次實測還原到新 volume，19檔雜湊完全相同，保存修訂可在手機／桌面載入並點和弦跳播。Nginx 已改成動態解析 Docker 後端位址，實測換 IP 後不用重啟前端即恢復；這仍不代表部署停機期間的請求不會失敗。
+
+以下舊 `docker-compose.yml` 章節的 `./output` bind mount 路徑，不適用於上述 named volumes。
 
 For the current non-Docker local installation, use the startup instructions in
 [the Codex closeout guide](Closeout_2026-10-27.md). The Compose commands below
@@ -64,7 +114,7 @@ Environment="PYTHONPATH=/home/jonas/.cache/guitarscribe-beat-dbn/python:/home/jo
 
 本機依賴檢查：Beat This 1.1.0、madmom 0.17.dev0（既有固定 source build，見 [DBN 依賴](Downbeat_Rhythm_2026-10-31.md)）、Chordino 可載入；沒有新的套件安裝。恢復開啟但解碼依賴失效時，仍完成原有時間表和弦分析，原因保存在 `timing-recovery.json`。
 
-回退：將 drop-in 中恢復開關設為 `false`，確認工作已完成，再 `systemctl --user daemon-reload` 及重啟對應 API 服務。已完成的工作譜不因回退而變更。GitHub／Docker 安裝不會自動取得上述本機隔離依賴或設定，不能把本次主機啟用當成所有安裝皆已啟用。
+回退：將 drop-in 中恢復開關設為 `false`，確認工作已完成，再 `systemctl --user daemon-reload` 及重啟對應 API 服務。已完成的工作譜不因回退而變更。2026-11-05 起 `Dockerfile.trial` 已補入固定 DBN 解碼依賴，`compose.trial.yml`／`compose.web.yml` 明確啟用恢復；13份同快取結果與本機一致。舊映像和自行建立的 Python 環境不會自動更新。
 
 ## 11-04 的可選主模型恢復（尚未啟用）
 

@@ -10,6 +10,7 @@ services:
     environment:
       GUITARSCRIBE_WORK_DIR: /app/output/work
       GUITARSCRIBE_BEAT_ENGINE: beat_this_small
+      GUITARSCRIBE_BEAT_RECOVERY_ENABLED: "true"
       GUITARSCRIBE_CHORD_ENGINE: chordino
       GUITARSCRIBE_MELODY_SEPARATOR: "off"
       GUITARSCRIBE_YOUTUBE_ENABLED: "true"

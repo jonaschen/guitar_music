@@ -1,0 +1,128 @@
+{
+  "schema_version": "1.0",
+  "date": "2026-11-05",
+  "scope": "isolated Linux amd64 Docker release verification; not music quality acceptance or permanent hosting",
+  "base_commit": "dedcf8e",
+  "images": [
+    {
+      "tag": "guitarscribe-release-candidate:20261105",
+      "id": "sha256:d0584f58e35654d2020379a4e6332e95e532e1507139ca98ef17485c1321eb1f"
+    },
+    {
+      "tag": "guitarscribe-web-candidate:20261105",
+      "id": "sha256:dc481691bfd019539d1091991aff63ac7f1092fa4b44f68a9b0e9c931f7cc065"
+    }
+  ],
+  "decoder_parity": {
+    "cases": 13,
+    "raw_decoders_exact": true,
+    "runtime_rows_exact": true,
+    "host_versions": {
+      "numpy": "1.26.4",
+      "scipy": "1.17.1",
+      "torch": "2.5.1+cpu",
+      "beat-this": "1.1.0",
+      "madmom": "0.17.dev0"
+    },
+    "container_versions": {
+      "numpy": "1.26.4",
+      "scipy": "1.17.1",
+      "torch": "2.5.1+cpu",
+      "beat-this": "1.1.0",
+      "madmom": "0.17.dev0"
+    },
+    "plan_sha256": "e16d0c4f259d01199fd2cca8fdccfb7e8baf24005d031982a29eb2528e339832"
+  },
+  "runtime_outcomes": {
+    "primary_retained": 1,
+    "recovered": 6,
+    "rejected": 6
+  },
+  "excluded_original_cache_jobs": [
+    "cd754fa6b231407290c076c2351e917c",
+    "10de4472b18247d99326c42f41d04b0d"
+  ],
+  "browser": {
+    "example_chords": 132,
+    "played_edited_reloaded": true,
+    "errors": []
+  },
+  "restored_browser": {
+    "revisionLoaded": true,
+    "clickChordJumpAndPlay": true,
+    "paused": true,
+    "widths": [
+      390,
+      1440
+    ],
+    "horizontalOverflow": false,
+    "anonymousStatus": 401,
+    "errors": []
+  },
+  "real_analysis": {
+    "fixture": "completed",
+    "youtube_short_url": {
+      "video_id": "0rpbhqZI0hc",
+      "seconds": 15,
+      "status": "completed"
+    },
+    "full_control": {
+      "source_sha256": "6c6d1be95dd4ba94a8d71896d50b7e5d154c397405b837a76bc7870d39253b2c",
+      "audio_seconds": 274.34378684807257,
+      "elapsed_seconds": 45.82,
+      "status": "completed",
+      "timing_status": "metered",
+      "cpus": 2,
+      "memory_limit_bytes": 2147483648
+    }
+  },
+  "data_preservation": {
+    "restart": true,
+    "restore_to_new_volume": true,
+    "recreated_backend": true,
+    "score_revision_manifest_audio_hashes_equal": true,
+    "files": {
+      "expected_files": 19,
+      "actual_files": 19,
+      "changed": [],
+      "added": []
+    }
+  },
+  "proxy_before": {
+    "old_ip": "172.19.0.2",
+    "new_ip": "172.19.0.4",
+    "status_after_backend_healthy": 502
+  },
+  "proxy_after": {
+    "old_ip": "172.19.0.4",
+    "new_ip": "172.19.0.5",
+    "frontend_unchanged": true,
+    "statuses_after_backend_healthy": [
+      502,
+      502,
+      502,
+      502,
+      502,
+      502,
+      502,
+      502,
+      502,
+      502,
+      502,
+      502,
+      502,
+      502,
+      502,
+      502,
+      502,
+      502,
+      502,
+      502,
+      200
+    ],
+    "seconds_after_backend_healthy": 20.109
+  },
+  "model_weights_cache": "reused read-only; cold weights download not retested",
+  "new_external_analysis_jobs": 0,
+  "live_service_modified": false
+}

@@ -49,7 +49,7 @@ GitHub 是程式與說明文件，不是分析服務的網址。`localhost` 也�
 
 ### 網頁試用部署
 
-目前運行的網址使用既有 Linux 分析環境、`app.web:create_app` 與 ngrok HTTPS，並非 Docker 部署；已驗證登入、範例編輯保存與 YouTube 30 秒分析／混合播放。啟停、資料位置及重開機限制見 [維運文件](guitarscribe/docs/OPERATIONS.md)。下列容器配置已完成建置與設定檢查，完整容器啟動／分析驗證尚未完成，不應視為已驗收的安裝流程。
+目前運行的網址使用既有 Linux 分析環境、`app.web:create_app` 與 ngrok HTTPS，並非 Docker 部署；已驗證登入、範例編輯保存與 YouTube 30 秒分析／混合播放。啟停、資料位置及重開機限制見 [維運文件](guitarscribe/docs/OPERATIONS.md)。`compose.web.yml` 已在 Linux x86_64 完成獨立容器啟動、手機操作、YouTube 短網址分析、完整歌曲分析及備份還原驗證；模型檔重用既有快取。這不代表常駐主機或任選歌曲品質已完成，詳見 [容器驗證報告](guitarscribe/docs/Container_Release_Verification_2026-11-05.md)。
 
 `compose.web.yml` 提供靜態 production 前端、反向代理與邀請密碼；後端採與已驗證流程相同的 Chordino／Beat This。使用獨立 Docker volumes，不掛載既有 `output/work`。建立邀請檔後：
 
@@ -92,7 +92,7 @@ docker compose -f compose.web.yml up -d --build
 
 | 環境 | 條件與目前狀態 |
 |---|---|
-| Linux x86_64 | 已驗證既有 Python 環境＋獨立空資料目錄；Docker 完整運行尚待驗證。 |
+| Linux x86_64 | 已驗證既有 Python 環境，以及 `compose.web.yml` 的獨立資料空間、分析、保存與還原；模型快取重用。 |
 | Windows Intel／AMD | 需 Docker Desktop 的 Linux containers。WSL 2 路徑需開啟硬體虛擬化；本專案尚未做 Windows 實機驗收。 |
 | Intel Mac | 需 Docker Desktop；本專案尚未做 Mac 實機驗收。 |
 | Apple Silicon／Windows ARM | 不在這輪驗證範圍，CPU 套件與原生插件相容性不能先保證。 |
