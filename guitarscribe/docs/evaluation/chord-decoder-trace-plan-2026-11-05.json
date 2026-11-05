@@ -1,0 +1,35 @@
+{
+  "started_at_utc": "2026-11-05T14:20:30Z",
+  "deadline_utc": "2026-11-05T15:50:30Z",
+  "sources": "Same nine A10 inputs and prepared normalized audio; each at most one instrumented inference",
+  "preparation": {
+    "path": "output/evaluation/chord-bass-ablation-2026-11-05/run/before-inference-manifest.json",
+    "sha256": "e9875afc796bf1fe41ac93f7ad1b939c1227ac0c05fdc21b800f8b70d8bfae46"
+  },
+  "input_plan": {
+    "path": "docs/evaluation/chord-bass-ablation-plan-v2-2026-11-05.json",
+    "sha256": "f70fb547a0989e6504731db9ba256fd40c55920b965966ee55be9069b548391f"
+  },
+  "trace": {
+    "fields": [
+      "frame timestamp sec/nsec",
+      "every dictionary index/label/24 weights including N and duplicate labels",
+      "salience after existing cap/N adjustment before pow",
+      "normalized emission",
+      "first local maximum index",
+      "all exactly tied maximum indices",
+      "HMM path index"
+    ],
+    "changes": "observation only; no scoring/decoding changes"
+  },
+  "gate": "All complete historical decoder events and projected scores equal A10 baseline within 1e-9; any mismatch stops before interpretation",
+  "evaluation": "Intersect actual frame timestamp to next timestamp with frozen annotation intervals. No shifted times or invented frames; before/after coverage counted separately. Strict root/quality/bass candidate identity required. First argmax determines four-way table; exact ties retained separately; weighted best-correct minus best-incorrect emission margin. No-candidate durations excluded and reported.",
+  "decision": "Only if HMM harm exceeds rescue overall AND positive-margin local-correct/HMM-wrong exceeds 5% of eligible duration on at least two HU33, propose one separately frozen self-transition reduction experiment. Otherwise stop localization with mixed evidence, no new classification round.",
+  "limits": {
+    "inferences": 9,
+    "parallel": 1,
+    "threads": 2,
+    "external_requests": 0,
+    "live_changes": 0
+  }
+}

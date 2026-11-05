@@ -1,0 +1,548 @@
+{
+  "sources": [
+    {
+      "recording_id": "00_SS2-88-F_comp",
+      "duration_seconds": 43.629200000000026,
+      "covered_seconds": 43.44344036300003,
+      "uncovered_seconds": 0.18575963699999676,
+      "eligible_seconds": 35.26162218118184,
+      "no_strict_candidate_seconds": 8.181818181818182,
+      "four_way_seconds": {
+        "both_correct": 19.96181595463641,
+        "local_wrong_hmm_correct": 10.428266336454524,
+        "local_correct_hmm_wrong": 0.7894784580000014,
+        "both_wrong": 4.0820614320909065
+      },
+      "eligible_tied_max_seconds_nonadditive": 0.0,
+      "positive_margin_hmm_harm_seconds": 0.7894784580000014,
+      "weighted_mean_emission_margin": 0.0030044421989131025,
+      "examples": [
+        {
+          "start": 30.093061224,
+          "end": 30.139501133,
+          "reference": "C#:7",
+          "local_index": 88,
+          "hmm_index": 16,
+          "margin": 0.007530177818607438,
+          "ties": [
+            88
+          ]
+        },
+        {
+          "start": 30.139501133,
+          "end": 30.185941043,
+          "reference": "C#:7",
+          "local_index": 88,
+          "hmm_index": 16,
+          "margin": 0.023617901150271514,
+          "ties": [
+            88
+          ]
+        },
+        {
+          "start": 30.185941043,
+          "end": 30.232380952,
+          "reference": "C#:7",
+          "local_index": 88,
+          "hmm_index": 16,
+          "margin": 0.03540752912888286,
+          "ties": [
+            88
+          ]
+        }
+      ],
+      "frame_count": 940,
+      "dictionary_entries": 217
+    },
+    {
+      "recording_id": "01_Rock1-90-C#_comp",
+      "duration_seconds": 31.999999999999993,
+      "covered_seconds": 31.814240362999993,
+      "uncovered_seconds": 0.1857596370000003,
+      "eligible_seconds": 31.814240362999993,
+      "no_strict_candidate_seconds": 0.0,
+      "four_way_seconds": {
+        "both_correct": 29.843446711666665,
+        "local_wrong_hmm_correct": 1.3387755086666662,
+        "local_correct_hmm_wrong": 0.046439909,
+        "both_wrong": 0.5855782336666611
+      },
+      "eligible_tied_max_seconds_nonadditive": 0.0,
+      "positive_margin_hmm_harm_seconds": 0.046439909,
+      "weighted_mean_emission_margin": 0.018649999972548795,
+      "examples": [
+        {
+          "start": 0.185759637,
+          "end": 0.232199546,
+          "reference": "C#:maj",
+          "local_index": 16,
+          "hmm_index": 216,
+          "margin": 0.022377783093181808,
+          "ties": [
+            16
+          ]
+        }
+      ],
+      "frame_count": 690,
+      "dictionary_entries": 217
+    },
+    {
+      "recording_id": "02_Funk3-112-C#_comp",
+      "duration_seconds": 34.284399092970524,
+      "covered_seconds": 34.09863945597053,
+      "uncovered_seconds": 0.18575963699999676,
+      "eligible_seconds": 4.099954648714285,
+      "no_strict_candidate_seconds": 29.99868480725624,
+      "four_way_seconds": {
+        "both_correct": 0.8359183670000003,
+        "local_wrong_hmm_correct": 2.8726530611428567,
+        "local_correct_hmm_wrong": 0.0,
+        "both_wrong": 0.39138322057142844
+      },
+      "eligible_tied_max_seconds_nonadditive": 0.0,
+      "positive_margin_hmm_harm_seconds": 0.0,
+      "weighted_mean_emission_margin": -0.005421978513490255,
+      "examples": [],
+      "frame_count": 739,
+      "dictionary_entries": 217
+    },
+    {
+      "recording_id": "03_SS3-84-Bb_comp",
+      "duration_seconds": 45.70759637188208,
+      "covered_seconds": 45.521836734882086,
+      "uncovered_seconds": 0.18575963699999676,
+      "eligible_seconds": 39.993310657596375,
+      "no_strict_candidate_seconds": 5.528526077285711,
+      "four_way_seconds": {
+        "both_correct": 28.66487527788209,
+        "local_wrong_hmm_correct": 9.007891156714269,
+        "local_correct_hmm_wrong": 0.0,
+        "both_wrong": 2.3205442230000113
+      },
+      "eligible_tied_max_seconds_nonadditive": 0.0,
+      "positive_margin_hmm_harm_seconds": 0.0,
+      "weighted_mean_emission_margin": 0.008878612721365706,
+      "examples": [],
+      "frame_count": 985,
+      "dictionary_entries": 217
+    },
+    {
+      "recording_id": "04_Rock2-142-D_comp",
+      "duration_seconds": 27.041600000000003,
+      "covered_seconds": 26.855840363000002,
+      "uncovered_seconds": 0.1857596370000003,
+      "eligible_seconds": 21.785417827788738,
+      "no_strict_candidate_seconds": 5.070422535211264,
+      "four_way_seconds": {
+        "both_correct": 14.695063637915494,
+        "local_wrong_hmm_correct": 2.5063958323521116,
+        "local_correct_hmm_wrong": 0.3715192740000002,
+        "both_wrong": 4.212439083521133
+      },
+      "eligible_tied_max_seconds_nonadditive": 0.0,
+      "positive_margin_hmm_harm_seconds": 0.3715192740000002,
+      "weighted_mean_emission_margin": 0.01384733306303485,
+      "examples": [
+        {
+          "start": 0.557278911,
+          "end": 0.60371882,
+          "reference": "G:min",
+          "local_index": 34,
+          "hmm_index": 10,
+          "margin": 0.009343946060448416,
+          "ties": [
+            34
+          ]
+        },
+        {
+          "start": 0.60371882,
+          "end": 0.65015873,
+          "reference": "G:min",
+          "local_index": 34,
+          "hmm_index": 10,
+          "margin": 0.01982026013819064,
+          "ties": [
+            34
+          ]
+        },
+        {
+          "start": 0.65015873,
+          "end": 0.6965986390000001,
+          "reference": "G:min",
+          "local_index": 34,
+          "hmm_index": 10,
+          "margin": 0.036100480625764236,
+          "ties": [
+            34
+          ]
+        }
+      ],
+      "frame_count": 583,
+      "dictionary_entries": 217
+    },
+    {
+      "recording_id": "05_Funk2-119-G_comp",
+      "duration_seconds": 32.26319727891156,
+      "covered_seconds": 32.077437641911565,
+      "uncovered_seconds": 0.18575963699999676,
+      "eligible_seconds": 8.067226890756302,
+      "no_strict_candidate_seconds": 24.01021075115526,
+      "four_way_seconds": {
+        "both_correct": 1.3931972790000007,
+        "local_wrong_hmm_correct": 0.04643990899999828,
+        "local_correct_hmm_wrong": 0.04643991000000014,
+        "both_wrong": 6.581149792756303
+      },
+      "eligible_tied_max_seconds_nonadditive": 0.1857596370000003,
+      "positive_margin_hmm_harm_seconds": 0.04643991000000014,
+      "weighted_mean_emission_margin": -0.007622920098002357,
+      "examples": [
+        {
+          "start": 15.13941043,
+          "end": 15.18585034,
+          "reference": "G:min",
+          "local_index": 46,
+          "hmm_index": 190,
+          "margin": 0.0007289327727078923,
+          "ties": [
+            46
+          ]
+        }
+      ],
+      "frame_count": 695,
+      "dictionary_entries": 217
+    },
+    {
+      "recording_id": "SWD_HU33_04",
+      "duration_seconds": 44.54,
+      "covered_seconds": 44.54,
+      "uncovered_seconds": 0,
+      "eligible_seconds": 30.44000000000001,
+      "no_strict_candidate_seconds": 14.099999999999993,
+      "four_way_seconds": {
+        "both_correct": 9.693469384000002,
+        "local_wrong_hmm_correct": 7.9627664440000085,
+        "local_correct_hmm_wrong": 1.5970068039999954,
+        "both_wrong": 11.186757368000002
+      },
+      "eligible_tied_max_seconds_nonadditive": 0.0,
+      "positive_margin_hmm_harm_seconds": 1.5970068039999954,
+      "weighted_mean_emission_margin": -0.009658867513319814,
+      "examples": [
+        {
+          "start": 3.575873015,
+          "end": 3.622312925,
+          "reference": "F:maj7",
+          "local_index": 104,
+          "hmm_index": 36,
+          "margin": 0.014963621071063068,
+          "ties": [
+            104
+          ]
+        },
+        {
+          "start": 3.622312925,
+          "end": 3.668752834,
+          "reference": "F:maj7",
+          "local_index": 104,
+          "hmm_index": 36,
+          "margin": 0.00105140465895473,
+          "ties": [
+            104
+          ]
+        },
+        {
+          "start": 3.668752834,
+          "end": 3.7151927430000002,
+          "reference": "F:maj7",
+          "local_index": 104,
+          "hmm_index": 36,
+          "margin": 0.00862479246324882,
+          "ties": [
+            104
+          ]
+        }
+      ],
+      "frame_count": 969,
+      "dictionary_entries": 217
+    },
+    {
+      "recording_id": "SWD_HU33_18",
+      "duration_seconds": 42.480000000000004,
+      "covered_seconds": 42.48,
+      "uncovered_seconds": 7.105427357601002e-15,
+      "eligible_seconds": 26.94,
+      "no_strict_candidate_seconds": 15.540000000000003,
+      "four_way_seconds": {
+        "both_correct": 11.012380945999988,
+        "local_wrong_hmm_correct": 5.357641726000005,
+        "local_correct_hmm_wrong": 1.6356009090000005,
+        "both_wrong": 8.934376419000007
+      },
+      "eligible_tied_max_seconds_nonadditive": 0.02172335700000616,
+      "positive_margin_hmm_harm_seconds": 1.6356009090000005,
+      "weighted_mean_emission_margin": -8.741826704555888e-05,
+      "examples": [
+        {
+          "start": 1.95047619,
+          "end": 1.996916099,
+          "reference": "G:min",
+          "local_index": 46,
+          "hmm_index": 106,
+          "margin": 0.005421602905530988,
+          "ties": [
+            46
+          ]
+        },
+        {
+          "start": 1.996916099,
+          "end": 2.043356009,
+          "reference": "G:min",
+          "local_index": 46,
+          "hmm_index": 106,
+          "margin": 0.0022292194195278198,
+          "ties": [
+            46
+          ]
+        },
+        {
+          "start": 2.043356009,
+          "end": 2.089795918,
+          "reference": "G:min",
+          "local_index": 34,
+          "hmm_index": 106,
+          "margin": 0.004597583767709929,
+          "ties": [
+            34
+          ]
+        }
+      ],
+      "frame_count": 969,
+      "dictionary_entries": 217
+    },
+    {
+      "recording_id": "SWD_HU33_21",
+      "duration_seconds": 44.66,
+      "covered_seconds": 44.660000000000004,
+      "uncovered_seconds": 0,
+      "eligible_seconds": 39.76,
+      "no_strict_candidate_seconds": 4.900000000000002,
+      "four_way_seconds": {
+        "both_correct": 18.64412698399999,
+        "local_wrong_hmm_correct": 8.26117913600001,
+        "local_correct_hmm_wrong": 2.1399546490000034,
+        "both_wrong": 10.714739230999998
+      },
+      "eligible_tied_max_seconds_nonadditive": 0.09287981799999656,
+      "positive_margin_hmm_harm_seconds": 2.1399546490000034,
+      "weighted_mean_emission_margin": -0.006291257641957147,
+      "examples": [
+        {
+          "start": 24.891791383,
+          "end": 24.938231292,
+          "reference": "F:maj/5",
+          "local_index": 152,
+          "hmm_index": 20,
+          "margin": 0.0009043768944908825,
+          "ties": [
+            152
+          ]
+        },
+        {
+          "start": 25.588390022,
+          "end": 25.634829931,
+          "reference": "F:maj/5",
+          "local_index": 152,
+          "hmm_index": 20,
+          "margin": 0.0021012928639930067,
+          "ties": [
+            152
+          ]
+        },
+        {
+          "start": 25.634829931,
+          "end": 25.681269841,
+          "reference": "F:maj/5",
+          "local_index": 152,
+          "hmm_index": 20,
+          "margin": 0.007674244499115274,
+          "ties": [
+            152
+          ]
+        }
+      ],
+      "frame_count": 969,
+      "dictionary_entries": 217
+    }
+  ],
+  "four_way_seconds": {
+    "both_correct": 134.74429454210065,
+    "local_wrong_hmm_correct": 47.78200911033045,
+    "local_correct_hmm_wrong": 6.626439913000001,
+    "both_wrong": 49.00902900360645
+  },
+  "hu33_above_positive_harm_threshold": 3,
+  "decision": "stop_localization_mixed_evidence",
+  "inferences": 9,
+  "product_changed": false,
+  "plan_sha256": "3ee429d3c4994abfc04bdb7be2fcd94075134459d3930e760f05ceab3e803cd9",
+  "summarizer_sha256": "31f44a0e69dcd16176a2ef1708f0c3e94c1db88bfea58b618b127fa25df764c2",
+  "classifier_sha256": "0dbcdeaf66cd9d4d2101e6d3aa31d1800efddcb5ba71a749dd1d5e11309211f0",
+  "verification": {
+    "all_nine_events_unchanged": true,
+    "max_emission_reconstruction_absolute_error": 1.942890293094024e-16,
+    "duration_conservation_passed": true,
+    "test_output": "3 passed in 1.12s",
+    "test_command": "python -m pytest -q tests/test_chord_decoder_trace.py"
+  },
+  "trace_manifest": {
+    "sources": [
+      {
+        "recording_id": "00_SS2-88-F_comp",
+        "gates": {
+          "historical_raw": {
+            "passed": true,
+            "event_count": 20
+          },
+          "projected": {
+            "passed": true,
+            "event_count": 20
+          }
+        },
+        "trace_sha256": "60163fe72718f446d328d874d6cd185e24571c4857097017af39347b82a2a5b2",
+        "events_sha256": "5b93b1959b460a2550bdd4bfb98aebc61f85ffcf40da0c6f63668a03b7f16068"
+      },
+      {
+        "recording_id": "01_Rock1-90-C#_comp",
+        "gates": {
+          "historical_raw": {
+            "passed": true,
+            "event_count": 6
+          },
+          "projected": {
+            "passed": true,
+            "event_count": 6
+          }
+        },
+        "trace_sha256": "cb29f36ea29afb9a14e1455a443586ed8152792e78c0c710cecf2f923bc3fb4e",
+        "events_sha256": "97ad64e3a58e286dcc50a519b18eec6a45d77c27e82413c848bad72c2a10378b"
+      },
+      {
+        "recording_id": "02_Funk3-112-C#_comp",
+        "gates": {
+          "historical_raw": {
+            "passed": true,
+            "event_count": 22
+          },
+          "projected": {
+            "passed": true,
+            "event_count": 22
+          }
+        },
+        "trace_sha256": "c4ef378ab1fad5cdba4628dbb125a8d9f8109e342dcfd1e29f2982eb7baa0ebd",
+        "events_sha256": "01d6fe609da35fc7af2c8c168e34cbd7acbdffe8d157c6fb7a0c013b6e61144c"
+      },
+      {
+        "recording_id": "03_SS3-84-Bb_comp",
+        "gates": {
+          "historical_raw": {
+            "passed": true,
+            "event_count": 20
+          },
+          "projected": {
+            "passed": true,
+            "event_count": 20
+          }
+        },
+        "trace_sha256": "1dd6dd24c40cf544cf101c7938463478058aa36b2132cc404e6b2df096ab10be",
+        "events_sha256": "0472bdcad692d754bbb61a56e3554ae027d96d081fbc85425d3c57694bd13cf7"
+      },
+      {
+        "recording_id": "04_Rock2-142-D_comp",
+        "gates": {
+          "historical_raw": {
+            "passed": true,
+            "event_count": 14
+          },
+          "projected": {
+            "passed": true,
+            "event_count": 14
+          }
+        },
+        "trace_sha256": "66cfb9e7761f1581bf02be96173131ac5f294afd7b175b419535e0973008ccaf",
+        "events_sha256": "b8f852d8502f3012ccb74dd172d8a0a12af3cb92270e84d0bdcca34c01232aac"
+      },
+      {
+        "recording_id": "05_Funk2-119-G_comp",
+        "gates": {
+          "historical_raw": {
+            "passed": true,
+            "event_count": 28
+          },
+          "projected": {
+            "passed": true,
+            "event_count": 28
+          }
+        },
+        "trace_sha256": "7e8e5ee13c3fd15c763890a76db2d0ed4e5e6d11cdba11dbd07f6ba80b9b0d9d",
+        "events_sha256": "ce39708763fd28fed1175da960376f3fbef5c425e49ddc6cfc7bc6bc503a7547"
+      },
+      {
+        "recording_id": "SWD_HU33_04",
+        "gates": {
+          "historical_raw": {
+            "passed": true,
+            "event_count": 34
+          },
+          "projected": {
+            "passed": true,
+            "event_count": 34
+          }
+        },
+        "trace_sha256": "4d7c816bd737334f5539e053bf603a82ec39c01e8a3b253abdff12b593456c3c",
+        "events_sha256": "55227d3019f4259a9a112386c3d79ea1dd00ca2561d4d05d88e395c2d5e47e07"
+      },
+      {
+        "recording_id": "SWD_HU33_18",
+        "gates": {
+          "historical_raw": {
+            "passed": true,
+            "event_count": 34
+          },
+          "projected": {
+            "passed": true,
+            "event_count": 34
+          }
+        },
+        "trace_sha256": "11c7235eea296cadaac9259ed42e207598934a7e32c729147e30e760f86b8f95",
+        "events_sha256": "eb6c72af1bc58c0ded1acabeb3784bf9f2a609477c3668929ab8d0d8520e941c"
+      },
+      {
+        "recording_id": "SWD_HU33_21",
+        "gates": {
+          "historical_raw": {
+            "passed": true,
+            "event_count": 22
+          },
+          "projected": {
+            "passed": true,
+            "event_count": 22
+          }
+        },
+        "trace_sha256": "1af383347d6d10c01299e7c13a3bf1e0f0f76e752d49e8589021e8bf403fcd17",
+        "events_sha256": "a24cec5ad9f36c60441c53721f9a584885a11bb46c5b5ec6283670993bf54000"
+      }
+    ],
+    "inferences": 9,
+    "product_changed": false,
+    "plan_sha256": "3ee429d3c4994abfc04bdb7be2fcd94075134459d3930e760f05ceab3e803cd9"
+  },
+  "build_manifest": {
+    "plan_sha256": "3ee429d3c4994abfc04bdb7be2fcd94075134459d3930e760f05ceab3e803cd9",
+    "runner_sha256": "6e3b78c69428d7730a625518754b48ae96360baba54284388dee1da5edb3fc53",
+    "library_sha256": "2342beebf469250225e4b752cdfe9afe8b1aeb7ee84a101c6c0136827e78db31",
+    "patch_sha256": "bc4ffad2f26079126ec4916156f330c5c370fd554501535a9517c61b818188bd",
+    "preparation_sha256": "e9875afc796bf1fe41ac93f7ad1b939c1227ac0c05fdc21b800f8b70d8bfae46"
+  },
+  "observation_patch": "--- a/Chordino.cpp\n+++ b/Chordino.cpp\n@@ -26,6 +26,8 @@\n #include <cmath>\n \n #include <algorithm>\n+#include <iomanip>\n+#include <stdexcept>\n \n const bool debug_on = false;\n \n@@ -367,6 +369,7 @@\n \n \t    \n     vector<vector<double> > chordogram;\n+    vector<vector<double> > traceSaliences;\n     vector<vector<int> > scoreChordogram;\n     vector<float> chordchange = vector<float>(tunedSpec.size(),0);\n     count = 0;\n@@ -488,6 +491,7 @@\n \n         // local chord estimation\n         vector<double> currentChordSalience;\n+        vector<double> traceCurrent;\n         double tempchordvalue = 0;\n         double sumchordvalue = 0;\n \t        \n@@ -508,6 +512,7 @@\n                 }\n                 tempchordvalue = 200.0;\n             }\n+            traceCurrent.push_back(tempchordvalue);\n             tempchordvalue = pow(1.3, tempchordvalue);\n             sumchordvalue += tempchordvalue;\n             currentChordSalience.push_back(tempchordvalue);\n@@ -520,6 +525,7 @@\n             currentChordSalience[nChord-1] = 1.0;\n         }\n         chordogram.push_back(currentChordSalience);\n+        traceSaliences.push_back(traceCurrent);\n \t        \n         count++;\n     }\n@@ -545,6 +551,37 @@\n     }\n     vector<double> scale;\n     vector<int> chordpath = ViterbiPath(init, trans, chordogram, delta, &scale);\n+\n+    const char* tracePath = std::getenv(\"GUITARSCRIBE_TRACE_PATH\");\n+    if (tracePath) {\n+        std::ofstream trace(tracePath);\n+        trace << std::setprecision(17);\n+        trace << \"{\\\"dictionary\\\":[\";\n+        for (int c=0;c<nChord;++c) {\n+            if(c) trace << \",\";\n+            trace << \"{\\\"index\\\":\" << c << \",\\\"label\\\":\" << std::quoted(m_chordnames[c]) << \",\\\"weights\\\":[\";\n+            for(int k=0;k<24;++k) {if(k)trace<<\",\";trace<<m_chorddict[c*24+k];}\n+            trace << \"]}\";\n+        }\n+        trace << \"],\\\"frames\\\":[\";\n+        for (int f=0;f<nFrame;++f) {\n+            if(f)trace<<\",\";\n+            const auto& emission=chordogram[f];\n+            int best=std::max_element(emission.begin(),emission.end())-emission.begin();\n+            trace<<\"{\\\"sec\\\":\"<<timestamps[f].sec<<\",\\\"nsec\\\":\"<<timestamps[f].nsec<<\",\\\"local\\\":\"<<best<<\",\\\"hmm\\\":\"<<chordpath[f]<<\",\\\"ties\\\":[\";\n+            bool first=true;\n+            for(int c=0;c<nChord;++c)if(emission[c]==emission[best]){if(!first)trace<<\",\";trace<<c;first=false;}\n+            trace<<\"],\\\"salience\\\":[\";\n+            for(int c=0;c<nChord;++c){if(c)trace<<\",\";trace<<traceSaliences[f][c];}\n+            trace<<\"],\\\"emission\\\":[\";\n+            for(int c=0;c<nChord;++c){if(c)trace<<\",\";trace<<emission[c];}\n+            trace<<\"]}\";\n+        }\n+        trace<<\"]}\\n\";\n+        trace.close();\n+        if(!trace) throw std::runtime_error(\"Trace write failed\");\n+    }\n+\n     \n     Feature chord_feature; // chord estimate\n     chord_feature.hasTimestamp = true;\n"
+}
