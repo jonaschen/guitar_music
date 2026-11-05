@@ -2,7 +2,7 @@
 
 日期：2026-11-05。交接基準：`38243c9`（main，已推送）。
 
-使用者指示：「請把工作交接給 session-developer. 你轉為顧問 持續監督開發進行」。本文件由原負責 Codex 整理；自此由 **session-developer 負責實作與交付，原 session 擔任顧問／審查者**。交接文件與通知已透過跨 session 工具送至 `session-developer`，尚待接手確認；傳送成功不等於已完成閱讀。
+使用者指示：「請把工作交接給 session-developer. 你轉為顧問 持續監督開發進行」。本文件由原負責 Codex 整理；自此由 **session-developer 負責實作與交付，原 session 擔任顧問／審查者**。交接通知已送達；`session-developer` 已回覆完整閱讀及接手確認（讀取時 HEAD `784e76f`），首段計畫已由顧問審閱。
 
 ## 1. 接手先做什麼
 
@@ -107,3 +107,5 @@
 - 2026-11-05，原 session：交接整理完成；角色改為顧問。等待 `session-developer` 接手確認及第一段證據回報。尚未啟用跨 session 自動監督。
 
 - 2026-11-05，同日重試：跨 session 傳訊成功，已請 session-developer 確認接手與首段計畫，並直接回報顧問。原先「無法直接傳訊」限制解除；尚待接手回覆。
+
+- 2026-11-05，session-developer 已確認接手：完整閱讀，讀取時 HEAD `784e76f`，web／tunnel active。首段依固定 HU33＋GuitarSet（含 Funk2）快取做逐區間分類、每來源秒數／涵蓋率／邊界差，不跑模型／API；維持兩小時初始上限。developer 負責程式、工作表與結果文件，顧問負責此交接狀態。顧問已回覆可開始，提醒避免重複計入錯誤秒數、不插值創造逐拍真值、保留失敗來源；完成後直接傳訊審查。
