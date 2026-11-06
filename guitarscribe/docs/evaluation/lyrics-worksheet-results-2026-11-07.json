@@ -1,0 +1,51 @@
+{
+  "published": true,
+  "backend_tests": 22,
+  "frontend_tests": 6,
+  "typescript_passed": true,
+  "build_passed": true,
+  "consultant_isolated_browser_passed": true,
+  "original_static_files_unchanged": 84,
+  "existing_databases_unchanged": true,
+  "source_score_audio_manifest_unchanged": true,
+  "old_assets_preserved": true,
+  "new_required_files": 19,
+  "candidate_files": 28,
+  "feature_commit": "0a644e2",
+  "consultant_review": {
+    "import_preview_no_write": true,
+    "autosave_reload_whitespace_repeat": true,
+    "cross_song_isolation": true,
+    "offline_conflict_preserves_both": true,
+    "corrupt_draft_recovery": true,
+    "confirmed_delete_preserves_neighbor_id": true,
+    "four_sizes_no_overflow": true,
+    "page_errors": 0,
+    "production_writes": 0
+  },
+  "source_limitations": {
+    "rmPHuvQoh0g": "no available captions",
+    "0rpbhqZI0hc": "manual es; may be translation",
+    "S8RWhc_LmMc": "automatic ko-orig/ko; unverified text"
+  },
+  "new_models": 0,
+  "audio_uploads": 0,
+  "consultant_production_smoke": {
+    "result": [
+      {
+        "job": "a3be29912a7045448765290d7cba2f6c",
+        "worksheet_loaded": true,
+        "original_notes_loaded": true,
+        "empty_form_four_sizes_no_overflow": true
+      },
+      {
+        "job": "6ea8733485f74db6a5443a3b9d7e829a",
+        "worksheet_loaded": true,
+        "original_notes_loaded": true,
+        "empty_form_four_sizes_no_overflow": true
+      }
+    ],
+    "writes": 0,
+    "errors": []
+  }
+}

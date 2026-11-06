@@ -31,3 +31,15 @@
 後端：`python -m pytest tests/test_lyric_worksheets.py tests/test_melody_notes.py -q`
 
 前端：`./node_modules/.bin/tsc -b`、`./node_modules/.bin/playwright test --config playwright.product.config.ts --workers 1 -g 'lyric worksheet'`。
+
+## 同候選發布
+
+功能提交 `0a644e2` 已推送 main。本機入口維持 `http://127.0.0.1:5273/reading-candidate-2026-11-05/?job=a3be29912a7045448765290d7cba2f6c`，展開「歌詞與手填簡譜」。此首影片沒有可用字幕，可貼上歌詞或匯入LRC；其他影片也須明選語言並預覽，不能保證有中文字幕。
+
+發布前無active jobs，三份既有SQLite以backup API備份並通過integrity_check，舊候選完整備份於 `output/backups/lyric-worksheet-2026-11-07/`。7個生成檔加12個原字型／音色庫必要檔，不帶歌曲音訊；保留全部舊hash資產，候選現28檔。先放資產再原子替換index，重啟既有API單元，保留邀請、執行引擎及環境設定。
+
+發布後原首頁84個檔案hash、三份既有DB內容、兩首真job的原Score／input.wav／base manifest全部與發布前一致。受邀GET候選與build逐byte相同，新工作頁GET回200／空版本0。未改ngrok流量限制，不能視為外網恢復。數值見 [驗證紀錄](evaluation/lyrics-worksheet-results-2026-11-07.json)。
+
+回滾可恢復備份候選index並回退本次API程式後重啟；保留新的工作頁SQLite，避免刪除使用者新填的內容。原三DB不應直接回灌覆寫新資料。
+
+顧問正式5273唯讀驗收已通過：《沒那麼簡單》及《下一個天亮》均載入新工作頁與原筆記，320／390／844／1440四尺寸無溢出，0寫入／0頁面錯誤。持久化、雙分頁衝突與刪行等實際寫入測試僅在隔離資料庫完成，沒有在正式資料填測試文字。
