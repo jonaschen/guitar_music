@@ -1,0 +1,138 @@
+{
+  "totals": {
+    "duration": 357.0,
+    "known_chord": 356.28,
+    "root_correct": 210.30248299099998,
+    "root_wrong": 145.977517009,
+    "stable": 31.600000000004105,
+    "stable_chord": 31.600000000004105,
+    "stable_correct": 15.672154197002094,
+    "stable_wrong": 15.927845803002011,
+    "unknown_reference": 0.0,
+    "unknown_estimate": 0.0,
+    "flag": 3.0911564660003847,
+    "true_positive": 1.419002269000174,
+    "false_positive": 1.6721541970002107,
+    "correct_root_flag": 1.6721541970002107,
+    "stable_nonchord_bass": 0.0,
+    "flag_nonchord_bass": 0.0
+  },
+  "metrics": {
+    "coverage": 0.08869428539352225,
+    "coverage_correct": 0.07452196462023129,
+    "coverage_wrong": 0.10911163670512362,
+    "precision": 0.45905223000122225,
+    "recall_all_wrong_root": 0.009720690542453109,
+    "correct_root_false_trigger_rate": 0.007951186182959959
+  },
+  "coverage_sufficient": false,
+  "signal_gates_passed": false,
+  "outcome": "insufficient_pitch_evidence",
+  "plan_sha256": "0739a03a33ccdb5f35883e664b51c0324aef455bafc2cac2741b514d90cc9058",
+  "alignment": {
+    "bass": {
+      "passed": true,
+      "checks": [
+        {
+          "section": "whole",
+          "lag_seconds": 0.0,
+          "normalized_correlation": 0.67006728007718,
+          "minimum_correlation": 0.5,
+          "passed": true
+        },
+        {
+          "section": "1",
+          "lag_seconds": 0.0,
+          "normalized_correlation": 0.6802838325925209,
+          "minimum_correlation": 0.3,
+          "passed": true
+        },
+        {
+          "section": "2",
+          "lag_seconds": 0.0,
+          "normalized_correlation": 0.6368955810600825,
+          "minimum_correlation": 0.3,
+          "passed": true
+        },
+        {
+          "section": "3",
+          "lag_seconds": 0.0,
+          "normalized_correlation": 0.6904394100549978,
+          "minimum_correlation": 0.3,
+          "passed": true
+        }
+      ]
+    },
+    "piano": {
+      "passed": true,
+      "checks": [
+        {
+          "section": "whole",
+          "lag_seconds": 0.0,
+          "normalized_correlation": 0.676967989063729,
+          "minimum_correlation": 0.25,
+          "passed": true
+        },
+        {
+          "section": "1",
+          "lag_seconds": 0.0,
+          "normalized_correlation": 0.7072217762267904,
+          "minimum_correlation": 0.15,
+          "passed": true
+        },
+        {
+          "section": "2",
+          "lag_seconds": 0.0,
+          "normalized_correlation": 0.6752773573089287,
+          "minimum_correlation": 0.15,
+          "passed": true
+        },
+        {
+          "section": "3",
+          "lag_seconds": 0.0,
+          "normalized_correlation": 0.6460814517255188,
+          "minimum_correlation": 0.15,
+          "passed": true
+        }
+      ]
+    }
+  },
+  "downloads": [
+    {
+      "role": "bass",
+      "archive_sha256": "02dc18444d27b6a479131d4e9fc48a7feb9a75fa5488fdce80f554ca7c1114b6",
+      "source_sha256": "22ebd3f10c6ba58875bb08fb75f5690dc0e92a4ad83a6024dd60341099851dc0",
+      "bytes": 29921846,
+      "member": "Fretless Bass.flac"
+    },
+    {
+      "role": "piano",
+      "archive_sha256": "45b2907f6d7664a4b563510f0f8ef25de111cce0788eba1dba16886a3321d82c",
+      "source_sha256": "0f46f6b58de733bac7a77cfecc08487d547d40a2460c6b8ddd5af1510675a9e5",
+      "bytes": 27838729,
+      "member": "Piano.flac"
+    }
+  ],
+  "wall_seconds": 19.22839030402247,
+  "pitch_runs": 1,
+  "product_modified": false,
+  "raw_result_sha256": "594b7dcec50415841d1c9b8fb87030cc9311df2e03b8e35ac53affd065a487a8",
+  "attempt_history": {
+    "first_http403": {
+      "error": "<HTTPError 403: 'Forbidden'>",
+      "wall_seconds": 1.0376070080092177
+    },
+    "pyin_dimension_error": {
+      "error": "ParameterError('Target size (361) must be at least input size (431)')",
+      "wall_seconds": 21.018083750037476
+    },
+    "payload_downloads": 2,
+    "failed_http_gets": 1,
+    "metadata_heads": 1,
+    "real_pyin_attempts": 2,
+    "successful_real_pitch_tracks": 1,
+    "synthetic_feasibility_tracks": 1,
+    "new_separation": 0,
+    "new_chordino": 0
+  }
+}

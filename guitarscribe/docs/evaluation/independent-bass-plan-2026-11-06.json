@@ -1,0 +1,147 @@
+{
+  "schema_version": "1.0",
+  "frozen_at_utc": "2026-11-06T09:01:42.194006+00:00",
+  "purpose": "A18 full-song observable missing-bass evidence only; no chord changes",
+  "archives": [
+    {
+      "role": "bass",
+      "url": "https://ccmixter.org/content/NiGiD/NiGiD_-_Electra_Glider_2.zip",
+      "bytes": 29921846,
+      "sha1_base32": "YX45TVW23KWQXYOXZG7JFTEAYQXN4TEE",
+      "member": "Fretless Bass.flac"
+    },
+    {
+      "role": "piano",
+      "url": "https://ccmixter.org/content/NiGiD/NiGiD_-_Electra_Glider.zip",
+      "bytes": 27838729,
+      "sha1_base32": "DIZIDTFS4T4S5G7NJOSYT5IQDKLKU67W",
+      "member": "Piano.flac"
+    }
+  ],
+  "mix": {
+    "path": "output/evaluation/mirex-mixed-reference-2026-11-06/run/electra_glider/source.mp3",
+    "sha256": "eaaf7b2aa87928160cfbfe40b8f428e257ebcba348c50695e13aa89570b2cd20"
+  },
+  "diagnostic": {
+    "path": "output/evaluation/mirex-mixed-reference-2026-11-06/run/electra_glider/diagnostic.json",
+    "sha256": "04a6c18cee4dabccad066cfab2bece7c77807be88faf1223cba69400b05c55dc"
+  },
+  "author_api": {
+    "path": "output/evaluation/mirex-mixed-reference-2026-11-06/discovery/electra-author-downloads.json",
+    "sha256": "58a768bde2e9d8612d73609647d15dd644fe7cd8df400a72f0efb008f3dd6431"
+  },
+  "author_page": {
+    "path": "output/evaluation/mirex-mixed-reference-2026-11-06/discovery/electra-author.html",
+    "sha256": "93445d322a0ea5b5c089f35a0948ef83e740257a30bce43da7127234bd207d3f"
+  },
+  "ffmpeg": {
+    "path": "/usr/bin/ffmpeg",
+    "sha256": "ed16af623947494a72e284b6eb8ff225f2da22b38b5d5069c2fd4b4ba3384e41"
+  },
+  "implementation": [
+    {
+      "path": "backend/scripts/check_independent_bass.py",
+      "sha256": "3bc9488a0db566718510506302290d3be49262022217c0fb7676ab1f0da67a8d"
+    },
+    {
+      "path": "backend/scripts/run_chord_bass_ablation.py",
+      "sha256": "2750b83df6f4bb1256c3725ea3a25a6d0f84bf51f9bccda700dae6c2d96de293"
+    },
+    {
+      "path": "backend/app/evaluation/chord_errors.py",
+      "sha256": "d9941c8933ace2d9320fe9585e5abea08d058338669c38a0f7e3d09eab5f4e55"
+    },
+    {
+      "path": "backend/app/evaluation/swd_reference.py",
+      "sha256": "3a40ac9b15e11c078042babdbf3724841eab406ea4b6192a27288facdf8f133a"
+    },
+    {
+      "path": "backend/app/evaluation/quality_report.py",
+      "sha256": "40ba04a1cb9fb89555dc31216dc190be71261f1b2288ffd90fd98fe86d7d5ff9"
+    }
+  ],
+  "packages": {
+    "numpy": "1.26.4",
+    "scipy": "1.17.1",
+    "librosa": "0.11.0",
+    "soundfile": "0.14.0"
+  },
+  "alignment": {
+    "sample_rate": 4000,
+    "max_duration_difference_seconds": 0.1,
+    "minimum_stem_seconds": 357,
+    "search_seconds": 2,
+    "max_absolute_lag_seconds": 0.025,
+    "sections": "whole and three equal thirds",
+    "filter": "4th order Butterworth SOS, zero-phase",
+    "bass_band": [
+      35,
+      180
+    ],
+    "piano_band": [
+      200,
+      1800
+    ],
+    "bass_min_corr_whole": 0.5,
+    "bass_min_corr_third": 0.3,
+    "piano_min_corr_whole": 0.25,
+    "piano_min_corr_third": 0.15,
+    "no_shift": true
+  },
+  "pitch": {
+    "method": "librosa.pyin",
+    "sample_rate": 4000,
+    "frame_length": 1024,
+    "hop_length": 400,
+    "fmin": 32.7031956626,
+    "fmax": 261.625565301,
+    "center": true,
+    "n_thresholds": 100,
+    "beta_parameters": [
+      2,
+      18
+    ],
+    "boltzmann_parameter": 2,
+    "resolution": 0.1,
+    "max_transition_rate": 35.92,
+    "switch_prob": 0.01,
+    "no_trough_prob": 0.01,
+    "fill_na": "NaN",
+    "minimum_voiced_prob": 0.9,
+    "max_distance_to_semitone_cents": 35,
+    "stability": "previous/current/next 3 voiced same pitch-class frames, center span .2s; cells cover .3s, no padding",
+    "minimum_rms_fraction_global_peak": 0.01,
+    "frame_cell_seconds": 0.1
+  },
+  "assessment": {
+    "domain": [
+      0,
+      357
+    ],
+    "observable": "Stable bass pitch class missing from estimated full chord pitch set. Reference never triggers.",
+    "true_positive": "observable and original category wrong_root and reference contains bass",
+    "false_positive": "all other observable flags on known reference, including legitimate nonchord bass/reference N",
+    "coverage_min": 0.3,
+    "coverage_correct_and_wrong_each_min": 0.2,
+    "precision_min": 0.8,
+    "recall_all_wrong_root_min": 0.2,
+    "true_positive_seconds_min": 10,
+    "correct_root_false_trigger_rate_max": 0.05,
+    "denominators_include_abstentions": true
+  },
+  "limits": {
+    "wall_seconds": 3600,
+    "threads": 2,
+    "parallel_tasks": 1,
+    "zip_requests": 2,
+    "extract_members": 2,
+    "pitch_runs_max": 1,
+    "new_separation": 0,
+    "new_chordino": 0,
+    "paid_resources": 0,
+    "uploads": 0,
+    "product_mutations": 0
+  },
+  "outcomes": "Alignment fail: recording unproven/inconclusive. Insufficient coverage: pitch evidence insufficient. Adequate coverage and signal failure: reject fixed observable signal. Pass: proposal for A16 recoverability only; no candidate yet.",
+  "launcher": "GNU timeout --signal=TERM 3600s env OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 MKL_NUM_THREADS=2 NUMEXPR_NUM_THREADS=2 python runner. Controller captures exit status and writes external timeout failure if needed."
+}
