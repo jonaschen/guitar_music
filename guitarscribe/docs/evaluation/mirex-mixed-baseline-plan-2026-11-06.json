@@ -1,0 +1,78 @@
+{
+  "schema_version": "1.0",
+  "frozen_at_utc": "2026-11-06T08:48:30.714058+00:00",
+  "purpose": "Two original Chordino full-song baselines, no candidate or quality acceptance",
+  "cases": [
+    {
+      "recording_id": "puppet_master",
+      "metadata": {
+        "path": "output/evaluation/mirex-mixed-reference-2026-11-06/discovery/puppet_master.json",
+        "sha256": "a62e4b038904b6450fd6c10ef30aca9c140f30debf000b7bd66215167b2658c5"
+      },
+      "audio_url": "https://futuremirex.com/demos/audio-chord-estimation-2026/audio/puppet_master.mp3"
+    },
+    {
+      "recording_id": "electra_glider",
+      "metadata": {
+        "path": "output/evaluation/mirex-mixed-reference-2026-11-06/discovery/electra_glider.json",
+        "sha256": "51695f1499c998122c672d0a1a1bbdd40c0aa9c063e7057d42d4a065da00fe14"
+      },
+      "audio_url": "https://futuremirex.com/demos/audio-chord-estimation-2026/audio/electra_glider.mp3"
+    }
+  ],
+  "library": {
+    "path": "/home/jonas/gemini-home/music_analysis/guitarscribe/output/evaluation/chord-bass-ablation-2026-11-05/run/baseline/nnls-chroma.so",
+    "sha256": "fb7d75cf816d3eab3d97da8e6df51f5642b008a49ff4ec6bc2695c42dfded998"
+  },
+  "ffmpeg": {
+    "path": "/usr/bin/ffmpeg",
+    "sha256": "ed16af623947494a72e284b6eb8ff225f2da22b38b5d5069c2fd4b4ba3384e41"
+  },
+  "implementation": [
+    {
+      "path": "backend/scripts/benchmark_mirex_mixed.py",
+      "sha256": "4c6f5bbf25da06416652c5c38bba2e7b18f770943de10aea5c65a0b56bbb70f6"
+    },
+    {
+      "path": "backend/scripts/run_chord_bass_ablation.py",
+      "sha256": "2750b83df6f4bb1256c3725ea3a25a6d0f84bf51f9bccda700dae6c2d96de293"
+    },
+    {
+      "path": "backend/app/evaluation/chord_errors.py",
+      "sha256": "d9941c8933ace2d9320fe9585e5abea08d058338669c38a0f7e3d09eab5f4e55"
+    },
+    {
+      "path": "backend/app/evaluation/annotations.py",
+      "sha256": "72d2495973d15d1a9ca9d2ab7c1958c953a024e739c3455d2c131f63e00cb05d"
+    },
+    {
+      "path": "backend/app/evaluation/quality_report.py",
+      "sha256": "40ba04a1cb9fb89555dc31216dc190be71261f1b2288ffd90fd98fe86d7d5ff9"
+    },
+    {
+      "path": "backend/app/evaluation/swd_reference.py",
+      "sha256": "3a40ac9b15e11c078042babdbf3724841eab406ea4b6192a27288facdf8f133a"
+    },
+    {
+      "path": "backend/app/analyzers/chords/chordino.py",
+      "sha256": "63f08d6cb8f41ffd724650e201e544cc394e674921e6594b151df5f375c62f41"
+    }
+  ],
+  "time_domain": "Each entire original demo MP3 -> ffmpeg44100 mono s16. offset0. Shared scoring domain[0,min(actual decoded duration, final reference end)), no shifts, repair or output-based crop. Keep original labels.",
+  "provenance": "Metadata/reference only, exclude systems; preserve artist/source/license and Junyan Jiang annotation attribution. CC BY-NC4.0 local noncommercial research only. No public audio/DB writes.",
+  "score": "smoke-tier full-song diagnostics; unmetered bpm0 empty meter/beats. Original plugin defaults once per source; preserve raw outputs. Same A09 metrics/250ms boundaries, full-label categories and interior overlay.",
+  "limits": {
+    "wall_seconds": 2700,
+    "threads": 2,
+    "parallel_inferences": 1,
+    "max_audio_download_requests": 2,
+    "max_download_bytes_each": 100000000,
+    "chordino_runs": 2,
+    "new_models": 0,
+    "separations": 0,
+    "paid_resources": 0,
+    "uploads": 0,
+    "product_mutations": 0
+  },
+  "stop": "Missing/hash-mismatched source, invalid intervals/labels/offset/license, download/decode failure, nonconservation: stop without substituting source or changing scorer. No score threshold for acceptance of product; baseline only."
+}

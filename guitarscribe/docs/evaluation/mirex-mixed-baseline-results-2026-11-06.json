@@ -1,0 +1,1118 @@
+{
+  "plan_sha256": "635e9a9be4a987e8500546b6ac8acad1c5082223c91d509ed9f7a018b2105e10",
+  "wall_seconds": 25.22107038809918,
+  "chordino_runs": 2,
+  "audio_download_requests": 2,
+  "new_models": 0,
+  "product_modified": false,
+  "outcome": "full_song_baseline_only_no_quality_or_product_acceptance",
+  "raw_result_sha256": "41783904b643047d1989f96d4e0d26525e7350b58c02d7cea81d0a6583dbfa59",
+  "sources": [
+    {
+      "recording_id": "puppet_master",
+      "audio": "/home/jonas/gemini-home/music_analysis/guitarscribe/output/evaluation/mirex-mixed-reference-2026-11-06/run/puppet_master/analysis-source.wav",
+      "audio_sha256": "677e0f681e5b581835500ff2e08cfd2aff905f920eec2bdd337ac5e99c965910",
+      "audio_frames": 11171179,
+      "sample_rate": 44100,
+      "decoded_duration": 253.31471655328798,
+      "metadata_duration": 253.314708,
+      "evaluation_interval": [
+        0,
+        253.31471655328798
+      ],
+      "reference_end": 253.33,
+      "excluded_reference_tail_seconds": 0.015283446712032855,
+      "excluded_audio_tail_seconds": 0,
+      "annotation_sha256": "8db7c436463716bea8b5a44641ee7e3c6e9c00b25552d5061b7d20473e451c91",
+      "download": {
+        "url": "https://futuremirex.com/demos/audio-chord-estimation-2026/audio/puppet_master.mp3",
+        "final_url": "https://futuremirex.com/demos/audio-chord-estimation-2026/audio/puppet_master.mp3",
+        "bytes": 6081350,
+        "sha256": "11dd64ec121abd5394c1557bada72f340f65f727bead15c8a023f1ff1e3ed313",
+        "status": 200
+      },
+      "inference_seconds": 7.238622216973454,
+      "summary": {
+        "interval": [
+          0.0,
+          253.31471655328798
+        ],
+        "duration_seconds": 253.31471655328798,
+        "known_reference_seconds": 253.31471655328798,
+        "reference_unknown_seconds": 0.0,
+        "label_error_seconds": 60.94875285600003,
+        "category_seconds": {
+          "reference_unknown": 0.0,
+          "estimate_unknown": 0.0,
+          "correct_no_chord": 0.232199546,
+          "missed_chord": 0.0,
+          "false_chord": 0.18780045399999998,
+          "wrong_root": 20.76233562200004,
+          "same_root_wrong_quality": 39.99861677999999,
+          "bass_only": 0.0,
+          "exact_match": 192.13376415128795
+        },
+        "overlays_not_additive": {
+          "wrong_root_interior_seconds": 12.421519275000033,
+          "wrong_root_shared_pitch_set_seconds": 0,
+          "wrong_root_is_reference_tone_seconds": 9.078435377000062,
+          "reference_omits_root_seconds": 0
+        },
+        "metrics": {
+          "root": {
+            "scored_seconds": 253.31471655328798,
+            "unscored_seconds": 0.0,
+            "correct_seconds": 232.36458047728794,
+            "error_seconds": 20.950136076000035,
+            "scored_fraction": 1.0,
+            "accuracy": 0.9172960167452691
+          },
+          "majmin": {
+            "scored_seconds": 237.804716553288,
+            "unscored_seconds": 15.509999999999991,
+            "correct_seconds": 213.58734691628797,
+            "error_seconds": 24.21736963700002,
+            "scored_fraction": 0.938771816296203,
+            "accuracy": 0.8981627867268422
+          }
+        },
+        "confusions": [
+          {
+            "reference": "B:maj",
+            "estimate": "B:maj6",
+            "category": "same_root_wrong_quality",
+            "seconds": 8.783151927999938
+          },
+          {
+            "reference": "G#:min(#4)",
+            "estimate": "Ab:min",
+            "category": "same_root_wrong_quality",
+            "seconds": 6.199999999999999
+          },
+          {
+            "reference": "E#:hdim7",
+            "estimate": "F:min7",
+            "category": "same_root_wrong_quality",
+            "seconds": 4.9929251699999995
+          },
+          {
+            "reference": "C#:min/b3",
+            "estimate": "E:maj7",
+            "category": "wrong_root",
+            "seconds": 3.4223129260000036
+          },
+          {
+            "reference": "A:maj",
+            "estimate": "A:maj7",
+            "category": "same_root_wrong_quality",
+            "seconds": 3.0949433110000086
+          },
+          {
+            "reference": "E:maj",
+            "estimate": "E:maj7",
+            "category": "same_root_wrong_quality",
+            "seconds": 3.060476190000003
+          },
+          {
+            "reference": "C#:min/b3",
+            "estimate": "E:maj6",
+            "category": "wrong_root",
+            "seconds": 2.711632652999988
+          },
+          {
+            "reference": "D#:maj",
+            "estimate": "Eb:min",
+            "category": "same_root_wrong_quality",
+            "seconds": 2.3162131509999995
+          },
+          {
+            "reference": "F#:min6",
+            "estimate": "B:maj6",
+            "category": "wrong_root",
+            "seconds": 2.1724943309999993
+          },
+          {
+            "reference": "F#:min6",
+            "estimate": "B:maj/5",
+            "category": "wrong_root",
+            "seconds": 1.6253968249999957
+          },
+          {
+            "reference": "F#:maj",
+            "estimate": "F#:maj6",
+            "category": "same_root_wrong_quality",
+            "seconds": 1.5499773239999968
+          },
+          {
+            "reference": "D#:min",
+            "estimate": "Ab:maj/5",
+            "category": "wrong_root",
+            "seconds": 1.532517007000024
+          },
+          {
+            "reference": "A:maj",
+            "estimate": "A:maj6",
+            "category": "same_root_wrong_quality",
+            "seconds": 1.514081632
+          },
+          {
+            "reference": "D#:maj",
+            "estimate": "Eb:7",
+            "category": "same_root_wrong_quality",
+            "seconds": 1.3711111100000153
+          },
+          {
+            "reference": "E:maj6",
+            "estimate": "E:maj7",
+            "category": "same_root_wrong_quality",
+            "seconds": 1.346757370000006
+          },
+          {
+            "reference": "D#:min",
+            "estimate": "Eb:min7",
+            "category": "same_root_wrong_quality",
+            "seconds": 1.3413832199999973
+          },
+          {
+            "reference": "D#:maj",
+            "estimate": "Eb:aug",
+            "category": "same_root_wrong_quality",
+            "seconds": 1.2074376420000021
+          },
+          {
+            "reference": "E:maj",
+            "estimate": "Ab:min",
+            "category": "wrong_root",
+            "seconds": 1.078458055000013
+          },
+          {
+            "reference": "D#:min",
+            "estimate": "B:maj/3",
+            "category": "wrong_root",
+            "seconds": 0.9752380950000017
+          },
+          {
+            "reference": "D#:min",
+            "estimate": "B:maj7",
+            "category": "wrong_root",
+            "seconds": 0.9692517009999904
+          },
+          {
+            "reference": "A:maj",
+            "estimate": "A:7",
+            "category": "same_root_wrong_quality",
+            "seconds": 0.928798186000023
+          },
+          {
+            "reference": "E#:hdim7",
+            "estimate": "C#:maj",
+            "category": "wrong_root",
+            "seconds": 0.8438548739999945
+          },
+          {
+            "reference": "D#:maj/3",
+            "estimate": "G:dim",
+            "category": "wrong_root",
+            "seconds": 0.8079591830000012
+          },
+          {
+            "reference": "G#:min(9)",
+            "estimate": "Ab:min",
+            "category": "same_root_wrong_quality",
+            "seconds": 0.7900000000000205
+          },
+          {
+            "reference": "A:maj",
+            "estimate": "A:dim",
+            "category": "same_root_wrong_quality",
+            "seconds": 0.6037188209999726
+          },
+          {
+            "reference": "E:maj",
+            "estimate": "E:maj6",
+            "category": "same_root_wrong_quality",
+            "seconds": 0.5759410430000003
+          },
+          {
+            "reference": "F#:maj",
+            "estimate": "Eb:min",
+            "category": "wrong_root",
+            "seconds": 0.5295918380000018
+          },
+          {
+            "reference": "A:maj",
+            "estimate": "Eb:dim",
+            "category": "wrong_root",
+            "seconds": 0.4085941040000023
+          },
+          {
+            "reference": "A:maj",
+            "estimate": "B:7/3",
+            "category": "wrong_root",
+            "seconds": 0.39804988599999547
+          },
+          {
+            "reference": "D#:maj/3",
+            "estimate": "G:aug",
+            "category": "wrong_root",
+            "seconds": 0.32507936500000056
+          },
+          {
+            "reference": "G#:min",
+            "estimate": "E:maj",
+            "category": "wrong_root",
+            "seconds": 0.2841043110000072
+          },
+          {
+            "reference": "D#:min",
+            "estimate": "F#:maj",
+            "category": "wrong_root",
+            "seconds": 0.25786847900001675
+          },
+          {
+            "reference": "B:maj",
+            "estimate": "B:7/3",
+            "category": "same_root_wrong_quality",
+            "seconds": 0.25210884400001987
+          },
+          {
+            "reference": "D#:maj",
+            "estimate": "Ab:min",
+            "category": "wrong_root",
+            "seconds": 0.19986394800002216
+          },
+          {
+            "reference": "B:maj",
+            "estimate": "Eb:dim",
+            "category": "wrong_root",
+            "seconds": 0.19512471699999878
+          },
+          {
+            "reference": "N",
+            "estimate": "Ab:min",
+            "category": "false_chord",
+            "seconds": 0.18780045399999998
+          },
+          {
+            "reference": "A:maj",
+            "estimate": "B:maj6",
+            "category": "wrong_root",
+            "seconds": 0.17975056800000289
+          },
+          {
+            "reference": "C#:min",
+            "estimate": "Eb:min",
+            "category": "wrong_root",
+            "seconds": 0.1698185949999811
+          },
+          {
+            "reference": "E:maj",
+            "estimate": "Eb:7",
+            "category": "wrong_root",
+            "seconds": 0.16140589700000874
+          },
+          {
+            "reference": "G#:min",
+            "estimate": "G:dim",
+            "category": "wrong_root",
+            "seconds": 0.12083900400000402
+          },
+          {
+            "reference": "F#:maj",
+            "estimate": "Eb:min7",
+            "category": "wrong_root",
+            "seconds": 0.09825396899999816
+          },
+          {
+            "reference": "D#:min",
+            "estimate": "E:maj7",
+            "category": "wrong_root",
+            "seconds": 0.0974376419999885
+          },
+          {
+            "reference": "E#:hdim7",
+            "estimate": "E:maj6",
+            "category": "wrong_root",
+            "seconds": 0.08587301700001149
+          },
+          {
+            "reference": "F#:min6",
+            "estimate": "C#:maj",
+            "category": "wrong_root",
+            "seconds": 0.08494331200000715
+          },
+          {
+            "reference": "G#:min",
+            "estimate": "C#:min",
+            "category": "wrong_root",
+            "seconds": 0.07811791499997867
+          },
+          {
+            "reference": "A:maj",
+            "estimate": "B:maj",
+            "category": "wrong_root",
+            "seconds": 0.0763492069999927
+          },
+          {
+            "reference": "E:maj",
+            "estimate": "F#:maj6",
+            "category": "wrong_root",
+            "seconds": 0.07541950199998837
+          },
+          {
+            "reference": "D#:min",
+            "estimate": "E:maj6",
+            "category": "wrong_root",
+            "seconds": 0.0742176880000045
+          },
+          {
+            "reference": "A:maj",
+            "estimate": "E:maj",
+            "category": "wrong_root",
+            "seconds": 0.07088435400001458
+          },
+          {
+            "reference": "D#:maj",
+            "estimate": "E:maj",
+            "category": "wrong_root",
+            "seconds": 0.07052154299999813
+          },
+          {
+            "reference": "D#:min",
+            "estimate": "E:maj",
+            "category": "wrong_root",
+            "seconds": 0.06997732600000006
+          },
+          {
+            "reference": "D#:min",
+            "estimate": "Eb:maj",
+            "category": "same_root_wrong_quality",
+            "seconds": 0.0695918379999938
+          },
+          {
+            "reference": "C#:min",
+            "estimate": "Ab:min",
+            "category": "wrong_root",
+            "seconds": 0.06362811700000748
+          },
+          {
+            "reference": "C#:min/b3",
+            "estimate": "F#:maj",
+            "category": "wrong_root",
+            "seconds": 0.06328798200000563
+          },
+          {
+            "reference": "B:maj",
+            "estimate": "A:maj7",
+            "category": "wrong_root",
+            "seconds": 0.0629705210000111
+          },
+          {
+            "reference": "E:maj6",
+            "estimate": "F#:maj",
+            "category": "wrong_root",
+            "seconds": 0.056077098000002934
+          },
+          {
+            "reference": "D#:maj/3",
+            "estimate": "F#:min6",
+            "category": "wrong_root",
+            "seconds": 0.04126984199999839
+          },
+          {
+            "reference": "F#:maj",
+            "estimate": "E:maj",
+            "category": "wrong_root",
+            "seconds": 0.04095237999999313
+          },
+          {
+            "reference": "E:maj",
+            "estimate": "F#:maj",
+            "category": "wrong_root",
+            "seconds": 0.03555555700000923
+          },
+          {
+            "reference": "G#:min",
+            "estimate": "Eb:maj/3",
+            "category": "wrong_root",
+            "seconds": 0.03553288000000521
+          },
+          {
+            "reference": "F#:min6",
+            "estimate": "F:min7",
+            "category": "wrong_root",
+            "seconds": 0.02258503499999165
+          },
+          {
+            "reference": "B:maj",
+            "estimate": "A:maj6",
+            "category": "wrong_root",
+            "seconds": 0.0184353749999957
+          },
+          {
+            "reference": "E:maj",
+            "estimate": "Eb:min",
+            "category": "wrong_root",
+            "seconds": 0.016258502999988877
+          },
+          {
+            "reference": "F#:maj",
+            "estimate": "E:maj7",
+            "category": "wrong_root",
+            "seconds": 0.014240362000002449
+          },
+          {
+            "reference": "F#:min6",
+            "estimate": "Eb:maj/3",
+            "category": "wrong_root",
+            "seconds": 0.012380952000000889
+          },
+          {
+            "reference": "D#:maj/3",
+            "estimate": "B:maj6",
+            "category": "wrong_root",
+            "seconds": 0.010181406000000948
+          },
+          {
+            "reference": "B:maj",
+            "estimate": "Eb:maj",
+            "category": "wrong_root",
+            "seconds": 0.00664399000001481
+          },
+          {
+            "reference": "E:maj",
+            "estimate": "B:maj7",
+            "category": "wrong_root",
+            "seconds": 0.005986393999990014
+          },
+          {
+            "reference": "C#:min/b3",
+            "estimate": "F:hdim7",
+            "category": "wrong_root",
+            "seconds": 0.002766439000005505
+          },
+          {
+            "reference": "E:maj",
+            "estimate": "Eb:maj",
+            "category": "wrong_root",
+            "seconds": 0.002380951999981562
+          }
+        ]
+      },
+      "boundaries": {
+        "tolerance_seconds": 0.25,
+        "matching": "one-to-one maximum-cardinality, label-independent; positive lag means estimate late",
+        "reference_count": 90,
+        "estimated_count": 110,
+        "matched_count": 77,
+        "precision": 0.7,
+        "recall": 0.8555555555555555,
+        "unmatched_reference_count": 13,
+        "unmatched_estimate_count": 33,
+        "excluded_estimate_unknown_reference_count": 0,
+        "matched_mean_absolute_lag_seconds": 0.046582737285714694
+      }
+    },
+    {
+      "recording_id": "electra_glider",
+      "audio": "/home/jonas/gemini-home/music_analysis/guitarscribe/output/evaluation/mirex-mixed-reference-2026-11-06/run/electra_glider/analysis-source.wav",
+      "audio_sha256": "bcd81ae9eceeec3bf61124020a71b0e705bebea5b085ae1a9b317b516006635b",
+      "audio_frames": 15743700,
+      "sample_rate": 44100,
+      "decoded_duration": 357.0,
+      "metadata_duration": 357.0,
+      "evaluation_interval": [
+        0,
+        357.0
+      ],
+      "reference_end": 357.0,
+      "excluded_reference_tail_seconds": 0,
+      "excluded_audio_tail_seconds": 0,
+      "annotation_sha256": "87d81d1c28709b05fb8b252b872f8b02d0717950b954278688a3a44ec2bd2d41",
+      "download": {
+        "url": "https://futuremirex.com/demos/audio-chord-estimation-2026/audio/electra_glider.mp3",
+        "final_url": "https://futuremirex.com/demos/audio-chord-estimation-2026/audio/electra_glider.mp3",
+        "bytes": 8569670,
+        "sha256": "eaaf7b2aa87928160cfbfe40b8f428e257ebcba348c50695e13aa89570b2cd20",
+        "status": 200
+      },
+      "inference_seconds": 9.644125154009089,
+      "summary": {
+        "interval": [
+          0.0,
+          357.0
+        ],
+        "duration_seconds": 357.0,
+        "known_reference_seconds": 357.0,
+        "reference_unknown_seconds": 0.0,
+        "label_error_seconds": 281.45020408499994,
+        "category_seconds": {
+          "reference_unknown": 0.0,
+          "estimate_unknown": 0.0,
+          "correct_no_chord": 0.0,
+          "missed_chord": 0.232199546,
+          "false_chord": 0.7200000000000273,
+          "wrong_root": 145.745317463,
+          "same_root_wrong_quality": 134.75268707599992,
+          "bass_only": 0.0,
+          "exact_match": 75.54979591500006
+        },
+        "overlays_not_additive": {
+          "wrong_root_interior_seconds": 140.780453515,
+          "wrong_root_shared_pitch_set_seconds": 0,
+          "wrong_root_is_reference_tone_seconds": 134.34854875100007,
+          "reference_omits_root_seconds": 0
+        },
+        "metrics": {
+          "root": {
+            "scored_seconds": 357.0,
+            "unscored_seconds": 0.0,
+            "correct_seconds": 210.30248299099998,
+            "error_seconds": 146.69751700900002,
+            "scored_fraction": 1.0,
+            "accuracy": 0.5890825854089635
+          },
+          "majmin": {
+            "scored_seconds": 354.0,
+            "unscored_seconds": 3.0,
+            "correct_seconds": 204.05168934099996,
+            "error_seconds": 149.94831065900004,
+            "scored_fraction": 0.9915966386554622,
+            "accuracy": 0.5764172015282485
+          }
+        },
+        "confusions": [
+          {
+            "reference": "A:maj7",
+            "estimate": "A:maj",
+            "category": "same_root_wrong_quality",
+            "seconds": 35.52439909199993
+          },
+          {
+            "reference": "A:maj7",
+            "estimate": "C#:min",
+            "category": "wrong_root",
+            "seconds": 33.3438548780001
+          },
+          {
+            "reference": "A:maj7(#9,13)",
+            "estimate": "A:maj",
+            "category": "same_root_wrong_quality",
+            "seconds": 28.182018142000018
+          },
+          {
+            "reference": "C:maj7",
+            "estimate": "C:maj",
+            "category": "same_root_wrong_quality",
+            "seconds": 18.55931972900001
+          },
+          {
+            "reference": "A:maj7",
+            "estimate": "A:maj6",
+            "category": "same_root_wrong_quality",
+            "seconds": 15.975328799999957
+          },
+          {
+            "reference": "A:maj7(#9,13)",
+            "estimate": "C#:min",
+            "category": "wrong_root",
+            "seconds": 14.76789115699989
+          },
+          {
+            "reference": "A:maj7",
+            "estimate": "C#:min7",
+            "category": "wrong_root",
+            "seconds": 11.609977322000063
+          },
+          {
+            "reference": "C:maj7",
+            "estimate": "E:min",
+            "category": "wrong_root",
+            "seconds": 9.613061221999963
+          },
+          {
+            "reference": "A:maj7",
+            "estimate": "E:maj6",
+            "category": "wrong_root",
+            "seconds": 8.265714285000001
+          },
+          {
+            "reference": "G:maj",
+            "estimate": "G:maj7",
+            "category": "same_root_wrong_quality",
+            "seconds": 6.362267573999986
+          },
+          {
+            "reference": "A:maj7",
+            "estimate": "E:maj",
+            "category": "wrong_root",
+            "seconds": 5.619229023999992
+          },
+          {
+            "reference": "E:maj",
+            "estimate": "E:maj6",
+            "category": "same_root_wrong_quality",
+            "seconds": 5.331609977999989
+          },
+          {
+            "reference": "A:maj7(#9,13)",
+            "estimate": "A:maj7",
+            "category": "same_root_wrong_quality",
+            "seconds": 5.154829931999988
+          },
+          {
+            "reference": "A:maj7(#9,13)",
+            "estimate": "E:maj6",
+            "category": "wrong_root",
+            "seconds": 4.142721088000012
+          },
+          {
+            "reference": "A:maj7(#9,13)",
+            "estimate": "E:maj",
+            "category": "wrong_root",
+            "seconds": 3.900952381000054
+          },
+          {
+            "reference": "A:maj7(#9,13)",
+            "estimate": "F#:min7",
+            "category": "wrong_root",
+            "seconds": 3.529433107000049
+          },
+          {
+            "reference": "A:maj7",
+            "estimate": "Ab:min7",
+            "category": "wrong_root",
+            "seconds": 3.3436734689999525
+          },
+          {
+            "reference": "A:maj7(#9,13)",
+            "estimate": "E:aug",
+            "category": "wrong_root",
+            "seconds": 3.2043537399999984
+          },
+          {
+            "reference": "D#:maj7",
+            "estimate": "Eb:maj",
+            "category": "same_root_wrong_quality",
+            "seconds": 3.0185941040000017
+          },
+          {
+            "reference": "D#:maj(#2)",
+            "estimate": "Eb:min",
+            "category": "same_root_wrong_quality",
+            "seconds": 3.0
+          },
+          {
+            "reference": "C:maj7",
+            "estimate": "G:maj/3",
+            "category": "wrong_root",
+            "seconds": 2.46131519299999
+          },
+          {
+            "reference": "A:maj7(#9,13)",
+            "estimate": "F#:hdim7",
+            "category": "wrong_root",
+            "seconds": 2.368435373999958
+          },
+          {
+            "reference": "B:maj7",
+            "estimate": "B:maj",
+            "category": "same_root_wrong_quality",
+            "seconds": 2.1822222210000106
+          },
+          {
+            "reference": "A:maj7",
+            "estimate": "C#:7",
+            "category": "wrong_root",
+            "seconds": 2.1362358279999967
+          },
+          {
+            "reference": "A:maj7",
+            "estimate": "E:maj7",
+            "category": "wrong_root",
+            "seconds": 2.089795917999993
+          },
+          {
+            "reference": "A:maj7(#9,13)",
+            "estimate": "A:min",
+            "category": "same_root_wrong_quality",
+            "seconds": 2.0897959170000213
+          },
+          {
+            "reference": "C:maj7",
+            "estimate": "C:maj6",
+            "category": "same_root_wrong_quality",
+            "seconds": 2.08843537300001
+          },
+          {
+            "reference": "G:maj",
+            "estimate": "C#:hdim7/b7",
+            "category": "wrong_root",
+            "seconds": 2.033469387000011
+          },
+          {
+            "reference": "C:maj7",
+            "estimate": "G:maj",
+            "category": "wrong_root",
+            "seconds": 1.950476191000007
+          },
+          {
+            "reference": "D#:maj7",
+            "estimate": "G:min",
+            "category": "wrong_root",
+            "seconds": 1.9504761909999928
+          },
+          {
+            "reference": "A:maj7",
+            "estimate": "E:maj/3",
+            "category": "wrong_root",
+            "seconds": 1.9504761900000318
+          },
+          {
+            "reference": "F:maj7",
+            "estimate": "F:maj6",
+            "category": "same_root_wrong_quality",
+            "seconds": 1.9432766439999938
+          },
+          {
+            "reference": "A:maj7",
+            "estimate": "F#:min",
+            "category": "wrong_root",
+            "seconds": 1.6718367349999994
+          },
+          {
+            "reference": "A:maj7(#9,13)",
+            "estimate": "A:maj6",
+            "category": "same_root_wrong_quality",
+            "seconds": 1.5789569169999993
+          },
+          {
+            "reference": "F:maj7",
+            "estimate": "A:min",
+            "category": "wrong_root",
+            "seconds": 1.5325170069999956
+          },
+          {
+            "reference": "C:maj7",
+            "estimate": "E:7",
+            "category": "wrong_root",
+            "seconds": 1.4860770980000026
+          },
+          {
+            "reference": "A:maj7(#9,13)",
+            "estimate": "C:maj7",
+            "category": "wrong_root",
+            "seconds": 1.4860770970000114
+          },
+          {
+            "reference": "G:maj",
+            "estimate": "G:maj6",
+            "category": "same_root_wrong_quality",
+            "seconds": 1.439637188000006
+          },
+          {
+            "reference": "B:maj7",
+            "estimate": "Eb:maj",
+            "category": "wrong_root",
+            "seconds": 1.3931972789999918
+          },
+          {
+            "reference": "C:maj7",
+            "estimate": "E:min7",
+            "category": "wrong_root",
+            "seconds": 1.346757368999988
+          },
+          {
+            "reference": "G:maj",
+            "estimate": "B:maj",
+            "category": "wrong_root",
+            "seconds": 1.346757368999988
+          },
+          {
+            "reference": "A:maj7(#9,13)",
+            "estimate": "F#:min",
+            "category": "wrong_root",
+            "seconds": 1.300317460000045
+          },
+          {
+            "reference": "B:maj7",
+            "estimate": "Bb:hdim7",
+            "category": "wrong_root",
+            "seconds": 1.1609977330000305
+          },
+          {
+            "reference": "A:maj7(#9,13)",
+            "estimate": "F#:7",
+            "category": "wrong_root",
+            "seconds": 1.160997732
+          },
+          {
+            "reference": "F:maj7",
+            "estimate": "F:maj",
+            "category": "same_root_wrong_quality",
+            "seconds": 1.1609977319999985
+          },
+          {
+            "reference": "C:maj7",
+            "estimate": "D:min",
+            "category": "wrong_root",
+            "seconds": 1.068117915000002
+          },
+          {
+            "reference": "A:maj7(#9,13)",
+            "estimate": "C:maj",
+            "category": "wrong_root",
+            "seconds": 1.0216780060000008
+          },
+          {
+            "reference": "A:maj7(#9,13)",
+            "estimate": "C:maj6",
+            "category": "wrong_root",
+            "seconds": 1.0216780050000018
+          },
+          {
+            "reference": "C:maj7",
+            "estimate": "D:hdim7/b7",
+            "category": "wrong_root",
+            "seconds": 1.021678004000016
+          },
+          {
+            "reference": "C:maj7",
+            "estimate": "E:maj7",
+            "category": "wrong_root",
+            "seconds": 0.9287981859999945
+          },
+          {
+            "reference": "C:maj7",
+            "estimate": "E:maj",
+            "category": "wrong_root",
+            "seconds": 0.7894784580000049
+          },
+          {
+            "reference": "N",
+            "estimate": "Eb:min",
+            "category": "false_chord",
+            "seconds": 0.7200000000000273
+          },
+          {
+            "reference": "C:maj7",
+            "estimate": "A:min",
+            "category": "wrong_root",
+            "seconds": 0.6965986390000012
+          },
+          {
+            "reference": "A:maj7(#9,13)",
+            "estimate": "C#:maj",
+            "category": "wrong_root",
+            "seconds": 0.6965986389999999
+          },
+          {
+            "reference": "A:maj7(#9,13)",
+            "estimate": "F#:maj",
+            "category": "wrong_root",
+            "seconds": 0.6501587300000002
+          },
+          {
+            "reference": "C:maj7",
+            "estimate": "C:min",
+            "category": "same_root_wrong_quality",
+            "seconds": 0.650158729999994
+          },
+          {
+            "reference": "G:maj",
+            "estimate": "A:maj/2",
+            "category": "wrong_root",
+            "seconds": 0.6037188210000011
+          },
+          {
+            "reference": "C:maj7",
+            "estimate": "Eb:maj",
+            "category": "wrong_root",
+            "seconds": 0.5572789120000152
+          },
+          {
+            "reference": "A:maj7",
+            "estimate": "B:min",
+            "category": "wrong_root",
+            "seconds": 0.5572789109999974
+          },
+          {
+            "reference": "F:maj7",
+            "estimate": "G:7/3",
+            "category": "wrong_root",
+            "seconds": 0.557233559999986
+          },
+          {
+            "reference": "A:maj7",
+            "estimate": "A:dim",
+            "category": "same_root_wrong_quality",
+            "seconds": 0.510839003000001
+          },
+          {
+            "reference": "A:maj7",
+            "estimate": "C:maj6",
+            "category": "wrong_root",
+            "seconds": 0.46575963800000864
+          },
+          {
+            "reference": "A:maj7",
+            "estimate": "C#:maj",
+            "category": "wrong_root",
+            "seconds": 0.4179591840000114
+          },
+          {
+            "reference": "A:maj7",
+            "estimate": "Eb:maj",
+            "category": "wrong_root",
+            "seconds": 0.4179591840000114
+          },
+          {
+            "reference": "A:maj7",
+            "estimate": "B:maj",
+            "category": "wrong_root",
+            "seconds": 0.417959183999983
+          },
+          {
+            "reference": "E:maj",
+            "estimate": "F:maj7",
+            "category": "wrong_root",
+            "seconds": 0.2997732409999969
+          },
+          {
+            "reference": "G:maj",
+            "estimate": "C:maj7",
+            "category": "wrong_root",
+            "seconds": 0.23414966100000356
+          },
+          {
+            "reference": "A:maj7(#9,13)",
+            "estimate": "N",
+            "category": "missed_chord",
+            "seconds": 0.202199546
+          },
+          {
+            "reference": "C:maj7",
+            "estimate": "F:maj7",
+            "category": "wrong_root",
+            "seconds": 0.15827664500000083
+          },
+          {
+            "reference": "C:maj7",
+            "estimate": "Eb:min",
+            "category": "wrong_root",
+            "seconds": 0.15092970599999944
+          },
+          {
+            "reference": "A:maj7",
+            "estimate": "C#:hdim7/b7",
+            "category": "wrong_root",
+            "seconds": 0.1027664410000142
+          },
+          {
+            "reference": "E:maj",
+            "estimate": "F:maj6",
+            "category": "wrong_root",
+            "seconds": 0.10007936499999914
+          },
+          {
+            "reference": "F:maj",
+            "estimate": "A:maj",
+            "category": "wrong_root",
+            "seconds": 0.09126984199994936
+          },
+          {
+            "reference": "E:maj",
+            "estimate": "A:maj",
+            "category": "wrong_root",
+            "seconds": 0.07460317500002134
+          },
+          {
+            "reference": "F:maj7",
+            "estimate": "C:maj",
+            "category": "wrong_root",
+            "seconds": 0.07301587199999915
+          },
+          {
+            "reference": "D#:maj7",
+            "estimate": "A:maj",
+            "category": "wrong_root",
+            "seconds": 0.06589569199999801
+          },
+          {
+            "reference": "E:maj",
+            "estimate": "Eb:maj7",
+            "category": "wrong_root",
+            "seconds": 0.05664399100000139
+          },
+          {
+            "reference": "E:maj",
+            "estimate": "A:maj7",
+            "category": "wrong_root",
+            "seconds": 0.05573696199999745
+          },
+          {
+            "reference": "C:maj7",
+            "estimate": "B:maj",
+            "category": "wrong_root",
+            "seconds": 0.046893424999971955
+          },
+          {
+            "reference": "C:maj7",
+            "estimate": "G:7/3",
+            "category": "wrong_root",
+            "seconds": 0.04648526100001504
+          },
+          {
+            "reference": "B:maj7",
+            "estimate": "C:maj",
+            "category": "wrong_root",
+            "seconds": 0.03650793699995347
+          },
+          {
+            "reference": "A:maj7",
+            "estimate": "N",
+            "category": "missed_chord",
+            "seconds": 0.03
+          },
+          {
+            "reference": "B:maj7",
+            "estimate": "A:maj",
+            "category": "wrong_root",
+            "seconds": 0.028888889000000972
+          },
+          {
+            "reference": "C:maj7",
+            "estimate": "A:maj",
+            "category": "wrong_root",
+            "seconds": 0.027120180999986587
+          },
+          {
+            "reference": "A:maj7(#9,13)",
+            "estimate": "F:maj",
+            "category": "wrong_root",
+            "seconds": 0.020907029999957416
+          },
+          {
+            "reference": "A:maj7",
+            "estimate": "C:maj7",
+            "category": "wrong_root",
+            "seconds": 0.018367346999980327
+          }
+        ]
+      },
+      "boundaries": {
+        "tolerance_seconds": 0.25,
+        "matching": "one-to-one maximum-cardinality, label-independent; positive lag means estimate late",
+        "reference_count": 38,
+        "estimated_count": 239,
+        "matched_count": 32,
+        "precision": 0.13389121338912133,
+        "recall": 0.8421052631578947,
+        "unmatched_reference_count": 6,
+        "unmatched_estimate_count": 207,
+        "excluded_estimate_unknown_reference_count": 0,
+        "matched_mean_absolute_lag_seconds": 0.060831561968745756
+      }
+    }
+  ]
+}
