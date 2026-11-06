@@ -233,3 +233,16 @@ A20 隔離前端驗收：developer完成21個受影響UI案例與TypeScript檢�
 A20正式候選已發布，功能f0c209c／紀錄017c859皆push；顧問正式5273兩新job同樣通過完整閱讀切換／manifest不變／編輯來回／四尺寸與neutral hover對比current橘線驗證，0寫入與0頁面例外。正式證據`continuous-reading-review-2026-11-06/consultant-production.json`。原首頁84hash、兩job原稿／input.wav／base manifest不變，服務PID不變，未重啟後端或改DB；19新必要檔＋6舊相容hash資產保留，備份`output/backups/continuous-reading-2026-11-06/`。
 
 使用者此時提出調性／調內候選／I-IV-V和聲行進，並明確允許先排除調外和弦簡化問題。新A21只驗證第一層硬候選限制，見[Diatonic_Candidate_Plan_2026-11-06.md](Diatonic_Candidate_Plan_2026-11-06.md)。已讀music-analysis技能與現行路徑：Chordino辨識後才從和弦估key；舊chromagram有tonal_bias及五度轉移但不是現行路徑。A12曾否決降低self-transition理由，本輪保留矩陣，不重做該調參。原九份trace可重用；六份舊GuitarSet保存key全為C，需按現行估調函式從未改原事件固定一次，不讀reference key。A21結果尚未產生，原譜／網站辨識保持。
+
+
+### A21：固定自動估調＋調內硬限制未通過（2026-11-06）
+
+依使用者明確指定先排除調外候選，完成事前凍結與一次全九份快取驗證；不是削弱A12的self-transition，也沒有一次混入I／IV／V／每小節一和弦／節奏修改。大調完整7音，小調profile完整包含於自然或和聲小調其一，N保留；原217state／.99轉移／state-index事件／時間點維持。六份舊GuitarSet key欄位C沒有被當真值，使用現行估調對未改原事件固定一次；未讀reference key。
+
+14工程測試通過；先九份baseline逐frame path完全符合原trace，raw／historical／投影事件皆核符後才跑九份candidate，總replay7.3746秒／零音訊模型推論。plan SHA256 fd8dfba02d708689aa9824c74950760f82958603dcbcb244adb61a8537d21ba4；runner f6bbe95abb3cb9ce01d3e9d131ad9ae4ee3d046cf08693a8783198a12a744801。候選沒有選excluded state，所有input／implementation hash前後一致。
+
+顧問用獨立NumPy recurrence（保持作者逐序sum正規化）重播全18份path，每個index精確一致；另獨立重算一次key、A-origin24bin mask、原state-index／terminalN raw事件、18份完整diagnostic與成功條件，皆相符。來源與程式hash再次核符。證據`output/evaluation/diatonic-ablation-2026-11-06/consultant-review.json`。
+
+三HU33 root平均−2.6279百分點；04+0.055、18−9.851、21+1.912，漏多和弦分別+2.926／7.802／0.836秒。Funk2 root−4.462pp、N+11.610秒。Funk3 majmin−86.533pp僅其4.286秒／12.5%可評域，不能外推整曲；root該曲略增仍不達其他護欄。每大調37／小調55profile含N，並不是只選七個符號。固定候選失敗，不上線、不換key或加規則補考、不交人耳A/B；詳細[結果](Diatonic_Candidate_Result_2026-11-06.md)保留救回／損失／參考被排除秒數。
+
+結論只涵蓋本次自動key與硬mask，不否定人工正確指定key或整套功能和聲。使用者提出的I／IV／V、樂句起終、小節主和弦尚未受測，不能說整套建議已淘汰；後續若有新可核實機制須另固定範圍。A19/A20產品閱讀與播放、原稿、人工修訂保持；這輪無新增必要人耳測試。
