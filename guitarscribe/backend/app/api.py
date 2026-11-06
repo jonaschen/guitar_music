@@ -22,6 +22,7 @@ from .services.voicings import ChordVoicingProvider
 from .services.capo import CapoAdvisor, CapoRecommendation
 from .services.voicing_optimizer import SongVoicingOptimizer
 from .services.lyrics import import_lrc, import_text
+from .services.lyric_worksheets import WorksheetSave
 from .models.score import SongScore
 from .models.lyrics import LyricLine, LyricsTrack
 from .services.jobs import AnalysisJobService, JobQueueFullError, JobStore, safe_audio_suffix
@@ -59,6 +60,26 @@ class MelodyNotesRequest(BaseModel):
 def get_melody_note_store():
     from .services.melody_notes import MelodyNoteStore
     return MelodyNoteStore(Settings.from_env().work_dir / 'melody-notes.sqlite3')
+
+
+def get_lyric_worksheet_store():
+    from .services.lyric_worksheets import LyricWorksheetStore
+    return LyricWorksheetStore(Settings.from_env().work_dir / 'lyric-worksheets.sqlite3')
+
+
+_caption_drafts = None
+
+def get_caption_drafts():
+    global _caption_drafts
+    from .services.caption_drafts import CaptionDraftService
+    if _caption_drafts is None:
+        settings=Settings.from_env()
+        _caption_drafts=CaptionDraftService(settings.youtube_dl_binary,settings.youtube_js_runtime)
+    return _caption_drafts
+
+
+class CaptionPreviewRequest(BaseModel):
+    track_id:str=Field(min_length=1,max_length=120)
 
 
 class SaveRevisionRequest(BaseModel):
@@ -112,7 +133,7 @@ OPENAPI_TAGS = [
     {"name": "System", "description": "Service health and compatibility endpoints."},
     {"name": "Analysis jobs", "description": "Asynchronous local-upload and optional YouTube analysis jobs. Poll a job until it completes or fails."},
     {"name": "Scores", "description": "Score transformations, playback compilation, and export formats."},
-    {"name": "Lyrics", "description": "User-provided lyrics import, manual timing, and exports. The service never fetches third-party lyrics."},
+    {"name": "Lyrics", "description": "User-provided lyrics import, manual timing, and exports. Optional previews retrieve only selected video captions, excluding automatic translations; they are unverified drafts."},
     {"name": "Revisions", "description": "Saved editable score revisions."},
     {"name": "Guitar", "description": "Chord voicing lookup, capo advice, and voicing optimization."},
 ]
@@ -406,6 +427,49 @@ async def save_melody_notes(job_id: str, body: MelodyNotesRequest, service=Depen
         return await asyncio.to_thread(store.save, job_id, body.text, body.expected_version)
     except NoteConflict as exc:
         raise HTTPException(409, 'Notes changed in another browser; reload before saving') from exc
+
+
+@app.get('/api/v1/jobs/{job_id}/lyric-worksheet')
+async def read_lyric_worksheet(job_id:str,service=Depends(get_job_service),store=Depends(get_lyric_worksheet_store)):
+    sheet=await asyncio.to_thread(store.read,job_id)
+    if sheet['version']==0:require_note_source(job_id,service)
+    return sheet
+
+
+@app.put('/api/v1/jobs/{job_id}/lyric-worksheet')
+async def save_lyric_worksheet(job_id:str,body:WorksheetSave,service=Depends(get_job_service),store=Depends(get_lyric_worksheet_store)):
+    from .services.lyric_worksheets import WorksheetConflict
+    sheet=await asyncio.to_thread(store.read,job_id)
+    if sheet['version']==0:require_note_source(job_id,service)
+    try:return await asyncio.to_thread(store.save,job_id,body.document,body.expected_version)
+    except WorksheetConflict as exc:raise HTTPException(409,'工作頁已在其他分頁更新，請保留草稿並載入最新版本。') from exc
+
+
+def caption_job(job_id,service):
+    require_note_source(job_id,service)
+    job=service.get(job_id)
+    if job.source_type!=SourceType.YOUTUBE or not job.source_url:raise HTTPException(409,'這個來源沒有影片字幕，可貼上歌詞或匯入LRC。')
+    return job
+
+
+@app.get('/api/v1/jobs/{job_id}/lyric-caption-tracks')
+async def get_lyric_caption_tracks(job_id:str,service=Depends(get_job_service),captions=Depends(get_caption_drafts)):
+    from .services.caption_drafts import CaptionUnavailable
+    if not Settings.from_env().youtube_enabled:raise HTTPException(503,'此環境未啟用影片字幕取得，可貼上歌詞或匯入LRC。')
+    job=caption_job(job_id,service)
+    try:tracks=await captions.tracks(job)
+    except CaptionUnavailable as exc:raise HTTPException(502,str(exc)) from exc
+    return dict(job_id=job_id,tracks=[{k:v for k,v in t.items() if k!='url'} for t in tracks],
+                message='請選擇語言並預覽；字幕不一定是歌詞。' if tracks else '這支影片沒有可用字幕，可貼上歌詞或匯入LRC。')
+
+
+@app.post('/api/v1/jobs/{job_id}/lyric-caption-preview')
+async def preview_lyric_captions(job_id:str,body:CaptionPreviewRequest,service=Depends(get_job_service),captions=Depends(get_caption_drafts)):
+    from .services.caption_drafts import CaptionUnavailable
+    if not Settings.from_env().youtube_enabled:raise HTTPException(503,'此環境未啟用影片字幕取得，可貼上歌詞或匯入LRC。')
+    job=caption_job(job_id,service)
+    try:return await captions.preview(job,body.track_id)
+    except CaptionUnavailable as exc:raise HTTPException(502,str(exc)) from exc
 
 
 @app.post("/api/v1/jobs/{job_id}/cancel", response_model=AnalysisJob, tags=["Analysis jobs"], summary="Cancel a queued or running analysis job")

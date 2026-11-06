@@ -53,3 +53,13 @@
 .chord-product .continuous-chord-reading .current-chord {border-bottom-color:var(--accent);color:var(--accent);}
 .chord-product .continuous-chord-reading button:not(.current-chord):hover {border-bottom-color:var(--text-muted);}
 .chord-product .continuous-chord-reading button:focus-visible {outline:2px solid var(--text-muted);outline-offset:3px;}
+
+.lyric-worksheet {margin:16px 0;}
+.lyric-worksheet textarea {box-sizing:border-box;display:block;width:100%;max-width:100%;margin:6px 0;resize:vertical;font:inherit;white-space:pre-wrap;}
+.worksheet-import label {display:block;margin:12px 0;}
+.worksheet-line {padding:16px 0;border-bottom:1px solid var(--border);}
+.worksheet-line small,.worksheet-source {color:var(--text-muted);}
+.lyric-worksheet button {margin:6px 8px 6px 0;}
+.worksheet-preview {margin:12px 0;max-height:55vh;overflow:auto;border-left:2px solid var(--border);padding-left:12px;}
+.worksheet-preview li {white-space:pre-wrap;overflow-wrap:anywhere;}
+.lyric-worksheet select,.lyric-worksheet input {max-width:100%;}
