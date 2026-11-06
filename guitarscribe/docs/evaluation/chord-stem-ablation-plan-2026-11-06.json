@@ -1,0 +1,436 @@
+{
+  "schema_version": "1.0",
+  "frozen_at_utc": "2026-11-06T08:24:59.446429+00:00",
+  "purpose": "A16 one fixed source-input ablation; no product changes or new listening",
+  "hypothesis": "Fixed no_vocals input may improve chord recognition by reducing vocal interference; source separation also alters accompaniment, so this does not prove vocals are the sole cause.",
+  "input_plan": {
+    "path": "docs/evaluation/chord-error-plan-2026-11-05.json",
+    "sha256": "f88841140949189e434feaa7219668b7d261249ad9e12f90dedafd1c0848d29c"
+  },
+  "inputs": [
+    {
+      "recording_id": "00_SS2-88-F_comp",
+      "dataset": "GuitarSet 1.1.0",
+      "audio": {
+        "path": "output/datasets/guitarset-1.1.0/subset/00_SS2-88-F_comp_mic.wav",
+        "sha256": "2f2c5c65d86fd135a15c47d38e9d61e3748c0c31a5ca163632b36eba239811f4"
+      },
+      "annotation": {
+        "path": "output/evaluation/guitarset-pilot-2026-10-24/00_SS2-88-F_comp.annotation.json",
+        "sha256": "616ada9bcf001e317febe2c4141ae095b08da82e0f693aa1e80b4d0a3dd26dd1"
+      },
+      "estimate": {
+        "name": "chordino_chord_only",
+        "layers": [
+          "chord"
+        ],
+        "path": "output/evaluation/chordino-pilot-2026-10-24/00_SS2-88-F_comp.score.json",
+        "sha256": "4ffc86eacf47f8f97992d359c45b071fd11d6016ed8afb5e25484c9d2fbad64f"
+      },
+      "interval": [
+        0.0,
+        43.629200000000026
+      ],
+      "score_time_offset_seconds": 0,
+      "raw_cache": {
+        "path": "output/evaluation/chordino-pilot-2026-10-24/00_SS2-88-F_comp.chord-analysis.json",
+        "sha256": "fa76a80fbf06aa0a78ab82b3805cb29b0c02bec8570249e6390a6a7fd276c7e6"
+      },
+      "historical_decoder": "unbounded-v1",
+      "historical_score_projection": "guitarset-merged",
+      "prepared_audio": {
+        "path": "output/datasets/guitarset-1.1.0/subset/00_SS2-88-F_comp_mic.wav",
+        "sha256": "2f2c5c65d86fd135a15c47d38e9d61e3748c0c31a5ca163632b36eba239811f4"
+      },
+      "analysis_duration": 43.629200000000026
+    },
+    {
+      "recording_id": "01_Rock1-90-C#_comp",
+      "dataset": "GuitarSet 1.1.0",
+      "audio": {
+        "path": "output/datasets/guitarset-1.1.0/subset/01_Rock1-90-C#_comp_mic.wav",
+        "sha256": "2dc712e3457bcde208ae59bf8fab8d7f0d7335368271dd211856a13323b50bee"
+      },
+      "annotation": {
+        "path": "output/evaluation/guitarset-pilot-2026-10-24/01_Rock1-90-C#_comp.annotation.json",
+        "sha256": "7b7576308cbcbaa9088209403d10433de02e26c873f6d581047bfead693b9756"
+      },
+      "estimate": {
+        "name": "chordino_chord_only",
+        "layers": [
+          "chord"
+        ],
+        "path": "output/evaluation/chordino-pilot-2026-10-24/01_Rock1-90-C#_comp.score.json",
+        "sha256": "abc9dd11f4e44c5d28ca225caa28b8613671b028ea439455778698973592900a"
+      },
+      "interval": [
+        0.0,
+        31.999999999999993
+      ],
+      "score_time_offset_seconds": 0,
+      "raw_cache": {
+        "path": "output/evaluation/chordino-pilot-2026-10-24/01_Rock1-90-C#_comp.chord-analysis.json",
+        "sha256": "003ff98495b88453fdd14a1031219b31c36ecd22f8fc0d59065387681657f82a"
+      },
+      "historical_decoder": "unbounded-v1",
+      "historical_score_projection": "guitarset-merged",
+      "prepared_audio": {
+        "path": "output/datasets/guitarset-1.1.0/subset/01_Rock1-90-C#_comp_mic.wav",
+        "sha256": "2dc712e3457bcde208ae59bf8fab8d7f0d7335368271dd211856a13323b50bee"
+      },
+      "analysis_duration": 31.999999999999993
+    },
+    {
+      "recording_id": "02_Funk3-112-C#_comp",
+      "dataset": "GuitarSet 1.1.0",
+      "audio": {
+        "path": "output/datasets/guitarset-1.1.0/subset/02_Funk3-112-C#_comp_mic.wav",
+        "sha256": "b85381638984aafa8aff67691ccdd839c2fa4fb10bdc6f18a52810059b0a44f7"
+      },
+      "annotation": {
+        "path": "output/evaluation/guitarset-pilot-2026-10-24/02_Funk3-112-C#_comp.annotation.json",
+        "sha256": "f2376223a03598944e12b315da876f51fc102df2dca01b39c7fe152c1b380f5f"
+      },
+      "estimate": {
+        "name": "chordino_chord_only",
+        "layers": [
+          "chord"
+        ],
+        "path": "output/evaluation/chordino-pilot-2026-10-24/02_Funk3-112-C#_comp.score.json",
+        "sha256": "7b3f689a851b5acbc315941e39be95cf78f57e3bf5a8c779f04a5e2445cb7c65"
+      },
+      "interval": [
+        0.0,
+        34.284399092970524
+      ],
+      "score_time_offset_seconds": 0,
+      "raw_cache": {
+        "path": "output/evaluation/chordino-pilot-2026-10-24/02_Funk3-112-C#_comp.chord-analysis.json",
+        "sha256": "fc1c1ee5c747a3f71ac1980bd99097d996ee7f827e061e78c91726736d0ab759"
+      },
+      "historical_decoder": "unbounded-v1",
+      "historical_score_projection": "guitarset-merged",
+      "prepared_audio": {
+        "path": "output/datasets/guitarset-1.1.0/subset/02_Funk3-112-C#_comp_mic.wav",
+        "sha256": "b85381638984aafa8aff67691ccdd839c2fa4fb10bdc6f18a52810059b0a44f7"
+      },
+      "analysis_duration": 34.284399092970524
+    },
+    {
+      "recording_id": "03_SS3-84-Bb_comp",
+      "dataset": "GuitarSet 1.1.0",
+      "audio": {
+        "path": "output/datasets/guitarset-1.1.0/confirmation/03_SS3-84-Bb_comp_mic.wav",
+        "sha256": "dcd3b1855030c613ea05b2469225ce2ce31587a6d50d7bd287a2989d0754f332"
+      },
+      "annotation": {
+        "path": "output/evaluation/reference-validator-2026-11-05/annotations/03_SS3-84-Bb_comp.annotation.json",
+        "sha256": "c7f15f2c392ea3d156f5466dfaa4a02b8cf7c6e01c9b6a13ca37d3efefe6b413"
+      },
+      "estimate": {
+        "name": "chordino_chord_only",
+        "layers": [
+          "chord"
+        ],
+        "path": "output/evaluation/chordino-additional-2026-10-24/03_SS3-84-Bb_comp.score.json",
+        "sha256": "334cbd582612438a4bbff79b70ea64ffd24d35542abc60de9cdcdd23c9191a3a"
+      },
+      "interval": [
+        0.0,
+        45.70759637188208
+      ],
+      "score_time_offset_seconds": 0,
+      "raw_cache": {
+        "path": "output/evaluation/chordino-additional-2026-10-24/03_SS3-84-Bb_comp.chord-analysis.json",
+        "sha256": "82eb83d3a9a910bd4e13859c031d7fe8e408cc8f570880021b911667ef5a2beb"
+      },
+      "historical_decoder": "unbounded-v1",
+      "historical_score_projection": "guitarset-merged",
+      "prepared_audio": {
+        "path": "output/datasets/guitarset-1.1.0/confirmation/03_SS3-84-Bb_comp_mic.wav",
+        "sha256": "dcd3b1855030c613ea05b2469225ce2ce31587a6d50d7bd287a2989d0754f332"
+      },
+      "analysis_duration": 45.70759637188208
+    },
+    {
+      "recording_id": "04_Rock2-142-D_comp",
+      "dataset": "GuitarSet 1.1.0",
+      "audio": {
+        "path": "output/datasets/guitarset-1.1.0/confirmation/04_Rock2-142-D_comp_mic.wav",
+        "sha256": "77589eeda2dfd7a8e8652b9b0c8a002529d911786e4be29c7bafda31fa32ba99"
+      },
+      "annotation": {
+        "path": "output/evaluation/reference-validator-2026-11-05/annotations/04_Rock2-142-D_comp.annotation.json",
+        "sha256": "d722d0e4f7c6d01b1ab206f7165d0c1e9f905fcc6f127201a07e35e26be56589"
+      },
+      "estimate": {
+        "name": "chordino_chord_only",
+        "layers": [
+          "chord"
+        ],
+        "path": "output/evaluation/chordino-additional-2026-10-24/04_Rock2-142-D_comp.score.json",
+        "sha256": "17469623ea466c0d02867379f4bacab0ff98cbd9b119d602383cc40d6d93c4cc"
+      },
+      "interval": [
+        0.0,
+        27.041600000000003
+      ],
+      "score_time_offset_seconds": 0,
+      "raw_cache": {
+        "path": "output/evaluation/chordino-additional-2026-10-24/04_Rock2-142-D_comp.chord-analysis.json",
+        "sha256": "5900fd722e3adec6cfb0d967d4a03795b401ea22f7e3f3a9d840fe286dc0a8e6"
+      },
+      "historical_decoder": "unbounded-v1",
+      "historical_score_projection": "guitarset-merged",
+      "prepared_audio": {
+        "path": "output/datasets/guitarset-1.1.0/confirmation/04_Rock2-142-D_comp_mic.wav",
+        "sha256": "77589eeda2dfd7a8e8652b9b0c8a002529d911786e4be29c7bafda31fa32ba99"
+      },
+      "analysis_duration": 27.041600000000003
+    },
+    {
+      "recording_id": "05_Funk2-119-G_comp",
+      "dataset": "GuitarSet 1.1.0",
+      "audio": {
+        "path": "output/datasets/guitarset-1.1.0/confirmation/05_Funk2-119-G_comp_mic.wav",
+        "sha256": "d8056eeace67f5451907b7a1d779e1ea576fee79f2df73e68909c7e944ac43a2"
+      },
+      "annotation": {
+        "path": "output/evaluation/reference-validator-2026-11-05/annotations/05_Funk2-119-G_comp.annotation.json",
+        "sha256": "4b0ab328a21dd819e97ea97132c20d94e1f7d83d724ff9a1b386ca43bb7f0726"
+      },
+      "estimate": {
+        "name": "chordino_chord_only",
+        "layers": [
+          "chord"
+        ],
+        "path": "output/evaluation/chordino-additional-2026-10-24/05_Funk2-119-G_comp.score.json",
+        "sha256": "eb4988601d9225e2f6839dbfc5b6402f6d6527359248766805db225811d8c97a"
+      },
+      "interval": [
+        0.0,
+        32.26319727891156
+      ],
+      "score_time_offset_seconds": 0,
+      "raw_cache": {
+        "path": "output/evaluation/chordino-additional-2026-10-24/05_Funk2-119-G_comp.chord-analysis.json",
+        "sha256": "5bca7ab5abfa27833a14e4352f673057092dabd8a057669c71bd3e1fa220926f"
+      },
+      "historical_decoder": "unbounded-v1",
+      "historical_score_projection": "guitarset-merged",
+      "prepared_audio": {
+        "path": "output/datasets/guitarset-1.1.0/confirmation/05_Funk2-119-G_comp_mic.wav",
+        "sha256": "d8056eeace67f5451907b7a1d779e1ea576fee79f2df73e68909c7e944ac43a2"
+      },
+      "analysis_duration": 32.26319727891156
+    },
+    {
+      "recording_id": "SWD_HU33_04",
+      "dataset": "SWD 2.1 HU33",
+      "audio": {
+        "path": "output/evaluation/mixed-reference-2026-11-05/inputs/04/clip.wav",
+        "sha256": "b98a0471f23169a71736a7794851ee2f2c31b3a4bbec9bf2d55b2667160a240f"
+      },
+      "annotation": {
+        "path": "output/evaluation/mixed-reference-2026-11-05/results/04/annotation.json",
+        "sha256": "dbb7cd4df480124235abd82705f3828920afb0543fdc629fc0f7b01004deef42"
+      },
+      "estimate": {
+        "name": "chordino_product_cache",
+        "path": "output/evaluation/mixed-reference-2026-11-05/results/04/score.json",
+        "sha256": "4767652bff097fd1708c2b21e5a2ba4bc27f045325a5784b52805c650916ac56"
+      },
+      "interval": [
+        0.46,
+        45.0
+      ],
+      "score_time_offset_seconds": 0,
+      "raw_cache": {
+        "path": "output/evaluation/mixed-reference-2026-11-05/results/04/chord-analysis.json",
+        "sha256": "0c4ac783b64b7feb0a1bdb2ffd058bcf094fd1d1decc8caf8ac02a4cceeeacf8"
+      },
+      "historical_decoder": "audio-intersection-v1",
+      "historical_score_projection": "identity",
+      "prepared_audio": {
+        "path": "output/evaluation/chord-bass-ablation-2026-11-05/run/audio/SWD_HU33_04.wav",
+        "sha256": "f5c8313927269b9f999634acf0f65f3a32d3289392bcf8a1ceec9443c4c4635b"
+      },
+      "analysis_duration": 45.0
+    },
+    {
+      "recording_id": "SWD_HU33_18",
+      "dataset": "SWD 2.1 HU33",
+      "audio": {
+        "path": "output/evaluation/mixed-reference-2026-11-05/inputs/18/clip.wav",
+        "sha256": "65f5246af6c000104f128fdafd1ddf479fa51c832aca36f56a2d59e9c713ac18"
+      },
+      "annotation": {
+        "path": "output/evaluation/mixed-reference-2026-11-05/results/18/annotation.json",
+        "sha256": "7707cc009a0a2fe77098849630007391fe6cbaea6d95273bd5e1cc8a3164b2ca"
+      },
+      "estimate": {
+        "name": "chordino_product_cache",
+        "path": "output/evaluation/mixed-reference-2026-11-05/results/18/score.json",
+        "sha256": "cba1bcd1e2e326676cd68e18a74ff72c5d5995e1e99178647f4d6ac549a55204"
+      },
+      "interval": [
+        0.22,
+        42.7
+      ],
+      "score_time_offset_seconds": 0,
+      "raw_cache": {
+        "path": "output/evaluation/mixed-reference-2026-11-05/results/18/chord-analysis.json",
+        "sha256": "854d8b26c5c4ed0cb6e08c3bfea0288333790ae475935a060e247e80cc4daa34"
+      },
+      "historical_decoder": "audio-intersection-v1",
+      "historical_score_projection": "identity",
+      "prepared_audio": {
+        "path": "output/evaluation/chord-bass-ablation-2026-11-05/run/audio/SWD_HU33_18.wav",
+        "sha256": "2cf647a281802f8f5a4d380efc991d0b2fe36db87627506aac80c72458c4cb53"
+      },
+      "analysis_duration": 45.0
+    },
+    {
+      "recording_id": "SWD_HU33_21",
+      "dataset": "SWD 2.1 HU33",
+      "audio": {
+        "path": "output/evaluation/mixed-reference-2026-11-05/inputs/21/clip.wav",
+        "sha256": "315eef478cf431e1df870f90662da4fd8bcdaa6eb61f7346860ca576fa6629be"
+      },
+      "annotation": {
+        "path": "output/evaluation/mixed-reference-2026-11-05/results/21/annotation.json",
+        "sha256": "3378877d861d56aa8afd6a8aced05686e22284a8bc9450a541221ac95930a7bf"
+      },
+      "estimate": {
+        "name": "chordino_product_cache",
+        "path": "output/evaluation/mixed-reference-2026-11-05/results/21/score.json",
+        "sha256": "2fa2ace8911e6ad2980d169870bc9e46d5aac6e1584c12330c1a925fd835f47b"
+      },
+      "interval": [
+        0.34,
+        45.0
+      ],
+      "score_time_offset_seconds": 0,
+      "raw_cache": {
+        "path": "output/evaluation/mixed-reference-2026-11-05/results/21/chord-analysis.json",
+        "sha256": "40aa14aa5bc739af664b7061102d09b3967f34c6d4e2e53ff59217fe83660435"
+      },
+      "historical_decoder": "audio-intersection-v1",
+      "historical_score_projection": "identity",
+      "prepared_audio": {
+        "path": "output/evaluation/chord-bass-ablation-2026-11-05/run/audio/SWD_HU33_21.wav",
+        "sha256": "117954dc9baa140cc3ce65125b26d6fe53325022093e83b8fb3894332cc8a013"
+      },
+      "analysis_duration": 45.0
+    }
+  ],
+  "checkpoint": {
+    "path": "/home/jonas/.cache/torch/hub/checkpoints/955717e8-8726e21a.th",
+    "sha256": "8726e21a993978c7ba086d3872e7608d7d5bfca646ca4aca459ffda844faa8b4"
+  },
+  "library": {
+    "path": "/home/jonas/gemini-home/music_analysis/guitarscribe/output/evaluation/chord-bass-ablation-2026-11-05/run/baseline/nnls-chroma.so",
+    "sha256": "fb7d75cf816d3eab3d97da8e6df51f5642b008a49ff4ec6bc2695c42dfded998"
+  },
+  "implementation": [
+    {
+      "path": "backend/scripts/run_chord_stem_ablation.py",
+      "sha256": "18277bf3164cc93ac88d70f535351552bd3f8d5b31f3f5d08f1028474d828a7f"
+    },
+    {
+      "path": "backend/scripts/run_chord_bass_ablation.py",
+      "sha256": "2750b83df6f4bb1256c3725ea3a25a6d0f84bf51f9bccda700dae6c2d96de293"
+    },
+    {
+      "path": "backend/scripts/benchmark_guitarset_pilot.py",
+      "sha256": "bdcaab5363c591840d588cca9f3628197b8f678e099ad56d741e8f8598dc108f"
+    },
+    {
+      "path": "backend/app/evaluation/chord_errors.py",
+      "sha256": "d9941c8933ace2d9320fe9585e5abea08d058338669c38a0f7e3d09eab5f4e55"
+    },
+    {
+      "path": "backend/app/analyzers/chords/chordino.py",
+      "sha256": "63f08d6cb8f41ffd724650e201e544cc394e674921e6594b151df5f375c62f41"
+    },
+    {
+      "path": "/home/jonas/.cache/guitarscribe-runtime/lib/python3.12/site-packages/demucs/pretrained.py",
+      "sha256": "78ea0373c18adb834b6d2616bf84ab7cedffd42cfb9b01ef5ef006d59e0cce19"
+    },
+    {
+      "path": "/home/jonas/.cache/guitarscribe-runtime/lib/python3.12/site-packages/demucs/repo.py",
+      "sha256": "cebb2c04c6e735b6532588cab49e3ce62da7a85c73f4499ca5747eea2b76d8c5"
+    },
+    {
+      "path": "/home/jonas/.cache/guitarscribe-runtime/lib/python3.12/site-packages/demucs/states.py",
+      "sha256": "37375543dad61a7dc549caf6f165c0500d903313159c70cf893d47718194b865"
+    },
+    {
+      "path": "/home/jonas/.cache/guitarscribe-runtime/lib/python3.12/site-packages/demucs/apply.py",
+      "sha256": "316278eeb028c66f99befa4201edca7f598166628aeec8e40a08544f00aa21df"
+    },
+    {
+      "path": "/home/jonas/.cache/guitarscribe-runtime/lib/python3.12/site-packages/demucs/htdemucs.py",
+      "sha256": "3404ed68d35b946f9c54b54201851bb4171dd7861a498945ce53b1df1144b034"
+    },
+    {
+      "path": "/home/jonas/.cache/guitarscribe-runtime/lib/python3.12/site-packages/demucs/hdemucs.py",
+      "sha256": "5b98a5ee262bf6b872a0db23eeb60d024debc4be1ed237c551284af305343864"
+    },
+    {
+      "path": "/home/jonas/.cache/guitarscribe-runtime/lib/python3.12/site-packages/demucs/transformer.py",
+      "sha256": "d99b3706f590397382abed1da384c539805c8fc3a0abb6f6ac79e711649c6f8d"
+    }
+  ],
+  "packages": {
+    "demucs": "4.0.1",
+    "torch": "2.5.1+cpu",
+    "torchaudio": "2.5.1+cpu",
+    "numpy": "1.26.4",
+    "librosa": "0.11.0",
+    "soundfile": "0.14.0",
+    "mir_eval": "0.8.2"
+  },
+  "separation": {
+    "model": "htdemucs single 955717e8 HTDemucs",
+    "repository": "local checkpoint directory only, no network fallback",
+    "device": "cpu",
+    "seed": 0,
+    "shifts": 1,
+    "overlap": 0.25,
+    "split": true,
+    "segment": null,
+    "trained_segment": 7.8,
+    "num_workers": 0,
+    "torch_deterministic_algorithms": true,
+    "input": "Exact A10 prepared 44100 mono float32 -> duplicate stereo, full file; native model sample rate. Same waveform as baseline.",
+    "normalization": "Demucs CLI: subtract mono mean/divide mono std, reverse per source. No further gain/clipping.",
+    "outputs": "FLOAT32 stereo WAV, four stems; candidate=sum drums+bass+other, diagnostic=sum all four. Require exact input frame count and finite values.",
+    "diagnostic": "Four-track reconstruction only diagnoses model changes; never eligible as second candidate, no output-dependent source choice."
+  },
+  "baseline_gate": "All nine full historical raw, clipped-domain raw, historical projected score match caches with <=1e-9 sec before any separation. Same Chordino library/defaults, historical domains/projection, annotation and audio hashes. Fail stops.",
+  "success": {
+    "hu33_mean_root_delta_min": 0.05,
+    "hu33_min_count_with_root_delta_at_least_05": 2,
+    "all_source_max_root_majmin_drop": 0.02,
+    "all_source_max_missed_false_increase_seconds": 0.25,
+    "all_source_max_boundary_precision_recall_drop": 0.05,
+    "unchanged_scored_seconds_and_interval": true,
+    "all_required": true
+  },
+  "limits": {
+    "wall_seconds": 7200,
+    "threads": 2,
+    "parallel_inferences": 1,
+    "baseline_chordino_runs": 9,
+    "separation_runs": 9,
+    "candidate_chordino_runs": 9,
+    "reconstruction_chordino_runs": 9,
+    "external_requests": 0,
+    "downloads": 0,
+    "paid_resources": 0,
+    "live_mutations": 0
+  },
+  "confirmation": "Only if all nine pass, freeze SWD HU33 works01/02 main RawData and main Annotations each0-45s; ExtraMaterial originalShort/WithRepetition excluded. Not downloaded/run in this segment.",
+  "stop": "Missing local model, parity/hash/shape/coverage failure stops. Finished metric failure rejects fixed intervention; no retuning, model sweep, per-song selector or product promotion."
+}

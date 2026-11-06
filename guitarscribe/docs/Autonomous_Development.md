@@ -1,6 +1,6 @@
 # Codex 自主開發工作表
 
-更新：2026-11-05。這是接續工作用的短表；最新產品決策仍見 [Next_Decision.md](Next_Decision.md)。
+更新：2026-11-06。這是接續工作用的短表；最新產品決策仍見 [Next_Decision.md](Next_Decision.md)。
 
 **負責人變更：** 使用者指定 `session-developer` 負責開發交付，原 session 轉顧問；接手狀態、第一段工作及每段審查方式見 [交接文件](Session_Developer_Handoff_2026-11-05.md)。已收到接任確認與首段計畫，後續透過跨 session 訊息直接回報顧問；未建立定時監看排程。
 
@@ -35,6 +35,8 @@ Skill 原稿在 [skills/guitarscribe-autopilot](../../skills/guitarscribe-autopi
 | A13-ismir2019 | rejected | 固定作者五模型 ensemble：Funk2整段N，HU33平均root −5.53百分點，未達門檻 | [報告](ISMIR2019_Candidate_Result_2026-11-05.md)、[計畫](evaluation/ismir2019-plan-2026-11-05.json)、[數值](evaluation/ismir2019-results-2026-11-05.json)。45次音樂子模型forward＋5次合成可行性forward；5測試、原始碼/權重hash與評分域核對通過。候選停止、送顧問驗收，不搜尋下一模型、不改產品。 |
 | A14-local-reading | awaiting_human | 顧問已通過eee41ac及受邀HTTPS手機完整操作；production候選獨立發布，原預設保持 | [發布入口／回滾](Local_Reading_Release_2026-11-05.md)、[最終manifest／驗證](evaluation/reading-release-results-2026-11-05.json)。19必要檔10.16MB，原84檔hash不變、無重啟，匿名401。由顧問交付《出賣》一次完整操作驗收；developer尚未通知使用者。音樂品質不因此通過。 |
 | A15-key-notes | awaiting_human | 移調後可直接播吉他並完整標大小調；共用文字手記獨立來源自存，Undo/還原/移調保留 | 755b9d2已沿同受邀候選更新：[發布與備份/限制](Key_Notes_Release_2026-11-06.md)。58產品/46後端/build、顧問雙tab/隔離真API/外網唯讀驗證通過；由顧問交使用者。首輪原曲30s逾時、45s上限重測通過，冷載待查；重建transient後有效5/hr、停機前限流未知皆已記錄。 |
+| A16-chord-stem | rejected | 全九份固定分離完成；HU33 root均值−1.804pp、0/3達+5pp，Funk3邊界recall−13.333pp，04／18另退步 | [結果／逐項護欄](Chord_Stem_Ablation_2026-11-06.md)、[數值](evaluation/chord-stem-ablation-results-2026-11-06.json)。九次分離＋27次Chordino，20.2分鐘；原版三層gate／hash／9測試過。停止固定介入，不調參、不跑確認組、不改產品；顧問獨立重評中。 |
+| A17-mixed-baseline | ready | 兩首MIREX2026完整混音有人工作和弦／重拍標註；既有labelparser可讀，但不是華語流行代表 | [固定計畫](MIREX_Mixed_Baseline_Plan_2026-11-06.md)。顧問已通過；A16提交後，45分鐘內兩次原版Chordino／完整域診斷，零新模型／分離／產品修改。 |
 | A01-view | done | 原局部視圖保留；使用者要求共同品質改善，取消單獨閱讀驗收 | 不再要求使用者驗收這一輪；原功能可選，不升預設。 |
 | A01-density | rejected | 後來B人耳確認慢一半、第一拍錯；全曲主速度限制不能判定正確拍速 | 連續性方法從產品恢復程式移除，離線失敗證據保留；不直接加倍或改phase再問同題。 |
 | A01-dbn | done | 你的樣子final0原DBN在15–55秒跟拍／密度／第一拍通過 | 紀錄局部通過，正式新引擎不自動開啟，不擴張全曲。 |
@@ -53,9 +55,11 @@ Skill 原稿在 [skills/guitarscribe-autopilot](../../skills/guitarscribe-autopi
 
 ## 必要人類驗收佇列
 
-目前沒有需要使用者再測的項目。11-04三組已收到判決，紀錄在 [11-05回饋](Timing_Feedback_2026-11-05.md)。原音檔保留作失敗／已接受案例；不以音量修正或新名稱重問相同內容。
+使用者目前無法驗收，保留 A15「轉調後吉他播放＋我的旋律筆記」；下次使用者方便時，由顧問提醒一次並交付同一受邀入口，不建立排程或重複通知。A14局部小節閱讀併在同一流程，不另重開已取消的舊閱讀題。
 
-後續優先校驗自動判斷工具，避免用工程結構通過替代音樂正確性。需要外部服務時先完成可審閱範圍，不擅自付費／上傳，獨立產品與旋律凍結維持。
+來源為《出賣》(搖滾Live版)，job `1b4158f1acee4beaa9af7cb42f3f52a0`，315.2秒；候選 [受邀入口](https://occupier-disgrace-stammer.ngrok-free.dev/reading-candidate-2026-11-05/?job=1b4158f1acee4beaa9af7cb42f3f52a0&timingView=auto)，版本與限制見 [發布紀錄](Key_Notes_Release_2026-11-06.md)。最短操作是轉調後播放、寫一小段文字筆記，再判斷使用是否順手；工程保存／衝突／復原已驗證，不請使用者重做。只評播放與UI，不因此認定和弦或旋律辨識通過。文字筆記不含自動旋律辨識。
+
+11-04三組已收到判決，見 [11-05回饋](Timing_Feedback_2026-11-05.md)；不以音量修正或新名稱重問相同音樂。待驗收只阻塞候選採用，A16和弦正確性評估持續；主旋律凍結、現有預設與人工稿保持。
 
 ## 本段交付
 
