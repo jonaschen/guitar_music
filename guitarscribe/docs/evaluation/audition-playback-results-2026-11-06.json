@@ -22,7 +22,7 @@
     "responsive_320_390_844landscape_1440",
     "zero_page_errors"
   ],
-  "production_published": false,
+  "production_published": true,
   "final_tsc_and_build_passed": true,
   "candidate_files": 19,
   "candidate_bytes": 10168413,
@@ -48,5 +48,33 @@
     "assets/AlphaTabScore-B-xi9pk-.js": "2ec60bda3f63e0babd924f3f1197fb6100cba7e5603d2fbd4f422e98daef809a",
     "assets/Bravura-BVtSfpnN.woff2": "181e0e7c4889f9ad57dde0a11988fa61b941617aa499ecdb9dfd4713896c2b19",
     "assets/index-5wkpcX2M.js": "17253531e761d221458efb497558a8a31b92645b7c004195d29ec41857496780"
-  }
+  },
+  "production_source_commit": "dc62004",
+  "local_url": "http://127.0.0.1:5273/reading-candidate-2026-11-05/",
+  "published_index_sha256": "b601570beb53e1a49e93be5730ddceef767605fd31d03981beea0b9ceb2f4510",
+  "live_candidate_files": 22,
+  "legacy_bundle_files_retained": 3,
+  "original_84_static_hashes_unchanged": true,
+  "all_three_sqlite_logical_rows_unchanged": true,
+  "anonymous_status": 401,
+  "production_api_smoke": [
+    {
+      "job": "1b4158f1acee4beaa9af7cb42f3f52a0",
+      "root_events": 576
+    },
+    {
+      "job": "6ea8733485f74db6a5443a3b9d7e829a",
+      "root_events": 657
+    }
+  ],
+  "web_restart": true,
+  "tunnel_changed": false,
+  "backup": "/home/jonas/gemini-home/music_analysis/guitarscribe/output/backups/audition-controls-2026-11-06",
+  "consultant_production_smoke_passed": true,
+  "consultant_production_half_root_counts": {
+    "6ea8733485f74db6a5443a3b9d7e829a": 1313,
+    "1b4158f1acee4beaa9af7cb42f3f52a0": 1152
+  },
+  "consultant_production_page_errors": 0,
+  "consultant_production_revision_writes_intercepted": 2
 }

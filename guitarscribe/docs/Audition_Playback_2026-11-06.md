@@ -28,4 +28,16 @@
 
 完整原稿、文字旋律筆記及A15待測保留；本輪功能不能視為和弦準確率提升。
 
-最終TypeScript與候選base正式build通過；19個必要檔，共10,168,413 bytes（7個build檔＋12個hash核符未變的font/soundfont資源），不複製public/listening。驗證manifest見 [數值](evaluation/audition-playback-results-2026-11-06.json)。待備份／發佈及正式入口煙霧核對。
+最終TypeScript與候選base正式build通過；19個必要檔，共10,168,413 bytes（7個build檔＋12個hash核符未變的font/soundfont資源），不複製public/listening。驗證manifest見 [數值](evaluation/audition-playback-results-2026-11-06.json)。已完成備份與發佈，正式入口顧問煙霧核對通過。
+
+## 本機候選已發布
+
+功能提交 `dc62004`。入口為 `http://127.0.0.1:5273/reading-candidate-2026-11-05/?job=1b4158f1acee4beaa9af7cb42f3f52a0&timingView=auto`；完整拍格新job可換成 `6ea8733485f74db6a5443a3b9d7e829a`。同一Basic邀請保護；ngrok的ERR725仍未修復，這是本機入口發佈，不能稱外網已恢復。
+
+發佈前後無active分析，先以SQLite backup API對三資料庫各自取得一致快照並通過integrity_check；舊candidate完整備份。備份位於 `output/backups/audition-controls-2026-11-06/`，目錄700、DB600。原首頁84個檔案SHA256全部保持，三資料庫各table logical row內容／數目在短web restart前後完全一致；沒有還原、寫入或覆蓋使用者資料。
+
+先放新hashed資產、短restart既有web單元啟用API，兩真job POST根音每拍預覽分別產生576／657個單音事件；通過後才原子換candidate index。19個新必要檔共10,168,413 bytes，另保留原3個hash bundle供既有開啟頁面相容，因此實際candidate為22檔；無歌曲音訊或listening資料發布。匿名GET401，受邀candidate index與build完全相同。服務與隧道設定未改，未重啟ngrok。
+
+發布數值／manifest見 [結果](evaluation/audition-playback-results-2026-11-06.json)，本機細節於 `output/evaluation/audition-controls-2026-11-06/{before-release,release-results}.json`。回滾可將備份 `candidate/index.html`恢復（舊hashed資產仍在），或恢復整份備份candidate；新的API為額外路由，舊預設manifest端點未改。不要回滾DB覆蓋之後的使用者修改。
+
+顧問已用正式5273入口完成兩真job完整煙霧驗收：原曲rate1、改調保mix、根音每拍兩次產生1313／1152 events、吉他即時mute→0.72及原曲0.16且source不重建、跟隨／active、四尺寸無overflow、0頁面例外；2次修訂請求攔截，未寫使用者資料。正式證據為 `output/evaluation/audition-controls-2026-11-06/consultant-production.json`。A15的主觀驗收仍集中保留，不增加重複音樂試聽。
