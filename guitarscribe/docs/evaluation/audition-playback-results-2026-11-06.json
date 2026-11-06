@@ -1,0 +1,52 @@
+{
+  "backend_new_tests_passed": 12,
+  "backend_existing_downbeat_midi_tests_passed": 38,
+  "product_unique_tests_passed": 61,
+  "product_split": {
+    "before_coordinated_interrupt_passed": 28,
+    "remainder_first_passed": 31,
+    "stale_copy_assertion_fixed": true,
+    "native_option_disabled_assertion_fixed": true,
+    "targeted_recheck_passed": 3
+  },
+  "consultant_real_jobs": [
+    "6ea8733485f74db6a5443a3b9d7e829a",
+    "1b4158f1acee4beaa9af7cb42f3f52a0"
+  ],
+  "consultant_verified": [
+    "transpose_mix_original_rate_1",
+    "live_source_and_guitar_gains",
+    "zero_gain_still_scheduled",
+    "source_not_rebuilt",
+    "active_chord_and_following_cue",
+    "responsive_320_390_844landscape_1440",
+    "zero_page_errors"
+  ],
+  "production_published": false,
+  "final_tsc_and_build_passed": true,
+  "candidate_files": 19,
+  "candidate_bytes": 10168413,
+  "build_public_dir_copied": false,
+  "curated_public_resources": "12 unchanged font/soundfont files only",
+  "files_sha256": {
+    "index.html": "b601570beb53e1a49e93be5730ddceef767605fd31d03981beea0b9ceb2f4510",
+    "soundfont/sonivox.sf3": "d39beb7cd349278455b44e7689e35e3c1f5ed9ef80118485846537929df8f7c0",
+    "soundfont/README.md": "ca9d6da8f8861658f8aff476ce138b236bd4fb44a1731523475eda64f5a760c7",
+    "soundfont/LICENSE": "57d801cd718614be838c71f35cf3dcbf5c011fa20130c194a447483dfa2771c5",
+    "soundfont/sonivox.sf2": "4978cf37e7164206f2d22dc4fdf4020ffe040787210bf781e31bdc79961f59ef",
+    "font/Bravura-FONTLOG.txt": "32693de63580f14dbaf167e9a06224e8350c84ddc4f1f38878edef4dee193e1e",
+    "font/Bravura.otf": "883a86a8cfe77db6597b8ef56b9cf6efb079b0631a283a323945a41f976fb483",
+    "font/Bravura.svg": "c8d841b64e65b032c19f4e4a77625fca3baf16a0a4e0371041ddb34965bb4d70",
+    "font/Bravura-OFL.txt": "c24929be7028026a65ee8894da1e3c36d2a4ccce0548d9ba8ba64509f46319ee",
+    "font/Bravura.eot": "67f0f9985e14d3c8b50886cbf02bc33c39e41f44ed93ae4f830d99776bff15f3",
+    "font/Bravura.woff": "22a46a8480b8eecaa43ece95ec63b45599c8ef6d1ab24f0621834a8be01d4dd9",
+    "font/Bravura-OFL-FAQ.txt": "10403b7bed7e8846d47c030050c0c6c8d53cb52bcb13afa1f4044b0936c7f288",
+    "font/Bravura.woff2": "181e0e7c4889f9ad57dde0a11988fa61b941617aa499ecdb9dfd4713896c2b19",
+    "assets/alphaTab.worklet-C9PLHa2u.js": "f47e9cd065a042e2327bef9fb88c9fd48eacb4594f2793bc020baa2b889cdfcd",
+    "assets/index-zCakDNoi.css": "8586f3e38b17a1275213dfdff0cf1cb4109547f5cca749d4daab42a6df5cde60",
+    "assets/alphaTab.worker-BQCj0a_w.js": "e48f42ed0c6e5ac6df54ce21dafb771972ac600357567a4eb2174da876ced3b2",
+    "assets/AlphaTabScore-B-xi9pk-.js": "2ec60bda3f63e0babd924f3f1197fb6100cba7e5603d2fbd4f422e98daef809a",
+    "assets/Bravura-BVtSfpnN.woff2": "181e0e7c4889f9ad57dde0a11988fa61b941617aa499ecdb9dfd4713896c2b19",
+    "assets/index-5wkpcX2M.js": "17253531e761d221458efb497558a8a31b92645b7c004195d29ec41857496780"
+  }
+}

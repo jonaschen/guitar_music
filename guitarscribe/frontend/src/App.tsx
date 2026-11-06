@@ -1,3 +1,4 @@
+import {AuditionControls, type AuditionContent, type AuditionPulse} from './AuditionControls';
 import {PerformanceDraftControl} from "./PerformanceDraftControl";
 import {MelodyNotes} from "./MelodyNotes";
 import {DownbeatRhythmControl} from "./DownbeatRhythmControl";
@@ -218,7 +219,13 @@ async function postSaveRevision(score: SongScore, revisionId: string | null, cre
 
 type ChordPerformanceMode = "original" | "continuous" | "sparse";
 
-async function compilePlayback(score: SongScore, mode: ChordPerformanceMode): Promise<{ manifest: PlaybackManifest; notice: string }> {
+async function compilePlayback(score: SongScore, mode: ChordPerformanceMode, content: AuditionContent='chord', pulse: AuditionPulse='original'): Promise<{ manifest: PlaybackManifest; notice: string }> {
+  if(content!=='chord'||pulse!=='original'){
+    const params=new URLSearchParams({content,pulse});const job=sourceJobId(score);if(job)params.set('source_job',job);
+    const response=await fetch(`${API_BASE}/scores/audition-playback?${params}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(score)});
+    if(!response.ok)throw new Error(await response.text());
+    return {manifest:await response.json(),notice:''};
+  }
   if (score.analysis.timing_status === "unmetered") mode = "original";
   const response = await fetch(API_BASE + (mode === "original" ? "/scores/playback/manifest" : "/scores/chord-entry-performance"), {
     method: "POST", headers: { "Content-Type": "application/json" },
@@ -283,6 +290,12 @@ export function App() {
   const pendingAudioTrackSeekRef = useRef<number | null>(null);
   const metronomeContextRef = useRef<AudioContext | null>(null);
   const synthContextRef = useRef<AudioContext | null>(null);
+  const sourceMasterRef=useRef<GainNode|null>(null),guitarMasterRef=useRef<GainNode|null>(null);
+  const [sourceVolume,setSourceVolume]=useState(.45);
+  const sourceVolumeRef=useRef(.45),guitarVolumeRef=useRef(.24);
+  const [auditionContent,setAuditionContent]=useState<AuditionContent>('chord');
+  const [auditionPulse,setAuditionPulse]=useState<AuditionPulse>('original');
+
   const reviewSourceCacheRef = useRef<{url: string; buffer: AudioBuffer} | null>(null);
   const [activeReview, setActiveReview] = useState<ReviewMode | null>(null);
   const melodyAuditionRef = useRef<MelodyAudition | null>(null);
@@ -310,6 +323,11 @@ export function App() {
   const midiRequestRef = useRef(0);
   const [synthTracks, setSynthTracks] = useState<Record<PlaybackTrack, boolean>>({ guitar: true, melody: false, metronome: false });
   const [synthVolumes, setSynthVolumes] = useState<Record<PlaybackTrack, number>>({ guitar: 0.24, melody: 0.45, metronome: 0.18 });
+  useEffect(()=>{
+    guitarVolumeRef.current=synthVolumes.guitar;
+    const node=guitarMasterRef.current;if(node)node.gain.setTargetAtTime(synthVolumes.guitar,node.context.currentTime,.01);
+  },[synthVolumes.guitar]);
+
   const [melodyConnection, setMelodyConnection] = useState<"connected" | "separate">("connected");
   const [synthSoloTrack, setSynthSoloTrack] = useState<PlaybackTrack | null>(null);
   const [metronomeEnabled, setMetronomeEnabled] = useState(false);
@@ -655,6 +673,9 @@ export function App() {
     return () => { disposed = true; };
   }, [score?.analysis.time_signature]);
 
+  const auditionSource=score?sourceJobId(score)??score.song.title:'';
+  useEffect(()=>{setAuditionContent('chord');setAuditionPulse('original');},[auditionSource]);
+
   // A compiled sequence belongs to one immutable score snapshot. Never let
   // newly edited notation run alongside old audio (including pending fetches).
   useEffect(() => {
@@ -663,6 +684,17 @@ export function App() {
     setChordPerformance("original"); setPerformanceNotice("");
   }, [score]);
 
+  function updateSourceVolume(value:number){
+    sourceVolumeRef.current=value;setSourceVolume(value);
+    const master=sourceMasterRef.current;if(master)master.gain.setTargetAtTime(value,master.context.currentTime,.01);
+  }
+  function updateGuitarVolume(value:number){
+    guitarVolumeRef.current=value;setSynthVolumes(v=>({...v,guitar:value}));
+    const master=guitarMasterRef.current;if(master)master.gain.setTargetAtTime(value,master.context.currentTime,.01);
+  }
+  function changeAudition(content:AuditionContent,pulse:AuditionPulse){
+    audioRef.current?.pause();stopSynth(false);setAuditionContent(content);setAuditionPulse(pulse);
+  }
   function selectChordPerformance(mode: ChordPerformanceMode) {
     referenceStopRef.current(); stopSynth(false);
     performanceGenerationRef.current++;
@@ -1211,6 +1243,8 @@ export function App() {
     setIsSynthPreparing(false);
     synthSourcesRef.current.forEach((source) => { try { source.stop(); } catch { } });
     synthSourcesRef.current = [];
+    sourceMasterRef.current?.disconnect();sourceMasterRef.current=null;
+    guitarMasterRef.current?.disconnect();guitarMasterRef.current=null;
     if (synthAnimationRef.current !== null) window.cancelAnimationFrame(synthAnimationRef.current);
     synthAnimationRef.current = null;
     if (synthSchedulerRef.current !== null) window.clearTimeout(synthSchedulerRef.current);
@@ -1318,7 +1352,7 @@ export function App() {
     gain.gain.setValueAtTime(Math.min(0.04, peak * 0.26), startAt);
     gain.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.018);
     pick.buffer = buffer;
-    pick.connect(highPass).connect(gain).connect(context.destination);
+    pick.connect(highPass).connect(gain).connect(guitarMasterRef.current ?? context.destination);
     pick.start(startAt);
     pick.stop(startAt + 0.02);
     trackSynthSource(pick);
@@ -1348,7 +1382,6 @@ export function App() {
       let originalBuffer: AudioBuffer | null = null;
       if (reviewMode && reviewMode !== "guitar") {
         if (!analysisJob || analysisJob.status !== "completed" || sourceJobId(score) !== analysisJob.id) throw new Error("此版本沒有相符的原曲來源。");
-        if (reviewMode === "mix" && !score.key_context.audio_matches_notation) throw new Error("工作譜已移調，不能直接與原曲合奏。");
         const url = `${API_BASE}/api/v1/jobs/${analysisJob.id}/audio`;
         const cached = reviewSourceCacheRef.current;
         if (cached?.url === url) originalBuffer = cached.buffer;
@@ -1362,7 +1395,7 @@ export function App() {
         }
         if (originalBuffer.duration + .01 < (selectedRange?.end ?? bounds.end)) throw new Error("原曲長度不足以涵蓋所選小節。");
       }
-      const { manifest, notice } = await compilePlayback(score, chordPerformance);
+      const { manifest, notice } = await compilePlayback(score, chordPerformance, auditionContent, auditionPulse);
       if (generation !== synthGenerationRef.current) return;
       setPerformanceNotice(notice);
       const buffers = tone === "pluck" && tracks.guitar && (solo === null || solo === "guitar")
@@ -1370,6 +1403,10 @@ export function App() {
         : new Map<number, AudioBuffer>();
       if (generation !== synthGenerationRef.current) return;
       setIsSynthPreparing(false);
+      const sourceMaster=context.createGain(),guitarMaster=context.createGain();
+      sourceMaster.gain.value=sourceVolumeRef.current;guitarMaster.gain.value=guitarVolumeRef.current;
+      sourceMaster.connect(context.destination);guitarMaster.connect(context.destination);
+      sourceMasterRef.current=sourceMaster;guitarMasterRef.current=guitarMaster;
       setActiveReview(reviewMode ?? null);
       setSynthSnapshot({ manifest, chords: score.chords });
       const rawLoop = selectedRange ? (segment?.loop ? [selectedRange.start, selectedRange.end] as [number, number] : null) : loopStart !== null && loopEnd !== null && loopEnd > loopStart
@@ -1412,9 +1449,9 @@ export function App() {
             const source = context.createBufferSource(), gain = context.createGain();
             source.buffer = originalBuffer; source.playbackRate.value = rate;
             const until = at + duration / rate, fade = Math.min(.005, duration / rate / 4);
-            gain.gain.setValueAtTime(0, at); gain.gain.linearRampToValueAtTime(.45, at + fade);
-            gain.gain.setValueAtTime(.45, until - fade); gain.gain.linearRampToValueAtTime(0, until);
-            source.connect(gain).connect(context.destination);
+            gain.gain.setValueAtTime(0, at); gain.gain.linearRampToValueAtTime(1, at + fade);
+            gain.gain.setValueAtTime(1, until - fade); gain.gain.linearRampToValueAtTime(0, until);
+            source.connect(gain).connect(sourceMaster);
             source.start(at, offset, duration); source.stop(until); trackSynthSource(source);
           }
         }
@@ -1424,7 +1461,7 @@ export function App() {
           .map(event => ({ start: event.start, end: event.end, midi: event.pitches[0], velocity: event.pitch_velocities?.[0] ?? event.velocity }))) : [];
         let nextPhraseIndex = 0;
         const segmentEvents = manifest.events
-          .filter((event) => tracks[event.track] && synthVolumes[event.track] > 0 && (solo === null || event.track === solo) && acousticEnd(event) > segmentStart && event.start < segmentEnd)
+          .filter((event) => tracks[event.track] && (event.track === "guitar" || synthVolumes[event.track] > 0) && (solo === null || event.track === solo) && acousticEnd(event) > segmentStart && event.start < segmentEnd)
           .filter(event => !(connected && event.track === "melody" && event.pitches.length === 1))
           .sort((left, right) => left.start - right.start);
         // Short editor selections are bounded: queue their complete audio up
@@ -1456,7 +1493,7 @@ export function App() {
               const buffer = buffers.get(pitch);
               if (buffer) {
                 const source = createPluckedVoice(context, buffer, startAt, endAt,
-                  synthVolumes.guitar * (event.pitch_velocities[pitchIndex] ?? event.velocity) / 127 / Math.sqrt(event.pitches.length), age, event.stroke);
+                  (event.pitch_velocities[pitchIndex] ?? event.velocity) / 127 / Math.sqrt(event.pitches.length), age, event.stroke, guitarMaster);
                 if (source) trackSynthSource(source);
               }
               return;
@@ -1472,7 +1509,7 @@ export function App() {
             oscillator.type = isGuitar || event.track === "melody" ? "triangle" : "square";
             oscillator.frequency.setValueAtTime(440 * 2 ** ((pitch - 69) / 12), startAt);
             const pitchVelocity = event.pitch_velocities[pitchIndex] ?? event.velocity;
-            const peak = Math.max(0.001, synthVolumes[event.track] * pitchVelocity / 127 / Math.max(event.pitches.length, 1))
+            const peak = Math.max(0.001, (event.track === "guitar" ? 1 : synthVolumes[event.track]) * pitchVelocity / 127 / Math.max(event.pitches.length, 1))
               * (event.track === "melody" ? editorMelodyGain : 1);
             let releaseEnd = endAt;
             if (isGuitar) {
@@ -1495,7 +1532,7 @@ export function App() {
               filter.type = "lowpass";
               filter.frequency.setValueAtTime(event.stroke === "U" ? 5600 : 3200, startAt);
               filter.frequency.exponentialRampToValueAtTime(event.stroke === "U" ? 1500 : 900, Math.min(endAt, startAt + 0.3));
-              oscillator.connect(gain).connect(filter).connect(context.destination);
+              oscillator.connect(gain).connect(filter).connect(guitarMaster);
               if (pitchIndex === 0) scheduleGuitarPick(context, startAt, peak);
             } else {
               oscillator.connect(gain).connect(context.destination);
@@ -2187,12 +2224,13 @@ export function App() {
               <>
                 <ReviewComponent score={score} sourceAvailable={!!analysisJob && analysisJob.status === "completed" && sourceJobId(score) === analysisJob.id}
                   playing={activeReview !== null && isSynthPlaying} preparing={isSynthPreparing}
-                  playhead={playbackTime} guitarVolume={synthVolumes.guitar} onVolume={value => setSynthVolumes(v => ({...v, guitar: value}))}
+                  playhead={playbackTime} guitarVolume={synthVolumes.guitar} onVolume={updateGuitarVolume}
                   performanceLabel={chordPerformance === "original" ? "原版刷奏" : chordPerformance === "continuous" ? "換和弦即彈・連續刷奏" : "換和弦只彈一下"}
                   onStop={() => { audioRef.current?.pause(); stopSynth(false); }} onTools={openPerformanceControls}
                   onPlay={(mode, start, end, loop, from) => void toggleSynthPlayback({start, end, loop, from, reviewMode: mode})}
                   editPanel={compactChordEditor} speed={playbackRate} onSpeed={setSpeed}
                   fingeringGuide={!MELODY_ENABLED?<><ChordFingerings score={score} apiBase={API_BASE}/>{sourceJobId(score)?<MelodyNotes key={sourceJobId(score)} job={sourceJobId(score)!} api={API_BASE}/>:null}</>:null}
+                  playbackControls={!MELODY_ENABLED?<AuditionControls score={score} content={auditionContent} pulse={auditionPulse} onContent={v=>changeAudition(v,auditionPulse)} onPulse={v=>changeAudition(auditionContent,v)} sourceVolume={sourceVolume} guitarVolume={synthVolumes.guitar} onSourceVolume={updateSourceVolume} onGuitarVolume={updateGuitarVolume}/>:null}
                   keyControls={!MELODY_ENABLED ? <><small className="key-estimate">原曲推估：{score.key_context.source.key}{score.key_context.source.mode==="minor"?"小調":"大調"}（和弦估計，未確認）</small><label title="只移調伴奏，不更正原曲調性推估">伴奏移調（{score.key_context.target.mode==="minor"?"小調":"大調"}） <select aria-label="歌曲調性" value={score.key_context.target.key} disabled={isRetuningScore} onChange={e=>void retuneScore(e.target.value)}>{PITCH_TO_FLAT_KEY.map(key=><option key={key} value={key}>{key}</option>)}{!PITCH_TO_FLAT_KEY.includes(score.key_context.target.key)?<option value={score.key_context.target.key}>{score.key_context.target.key}</option>:null}</select></label><label>Capo <select aria-label="歌曲 Capo" value={capo} disabled={isRetuningScore} onChange={e=>void retuneScore(score.key_context.target.key,Number(e.target.value))}>{Array.from({length:9},(_,n)=><option key={n} value={n}>{n}</option>)}</select></label></>:null}
                   secondaryActions={!MELODY_ENABLED ? <><PerformanceDraftControl score={score} apiBase={API_BASE} onCommit={(base,next)=>{if(scoreRef.current!==base)return false;audioRef.current?.pause();stopSynth(false);return recordScoreChange(next);}}/><DownbeatRhythmControl score={score} onCommit={(base,next)=>{if(scoreRef.current!==base)return false;audioRef.current?.pause();stopSynth(false);setChordPerformance('original');return recordScoreChange(next);}}/><button type="button" disabled={!undoHistory.length} onClick={undoScoreChange}>復原</button><button type="button" disabled={!redoHistory.length} onClick={redoScoreChange}>重做</button></>:null}
                   onEditChord={(id, scope) => { const chord=score.chords.find(c=>c.id===id); if (!chord) return; selectChord(chord, Math.max(chord.start, scope?.start ?? chord.start)); setChordEditScope(scope ?? null); setCompactEditOpen(true); window.requestAnimationFrame(()=>document.querySelector<HTMLInputElement>("#compact-chord-name")?.focus()); }} />
@@ -2424,7 +2462,7 @@ export function App() {
                     <label>Guitar tone <select aria-label="Score guitar tone" value={guitarTone} onChange={(event) => { stopSynth(false); setGuitarTone(event.target.value); }}><option value="pluck">新：逐泛音衰減</option><option value="simple">舊：簡單振盪器</option></select></label>
                     <button type="button" className="ghost-button" disabled={isSynthPreparing} onClick={() => void toggleSynthPlayback()}>{isSynthPreparing ? "Preparing score…" : isSynthPlaying ? "Pause score" : "Play score"}</button>
                     <button type="button" className="ghost-button" onClick={() => stopSynth(true)}>Stop score</button>
-                    {(["guitar", "melody", "metronome"] as PlaybackTrack[]).filter(track => MELODY_ENABLED || track !== "melody").map((track) => <label className="synth-track" key={track}><input type="checkbox" aria-label={track + " track"} checked={synthTracks[track]} onChange={() => { stopSynth(false); setSynthTracks((tracks) => ({ ...tracks, [track]: !tracks[track] })); }} /><span>{track}</span><input type="range" min="0" max="1" step="0.01" value={synthVolumes[track]} onChange={(event) => { stopSynth(false); setSynthVolumes((volumes) => ({ ...volumes, [track]: Number(event.target.value) })); }} aria-label={track + " volume"} /><button type="button" className={synthSoloTrack === track ? "synth-solo synth-solo-active" : "synth-solo"} onClick={() => { stopSynth(false); setSynthSoloTrack((current) => current === track ? null : track); }}>{synthSoloTrack === track ? "Soloed" : "Solo"}</button></label>)}
+                    {(["guitar", "melody", "metronome"] as PlaybackTrack[]).filter(track => MELODY_ENABLED || track !== "melody").map((track) => <label className="synth-track" key={track}><input type="checkbox" aria-label={track + " track"} checked={synthTracks[track]} onChange={() => { stopSynth(false); setSynthTracks((tracks) => ({ ...tracks, [track]: !tracks[track] })); }} /><span>{track}</span><input type="range" min="0" max="1" step="0.01" value={synthVolumes[track]} onChange={(event) => { if(track==="guitar") updateGuitarVolume(Number(event.target.value)); else {stopSynth(false);setSynthVolumes((volumes) => ({ ...volumes, [track]: Number(event.target.value) }));} }} aria-label={track + " volume"} /><button type="button" className={synthSoloTrack === track ? "synth-solo synth-solo-active" : "synth-solo"} onClick={() => { stopSynth(false); setSynthSoloTrack((current) => current === track ? null : track); }}>{synthSoloTrack === track ? "Soloed" : "Solo"}</button></label>)}
                     <span role="status">{activeBeatIndex >= 0 ? `Bar ${score.beats[activeBeatIndex].measure} · Beat ${score.beats[activeBeatIndex].beat}` : "Beat —"}</span>
                   </div>
                 </details>

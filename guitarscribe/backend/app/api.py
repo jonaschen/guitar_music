@@ -844,6 +844,30 @@ async def compile_score_playback(score: SongScore) -> PlaybackManifest:
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
 
+@app.post('/scores/audition-playback', response_model=PlaybackManifest)
+async def compile_audition_playback(score: SongScore, content: Literal['chord','root']='chord',
+        pulse: Literal['original','bar','two','one','half']='original', source_job: str | None=None,
+        job_service: AnalysisJobService=Depends(get_job_service)):
+    from .services.audition_playback import audition_manifest
+    from .services.partial_timing import preview_for_job
+    preview=None
+    if pulse!='original' and score.analysis.timing_status=='unmetered':
+        if not source_job:raise HTTPException(422,'需要來源歌曲的局部拍點。')
+        params=score.provenance.parameters
+        claimed=params.get('candidate_source_job_id')
+        if claimed is None:claimed=params.get('analysis_source_job_id')
+        if not isinstance(claimed,str) or not claimed.strip():
+            claimed=next((edit.source_job_id for edit in score.melody_edits if edit.source_job_id),None)
+        if claimed!=source_job:raise HTTPException(422,'局部拍點來源與目前樂譜不符。')
+
+        try:job=job_service.get(source_job)
+        except FileNotFoundError as exc:raise HTTPException(404,'找不到拍點來源。') from exc
+        if job.status!=JobStatus.COMPLETED or job.score is None or job.score.song.duration_seconds!=score.song.duration_seconds or job.score.song.source_start_seconds!=score.song.source_start_seconds:
+            raise HTTPException(422,'局部拍點與目前歌曲範圍不符。')
+        preview=await asyncio.to_thread(preview_for_job,job,job_service.store.job_dir(source_job))
+    try:return await asyncio.to_thread(audition_manifest,score,content,pulse,preview)
+    except (ValueError,KeyError,TypeError) as exc:raise HTTPException(422,str(exc)) from exc
+
 @app.post("/scores/musicxml", response_class=PlainTextResponse)
 async def export_musicxml_score(score: SongScore) -> str:
     if score.analysis.timing_status == 'unmetered':

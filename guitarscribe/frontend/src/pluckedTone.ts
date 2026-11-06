@@ -43,7 +43,7 @@ export async function preparePluckedBuffers(context: BaseAudioContext, pitches: 
   return prepared;
 }
 
-export function createPluckedVoice(context: BaseAudioContext, buffer: AudioBuffer, start: number, end: number, level: number, offset = 0, stroke?: string | null) {
+export function createPluckedVoice(context: BaseAudioContext, buffer: AudioBuffer, start: number, end: number, level: number, offset = 0, stroke?: string | null, destination: AudioNode = context.destination) {
   if (offset >= buffer.duration || end <= start || level <= 0) return null;
   const source = context.createBufferSource();
   source.buffer = buffer;
@@ -59,7 +59,7 @@ export function createPluckedVoice(context: BaseAudioContext, buffer: AudioBuffe
   colour.type = "highshelf";
   colour.frequency.setValueAtTime(1200, start);
   colour.gain.setValueAtTime(stroke === "U" ? 4 : stroke === "D" ? -3 : 0, start);
-  source.connect(gain).connect(colour).connect(context.destination);
+  source.connect(gain).connect(colour).connect(destination);
   source.addEventListener("ended", () => { source.disconnect(); gain.disconnect(); colour.disconnect(); });
   source.start(start, offset);
   source.stop(end + 0.29);

@@ -15,6 +15,13 @@ const score = {
 };
 
 const guideShape=(symbol:string,frets:Array<number|null>,capo=0)=>({id:symbol+'-guide',symbol,shape_symbol:symbol,frets,fingers:[null,3,2,null,1,null],base_fret:1,capo,difficulty:1,tags:[]});
+function sourceWav(seconds=8){
+  const sr=8000,bytes=sr*seconds*2,buffer=Buffer.alloc(44+bytes);
+  buffer.write('RIFF',0);buffer.writeUInt32LE(36+bytes,4);buffer.write('WAVEfmt ',8);buffer.writeUInt32LE(16,16);
+  buffer.writeUInt16LE(1,20);buffer.writeUInt16LE(1,22);buffer.writeUInt32LE(sr,24);buffer.writeUInt32LE(sr*2,28);
+  buffer.writeUInt16LE(2,32);buffer.writeUInt16LE(16,34);buffer.write('data',36);buffer.writeUInt32LE(bytes,40);
+  return buffer;
+}
 for(const unmetered of [false,true])for(const originalSource of [false,true])test(`transpose preserves clear minor-key meaning and playable mode (${unmetered},source=${originalSource})`,async({page})=>{
   const key={key:'B',mode:'minor'};
   const working={...score,analysis:{...score.analysis,key:'B',mode:'minor',timing_status:unmetered?'unmetered':'metered',bpm:unmetered?0:120,time_signature:unmetered?'':'4/4'},beats:unmetered?[]:score.beats,
@@ -27,11 +34,12 @@ for(const unmetered of [false,true])for(const originalSource of [false,true])tes
   });
   await expect(page.getByText('原曲推估：B小調（和弦估計，未確認）',{exact:true})).toBeVisible();
   await page.getByLabel('歌曲調性',{exact:true}).selectOption('G');
-  await expect(page.getByLabel('播放聲音',{exact:true})).toHaveValue(originalSource?'source':'guitar');
+  await expect(page.getByLabel('播放聲音',{exact:true})).toHaveValue(originalSource?'source':'mix');
   await expect(page.getByRole('button',{name:'播放',exact:true})).toBeEnabled();
-  await expect(page.getByText(originalSource?'伴奏已移調；目前播放原曲原調。回到原調後才能合奏。':'伴奏已移調；目前以吉他播放。回到原調後才能合奏。',{exact:true})).toBeVisible();
-  await expect(page.getByLabel('播放聲音').locator('option[value=mix]')).toHaveAttribute('disabled','');
+  await expect(page.getByText('原曲維持原調；吉他使用目前和弦，可能不同調，供聽感核對。',{exact:true})).toBeVisible();
+  await expect(page.getByLabel('播放聲音').locator('option[value=mix]')).not.toHaveAttribute('disabled');
   if(!originalSource){
+    await page.route('**/api/v1/jobs/product-job/audio',r=>r.fulfill({body:sourceWav(),contentType:'audio/wav'}));
     let compiled:any;await page.route('**/scores/playback/manifest',r=>{compiled=r.request().postDataJSON();return r.fulfill({json:{revision:'transposed',duration_seconds:8,bpm:0,time_signature:'',events:[{id:'g',track:'guitar',start:0,end:8,sustain_end:8,pitches:[55,58,62],pitch_offsets:[0,0,0],pitch_velocities:[98,98,98],velocity:98,source_id:'c'}]}})});
     await page.getByRole('button',{name:'播放',exact:true}).click();await expect(page.getByRole('button',{name:'暫停',exact:true})).toBeVisible();
     expect(compiled.chords[0].symbol).toBe('Gm');expect(compiled.key_context.source).toEqual(key);
@@ -109,7 +117,7 @@ async function setup(page:any, working:any=score, timingView?:string) {
   await page.route('**/revisions',r=>r.fulfill({json:{revision_id:'auto-saved'}}));
   await page.route('**/rhythm-patterns?*',r=>r.fulfill({json:[]}));
   await page.goto('/?job=product-job&view=melody'+(timingView?`&timingView=${timingView}`:''));
-  await expect(page.getByRole('region',{name:'和弦核對'})).toBeVisible();
+  await expect(page.getByRole('region',{name:'和弦核對'})).toBeVisible({timeout:15000});
   return archived;
 }
 test('frozen default ignores archived preference; saved data retained, accompaniment MIDI excludes notes',async({page})=>{
@@ -548,7 +556,7 @@ for(const variant of ['missing','wrong-source','wrong-crop'])test(`unavailable o
 test('unmetered sheet edits seconds, adjacent boundary, undo, delete and autosave without fake bars',async({page})=>{
   await setup(page,timelineScore);
   await expect(page.getByLabel('和弦時間表',{exact:true})).toBeVisible();
-  await expect(page.getByText('這首歌的小節位置尚未確認，先顯示和弦時間表。每列是一段和弦，不是一小節；目前每段彈一次。',{exact:true})).toBeVisible();
+  await expect(page.getByText('這首歌的小節位置尚未確認，先顯示和弦時間表。每列是一段和弦，不是一小節；撥奏依播放器選項。',{exact:true})).toBeVisible();
   await expect(page.locator('.notation-measure')).toHaveCount(0);
   await page.getByText('下載與備份',{exact:true}).click();
   await expect(page.getByRole('button',{name:'下載伴奏 MIDI',exact:true})).toBeHidden();
@@ -714,4 +722,48 @@ test('a delayed performance draft cannot overwrite a newer manual chord edit',as
   await expect(page.getByRole('button',{name:'編輯 0.00 秒的 Em',exact:true})).toBeVisible();
   await expect.poll(()=>saved?.score?.chords[0].symbol).toBe('Em');
   expect(saved.score.provenance.parameters.performance_draft).toBeUndefined();
+});
+
+
+test('audition controls preserve score and live gains do not restart mixed playback',async({page})=>{
+  await page.addInitScript(()=>{
+    const Original=window.AudioContext;const probe={stops:0,starts:[] as Array<{duration:number;rate:number}>,targets:[] as number[]};
+    (window as any).__auditionProbe=probe;
+    class TrackedContext extends Original{
+      createGain(){const node=super.createGain();const original=node.gain.setTargetAtTime.bind(node.gain);node.gain.setTargetAtTime=(value,time,constant)=>{probe.targets.push(value);return original(value,time,constant);};return node;}
+      createBufferSource(){const node=super.createBufferSource(),start=node.start.bind(node),stop=node.stop.bind(node);
+        node.start=((...args:any[])=>{probe.starts.push({duration:node.buffer?.duration??0,rate:node.playbackRate.value});(start as any)(...args);}) as typeof node.start;
+        node.stop=((...args:any[])=>{probe.stops++;(stop as any)(...args);}) as typeof node.stop;return node;}
+    }
+    window.AudioContext=TrackedContext;
+  });
+  await setup(page,{...score,song:{...score.song,duration_seconds:60},chords:[{...score.chords[0],end:60}]});await page.route('**/api/v1/jobs/product-job/audio',r=>r.fulfill({body:sourceWav(60),contentType:'audio/wav'}));
+  let compiles=0,body:any,query:any;
+  await page.route('**/scores/audition-playback?*',r=>{compiles++;body=r.request().postDataJSON();query=new URL(r.request().url()).searchParams;return r.fulfill({json:{revision:'audition',duration_seconds:60,bpm:120,time_signature:'4/4',events:[{id:'g',track:'guitar',start:0,end:60,sustain_end:60,pitches:[48],pitch_offsets:[0],pitch_velocities:[98],velocity:98,source_id:'c'}]}});});
+  await expect(page.getByLabel('撥奏內容')).toHaveValue('chord');await expect(page.getByLabel('撥奏頻率')).toHaveValue('original');
+  await page.getByLabel('撥奏內容').selectOption('root');await page.getByLabel('撥奏頻率').selectOption('two');
+  await page.getByRole('button',{name:'播放',exact:true}).click();await expect(page.getByRole('button',{name:'暫停',exact:true})).toBeVisible();
+  expect(query.get('content')).toBe('root');expect(query.get('pulse')).toBe('two');expect(body.chords[0].symbol).toBe('C');
+  const before=await page.evaluate(()=>(window as any).__auditionProbe.stops);
+  for(const [name,value] of [['原曲音量','0.11'],['和弦／根音音量','0'],['和弦／根音音量','0.71']]){
+    await page.getByLabel(name,{exact:true}).fill(value);await expect(page.getByRole('button',{name:'暫停',exact:true})).toBeVisible();
+  }
+  const probe=await page.evaluate(()=>(window as any).__auditionProbe);
+  expect(probe.stops).toBe(before);expect(compiles).toBe(1);expect(probe.targets).toEqual(expect.arrayContaining([.11,0,.71]));
+  expect(probe.starts.some((s:any)=>s.duration===60&&s.rate===1)).toBe(true);
+  await expect(page.getByLabel('跟彈提示')).toContainText('目前 C');await expect(page.locator('.notation-sheet button.current-chord')).toHaveCount(1);
+  for(const [width,height] of [[320,844],[390,844],[844,390]]){
+    await page.setViewportSize({width,height});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    const rect=await page.locator('.timeline-transport').boundingBox();expect(rect!.height).toBeLessThan(height*.65);
+  }
+  await page.getByRole('button',{name:'暫停',exact:true}).click();
+});
+
+for(const available of [false,true])test(`partial pulse options reflect observed preview availability (${available})`,async({page})=>{
+  await page.route('**/timing-preview',r=>r.fulfill({json:available?partialPreview:{...partialPreview,covered_seconds:0,regions:[]}}));await setup(page,partialScore,'auto');
+  const option=page.getByLabel('撥奏頻率').locator('option[value=one]');
+  if(available){
+    await expect(option).not.toHaveAttribute('disabled');await page.getByLabel('撥奏頻率').selectOption('half');
+    await expect(page.getByText('依待確認拍點試聽；未知段暫停伴奏，原曲繼續。這些選項不更改樂譜。',{exact:true})).toBeVisible();
+  }else{await expect(option).toHaveAttribute('disabled','');await expect(page.getByLabel('撥奏內容')).toBeEnabled();}
 });
