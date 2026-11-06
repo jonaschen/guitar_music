@@ -107,7 +107,7 @@ test('cropped pickup has one opening cell; editing does not invent or renumber f
   await expect(sheet.getByLabel('Bar 1',{exact:true}).getByRole('button')).toContainText('C');
 });
 
-async function setup(page:any, working:any=score, timingView?:string) {
+async function setup(page:any, working:any=score, timingView?:string,entryPath='/') {
   await page.addInitScript(()=>{localStorage.setItem('guitarscribe.editorView','melody');localStorage.setItem('guitarscribe.workspaceMode','full');});
   await page.route('**/api/v1/capabilities',r=>r.fulfill({json:{melody_available:true,youtube_enabled:true,vocal_separation_enabled:true}}));
   const archived={...working,melody:[{id:'n',start:0,end:1,midi:60,note:'C4',confidence:1,origin:'model',edited:false}]};
@@ -116,7 +116,7 @@ async function setup(page:any, working:any=score, timingView?:string) {
   await page.route('**/revisions/*/history',r=>r.fulfill({json:[]}));
   await page.route('**/revisions',r=>r.fulfill({json:{revision_id:'auto-saved'}}));
   await page.route('**/rhythm-patterns?*',r=>r.fulfill({json:[]}));
-  await page.goto('/?job=product-job&view=melody'+(timingView?`&timingView=${timingView}`:''));
+  await page.goto(entryPath+'?job=product-job&view=melody'+(timingView?`&timingView=${timingView}`:''));
   await expect(page.getByRole('region',{name:'和弦核對'})).toBeVisible({timeout:15000});
   return archived;
 }
@@ -421,7 +421,7 @@ for(const width of [320,390,1440])test(`automatic local reading candidate starts
   await expect(preview.locator('.notation-measure')).toHaveCount(4);
   await expect(preview.locator('.partial-unknown')).toHaveCount(2);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
-  await page.getByRole('button',{name:'時間表',exact:true}).click();
+  await page.getByRole('button',{name:'時間明細',exact:true}).click();
   await expect(page.getByLabel('和弦時間表',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'局部譜 · 待確認',exact:true}).click();
   await expect(preview).toBeVisible();
@@ -441,8 +441,9 @@ for(const width of [320,390,1440])test(`automatic local reading candidate starts
 for(const bad of [null,{start:2,end:10,beats_per_bar:4,bars:null}])test(`automatic local candidate ignores malformed region (${JSON.stringify(bad)})`,async({page})=>{
   await page.route('**/timing-preview',r=>r.fulfill({json:{...partialPreview,regions:[bad]}}));
   await setup(page,partialScore,'auto');
-  await expect(page.getByLabel('和弦時間表',{exact:true})).toBeVisible();
-  await expect(page.getByLabel('讀譜方式',{exact:true})).toHaveCount(0);
+  await expect(page.getByLabel('連續和弦讀譜',{exact:true})).toBeVisible();
+  await expect(page.getByLabel('讀譜方式',{exact:true})).toBeVisible();
+  await expect(page.locator('.notation-measure')).toHaveCount(0);
 });
 
 test('automatic local reading discards delayed old-song preview after revision switch and supports Undo',async({page})=>{
@@ -476,9 +477,8 @@ test('automatic local reading discards delayed old-song preview after revision s
 for(const metered of [false,true])test(`automatic local candidate retains original view without usable local evidence (${metered?'metered':'missing'})`,async({page})=>{
   await page.route('**/timing-preview',r=>r.fulfill({status:404}));
   await setup(page,metered?score:partialScore,'auto');
-  await expect(page.getByLabel('讀譜方式',{exact:true})).toHaveCount(0);
-  if(metered)await expect(page.locator('.notation-measure')).toHaveCount(4);
-  else await expect(page.getByLabel('和弦時間表',{exact:true})).toBeVisible();
+  if(metered){await expect(page.getByLabel('讀譜方式',{exact:true})).toHaveCount(0);await expect(page.locator('.notation-measure')).toHaveCount(4);}
+  else {await expect(page.getByLabel('連續和弦讀譜',{exact:true})).toBeVisible();await expect(page.locator('.notation-measure')).toHaveCount(0);}
 });
 
 for(const width of [320,390])for(const draft of [false,true])test(`long-sheet pause stays clickable after middle seek and manual scroll (${width},${draft?'draft':'timeline'})`,async({page})=>{
@@ -766,4 +766,51 @@ for(const available of [false,true])test(`partial pulse options reflect observed
     await expect(option).not.toHaveAttribute('disabled');await page.getByLabel('撥奏頻率').selectOption('half');
     await expect(page.getByText('依待確認拍點試聽；未知段暫停伴奏，原曲繼續。這些選項不更改樂譜。',{exact:true})).toBeVisible();
   }else{await expect(option).toHaveAttribute('disabled','');await expect(page.getByLabel('撥奏內容')).toBeEnabled();}
+});
+
+
+test('candidate without query reads every chord naturally and preserves unlabelled gaps and explicit rests',async({page})=>{
+  const working={...timelineScore,song:{...timelineScore.song,duration_seconds:8},chords:[
+    {...score.chords[0],id:'one',start:.5,end:1.1}, {...score.chords[0],id:'repeat',start:1.1,end:1.15},
+    {...score.chords[0],id:'rest',symbol:'N',start:2,end:2.5}, {...score.chords[0],id:'slash',symbol:'G7/B',start:3,end:7},
+  ]};
+  await page.route('**/timing-preview',r=>r.fulfill({status:404}));
+  await setup(page,working,undefined,'/reading-candidate-2026-11-05/');
+  const reading=page.getByLabel('連續和弦讀譜',{exact:true});await expect(reading).toBeVisible();
+  await expect(reading.locator('button[data-chord-id]')).toHaveCount(4);await expect(reading.locator('button[data-gap]')).toHaveCount(4);
+  await expect(reading.locator('button[data-chord-id=repeat]')).toHaveAttribute('title','1.100–1.150 秒 · C');
+  await expect(reading.getByText('C',{exact:true})).toHaveCount(2);await expect(reading.getByText('N · 休止',{exact:true})).toBeVisible();
+  await expect(reading.getByText('G7/B',{exact:true})).toBeVisible();await expect(page.locator('.notation-measure')).toHaveCount(0);
+  for(const width of [320,390,1440]){await page.setViewportSize({width,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
+  let compileCount=0,compiled:any;
+  await page.route('**/scores/playback/manifest',r=>{compileCount++;compiled=r.request().postDataJSON();return r.fulfill({json:{revision:'unchanged',duration_seconds:8,bpm:0,time_signature:'',events:[{id:'g',track:'guitar',start:0,end:8,sustain_end:8,pitches:[48],pitch_offsets:[0],pitch_velocities:[98],velocity:98,source_id:'one'}]}});});
+  await page.getByLabel('播放聲音').selectOption('guitar');
+  await reading.getByRole('button',{name:'播放 0.50 秒的 C',exact:true}).click();await expect(page.getByRole('button',{name:'暫停',exact:true})).toBeVisible();
+  expect(compiled.chords).toEqual(working.chords);
+  await page.getByRole('button',{name:'時間明細',exact:true}).click();await expect(page.getByLabel('和弦時間表',{exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:'暫停',exact:true})).toBeVisible();expect(compileCount).toBe(1);
+  await page.getByRole('button',{name:'連續和弦 · 待確認',exact:true}).click();await expect(reading).toBeVisible();expect(compileCount).toBe(1);
+  await page.getByRole('button',{name:'暫停',exact:true}).click();
+  await page.getByText('練習與編輯',{exact:true}).click();await page.getByRole('button',{name:'到時間表編輯',exact:true}).click();
+  await expect(reading).toHaveCount(0);await expect(page.getByLabel('和弦時間表',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'完成編輯',exact:true}).click();await expect(reading).toBeVisible();
+});
+
+for(const view of ['time','table'])test(`candidate respects explicit ${view} and restores that choice after editing`,async({page})=>{
+  await page.route('**/timing-preview',r=>r.fulfill({status:404}));await setup(page,timelineScore,view,'/reading-candidate-2026-11-05/');
+  await expect(page.getByLabel('和弦時間表',{exact:true})).toBeVisible();await expect(page.getByLabel('連續和弦讀譜',{exact:true})).toHaveCount(0);
+  await page.getByText('練習與編輯',{exact:true}).click();await page.getByRole('button',{name:'到時間表編輯',exact:true}).click();
+  await page.getByRole('button',{name:'完成編輯',exact:true}).click();await expect(page.getByLabel('和弦時間表',{exact:true})).toBeVisible();
+});
+
+test('a late preview cannot override an explicit time-detail choice on the candidate',async({page})=>{
+  let release!:()=>void;const held=new Promise<void>(r=>{release=r});
+  await page.route('**/timing-preview',async r=>{await held;await r.fulfill({json:partialPreview}).catch(()=>{});});
+  try{
+    await setup(page,partialScore,undefined,'/reading-candidate-2026-11-05/');await expect(page.getByLabel('連續和弦讀譜',{exact:true})).toBeVisible();
+    await page.getByRole('button',{name:'時間明細',exact:true}).click();release();
+    await expect(page.getByRole('button',{name:'局部譜 · 待確認',exact:true})).toBeVisible();await expect(page.getByLabel('和弦時間表',{exact:true})).toBeVisible();
+    await expect(page.getByLabel('局部小節預覽',{exact:true})).toHaveCount(0);
+    await page.getByRole('button',{name:'局部譜 · 待確認',exact:true}).click();await expect(page.getByLabel('局部小節預覽',{exact:true})).toBeVisible();
+  }finally{release();}
 });

@@ -39,6 +39,7 @@ Skill 原稿在 [skills/guitarscribe-autopilot](../../skills/guitarscribe-autopi
 | A17-mixed-baseline | done | 兩首完整原混音基準完成；root91.730%／58.908%，Electra有145.745s錯根音、207額外邊界，產品未改善 | [結果／覆蓋／限制](MIREX_Mixed_Baseline_Result_2026-11-06.md)、[數值](evaluation/mirex-mixed-baseline-results-2026-11-06.json)。兩次原版Chordino、25.22秒；顧問7測試、完整diagnostic重評、逐row裁切／域守恆／hash驗收通過。無新模型／分離／產品寫入／試聽，不代表華語流行。 |
 | A18-independent-bass | done | 作者真bass/piano八段0lag核符；固定pYIN穩定涵蓋僅8.869%，證據不足，未能判定低音反證路線 | [結果／取得與相容修訂](Independent_Bass_Evidence_Result_2026-11-06.md)、[事前方案](Independent_Bass_Evidence_Plan_2026-11-06.md)。7測試過，2ZIP／成功1份全曲f0；原1h截止保持。coverage不足不當訊號否決，不調參、不進分離bass恢復性／候選，無產品修改或新試聽；顧問獨立7測試、NPZ逐frame／cell累計／hash與40ms錯位拒絕驗收通過。 |
 | A19-audition | done | 和弦／根音、真拍點頻率、局部未知段停伴奏、即時雙音量；原曲保持原調與目前和弦合奏，兩種譜共通跟隨 | [功能／發布](Audition_Playback_2026-11-06.md)。dc62004已推送並發布5273候選；12新＋38既有後端、61產品、build及顧問2真job隔離審查過。三SQLite一致backup/內容不變、84首頁hash不變、匿名401；顧問正式5273兩真job完整smoke通過，0頁面例外／無使用者寫入。ngrok ERR725未改，A15待主觀驗收併同入口。 |
+| A20-continuous-reading | in_progress | 沒那麼簡單無共同局部拍格；天后有74bar／218.56s。無regions時候選auto改連續和弦文字時間、不假小節 | [盤點／閱讀／驗證](Continuous_Reading_2026-11-06.md)。21必要UI／tsc過，短音／重複／未標區段保留；候選無query auto、time/table選擇與編輯往返保持。待顧問真job審查後只發候選前端，無後端／模型／API重啟。 |
 | A01-view | done | 原局部視圖保留；使用者要求共同品質改善，取消單獨閱讀驗收 | 不再要求使用者驗收這一輪；原功能可選，不升預設。 |
 | A01-density | rejected | 後來B人耳確認慢一半、第一拍錯；全曲主速度限制不能判定正確拍速 | 連續性方法從產品恢復程式移除，離線失敗證據保留；不直接加倍或改phase再問同題。 |
 | A01-dbn | done | 你的樣子final0原DBN在15–55秒跟拍／密度／第一拍通過 | 紀錄局部通過，正式新引擎不自動開啟，不擴張全曲。 |

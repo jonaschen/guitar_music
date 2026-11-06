@@ -1,3 +1,4 @@
+import {ContinuousChordReading} from './ContinuousChordReading';
 import {useEffect, useRef, useState, type ComponentProps} from 'react';
 import {type ChordSongPage} from './ChordSongPage';
 import {type ReviewMode} from './AccompanimentReview';
@@ -14,7 +15,9 @@ export function ChordTimelinePage({score,sourceAvailable,playing,preparing,playh
 
   const preview=useTimingPreview(score);
   const timingView=new URLSearchParams(window.location.search).get('timingView');
-  const autoPreview=timingView==='auto';
+  const candidatePath=/^\/reading-candidate-[^/]+(?:\/|$)/.test(window.location.pathname);
+  const automaticReading=candidatePath||timingView==='auto';
+  const autoPreview=timingView==='auto'||candidatePath&&timingView===null;
   const viewKey=`${sourceJobId(score)}:${score.song.duration_seconds}:${score.song.source_start_seconds??0}`;
   const [viewChoice,setViewChoice]=useState<{key:string;preview:boolean}|null>(null);
   const showPreview=viewChoice?.key===viewKey?viewChoice.preview:autoPreview||timingView==='partial';
@@ -22,16 +25,17 @@ export function ChordTimelinePage({score,sourceAvailable,playing,preparing,playh
   useEffect(()=>{if(autoPreview)setEditing(false);},[autoPreview,viewKey]);
   const hasPreview=!!preview?.regions.length;
   const previewVisible=showPreview&&hasPreview&&!editing;
+  const compactVisible=automaticReading&&showPreview&&!hasPreview&&!editing;
   const sheetRef=useRef<HTMLDivElement>(null),transportRef=useRef<HTMLDivElement>(null);
   const current=score.chords.find(c=>playhead>=c.start&&playhead<c.end);
   const next=score.chords.find(c=>c.start>playhead);
   useEffect(()=>{
-    if(!playing||editing||!follow||!current)return;
-    const element=Array.from(sheetRef.current?.querySelectorAll<HTMLButtonElement>('button')??[]).find(el=>el.dataset.chordId===current.id&&(!el.dataset.start||playhead>=Number(el.dataset.start)&&playhead<Number(el.dataset.end)));
+    if(!playing||editing||!follow)return;
+    const element=Array.from(sheetRef.current?.querySelectorAll<HTMLButtonElement>('button')??[]).find(el=>(current?el.dataset.chordId===current.id:el.dataset.gap==='true')&&(!el.dataset.start||playhead>=Number(el.dataset.start)&&playhead<Number(el.dataset.end)));
     if(!element)return;
     const rect=element.getBoundingClientRect(),top=transportRef.current?.getBoundingClientRect().bottom??0;
     if(rect.top<top+16||rect.bottom>window.innerHeight-24)window.scrollBy({top:rect.top-top-16,behavior:'instant'});
-  },[current?.id,playing,editing,follow,previewVisible,playhead]);
+  },[current?.id,playing,editing,follow,previewVisible,compactVisible,playhead]);
   const duration=score.song.duration_seconds;
   const valid=start.trim()!==''&&end.trim()!==''&&Number(start)>=0&&Number(start)<Number(end)&&Number(end)<=duration;
   const rangeStart=loop?Number(start):(score.song.source_type==='example'?score.chords[0]?.start??0:0),rangeEnd=loop?Number(end):duration;
@@ -44,20 +48,20 @@ export function ChordTimelinePage({score,sourceAvailable,playing,preparing,playh
       <label>聲音 <select aria-label="播放聲音" value={mode} onChange={e=>change(()=>setMode(e.target.value as ReviewMode))}><option value="mix">原曲＋吉他</option><option value="source">原曲（原調）</option><option value="guitar">吉他</option></select></label>
     </div>
     {playbackControls}
-    {playing?<p className="chord-follow-cue" aria-label="跟彈提示">目前 <strong>{current?.symbol??'休止'}</strong><span>接著 {next?.symbol??'結束'}</span></p>:null}
+    {playing?<p className="chord-follow-cue" aria-label="跟彈提示">目前 <strong>{current?.symbol??(compactVisible?'未標和弦':'休止')}</strong><span>接著 {next?.symbol??'結束'}</span></p>:null}
     </div>
     {keyControls?<div className="song-controls key-controls">{keyControls}</div>:null}
     <p className="playback-status" role="status">{preparing?'正在準備聲音…':playing?'播放中':'已暫停'} · {stamp(playhead)} / {stamp(duration)}</p>
     {unavailable?<p role="status">{!sourceAvailable?'原曲暫時無法使用，請選「吉他」播放。':'已移調，請選「吉他」，或回到原調合奏。'}</p>:null}
     {!score.key_context.audio_matches_notation?<p role="status">原曲維持原調；吉他使用目前和弦，可能不同調，供聽感核對。</p>:null}
-    {autoPreview&&hasPreview?<div className="reading-view-controls" role="group" aria-label="讀譜方式">
-      <button type="button" aria-pressed={previewVisible} disabled={editing} onClick={()=>setShowPreview(true)}>局部譜 · 待確認</button>
-      <button type="button" aria-pressed={!previewVisible} onClick={()=>setShowPreview(false)}>時間表</button>
-      <small>{Math.round(preview!.covered_seconds)} 秒小節草稿</small>
+    {automaticReading?<div className="reading-view-controls" role="group" aria-label="讀譜方式">
+      <button type="button" aria-pressed={previewVisible||compactVisible} disabled={editing} onClick={()=>setShowPreview(true)}>{hasPreview?'局部譜 · 待確認':'連續和弦 · 待確認'}</button>
+      <button type="button" aria-pressed={!previewVisible&&!compactVisible} disabled={editing} onClick={()=>setShowPreview(false)}>時間明細</button>
+      <small>{hasPreview?`${Math.round(preview!.covered_seconds)} 秒小節草稿`:'小節位置未確認'}</small>
     </div>:null}
-    <p className="sheet-hint">{previewVisible?(autoPreview?'小節草稿待確認；未知段按時間排列。看譜方式不改變聲音。':'小節草稿尚待確認；不確定處按時間顯示，各段重新編號。'):editing&&autoPreview?'正在來源時間表編輯；完成後可回局部譜。':'這首歌的小節位置尚未確認，先顯示和弦時間表。每列是一段和弦，不是一小節；撥奏依播放器選項。'}</p>
-    {hasPreview&&!autoPreview?<label className="partial-preview-toggle"><input type="checkbox" checked={showPreview} onChange={e=>setShowPreview(e.target.checked)}/>預覽可辨識的小節（{Math.round(preview!.covered_seconds)} 秒）</label>:null}
-    {previewVisible&&!autoPreview?<p className="sheet-hint">切換看譜方式不改變聲音；撥奏依播放器選項。編輯時回到時間表。</p>:null}
+    <p className="sheet-hint">{compactVisible?'小節未確認；和弦依偵測時間連續排列，長短以時間為準。':previewVisible?(automaticReading?'小節草稿待確認；未知段按時間排列。看譜方式不改變聲音。':'小節草稿尚待確認；不確定處按時間顯示，各段重新編號。'):editing&&automaticReading?'正在時間明細編輯；完成後返回原閱讀方式。':'這首歌的小節位置尚未確認，先顯示和弦時間表。每列是一段和弦，不是一小節；撥奏依播放器選項。'}</p>
+    {hasPreview&&!automaticReading?<label className="partial-preview-toggle"><input type="checkbox" checked={showPreview} onChange={e=>setShowPreview(e.target.checked)}/>預覽可辨識的小節（{Math.round(preview!.covered_seconds)} 秒）</label>:null}
+    {previewVisible&&!automaticReading?<p className="sheet-hint">切換看譜方式不改變聲音；撥奏依播放器選項。編輯時回到時間表。</p>:null}
     {fingeringGuide}
     <details className="song-options"><summary>練習與編輯</summary>
       <div className="secondary-controls">
@@ -65,7 +69,7 @@ export function ChordTimelinePage({score,sourceAvailable,playing,preparing,playh
         <label><input type="checkbox" checked={loop} onChange={e=>change(()=>setLoop(e.target.checked))}/>循環選取時間</label>
         {loop?<><label>從（秒）<input type="number" min="0" step="0.1" value={start} onChange={e=>change(()=>setStart(e.target.value))}/></label><label>到（秒）<input type="number" min="0" step="0.1" max={duration} value={end} onChange={e=>change(()=>setEnd(e.target.value))}/></label></>:null}
         <label>吉他練習速度 <select aria-label="吉他練習速度" disabled={mode!=='guitar'} value={mode==='guitar'?speed:1} onChange={e=>change(()=>onSpeed?.(Number(e.target.value)))}>{[.5,.75,1,1.25].map(n=><option key={n} value={n}>{n*100}%</option>)}</select></label>
-        <button type="button" onClick={()=>change(()=>setEditing(v=>!v))} aria-pressed={editing}>{editing?'完成編輯':autoPreview&&hasPreview?'到時間表編輯':'編輯和弦'}</button>
+        <button type="button" onClick={()=>change(()=>setEditing(v=>!v))} aria-pressed={editing}>{editing?'完成編輯':automaticReading?'到時間表編輯':'編輯和弦'}</button>
         <button type="button" disabled={unavailable||preparing||loop&&!valid} onClick={()=>{onStop();play(rangeStart);}}>從頭播放</button>
         {secondaryActions}
       </div>
@@ -75,7 +79,10 @@ export function ChordTimelinePage({score,sourceAvailable,playing,preparing,playh
     <p className="sheet-hint">{editing?'點和弦修改名稱、時間或刪除；修改會自動保存。':'點和弦即可從該處播放。'}</p>
     {editing?editPanel:null}
     <div ref={sheetRef}>
-    {previewVisible?<PartialTimingSheet score={score} preview={preview!} playing={playing} playhead={playhead} disabled={unavailable} onSeek={from=>{
+    {compactVisible?<ContinuousChordReading score={score} playing={playing} playhead={playhead} disabled={unavailable} onSeek={from=>{
+      onStop();const within=loop&&valid&&from>=rangeStart&&from<rangeEnd;
+      if(!within)setLoop(false);onPlay(mode,within?rangeStart:0,within?rangeEnd:duration,within,from);
+    }}/>:previewVisible?<PartialTimingSheet score={score} preview={preview!} playing={playing} playhead={playhead} disabled={unavailable} onSeek={from=>{
       onStop();const within=loop&&valid&&from>=rangeStart&&from<rangeEnd;
       if(!within)setLoop(false);onPlay(mode,within?rangeStart:0,within?rangeEnd:duration,within,from);
     }}/>:<>

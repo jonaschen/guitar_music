@@ -44,3 +44,12 @@
 .audition-controls small{flex-basis:100%;}
 
 .notation-sheet button.current-chord {box-shadow:inset 0 -3px var(--accent);background:rgba(241,143,59,.12);}
+
+.continuous-chord-reading {display:flex;flex-wrap:wrap;gap:12px 20px;align-items:stretch;margin-top:16px;}
+.chord-product .continuous-chord-reading button {flex:0 1 auto;max-width:100%;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:6px;min-height:68px;padding:8px 2px;border:0;border-bottom:2px solid transparent;background:transparent;border-radius:0;}
+.continuous-chord-reading strong {font-size:1.2rem;overflow-wrap:anywhere;}
+.continuous-chord-reading small {font-size:13px;color:var(--text-muted);font-variant-numeric:tabular-nums;}
+.chord-product .continuous-chord-reading .reading-rest,.chord-product .continuous-chord-reading .reading-gap {color:var(--text-muted);opacity:.8;}
+.chord-product .continuous-chord-reading .current-chord {border-bottom-color:var(--accent);color:var(--accent);}
+.chord-product .continuous-chord-reading button:not(.current-chord):hover {border-bottom-color:var(--text-muted);}
+.chord-product .continuous-chord-reading button:focus-visible {outline:2px solid var(--text-muted);outline-offset:3px;}
