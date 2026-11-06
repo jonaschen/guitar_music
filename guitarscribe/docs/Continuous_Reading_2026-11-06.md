@@ -23,4 +23,12 @@ reading-candidate路徑不帶timingView也預設auto；有可用region仍用既�
 
 TypeScript及21項必要UI回歸通過：320／390／1440、原局部預覽／明細編輯、missing／malformed／late preview／newjob與Undo、長譜中段seek後pause、跟隨可關閉、無query候選auto、明確time／table、短音／同名／N／未標區段全保留、view切換不新增manifest編譯或改score。沒有重跑不相關後端或模型。
 
-兩真job發布前的原score／input.wav／base manifest SHA256保存在 `output/evaluation/continuous-reading-2026-11-06/sources-before.json`，發布後另核。顧問真job瀏覽器審查通過：無query自動compact165和弦／天后partial146個不同id、四尺寸無溢出、明確time遵守、編輯回原閱讀；view切換前後score POST及manifest完全一致，0使用者寫入／0頁面例外。證據 `output/evaluation/continuous-reading-2026-11-06/consultant-review.json`；最終候選build通過，19個必要檔；顧問截圖後要求hover中性、橘色只給current，已修正並重新build，發布待補。只更新同候選前端，不需重啟API；ngrok及正式首頁不動。
+兩真job發布前的原score／input.wav／base manifest SHA256保存在 `output/evaluation/continuous-reading-2026-11-06/sources-before.json`，發布後另核。顧問真job瀏覽器審查通過：無query自動compact165和弦／天后partial146個不同id、四尺寸無溢出、明確time遵守、編輯回原閱讀；view切換前後score POST及manifest完全一致，0使用者寫入／0頁面例外。證據 `output/evaluation/continuous-reading-2026-11-06/consultant-review.json`；最終候選build通過，19個必要檔；顧問截圖後要求hover中性、橘色只給current，已修正並重新build，已發布候選，正式入口顧問smoke通過。只更新同候選前端，不需重啟API；ngrok及正式首頁不動。
+
+## 候選前端發布
+
+功能提交 `f0c209c` 已推送。正式本機入口：`http://127.0.0.1:5273/reading-candidate-2026-11-05/?job=a3be29912a7045448765290d7cba2f6c`，不需timingView；《天后》換成job `d8858077556b4403a5d00cb2c9e03a99`。ngrok既有流量限制未更動，不能稱外網恢復。
+
+先備份舊candidate於 `output/backups/continuous-reading-2026-11-06/candidate/`（父目錄700），放入新hashed資產後原子換index。19個新必要檔，保留先前6個hash bundle相容既有開啟頁面，共25檔；不包含listening或歌曲音訊。rollback可恢復備份index或candidate，無需改API或回滾DB。
+
+原首頁84個檔案SHA256全保持；兩job原始score、input.wav及base manifest SHA256發布前後逐項完全一致。backend MainPID保持同一值，沒有restart、DB寫入或模型運算。受邀本機GET index與build逐byte一致。完整數值見 [發布結果](evaluation/continuous-reading-results-2026-11-06.json)，本機manifest在 `output/evaluation/continuous-reading-2026-11-06/release-results.json`。顧問已在正式5273兩真job完成smoke：無timingView自動閱讀、切換／編輯往返、全和弦保留、hover中性而current橘色、四尺寸無溢出，0使用者寫入／0頁面錯誤；證據 `output/evaluation/continuous-reading-2026-11-06/consultant-production.json`。本輪不宣稱修好拍格或和弦準確率。

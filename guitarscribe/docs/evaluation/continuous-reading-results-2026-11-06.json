@@ -3,7 +3,7 @@
   "typescript_passed": true,
   "new_model_runs": 0,
   "backend_modified": false,
-  "published": false,
+  "published": true,
   "timing_audit": {
     "a3be29912a7045448765290d7cba2f6c": {
       "duration_seconds": 304.47167800453514,
@@ -88,5 +88,19 @@
     "assets/index-DjkYDa-D.js": "0cb18908c7c70d3b94f344990e7fdb85484bcad255568d064b29b4b581151d2f",
     "assets/Bravura-BVtSfpnN.woff2": "181e0e7c4889f9ad57dde0a11988fa61b941617aa499ecdb9dfd4713896c2b19",
     "assets/index-BKYM_-zK.css": "50bcbd3d5a5d0d3e574376c58e43164213c1ef6728770f4a43ca8747008d9c05"
-  }
+  },
+  "source_commit": "f0c209c",
+  "local_url": "http://127.0.0.1:5273/reading-candidate-2026-11-05/",
+  "original_84_static_hashes_unchanged": true,
+  "two_source_scores_audio_manifests_unchanged": true,
+  "backend_pid_unchanged": true,
+  "api_restarted": false,
+  "database_written": false,
+  "backup": "/home/jonas/gemini-home/music_analysis/guitarscribe/output/backups/continuous-reading-2026-11-06",
+  "live_candidate_files": 25,
+  "index_sha256": "99c50201bb12aa6357533c2328ea1f818a5e0d10daa4065ddcf844ba0edc2f05",
+  "consultant_production_smoke_passed": true,
+  "consultant_neutral_hover_distinct_from_active": true,
+  "production_user_writes": 0,
+  "production_page_errors": 0
 }
