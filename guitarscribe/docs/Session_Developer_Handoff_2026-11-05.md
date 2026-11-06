@@ -214,3 +214,22 @@ HU33 root等權平均−1.803829百分點，0/3達到+5百分點。04／18根音
 A19 正式發布：`dc62004` 已推送，61個獨立產品案例、12新後端＋38既有播放回歸及最終build通過。發布於同5273候選，19個新必要檔與3個舊hash資產並存供既有頁面相容；短restart啟用額外API，原首頁84檔hash與三SQLite logical rows全部保持、匿名401、沒有改ngrok。發布備份 `output/backups/audition-controls-2026-11-06/`；詳見[發布紀錄](Audition_Playback_2026-11-06.md)。
 
 顧問在正式5273再次用兩真job實播，移調保mix／原曲rate1、根音每拍兩次1313與1152事件、吉他零→0.72及原曲0.16 live gain、原曲不重建、跟彈提示與四尺寸無溢出均通過，0頁面例外。攔截2筆自動修訂、無筆記寫入，未污染使用者資料。`output/evaluation/audition-controls-review-2026-11-06/consultant-production.json`保留正式base及結果；只需使用者聽感／主觀使用驗收。外網仍ERR_NGROK_725，只交家中電腦localhost入口。
+
+
+### A20：新曲完全沒有局部拍格時的閱讀退回（2026-11-06）
+
+使用者回報新分析又變整列，但調性與自己抓到的一樣。最新完成稿為《沒那麼簡單》job `a3be29912a7045448765290d7cba2f6c`，304.471678秒、165和弦、F♯大調；前一首《天后》job `d8858077556b4403a5d00cb2c9e03a99`，322.552902秒、146和弦、A大調。使用者沒有點名歌名，調性回饋暫對應最新job，不當成獨立標註真值或全伴奏通過。
+
+顧問直接讀正式timing-preview API：前者 `no_agreeing_local_bars`／0覆蓋，後者4區段74小節／218.56秒。兩份都是unmetered，完整拍格拒絕理由為meter／缺拍不一致，恢復檢查不保留原連續拍點；天后另外存在pulse density ambiguity。調性推估與拍格分開，沒有證據指向調性錯誤造成整列表格。Developer獨立讀既有diagnostics核符，未重跑模型或改護欄。
+
+A19統一跟隨提示但仍缺完全無局部小節的閱讀fallback；候選原需特殊timingView參數也不利持續試新歌。A20限定前端：候選路徑無query自動讀譜，無regions時用自然換行和弦＋秒數、gap顯『未標和弦』、保留明確N/NC／所有短和弦與重複，不做假小節或重複段落推定。明確time/table選擇保留；切時間明細可編輯，完成回原閱讀選擇。有regions仍用既有局部草稿；正式首頁不變。和弦是文字配留白，不做一格一張卡片。
+
+此段不能宣稱修好拍格或提升辨識；只改善已有結果的閱讀。顧問負責真兩job、原事件／score不變、編輯來回與響應式審查，developer完成相關mock與候選build後才發布；兩邊Chrome分時，這輪不需要API重啟。
+
+
+A20 隔離前端驗收：developer完成21個受影響UI案例與TypeScript檢查；顧問在4189代理正式唯讀API，無timingView參數開兩真job，最新稿預設連續讀譜165和弦，天后維持局部小節並涵蓋146個不同和弦ID。讀譜／時間明細兩次編譯的完整score POST body與manifest精確相同，編輯進出回原閱讀方式，明確time參數保留表格；320／390直向、844橫向、1440桌面無溢出，跟彈高亮正常，0資料寫入／0頁面例外。兩張390px截圖已檢視；發現hover與active同為橘底線容易混淆，要求非current hover灰線、鍵盤focus中性outline、只有播放中保留橘線，最後正式入口再核。隔離證據 `output/evaluation/continuous-reading-review-2026-11-06/`。只需要前端候選發布，不需重啟服務或重跑歌曲。
+
+
+A20正式候選已發布，功能f0c209c／紀錄017c859皆push；顧問正式5273兩新job同樣通過完整閱讀切換／manifest不變／編輯來回／四尺寸與neutral hover對比current橘線驗證，0寫入與0頁面例外。正式證據`continuous-reading-review-2026-11-06/consultant-production.json`。原首頁84hash、兩job原稿／input.wav／base manifest不變，服務PID不變，未重啟後端或改DB；19新必要檔＋6舊相容hash資產保留，備份`output/backups/continuous-reading-2026-11-06/`。
+
+使用者此時提出調性／調內候選／I-IV-V和聲行進，並明確允許先排除調外和弦簡化問題。新A21只驗證第一層硬候選限制，見[Diatonic_Candidate_Plan_2026-11-06.md](Diatonic_Candidate_Plan_2026-11-06.md)。已讀music-analysis技能與現行路徑：Chordino辨識後才從和弦估key；舊chromagram有tonal_bias及五度轉移但不是現行路徑。A12曾否決降低self-transition理由，本輪保留矩陣，不重做該調參。原九份trace可重用；六份舊GuitarSet保存key全為C，需按現行估調函式從未改原事件固定一次，不讀reference key。A21結果尚未產生，原譜／網站辨識保持。
