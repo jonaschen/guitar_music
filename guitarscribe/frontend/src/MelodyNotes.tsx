@@ -61,7 +61,7 @@ async function load(r:Note,discard=false){
 }
 
 /** Per-source queue survives view changes; server notes never enter chord Undo. */
-export function MelodyNotes({job,api}:{job:string;api:string}){
+export function MelodyNotes({job,api,onCopy}:{job:string;api:string;onCopy?:(text:string)=>void}){
   const r=getRecord(job,api),[,render]=useState(0);
   useEffect(()=>{
     const refresh=()=>render(n=>n+1);r.listeners.add(refresh);
@@ -71,9 +71,10 @@ export function MelodyNotes({job,api}:{job:string;api:string}){
   },[r]);
   const dirty=r.text!==r.saved;
   const status=r.loading?'正在載入筆記…':r.saving?'正在保存…':r.error||(!r.loaded?'尚未連上伺服器，文字保留於此分頁，請重試載入。':dirty?'等待自動保存…':'已保存');
-  return <details className="melody-text-notes"><summary>我的旋律筆記</summary>
+  return <details className="melody-text-notes"><summary>{onCopy?'未定位的舊筆記':'我的旋律筆記'}</summary>
     <p>記下自己抓的調性、音名或片段；文字不會自動移調或播放。此邀請空間共用。</p>
     <label>旋律筆記<textarea aria-label="旋律筆記" rows={5} maxLength={16000} disabled={r.loading} value={r.text} onChange={e=>{r.text=e.target.value;if(!r.conflict)r.error='';preserve(r);notify(r);schedule(r);}}/></label>
+    {onCopy?<button type="button" disabled={!r.text.trim()||r.loading} onClick={()=>{const area=document.querySelector<HTMLTextAreaElement>('textarea[aria-label="旋律筆記"]');const selection=area&&area.selectionEnd>area.selectionStart?r.text.slice(area.selectionStart,area.selectionEnd):r.text;onCopy(selection);}}>複製選取文字或全文到未定位簡譜列（保留原文）</button>:null}
     <p role="status" aria-label="筆記保存狀態">{status}</p>
     <button type="button" disabled={!dirty||r.saving||r.loading||!r.loaded||r.conflict} onClick={()=>void save(r)}>{r.error?'重試保存':'立即保存'}</button>
     {(r.conflict||!r.loaded)&&!r.loading?<button type="button" onClick={()=>{if(!r.conflict||window.confirm('載入伺服器版本會取代目前未存文字，請先複製要保留的內容。'))void load(r,r.conflict);}}>載入最新筆記</button>:null}

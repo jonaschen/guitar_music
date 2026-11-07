@@ -1,17 +1,17 @@
 import {useEffect,useState} from 'react';
 import {emptyWorksheet,encodeDocument,type WorksheetDocument} from './worksheetDocument';
 
-type Note={job:string;api:string;text:string;saved:string;version:number;loaded:boolean;loading:boolean;saving:boolean;error:string;conflict:boolean;invalidDraft:boolean;rawBackup?:string;conflictVersion?:number;timer?:ReturnType<typeof setTimeout>;abort?:AbortController;listeners:Set<()=>void>};
+type Note={job:string;api:string;text:string;saved:string;version:number;loaded:boolean;loading:boolean;saving:boolean;error:string;conflict:boolean;draftSchema:1|undefined;invalidDraft:boolean;rawBackup?:string;conflictVersion?:number;timer?:ReturnType<typeof setTimeout>;abort?:AbortController;listeners:Set<()=>void>};
 class NoteMessage extends Error {}
 const records=new Map<string,Note>();
 const draftKey=(job:string)=>`guitarscribe.lyricWorksheetDraft.${job}`;
 function getRecord(job:string,api:string){
   const key=`${api}:${job}`;
   if(!records.has(key)){
-    let draft:{text?:unknown;baseVersion?:unknown}|null=null;
+    let draft:{text?:unknown;baseVersion?:unknown;anchor_schema?:unknown}|null=null;
     let raw:string|null=null,invalidDraft=false;
     try{raw=sessionStorage.getItem(draftKey(job));draft=JSON.parse(raw??'null');if(raw&&(!draft||typeof draft.text!=='string'||!Number.isInteger(draft.baseVersion)||Number(draft.baseVersion)<0))throw Error();if(draft)encodeDocument(JSON.parse(String(draft.text)));}catch{invalidDraft=true;draft=null;}
-    records.set(key,{job,api,text:typeof draft?.text==='string'?draft.text:encodeDocument(emptyWorksheet),saved:encodeDocument(emptyWorksheet),version:typeof draft?.baseVersion==='number'&&Number.isInteger(draft.baseVersion)&&draft.baseVersion>=0?draft.baseVersion:0,loaded:false,loading:false,saving:false,error:'',conflict:false,invalidDraft,rawBackup:invalidDraft?raw??undefined:undefined,listeners:new Set()});
+    records.set(key,{job,api,text:typeof draft?.text==='string'?draft.text:encodeDocument(emptyWorksheet),saved:encodeDocument(emptyWorksheet),version:typeof draft?.baseVersion==='number'&&Number.isInteger(draft.baseVersion)&&draft.baseVersion>=0?draft.baseVersion:0,loaded:false,loading:false,saving:false,error:'',conflict:false,draftSchema:draft?(draft.anchor_schema===1?1:undefined):1,invalidDraft,rawBackup:invalidDraft?raw??undefined:undefined,listeners:new Set()});
   }
   return records.get(key)!;
 }
@@ -20,7 +20,7 @@ function preserve(r:Note){
   if(r.invalidDraft)return;
   try{
     if(r.text===r.saved&&!r.conflict)sessionStorage.removeItem(draftKey(r.job));
-    else sessionStorage.setItem(draftKey(r.job),JSON.stringify({text:r.text,baseVersion:r.conflict?r.conflictVersion??r.version:r.version}));
+    else sessionStorage.setItem(draftKey(r.job),JSON.stringify({anchor_schema:r.draftSchema,text:r.text,baseVersion:r.conflict?r.conflictVersion??r.version:r.version}));
   }catch{if(r.text!==r.saved)r.error='此分頁無法保留未存草稿，請按立即保存。';}
 }
 function schedule(r:Note){
@@ -32,7 +32,7 @@ async function save(r:Note){
   if(!r.loaded||r.loading||r.saving||r.conflict||r.invalidDraft||r.text===r.saved)return;
   const text=r.text,version=r.version;r.saving=true;r.error='';notify(r);
   try{
-    const response=await fetch(`${r.api}/api/v1/jobs/${encodeURIComponent(r.job)}/lyric-worksheet`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({document:JSON.parse(text),expected_version:version})});
+    const response=await fetch(`${r.api}/api/v1/jobs/${encodeURIComponent(r.job)}/lyric-worksheet`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({document:JSON.parse(text),expected_version:version,anchor_schema:1})});
     if(response.status===409){r.conflict=true;r.conflictVersion=version;throw new NoteMessage('其他瀏覽器已更新；你的文字仍保留，請先複製再載入最新歌詞工作頁。');}
     if(!response.ok)throw new NoteMessage('保存失敗，文字仍保留，可按重試保存。');
     const data=await response.json();
@@ -49,7 +49,7 @@ async function load(r:Note,discard=false){
     if(!response.ok)throw new NoteMessage('歌詞工作頁暫時無法載入，可重試；未存文字仍保留。');
     const data=await response.json();if(abort.signal.aborted)return;
     if(data.job_id!==r.job||!Number.isInteger(data.version)||data.version<0)throw new NoteMessage('歌詞工作頁資料不完整，未覆寫文字。');
-    let draft:{text:string;baseVersion:number}|null=null;
+    let draft:{text:string;baseVersion:number;anchor_schema?:1}|null=null;
     const serverText=encodeDocument(data.document);
     if(!discard&&!r.invalidDraft){
       try{
@@ -57,11 +57,13 @@ async function load(r:Note,discard=false){
         if(draft){if(typeof draft.text!=='string'||!Number.isInteger(draft.baseVersion)||draft.baseVersion<0)throw Error();draft.text=encodeDocument(JSON.parse(draft.text));}
       }catch{r.invalidDraft=true;try{r.rawBackup=sessionStorage.getItem(draftKey(r.job))??r.text;}catch{r.rawBackup=r.text;}}
     }
-    if(!discard&&r.loaded&&r.text!==r.saved&&!r.invalidDraft)draft={text:r.text,baseVersion:r.version};
+    if(!discard&&r.loaded&&r.text!==r.saved&&!r.invalidDraft)draft={text:r.text,baseVersion:r.version,anchor_schema:r.draftSchema};
     if(r.invalidDraft&&!discard){r.error='工作頁草稿格式無法讀取，請先下載備份，再確認載入最新版本。';return;}
-    r.saved=serverText;r.version=data.version;r.loaded=true;r.conflict=false;r.invalidDraft=false;r.rawBackup=undefined;r.conflictVersion=undefined;
-    if(draft&&draft.text!==serverText){
-      r.text=draft.text;
+    r.saved=serverText;r.version=data.version;r.loaded=true;r.conflict=false;r.draftSchema=1;r.invalidDraft=false;r.rawBackup=undefined;r.conflictVersion=undefined;
+    const legacyAnchorRisk=!!draft&&draft.anchor_schema!==1&&data.document.lines.some((row:{anchor?:unknown})=>row.anchor!=null);
+    if(draft&&(draft.text!==serverText||legacyAnchorRisk)){
+      r.text=draft.text;r.draftSchema=legacyAnchorRisk?undefined:1;
+      if(legacyAnchorRisk){r.conflict=true;r.conflictVersion=draft.baseVersion;r.error='舊版草稿未包含定位資訊，未覆寫已保存位置。請先下載草稿備份，再載入最新工作頁並合併文字。';}else
       if(draft.baseVersion!==data.version){r.conflict=true;r.conflictVersion=draft.baseVersion;r.error='其他瀏覽器已更新；你的未存文字仍保留，請先複製再載入最新歌詞工作頁。';}
     }else r.text=serverText;
     preserve(r);

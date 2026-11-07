@@ -11,7 +11,7 @@ from app.models.score import SongScore
 from app.services.lyric_worksheets import LyricWorksheetStore, WorksheetConflict, WorksheetDocument
 from app.services.caption_drafts import CaptionDraftService, CaptionUnavailable, caption_tracks, parse_json3
 
-DOC={'source':'自行填寫','lines':[{'id':'a','lyric':'副歌  一','notation':" 5  0 - #1' ",'start':None,'end':None},{'id':'b','lyric':'副歌  一','notation':'','start':None,'end':None}]}
+DOC={'source':'自行填寫','lines':[{'id':'a','lyric':'副歌  一','notation':" 5  0 - #1' ",'anchor':None,'start':None,'end':None},{'id':'b','lyric':'副歌  一','notation':'','anchor':None,'start':None,'end':None}]}
 
 def test_cas_reopen_clear_crossjob(tmp_path):
     store=LyricWorksheetStore(tmp_path/'s.sqlite3')
@@ -115,3 +115,41 @@ async def test_unknown_caption_selection_never_fetches(monkeypatch):
     # Repeated lists reuse metadata rather than starting a new subprocess.
     assert [r['id'] for r in await service.tracks(job)]==['manual:es']
     service._metadata.assert_awaited_once()
+
+ANCHOR=dict(time=2,end=6,source_start_seconds=10,duration_seconds=12,kind='metered',grid_id='grid-v1')
+
+def test_anchor_roundtrip_explicit_unlink_and_old_client_protection(tmp_path):
+    from app.services.lyric_worksheets import WorksheetUpgradeRequired
+    store=LyricWorksheetStore(tmp_path/'anchors.sqlite3')
+    doc=WorksheetDocument.model_validate(DOC).model_dump();doc['lines'][0]['anchor']=ANCHOR
+    assert store.save('a',doc,0,1)['document']['lines'][0]['anchor']==ANCHOR
+    for old in [DOC,{'lines':[]}]:
+        with pytest.raises(WorksheetUpgradeRequired):store.save('a',old,1)
+        assert store.read('a')['version']==1 and store.read('a')['document']==doc
+    omitted=WorksheetDocument.model_validate(DOC).model_dump();omitted['lines'][0].pop('anchor')
+    with pytest.raises(WorksheetUpgradeRequired):store.save('a',omitted,1,1)
+    doc['lines'][0]['anchor']=None
+    assert store.save('a',doc,1,1)['document']['lines'][0]['anchor'] is None
+    assert store.save('a',DOC,2)['version']==3
+
+@pytest.mark.parametrize('anchor',[dict(ANCHOR,time=12),dict(ANCHOR,end=2),dict(ANCHOR,end=13),dict(ANCHOR,grid_id=None),dict(ANCHOR,source_start_seconds=-1),dict(ANCHOR,time=float('inf'))])
+def test_invalid_anchor_rejected(anchor):
+    from app.services.lyric_worksheets import WorksheetAnchor
+    with pytest.raises(ValidationError):WorksheetAnchor.model_validate(anchor)
+
+@pytest.mark.asyncio
+async def test_old_tab_cannot_clear_anchors_even_with_current_version(tmp_path):
+    store=LyricWorksheetStore(tmp_path/'anchors.sqlite3');doc=WorksheetDocument.model_validate(DOC).model_dump();doc['lines'][0]['anchor']=ANCHOR
+    store.save('a',doc,0,1)
+    app.dependency_overrides[get_job_service]=lambda:SimpleNamespace(get=lambda _:None)
+    app.dependency_overrides[get_lyric_worksheet_store]=lambda:store
+    try:
+        async with AsyncClient(transport=ASGITransport(app=app),base_url='http://test') as c:
+            for document in [DOC,{'source':'','lines':[]}]:
+                response=await c.put('/api/v1/jobs/a/lyric-worksheet',json={'document':document,'expected_version':1})
+                assert response.status_code==409 and '重新整理' in response.json()['detail']
+                assert store.read('a')['document']==doc
+            response=await c.put('/api/v1/jobs/a/lyric-worksheet',json={'document':DOC,'expected_version':1,'anchor_schema':1})
+            assert response.status_code==200 and response.json()['document']['lines'][0]['anchor'] is None
+    finally:
+        app.dependency_overrides.pop(get_job_service,None);app.dependency_overrides.pop(get_lyric_worksheet_store,None)

@@ -1,0 +1,36 @@
+{
+  "backend_tests": 30,
+  "frontend_distinct_tests": 19,
+  "typescript_passed": true,
+  "final_build_passed": true,
+  "prior_A22_product_accepted": false,
+  "prior_A22_prompt_superseded": true,
+  "consultant_browser": {
+    "checks": {
+      "inline_full_bar_correct": true,
+      "same_row_reopen_twice": true,
+      "seek_from_note_and_pause_to_edit": true,
+      "cross_bar_same_row_continuation": true,
+      "reload_preserves_text_and_anchor": true,
+      "reconfirm_changed_grid_keeps_time": true,
+      "source_change_no_silent_reposition": true,
+      "partial_bar_located_and_marked": true,
+      "unknown_gap_has_seconds_and_visible_note": true,
+      "no_grid_note_in_chord_flow": true,
+      "selected_legacy_copy_without_overwriting": true,
+      "four_sizes_no_overflow": true,
+      "original_manifest_identical": true
+    },
+    "errors": [],
+    "productionWrites": 0
+  },
+  "consultant_legacy_draft": {
+    "same_version_legacy_draft_does_not_erase_anchor": true,
+    "review_required_across_two_reloads": true,
+    "original_and_offline_text_preserved": true,
+    "confirmed_server_restore": true,
+    "writes": 0,
+    "errors": []
+  },
+  "published": false
+}

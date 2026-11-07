@@ -63,3 +63,23 @@
 .worksheet-preview {margin:12px 0;max-height:55vh;overflow:auto;border-left:2px solid var(--border);padding-left:12px;}
 .worksheet-preview li {white-space:pre-wrap;overflow-wrap:anywhere;}
 .lyric-worksheet select,.lyric-worksheet input {max-width:100%;}
+
+.reading-piece{display:flex;flex-direction:column;max-width:100%;min-width:0;}
+.located-song-notes{min-width:0;max-width:100%;margin:6px 0;text-align:left;}
+.located-song-note{padding:4px 0;}
+.chord-product .located-song-note button{display:flex;flex-direction:column;align-items:flex-start;max-width:100%;min-height:36px;padding:4px 2px;border:0;border-radius:0;background:transparent;box-shadow:none;text-align:left;white-space:normal;}
+.chord-product .located-song-note button>*{text-align:left;}
+.located-song-note .note-text{gap:5px;line-height:1.5;}
+.located-lyric,.located-notation{display:block;white-space:pre-wrap;overflow-wrap:anywhere;}
+.located-lyric{font-size:16px;}
+.located-notation{font-family:ui-monospace,monospace;font-size:16px;letter-spacing:.06em;}
+.located-song-note small{font-size:14px;color:var(--text-muted);}
+.note-arrangement{display:flex;flex-wrap:wrap;gap:6px;max-width:100%;}
+.note-arrangement p{flex-basis:100%;}
+.note-arrangement button{max-width:100%;overflow-wrap:anywhere;text-align:left;}
+.note-arrangement button[aria-pressed=true]{border-color:var(--text-muted);}
+.note-position-editor label{display:block;margin:8px 0;}
+.note-position-editor input{width:110px;}
+.note-position-editor select{width:100%;}
+.worksheet-line{scroll-margin-top:190px;}
+.chord-product .chord-timeline>div>button{width:100%;}

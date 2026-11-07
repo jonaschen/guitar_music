@@ -438,10 +438,11 @@ async def read_lyric_worksheet(job_id:str,service=Depends(get_job_service),store
 
 @app.put('/api/v1/jobs/{job_id}/lyric-worksheet')
 async def save_lyric_worksheet(job_id:str,body:WorksheetSave,service=Depends(get_job_service),store=Depends(get_lyric_worksheet_store)):
-    from .services.lyric_worksheets import WorksheetConflict
+    from .services.lyric_worksheets import WorksheetConflict,WorksheetUpgradeRequired
     sheet=await asyncio.to_thread(store.read,job_id)
     if sheet['version']==0:require_note_source(job_id,service)
-    try:return await asyncio.to_thread(store.save,job_id,body.document,body.expected_version)
+    try:return await asyncio.to_thread(store.save,job_id,body.document,body.expected_version,body.anchor_schema)
+    except WorksheetUpgradeRequired as exc:raise HTTPException(409,'工作頁已有小節定位，請備份草稿並重新整理整個頁面後再編輯。') from exc
     except WorksheetConflict as exc:raise HTTPException(409,'工作頁已在其他分頁更新，請保留草稿並載入最新版本。') from exc
 
 

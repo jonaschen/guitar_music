@@ -1,3 +1,6 @@
+import {LyricsWorksheet} from './LyricsWorksheet';
+import {LocatedSongNotes} from './SongNotes';
+import {localNotePositions,chordTimePieces} from './songNoteTimeline';
 import {ContinuousChordReading} from './ContinuousChordReading';
 import {useEffect, useRef, useState, type ComponentProps} from 'react';
 import {type ChordSongPage} from './ChordSongPage';
@@ -14,6 +17,7 @@ export function ChordTimelinePage({score,sourceAvailable,playing,preparing,playh
   const [follow,setFollow]=useState(true);
 
   const preview=useTimingPreview(score);
+  const positions=localNotePositions(preview);
   const timingView=new URLSearchParams(window.location.search).get('timingView');
   const candidatePath=/^\/reading-candidate-[^/]+(?:\/|$)/.test(window.location.pathname);
   const automaticReading=candidatePath||timingView==='auto';
@@ -42,6 +46,7 @@ export function ChordTimelinePage({score,sourceAvailable,playing,preparing,playh
   const unavailable=mode!=='guitar'&&!sourceAvailable;
   const change=(fn:()=>void)=>{onStop();fn();};
   const play=(from?:number)=>onPlay(mode,rangeStart,rangeEnd,loop,from);
+  const playNote=(from:number)=>{onStop();const within=loop&&valid&&from>=rangeStart&&from<rangeEnd;if(!within)setLoop(false);onPlay(mode,within?rangeStart:0,within?rangeEnd:duration,within,from);};
   return <section className="song-sheet" aria-label="和弦核對">
     <div className="timeline-transport" ref={transportRef}><div className="song-controls">
       <button className="primary-action" type="button" disabled={!playing&&!preparing&&(unavailable||loop&&!valid)} onClick={()=>playing||preparing?onStop():play(playhead>=rangeStart&&playhead<rangeEnd?playhead:undefined)}>{preparing?'取消準備':playing?'暫停':'播放'}</button>
@@ -63,6 +68,7 @@ export function ChordTimelinePage({score,sourceAvailable,playing,preparing,playh
     {hasPreview&&!automaticReading?<label className="partial-preview-toggle"><input type="checkbox" checked={showPreview} onChange={e=>setShowPreview(e.target.checked)}/>預覽可辨識的小節（{Math.round(preview!.covered_seconds)} 秒）</label>:null}
     {previewVisible&&!automaticReading?<p className="sheet-hint">切換看譜方式不改變聲音；撥奏依播放器選項。編輯時回到時間表。</p>:null}
     {fingeringGuide}
+    <LyricsWorksheet onEdit={onStop} positions={positions} playhead={playhead} onSeek={playNote} disabled={unavailable||preparing}/>
     <details className="song-options"><summary>練習與編輯</summary>
       <div className="secondary-controls">
         <label><input type="checkbox" checked={follow} onChange={e=>setFollow(e.target.checked)}/>跟隨播放位置</label>
@@ -79,20 +85,20 @@ export function ChordTimelinePage({score,sourceAvailable,playing,preparing,playh
     <p className="sheet-hint">{editing?'點和弦修改名稱、時間或刪除；修改會自動保存。':'點和弦即可從該處播放。'}</p>
     {editing?editPanel:null}
     <div ref={sheetRef}>
-    {compactVisible?<ContinuousChordReading score={score} playing={playing} playhead={playhead} disabled={unavailable} onSeek={from=>{
+    {compactVisible?<ContinuousChordReading onEdit={onStop} positions={positions} score={score} playing={playing} playhead={playhead} disabled={unavailable} onSeek={from=>{
       onStop();const within=loop&&valid&&from>=rangeStart&&from<rangeEnd;
       if(!within)setLoop(false);onPlay(mode,within?rangeStart:0,within?rangeEnd:duration,within,from);
-    }}/>:previewVisible?<PartialTimingSheet score={score} preview={preview!} playing={playing} playhead={playhead} disabled={unavailable} onSeek={from=>{
+    }}/>:previewVisible?<PartialTimingSheet onEdit={onStop} positions={positions} score={score} preview={preview!} playing={playing} playhead={playhead} disabled={unavailable} onSeek={from=>{
       onStop();const within=loop&&valid&&from>=rangeStart&&from<rangeEnd;
       if(!within)setLoop(false);onPlay(mode,within?rangeStart:0,within?rangeEnd:duration,within,from);
     }}/>:<>
     <div className="timeline-columns" aria-hidden="true"><span>時間範圍</span><span>和弦</span><span>長度</span></div>
     <div className="chord-timeline" aria-label="和弦時間表">
-      {score.chords.map(c=><button type="button" key={c.id} data-chord-id={c.id} className={playing&&playhead>=c.start&&playhead<c.end?'current-chord':''} aria-label={`${editing?'編輯':'播放'} ${c.start.toFixed(2)} 秒的 ${c.symbol}`} disabled={!editing&&unavailable} title={`${c.start.toFixed(2)}–${c.end.toFixed(2)} 秒`} onClick={()=>{
+      {chordTimePieces(score).map((piece,i)=>{const c=piece.chord;return <div key={c?.id??`gap-${i}`}>{c?<button type="button" data-chord-id={c.id} className={playing&&playhead>=c.start&&playhead<c.end?'current-chord':''} aria-label={`${editing?'編輯':'播放'} ${c.start.toFixed(2)} 秒的 ${c.symbol}`} disabled={!editing&&unavailable} title={`${c.start.toFixed(2)}–${c.end.toFixed(2)} 秒`} onClick={()=>{
         onStop();
         if(editing)onEditChord?.(c.id);
         else {const within=loop&&valid&&c.start>=rangeStart&&c.start<rangeEnd;if(!within)setLoop(false);onPlay(mode,within?rangeStart:0,within?rangeEnd:duration,within,c.start);}
-      }}><small>{stamp(c.start)}–{stamp(c.end)}</small><strong>{c.symbol}</strong><span>{(c.end-c.start).toFixed(2)} 秒</span></button>)}
+      }}><small>{stamp(c.start)}–{stamp(c.end)}</small><strong>{c.symbol}</strong><span>{(c.end-c.start).toFixed(2)} 秒</span></button>:null}<LocatedSongNotes onEdit={onStop} start={piece.start} end={piece.end} positions={positions} onSeek={playNote} disabled={unavailable||preparing}/></div>;})}
       {!score.chords.length?<p>目前沒有和弦，仍可播放原曲或還原版本。</p>:null}
     </div>
     </>}

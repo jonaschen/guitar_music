@@ -41,7 +41,8 @@ Skill 原稿在 [skills/guitarscribe-autopilot](../../skills/guitarscribe-autopi
 | A19-audition | done | 和弦／根音、真拍點頻率、局部未知段停伴奏、即時雙音量；原曲保持原調與目前和弦合奏，兩種譜共通跟隨 | [功能／發布](Audition_Playback_2026-11-06.md)。dc62004已推送並發布5273候選；12新＋38既有後端、61產品、build及顧問2真job隔離審查過。三SQLite一致backup/內容不變、84首頁hash不變、匿名401；顧問正式5273兩真job完整smoke通過，0頁面例外／無使用者寫入。ngrok ERR725未改，A15待主觀驗收併同入口。 |
 | A20-continuous-reading | done | 沒那麼簡單無共同局部拍格；天后有74bar／218.56s。無regions時候選auto用連續和弦文字時間、不假小節 | [盤點／發布](Continuous_Reading_2026-11-06.md)。f0c209c已推送並發布5273候選；21必要UI／tsc/build與顧問正式5273真2job smokes全過（含中性hover），0寫入／0頁面錯誤。原84檔與2job原稿/音訊/manifest完全不變，無API重啟/DB寫入/模型運算。 |
 | A21-diatonic-mask | rejected | 原217-state HMM精確重播後，固定自動key＋調內硬限制：HU33 root均−2.628pp、漏多秒數全增，控制亦退步 | [事前方案](Diatonic_Candidate_Plan_2026-11-06.md)、[結果／覆蓋](Diatonic_Candidate_Result_2026-11-06.md)。9baseline exact path/raw/projected gate過、9candidate、零模型；14工程測試過。停止這組固定介入，不調key/HMM/門檻或加行進，不變預設；顧問獨立NumPy全18 path、key/mask/raw與完整diagnostic/hash重評通過，確認否決。 |
-| A22-lyrics-worksheet | awaiting_human | 歌詞初稿逐行校對、下方自由文字簡譜；獨立來源自存、跨分頁版本衝突與損壞草稿恢復，原筆記保留 | 功能0a644e2／發布d79c0b7已push並更新同5273候選；[發布與限制](Lyrics_Worksheet_2026-11-07.md)、[數值](evaluation/lyrics-worksheet-results-2026-11-07.json)。22後端／6UI／tsc/build、顧問隔離真API及正式唯讀驗收通過。最新影片無字幕時貼上／LRC；字幕須選語言預覽，不新增ASR或自動旋律。僅操作順手度留使用者方便時確認，不需重做音樂試聽。 |
+| A22-lyrics-worksheet | rejected | 保存等工程通過，但使用者指出歌詞／旋律筆記各自獨立且脫離小節，產品方式被否決 | 既有發布0a644e2保留至A23驗收替換；不再詢問原逐行填寫題。資料及既有筆記完整保留，由A23沿用。 |
+| A23-song-notes-on-score | awaiting_human | 將歌詞與簡譜成對定位到實際小節／秒數，直接出現在和弦下；舊筆記納入同入口 | [修正及相容方案](Song_Notes_On_Score_2026-11-07.md)。30後端／19不同UI／tsc及最終build過；顧問真三job隔離驗收通過，已授權同候選發布。舊頁面及離線草稿皆不能默刪定位，資料保留；只留整合流程順手度，不重問A22舊題。 |
 | A01-view | done | 原局部視圖保留；使用者要求共同品質改善，取消單獨閱讀驗收 | 不再要求使用者驗收這一輪；原功能可選，不升預設。 |
 | A01-density | rejected | 後來B人耳確認慢一半、第一拍錯；全曲主速度限制不能判定正確拍速 | 連續性方法從產品恢復程式移除，離線失敗證據保留；不直接加倍或改phase再問同題。 |
 | A01-dbn | done | 你的樣子final0原DBN在15–55秒跟拍／密度／第一拍通過 | 紀錄局部通過，正式新引擎不自動開啟，不擴張全曲。 |
@@ -60,7 +61,7 @@ Skill 原稿在 [skills/guitarscribe-autopilot](../../skills/guitarscribe-autopi
 
 ## 必要人類驗收佇列
 
-A22歌詞與手填簡譜已沿同候選交付，由顧問在使用者方便時一起提供；展開工作頁、貼上／預覽歌詞後在下方填簡譜即可。保存、刷新、雙分頁及恢復已工程驗證，不另要求使用者重跑。這是手動工作流程，不能當成旋律或字幕正確性驗收；ngrok原流量限制仍在，本機5273可用。
+A22原獨立逐行面板的產品方式被使用者否決，舊待驗收題取消；改由A23整合和弦譜上的歌詞／簡譜定位流程，先完成顧問工程與譜面審查，再交付同一入口。不重做既有音樂試聽，不將工程通過視為使用者接受。
 
 使用者目前無法驗收，保留 A15「轉調後吉他播放＋我的旋律筆記」；下次使用者方便時，由顧問提醒一次並交付同一受邀入口，不建立排程或重複通知。A14局部小節閱讀併在同一流程，不另重開已取消的舊閱讀題。
 

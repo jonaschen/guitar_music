@@ -1,6 +1,8 @@
 import {useEffect, useMemo, useRef, useState, type ComponentProps, type ReactNode} from 'react';
 import {AccompanimentReview, type ReviewMode} from './AccompanimentReview';
-import {notationBars} from './melodyNotation';
+import {readingBars,fullNotePositions} from './songNoteTimeline';
+import {SongNotesProvider,LocatedSongNotes} from './SongNotes';
+import {LyricsWorksheet} from './LyricsWorksheet';
 import {ChordTimelinePage} from './ChordTimelinePage';
 import {measureLayout} from './measureLayout';
 
@@ -9,16 +11,11 @@ type Props=ComponentProps<typeof AccompanimentReview> & {
   speed?:number; onSpeed?:(rate:number)=>void;
 };
 export function ChordSongPage(props:Props){
-  return props.score.analysis.timing_status==='unmetered' ? <ChordTimelinePage {...props}/> : <MeteredChordSongPage {...props}/>;
+  return <SongNotesProvider score={props.score}>{props.score.analysis.timing_status==='unmetered'||!fullNotePositions(props.score,readingBars(props.score)).length ? <ChordTimelinePage {...props}/> : <MeteredChordSongPage {...props}/>}</SongNotesProvider>;
 }
 function MeteredChordSongPage({score,sourceAvailable,playing,preparing,playhead,guitarVolume,onVolume,onPlay,onStop,onTools,onEditChord,playbackControls,keyControls,secondaryActions,editPanel,fingeringGuide,speed=1,onSpeed}:Props){
-  const bars=useMemo(()=>{
-    const raw=notationBars(score);
-    // A pre-beat sliver is part of the cropped opening, not another measure.
-    if(raw[0]?.number===-1 && raw[1]?.number===0 && !score.beats.some(b=>b.time<raw[1].start))
-      return [{...raw[1],start:raw[0].start},...raw.slice(2)];
-    return raw;
-  },[score]);
+  const bars=useMemo(()=>readingBars(score),[score]);
+  const positions=useMemo(()=>fullNotePositions(score,bars),[score,bars]);
   const barName=(number:number)=>number===0?'起始片段':`Bar ${number}`;
   const [mode,setMode]=useState<ReviewMode>('mix'),[loop,setLoop]=useState(false),[editing,setEditing]=useState(false);
   const [follow,setFollow]=useState(true);
@@ -39,6 +36,7 @@ function MeteredChordSongPage({score,sourceAvailable,playing,preparing,playhead,
   const unavailable=mode!=='guitar' && !sourceAvailable;
   const change=(action:()=>void)=>{onStop();action();};
   const play=(from?:number)=>onPlay(mode,start,end,loop,from);
+  const playNote=(from:number)=>{onStop();const within=loop&&from>=start&&from<end;if(!within)setLoop(false);onPlay(mode,within?start:0,within?end:score.song.duration_seconds,within,from);};
   return <section className="song-sheet" aria-label="和弦核對">
     {score.provenance.parameters?.timing_candidate && score.provenance.parameters?.timing_candidate_confirmed !== true ? <p className="sheet-hint" role="note">拍格試驗稿 · 拍子尚待確認；原稿保留，和弦內容與時間未改。</p> : null}
     <div className="timeline-transport" ref={transportRef}><div className="song-controls">
@@ -53,6 +51,7 @@ function MeteredChordSongPage({score,sourceAvailable,playing,preparing,playhead,
     {unavailable?<p role="status">{!sourceAvailable?'原曲暫時無法使用，請選「吉他」播放。':'已移調，與原曲音高不同。請選「吉他」，或回到原調合奏。'}</p>:null}
     {!score.key_context.audio_matches_notation?<p role="status">原曲維持原調；吉他使用目前和弦，可能不同調，供聽感核對。</p>:null}
     {fingeringGuide}
+    <LyricsWorksheet onEdit={onStop} positions={positions} playhead={playhead} onSeek={playNote} disabled={unavailable||preparing}/>
     <details className="song-options"><summary>練習與編輯</summary>
       <div className="secondary-controls"><label><input type="checkbox" checked={follow} onChange={e=>setFollow(e.target.checked)}/>跟隨播放</label>
         <label><input type="checkbox" checked={loop} onChange={e=>change(()=>setLoop(e.target.checked))}/>循環選取小節</label>
@@ -78,6 +77,7 @@ function MeteredChordSongPage({score,sourceAvailable,playing,preparing,playhead,
             if(editing){onStop();onEditChord?.(c.id,{start:bar.start,end:bar.end,bar:bar.number});}
             else {const from=Math.max(c.start,bar.start);onStop();if(loop&&(from<start||from>=end))setLoop(false);onPlay(mode,loop&&from>=start&&from<end?start:0,loop&&from>=start&&from<end?end:score.song.duration_seconds,loop&&from>=start&&from<end,from);}
           }}><span>{c.symbol}{c.start<bar.start?<span className="tie-mark" aria-label="延續"> —</span>:null}</span>{score.provenance.parameters?.chord_grid_candidate && entries.length>1 && /^\d+(?:\.5)? 拍$/.test(layout.length(Math.max(c.start,bar.start),Math.min(c.end,bar.end))) ? <small className="chord-duration">{layout.length(Math.max(c.start,bar.start),Math.min(c.end,bar.end))}</small> : null}</button>):<span className="no-chord">—</span>}</div>
+          <LocatedSongNotes onEdit={onStop} start={bar.start} end={bar.end} positions={positions} onSeek={playNote} disabled={unavailable||preparing}/>
         </div>;
       })}
     </div>

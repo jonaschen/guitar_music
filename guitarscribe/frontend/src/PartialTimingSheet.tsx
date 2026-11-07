@@ -1,3 +1,5 @@
+import {LocatedSongNotes} from './SongNotes';
+import {localNotePositions,chordTimePieces,type NotePosition} from './songNoteTimeline';
 import {useEffect, useState} from 'react';
 import type {SongScore} from './types';
 import {sourceJobId} from './scoreVersion';
@@ -41,7 +43,7 @@ export function useTimingPreview(score:SongScore){
 }
 
 /** Presentation only. Unknown ranges have seconds, never invented bar numbers. */
-export function PartialTimingSheet({score,preview,playing,playhead,disabled,onSeek}:{score:SongScore;preview:TimingPreview;
+export function PartialTimingSheet({score,preview,playing,playhead,disabled,onSeek,onEdit,positions=localNotePositions(preview)}:{score:SongScore;preview:TimingPreview;onEdit?:()=>void;positions?:NotePosition[];
   playing:boolean;playhead:number;disabled:boolean;onSeek:(from:number)=>void}){
   const pieces:Array<{start:number;end:number;region?:TimingPreview['regions'][number];index?:number}>=[];
   let cursor=0;
@@ -67,8 +69,8 @@ export function PartialTimingSheet({score,preview,playing,playhead,disabled,onSe
         className={`notation-measure${playing&&playhead>=bar.start&&playhead<bar.end?' current-measure':''}`}
         key={bar.start} aria-label={`段落 ${piece.index} 第 ${i+1} 小節`}>
         <span className="measure-number">{piece.index}.{i+1}</span>
-        <div className="measure-chords">{chords(bar.start,bar.end)}</div>
-      </div>)}</div>:<div className="unknown-chords">{chords(piece.start,piece.end,true)}</div>}
+        <div className="measure-chords">{chords(bar.start,bar.end)}</div><LocatedSongNotes onEdit={onEdit} start={bar.start} end={bar.end} positions={positions} onSeek={onSeek} disabled={disabled}/>
+      </div>)}</div>:<div className="unknown-chords">{chordTimePieces(score,piece.start,piece.end).map((part,i)=><div key={i}>{part.chord?chords(part.start,part.end,true):<small>{timeLabel(part.start)} · 未標和弦</small>}<LocatedSongNotes onEdit={onEdit} start={part.start} end={part.end} positions={positions} onSeek={onSeek} disabled={disabled}/></div>)}</div>}
     </section>)}
   </div>;
 }
