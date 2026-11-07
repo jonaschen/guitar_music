@@ -1,3 +1,5 @@
+import {markLyric,undoLyricMark} from '../src/lyricMarking';
+import {createReviewTransportClock} from '../src/transportClock';
 import {readFileSync} from "node:fs";
 const acceptedGrid=JSON.parse(readFileSync(new URL("./fixtures/accepted-chord-grid.json",import.meta.url),"utf8"));
 import {anchorStatus,fullNotePositions,localNotePositions,notesInRange,readingBars} from '../src/songNoteTimeline';
@@ -819,8 +821,8 @@ test('a late preview cannot override an explicit time-detail choice on the candi
 
 // A22: independent lyric worksheet, never a mutation of the analysed score.
 const emptySheet=()=>({job_id:'product-job',document:{source:'',lines:[] as any[]},version:0});
-async function openWorksheet(page:any){await page.getByText('歌曲筆記（歌詞與簡譜）',{exact:true}).click();await expect(page.getByLabel('歌詞工作頁保存狀態')).not.toContainText('正在載入');}
-async function pasteWorksheet(page:any,text:string){await page.getByLabel('貼上歌詞初稿').fill(text);await page.getByRole('button',{name:'預覽貼上內容',exact:true}).click();await page.getByRole('button',{name:'加入空白工作頁',exact:true}).click();}
+async function openWorksheet(page:any){if(await page.locator('.lyric-worksheet').getAttribute('open')===null)await page.getByText('歌曲筆記（歌詞與簡譜）',{exact:true}).click();await expect(page.getByLabel('歌詞工作頁保存狀態')).not.toContainText('正在載入');}
+async function pasteWorksheet(page:any,text:string){await quickLyrics(page,text);}
 for(const width of [320,1440])test(`lyric worksheet preserves repeated lines, notation, IDs and original notes (${width})`,async({page})=>{
   await page.setViewportSize({width,height:844});let sheet=emptySheet(),writes=0,notes=0;
   await page.route('**/lyric-worksheet',r=>{if(r.request().method()==='GET')return r.fulfill({json:sheet});const body=r.request().postDataJSON();expect(body.expected_version).toBe(sheet.version);sheet={...sheet,document:body.document,version:sheet.version+1};return r.fulfill({json:sheet});});
@@ -829,10 +831,10 @@ for(const width of [320,1440])test(`lyric worksheet preserves repeated lines, no
   await pasteWorksheet(page,'副歌  一\n\n副歌  一');await page.getByLabel('簡譜第1行',{exact:true}).fill(" 5  0 - #1' ");
   await expect.poll(()=>sheet.document.lines[0]?.notation).toBe(" 5  0 - #1' ");const id=sheet.document.lines[0].id;
   expect(sheet.document.lines.map(r=>r.lyric)).toEqual(['副歌  一','','副歌  一']);
-  await page.getByRole('button',{name:'在第1行下方新增',exact:true}).click();await expect(page.getByLabel('歌曲筆記安排')).toContainText('4. 副歌  一');await page.getByLabel('歌曲筆記安排').getByRole('button').first().click();
+  await revealNotes(page,'微調位置／文字行');await page.getByRole('button',{name:'在第1行下方新增',exact:true}).click();await expect(page.getByLabel('歌曲筆記安排')).toContainText('4. 副歌  一');await revealNotes(page,'選擇其他句／完整安排');await page.getByLabel('歌曲筆記安排').getByRole('button').first().click();
   expect(await page.locator('.worksheet-line').first().getAttribute('data-line-id')).toBe(id);
-  page.once('dialog',d=>d.dismiss());await page.getByRole('button',{name:'移除第1行',exact:true}).click();await expect(page.getByLabel('簡譜第1行',{exact:true})).toHaveValue(" 5  0 - #1' ");
-  await expect(page.getByLabel('歌詞工作頁保存狀態')).toHaveText('已保存');await page.reload();await openWorksheet(page);await page.getByLabel('歌曲筆記安排').getByRole('button').first().click();
+  page.once('dialog',d=>d.dismiss());await revealNotes(page,'微調位置／文字行');await page.getByRole('button',{name:'移除第1行',exact:true}).click();await expect(page.getByLabel('簡譜第1行',{exact:true})).toHaveValue(" 5  0 - #1' ");
+  await expect(page.getByLabel('歌詞工作頁保存狀態')).toHaveText('已保存');await page.reload();await openWorksheet(page);await revealNotes(page,'選擇其他句／完整安排');await page.getByLabel('歌曲筆記安排').getByRole('button').first().click();
   await expect(page.getByLabel('簡譜第1行',{exact:true})).toHaveValue(" 5  0 - #1' ");await openLegacyNotes(page);await expect(page.getByLabel('旋律筆記',{exact:true})).toHaveValue('既有手記');
   expect(writes).toBe(0);expect(notes).toBe(0);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
@@ -848,17 +850,17 @@ test('lyric worksheet conflict keeps offline draft across repeated reloads',asyn
   const other=await context.newPage();await setup(page,partialScore);await setup(other,partialScore);await openWorksheet(page);await openWorksheet(other);
   await pasteWorksheet(page,'A離線草稿');await expect(page.getByLabel('歌詞工作頁保存狀態')).toContainText('保存失敗');
   await pasteWorksheet(other,'B已保存');await expect.poll(()=>sheet.document.lines[0]?.lyric).toBe('B已保存');offline=false;
-  for(let i=0;i<2;i++){await page.reload();await openWorksheet(page);await page.getByLabel('歌曲筆記安排').getByRole('button').first().click();await expect(page.getByLabel('歌詞第1行',{exact:true})).toHaveValue('A離線草稿');await expect(page.getByLabel('歌詞工作頁保存狀態')).toContainText('其他瀏覽器已更新');expect(sheet.document.lines[0].lyric).toBe('B已保存');}
-  page.once('dialog',d=>d.accept());await page.getByRole('button',{name:'載入最新歌詞工作頁',exact:true}).click();await page.getByLabel('歌曲筆記安排').getByRole('button').first().click();await expect(page.getByLabel('歌詞第1行',{exact:true})).toHaveValue('B已保存');await other.close();
+  for(let i=0;i<2;i++){await page.reload();await openWorksheet(page);await revealNotes(page,'選擇其他句／完整安排');await page.getByLabel('歌曲筆記安排').getByRole('button').first().click();await expect(page.getByLabel('歌詞第1行',{exact:true})).toHaveValue('A離線草稿');await expect(page.getByLabel('歌詞工作頁保存狀態')).toContainText('其他瀏覽器已更新');expect(sheet.document.lines[0].lyric).toBe('B已保存');}
+  page.once('dialog',d=>d.accept());await revealNotes(page,'來源／備份／舊筆記');await page.getByRole('button',{name:'載入最新歌詞工作頁',exact:true}).click();await revealNotes(page,'選擇其他句／完整安排');await page.getByLabel('歌曲筆記安排').getByRole('button').first().click();await expect(page.getByLabel('歌詞第1行',{exact:true})).toHaveValue('B已保存');await other.close();
 });
 
 for(const raw of ['{bad-json',JSON.stringify({text:'{bad-inner',baseVersion:0})])test(`lyric worksheet corrupt draft supports backup and confirmed recovery (${raw.length})`,async({page})=>{
   let puts=0;await page.addInitScript(raw=>sessionStorage.setItem('guitarscribe.lyricWorksheetDraft.product-job',raw),raw);
   await page.route('**/lyric-worksheet',r=>{if(r.request().method()==='PUT')puts++;return r.fulfill({json:{...emptySheet(),version:2,document:{source:'server',lines:[{id:'saved',lyric:'伺服器版本',notation:'1 2',start:null,end:null}]}}});});
   await setup(page,partialScore);await openWorksheet(page);await expect(page.getByLabel('歌詞工作頁保存狀態')).toContainText('草稿格式無法讀取');
-  const download=page.waitForEvent('download');await page.getByRole('button',{name:'下載工作頁備份',exact:true}).click();const file=await (await download).path();expect(readFileSync(file!,'utf8')).toBe(raw);
-  page.once('dialog',d=>d.dismiss());await page.getByRole('button',{name:'載入最新歌詞工作頁',exact:true}).click();await expect(page.getByLabel('歌詞第1行',{exact:true})).toHaveCount(0);
-  page.once('dialog',d=>d.accept());await page.getByRole('button',{name:'載入最新歌詞工作頁',exact:true}).click();await page.getByLabel('歌曲筆記安排').getByRole('button').first().click();await expect(page.getByLabel('歌詞第1行',{exact:true})).toHaveValue('伺服器版本');expect(puts).toBe(0);
+  const download=page.waitForEvent('download');await revealNotes(page,'來源／備份／舊筆記');await page.getByRole('button',{name:'下載工作頁備份',exact:true}).click();const file=await (await download).path();expect(readFileSync(file!,'utf8')).toBe(raw);
+  page.once('dialog',d=>d.dismiss());await revealNotes(page,'來源／備份／舊筆記');await page.getByRole('button',{name:'載入最新歌詞工作頁',exact:true}).click();await expect(page.getByLabel('歌詞第1行',{exact:true})).toHaveCount(0);
+  page.once('dialog',d=>d.accept());await revealNotes(page,'來源／備份／舊筆記');await page.getByRole('button',{name:'載入最新歌詞工作頁',exact:true}).click();await revealNotes(page,'選擇其他句／完整安排');await page.getByLabel('歌曲筆記安排').getByRole('button').first().click();await expect(page.getByLabel('歌詞第1行',{exact:true})).toHaveValue('伺服器版本');expect(puts).toBe(0);
 });
 
 test('lyric worksheet explicitly previews foreign captions, cancels stale result and preserves LRC repeats',async({page})=>{
@@ -868,9 +870,9 @@ test('lyric worksheet explicitly previews foreign captions, cancels stale result
   let resolve!:()=>void;const gate=new Promise<void>(r=>resolve=r);
   await page.route('**/lyric-caption-preview',async r=>{previews++;await gate;await r.fulfill({json:{job_id:'product-job',track:{id:'manual:es',language:'es',kind:'manual',name:'Spanish'},lines:[{lyric:'foreign draft',start:null,end:null}],message:'draft'}}).catch(()=>{});});
   await setup(page,{...partialScore,song:{...partialScore.song,source_type:'youtube'}});await openWorksheet(page);
-  await page.getByRole('button',{name:'取得影片字幕初稿',exact:true}).click();await expect(page.getByLabel('字幕語言',{exact:true})).toHaveValue('');await expect(page.getByRole('button',{name:'預覽所選字幕',exact:true})).toBeDisabled();expect(previews).toBe(0);
+  await revealNotes(page,'其他匯入方式／字幕初稿');await page.getByRole('button',{name:'取得影片字幕初稿',exact:true}).click();await expect(page.getByLabel('字幕語言',{exact:true})).toHaveValue('');await expect(page.getByRole('button',{name:'預覽所選字幕',exact:true})).toBeDisabled();expect(previews).toBe(0);
   await page.getByLabel('字幕語言',{exact:true}).selectOption('manual:es');await page.getByRole('button',{name:'預覽所選字幕',exact:true}).click();await expect.poll(()=>previews).toBe(1);
-  await page.getByLabel('歌詞匯入格式',{exact:true}).selectOption('lrc');await page.getByLabel('貼上歌詞初稿').fill('[00:01][00:03]副歌\n[00:04]再唱');await page.getByRole('button',{name:'預覽貼上內容',exact:true}).click();resolve();
+  await revealNotes(page,'其他匯入方式／字幕初稿');await page.getByLabel('歌詞匯入格式',{exact:true}).selectOption('lrc');await page.getByLabel('貼上歌詞初稿').fill('[00:01][00:03]副歌\n[00:04]再唱');await page.getByRole('button',{name:'預覽貼上內容',exact:true}).click();resolve();
   await expect(page.getByLabel('歌詞初稿預覽')).toContainText('使用者LRC');await page.getByRole('button',{name:'加入空白工作頁',exact:true}).click();
   await expect.poll(()=>sheet.document.lines.length).toBe(3);expect(sheet.document.lines.map(r=>r.lyric)).toEqual(['副歌','副歌','再唱']);expect(sheet.document.lines.map(r=>[r.start,r.end])).toEqual([[1,null],[3,null],[4,null]]);
 });
@@ -878,7 +880,7 @@ test('lyric worksheet explicitly previews foreign captions, cancels stale result
 
 async function openLegacyNotes(page:any){
   const panel=page.locator('.lyric-worksheet');if(await panel.getAttribute('open')===null)await openWorksheet(page);
-  const notes=page.locator('.melody-text-notes');if(await notes.getAttribute('open')===null)await page.getByText('未定位的舊筆記',{exact:true}).click();
+  await revealNotes(page,'來源／備份／舊筆記');const notes=page.locator('.melody-text-notes');if(await notes.getAttribute('open')===null)await page.getByText('未定位的舊筆記',{exact:true}).click();
 }
 
 test('song note timeline never invents bars, keeps half-open spans and flags frame/grid changes',()=>{
@@ -898,16 +900,16 @@ for(const kind of ['metered','local','seconds'])for(const width of [320,1440])te
   const working=kind==='metered'?score:kind==='local'?partialScore:timelineScore;
   await setup(page,working,'auto');await page.route('**/revisions',r=>{revisions++;return r.fulfill({json:{revision_id:'unexpected'}})});await openWorksheet(page);
   await pasteWorksheet(page,'一句跨小節');await page.getByLabel('簡譜第1行',{exact:true}).fill("5  6 1' - 0");
-  if(kind==='seconds'){await page.getByLabel('筆記開始秒數').fill('3.217');await page.getByLabel('筆記結束秒數').fill('5');}
-  else{await expect(page.getByLabel('筆記起始小節').locator('option')).toHaveCount(5);await page.getByLabel('筆記起始小節').selectOption(kind==='metered'?'1':'0');await page.getByLabel('筆記結束小節').selectOption(kind==='metered'?'2':'1');}
-  await page.getByRole('button',{name:'確認歌詞與簡譜位置',exact:true}).click();await expect.poll(()=>sheet.document.lines[0]?.anchor?.time).toBe(kind==='seconds'?3.217:2);
+  if(kind==='seconds'){await revealNotes(page,'微調位置／文字行');await page.getByLabel('筆記開始秒數').fill('3.217');await revealNotes(page,'微調位置／文字行');await page.getByLabel('筆記結束秒數').fill('5');}
+  else{await expect(page.getByLabel('筆記起始小節').locator('option')).toHaveCount(5);await revealNotes(page,'微調位置／文字行');await page.getByLabel('筆記起始小節').selectOption(kind==='metered'?'1':'0');await revealNotes(page,'微調位置／文字行');await page.getByLabel('筆記結束小節').selectOption(kind==='metered'?'2':'1');}
+  await revealNotes(page,'微調位置／文字行');await page.getByRole('button',{name:'確認歌詞與簡譜位置',exact:true}).click();await expect.poll(()=>sheet.document.lines[0]?.anchor?.time).toBe(kind==='seconds'?3.217:2);
   const id=sheet.document.lines[0].id,inline=page.locator(`[data-note-id="${id}"]`).first();await expect(inline.locator('.located-lyric')).toHaveText('一句跨小節');await expect(inline.locator('.located-notation')).toHaveText("5  6 1' - 0");
   expect(await inline.evaluate(el=>!!el.closest('.notation-measure,.reading-piece'))).toBe(true);
   if(kind!=='seconds'){expect(await page.locator(`[data-note-id="${id}"]`).count()).toBe(2);await expect(page.locator(`[data-note-id="${id}"]`).nth(1)).toContainText('延續');}
-  for(let i=0;i<2;i++){await page.getByRole('button',{name:'查看譜上位置',exact:true}).click();await expect(page.locator('.lyric-worksheet')).not.toHaveAttribute('open');await inline.getByRole('button',{name:'編輯第1組歌詞與簡譜',exact:true}).click();await expect(page.getByLabel('歌詞第1行',{exact:true})).toBeVisible();}
+  for(let i=0;i<2;i++){await page.getByRole('button',{name:'查看譜上位置',exact:true}).click();await expect(page.locator('.lyric-worksheet')).not.toHaveAttribute('open');await inline.getByRole('button',{name:'編輯第1組歌詞與簡譜',exact:true}).click();await expect(page.getByLabel('簡譜第1行',{exact:true})).toBeVisible();}
   await page.getByRole('button',{name:'查看譜上位置',exact:true}).click();await page.getByLabel('播放聲音',{exact:true}).selectOption('guitar');
   await page.route('**/scores/playback/manifest',r=>r.fulfill({json:{revision:'song-note',duration_seconds:working.song.duration_seconds,bpm:120,time_signature:'4/4',events:[{id:'g',track:'guitar',start:0,end:working.song.duration_seconds,sustain_end:working.song.duration_seconds,pitches:[48,52,55],pitch_offsets:[0,0,0],pitch_velocities:[98,98,98],velocity:98,source_id:'c'}]}}));
-  await inline.getByRole('button',{name:'從第1組位置播放',exact:true}).click();await expect(page.getByRole('button',{name:'暫停',exact:true})).toBeVisible();await expect(page.locator('.playback-status')).not.toContainText('0.0 /');await inline.getByRole('button',{name:'編輯第1組歌詞與簡譜',exact:true}).click();await expect(page.getByRole('button',{name:'播放',exact:true})).toBeVisible();await expect(page.getByLabel('歌詞第1行',{exact:true})).toBeVisible();await page.getByRole('button',{name:'查看譜上位置',exact:true}).click();await page.screenshot({path:`../output/evaluation/song-notes-2026-11-07/${kind}-${width}.png`,fullPage:true});
+  await inline.getByRole('button',{name:'從第1組位置播放',exact:true}).click();await expect(page.getByRole('button',{name:'暫停',exact:true})).toBeVisible();await expect(page.locator('.playback-status')).not.toContainText('0.0 /');await inline.getByRole('button',{name:'編輯第1組歌詞與簡譜',exact:true}).click();await expect(page.getByRole('button',{name:'播放',exact:true})).toBeVisible();await expect(page.getByLabel('簡譜第1行',{exact:true})).toBeVisible();await page.getByRole('button',{name:'查看譜上位置',exact:true}).click();await page.screenshot({path:`../output/evaluation/song-notes-2026-11-07/${kind}-${width}.png`,fullPage:true});
   await page.reload();await expect(page.locator(`[data-note-id="${id}"]`).first().locator('.located-lyric')).toHaveText('一句跨小節');expect(sheet.document.lines).toHaveLength(1);expect(revisions).toBe(0);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 
@@ -915,9 +917,9 @@ test('song notes use explicit caption confirmation, copy legacy without migratio
   let sheet=emptySheet(),noteWrites=0;
   await page.route('**/lyric-worksheet',r=>{if(r.request().method()==='GET')return r.fulfill({json:sheet});const body=r.request().postDataJSON();sheet={...sheet,document:body.document,version:sheet.version+1};return r.fulfill({json:sheet});});
   await page.route('**/melody-notes',r=>{if(r.request().method()!=='GET')noteWrites++;return r.fulfill({json:{job_id:'product-job',text:'原本整段筆記  5 6',version:1}});});
-  await setup(page,timelineScore,'auto');await openWorksheet(page);await page.getByLabel('歌詞匯入格式').selectOption('lrc');await pasteWorksheet(page,'[00:03]參考字幕');await expect(page.locator('[data-note-id]')).toHaveCount(0);
-  await page.getByRole('button',{name:'帶入來源參考時間（仍需確認）',exact:true}).click();await expect(page.locator('[data-note-id]')).toHaveCount(0);await page.getByRole('button',{name:'確認歌詞與簡譜位置',exact:true}).click();await expect.poll(()=>sheet.document.lines[0]?.anchor?.time).toBe(3);
-  await page.getByRole('button',{name:'解除定位並保留文字',exact:true}).click();await expect.poll(()=>sheet.document.lines[0]?.anchor).toBeNull();await expect(page.getByLabel('歌詞第1行',{exact:true})).toHaveValue('參考字幕');
+  await setup(page,timelineScore,'auto');await openWorksheet(page);await revealNotes(page,'其他匯入方式／字幕初稿');await page.getByLabel('歌詞匯入格式').selectOption('lrc');await pasteWorksheet(page,'[00:03]參考字幕');await expect(page.locator('[data-note-id]')).toHaveCount(0);
+  await revealNotes(page,'微調位置／文字行');await page.getByRole('button',{name:'帶入來源參考時間（仍需確認）',exact:true}).click();await expect(page.locator('[data-note-id]')).toHaveCount(0);await revealNotes(page,'微調位置／文字行');await page.getByRole('button',{name:'確認歌詞與簡譜位置',exact:true}).click();await expect.poll(()=>sheet.document.lines[0]?.anchor?.time).toBe(3);
+  await revealNotes(page,'微調位置／文字行');await page.getByRole('button',{name:'解除定位並保留文字',exact:true}).click();await expect.poll(()=>sheet.document.lines[0]?.anchor).toBeNull();await expect(page.getByLabel('歌詞第1行',{exact:true})).toHaveValue('參考字幕');
   await openLegacyNotes(page);await page.getByRole('button',{name:'複製選取文字或全文到未定位簡譜列（保留原文）',exact:true}).click();await expect(page.getByLabel('簡譜第2行',{exact:true})).toHaveValue('原本整段筆記  5 6');await expect(page.getByLabel('旋律筆記',{exact:true})).toHaveValue('原本整段筆記  5 6');expect(noteWrites).toBe(0);await expect.poll(()=>sheet.document.lines.length).toBe(2);expect(sheet.document.lines[1].anchor).toBeNull();
 });
 
@@ -925,9 +927,9 @@ test('song notes use explicit caption confirmation, copy legacy without migratio
 test('song notes re-confirm changed grid without moving time, and expose second-based fallback',async({page})=>{
   let sheet={...emptySheet(),version:1,document:{source:'old worksheet',lines:[{id:'retained',lyric:'原歌詞',notation:'5  6',start:null,end:null,anchor:{time:2,end:6,source_start_seconds:0,duration_seconds:8,kind:'metered',grid_id:'old-grid'}}]}};
   await page.route('**/lyric-worksheet',r=>{if(r.request().method()==='GET')return r.fulfill({json:sheet});const body=r.request().postDataJSON();sheet={...sheet,document:body.document,version:sheet.version+1};return r.fulfill({json:sheet});});
-  await setup(page,score,'auto');const inline=page.locator('[data-note-id="retained"]').first();await expect(inline).toContainText('位置待確認');await inline.getByRole('button',{name:'編輯第1組歌詞與簡譜',exact:true}).click();await expect(page.getByLabel('筆記開始秒數')).toHaveValue('2');await page.getByRole('button',{name:'確認歌詞與簡譜位置',exact:true}).click();await expect.poll(()=>sheet.document.lines[0].anchor.grid_id).not.toBe('old-grid');expect(sheet.document.lines[0].anchor.time).toBe(2);await expect(inline).not.toContainText('位置待確認');
+  await setup(page,score,'auto');const inline=page.locator('[data-note-id="retained"]').first();await expect(inline).toContainText('位置待確認');await inline.getByRole('button',{name:'編輯第1組歌詞與簡譜',exact:true}).click();await expect(page.getByLabel('筆記開始秒數')).toHaveValue('2');await revealNotes(page,'微調位置／文字行');await page.getByRole('button',{name:'確認歌詞與簡譜位置',exact:true}).click();await expect.poll(()=>sheet.document.lines[0].anchor.grid_id).not.toBe('old-grid');expect(sheet.document.lines[0].anchor.time).toBe(2);await expect(inline).not.toContainText('位置待確認');
   sheet={...sheet,version:sheet.version+1,document:{...sheet.document,lines:[{...sheet.document.lines[0],anchor:{...sheet.document.lines[0].anchor,time:2.1,grid_id:'old-grid'}}]}};
-  await page.reload();await page.locator('[data-note-id="retained"]').first().getByRole('button',{name:'編輯第1組歌詞與簡譜',exact:true}).click();await page.getByRole('button',{name:'確認歌詞與簡譜位置',exact:true}).click();await expect.poll(()=>sheet.document.lines[0].anchor.kind).toBe('seconds');expect(sheet.document.lines[0].anchor.time).toBe(2.1);expect(sheet.document.lines[0].anchor.grid_id).toBeNull();
+  await page.reload();await page.locator('[data-note-id="retained"]').first().getByRole('button',{name:'編輯第1組歌詞與簡譜',exact:true}).click();await revealNotes(page,'微調位置／文字行');await page.getByRole('button',{name:'確認歌詞與簡譜位置',exact:true}).click();await expect.poll(()=>sheet.document.lines[0].anchor.kind).toBe('seconds');expect(sheet.document.lines[0].anchor.time).toBe(2.1);expect(sheet.document.lines[0].anchor.grid_id).toBeNull();
 });
 
 test('legacy worksheet draft with same version cannot erase server anchors across refreshes',async({page})=>{
@@ -938,9 +940,79 @@ test('legacy worksheet draft with same version cannot erase server anchors acros
   await setup(page,score,'auto');
   for(let i=0;i<3;i++){
     if(i)await page.reload();await openWorksheet(page);await expect(page.getByLabel('歌詞工作頁保存狀態')).toContainText('舊版草稿未包含定位資訊');
-    await page.getByLabel('歌曲筆記安排').getByRole('button').first().click();await expect(page.getByLabel('歌詞第1行',{exact:true})).toHaveValue('舊頁面離線修改');
+    await revealNotes(page,'選擇其他句／完整安排');await page.getByLabel('歌曲筆記安排').getByRole('button').first().click();await expect(page.getByLabel('歌詞第1行',{exact:true})).toHaveValue('舊頁面離線修改');
     expect(await page.evaluate(()=>JSON.parse(sessionStorage.getItem('guitarscribe.lyricWorksheetDraft.product-job')!).anchor_schema)).toBeUndefined();expect(puts).toBe(0);expect(sheet.document.lines[0].anchor).toEqual(anchor);
   }
   await page.getByLabel('簡譜第1行',{exact:true}).fill('仍保留離線編輯');expect(await page.evaluate(()=>JSON.parse(sessionStorage.getItem('guitarscribe.lyricWorksheetDraft.product-job')!).anchor_schema)).toBeUndefined();
-  page.once('dialog',d=>d.accept());await page.getByRole('button',{name:'載入最新歌詞工作頁',exact:true}).click();await expect(page.getByLabel('歌詞第1行',{exact:true})).toHaveValue('server words');await expect(page.locator('[data-note-id="same-row"]')).toHaveCount(1);expect(puts).toBe(0);
+  page.once('dialog',d=>d.accept());await revealNotes(page,'來源／備份／舊筆記');await page.getByRole('button',{name:'載入最新歌詞工作頁',exact:true}).click();await expect(page.getByLabel('歌詞第1行',{exact:true})).toHaveValue('server words');await expect(page.locator('[data-note-id="same-row"]')).toHaveCount(1);expect(puts).toBe(0);
+});
+
+
+// A24: paste once, type notation immediately, listen and mark each phrase.
+async function quickLyrics(page:any,text:string){await page.getByLabel('貼上歌詞初稿').fill(text);await page.getByRole('button',{name:'加入歌詞',exact:true}).click();}
+async function markerFixture(page:any,working:any,initial?:any){
+  let sheet=initial??emptySheet(),compiles=0;const source=sourceWav(working.song.duration_seconds);
+  await page.route('**/lyric-worksheet',r=>{if(r.request().method()==='GET')return r.fulfill({json:sheet});const body=r.request().postDataJSON();expect(body.anchor_schema).toBe(1);sheet={...sheet,document:body.document,version:sheet.version+1};return r.fulfill({json:sheet});});
+  await page.route('**/scores/playback/manifest',r=>{compiles++;return r.fulfill({json:{revision:'lyric-clock',duration_seconds:working.song.duration_seconds,bpm:120,time_signature:'4/4',events:[{id:'g',track:'guitar',start:0,end:working.song.duration_seconds,sustain_end:working.song.duration_seconds,pitches:[48],pitch_offsets:[0],pitch_velocities:[98],velocity:98,source_id:'c'}]}});});
+  await setup(page,working,'auto');await page.route('**/api/v1/jobs/product-job/audio',r=>r.fulfill({body:source,contentType:'audio/wav'}));await openWorksheet(page);
+  return {sheet:()=>sheet,compiles:()=>compiles};
+}
+
+test('lyric marking uses source clock and point anchors, undo preserves edited text and rejects changed anchors',()=>{
+  const document={source:'貼詞',lines:[newLine('第一句'),newLine('第二句')]},frame={duration_seconds:8,source_start_seconds:10};
+  const context={currentTime:12},clock=createReviewTransportClock(context,{contextStart:10,scoreStart:1,end:7,loop:null},1);
+  const first=markLyric(document,document.lines[0].id,clock.now(),frame);expect(first.document.lines[0].anchor?.time).toBe(3);expect(first.document.lines[0].anchor?.end).toBeNull();
+  expect(()=>markLyric(first.document,document.lines[0].id,4,frame)).toThrow('已有位置');
+  context.currentTime=13;const second=markLyric(first.document,document.lines[1].id,clock.now(),frame);expect(second.document.lines[0].anchor?.end).toBeNull();
+  second.document.lines[1].notation=' 5  0 - ';second.document.lines[1].lyric='校對第二句';const undone=undoLyricMark(second.document,second.undo);expect(undone.lines[1].anchor).toBeNull();expect(undone.lines[1].notation).toBe(' 5  0 - ');expect(undone.lines[1].lyric).toBe('校對第二句');
+  second.document.lines[1].anchor={...second.undo.after,time:5};expect(()=>undoLyricMark(second.document,second.undo)).toThrow('已被修改');
+  expect(()=>markLyric(document,document.lines[0].id,8,frame)).toThrow('已結束');
+  const loop=createReviewTransportClock(context,{contextStart:10,scoreStart:4,end:6,loop:[2,6]},2);expect(loop.now()).toBe(2);context.currentTime=13.25;expect(loop.now()).toBe(2.5);
+});
+
+for(const kind of ['metered','local','seconds'])test(`listen and mark short workflow preserves notes through chord edit and Undo (${kind})`,async({page})=>{
+  await page.setViewportSize({width:320,height:844});
+  if(kind==='seconds')await page.addInitScript(()=>{const calls:any[]=[];(window as any).__scrollCalls=calls;for(const name of ['scrollBy','scrollTo'] as const){const original=window[name].bind(window);(window as any)[name]=(...args:any[])=>{calls.push({name,args,stack:new Error().stack,y:scrollY});return (original as any)(...args);};}const original=Element.prototype.scrollIntoView;Element.prototype.scrollIntoView=function(...args:any[]){calls.push({name:'scrollIntoView',stack:new Error().stack,y:scrollY});return original.apply(this,args as any);};});
+  const working=kind==='metered'?score:kind==='local'?partialScore:timelineScore;
+  if(kind==='local')await page.route('**/timing-preview',r=>r.fulfill({json:partialPreview}));else await page.route('**/timing-preview',r=>r.fulfill({status:404}));
+  const fixture=await markerFixture(page,working);await quickLyrics(page,'第一句歌詞\n第二句歌詞');await page.getByLabel('簡譜第1行',{exact:true}).fill("5  6 1' -");await expect.poll(()=>fixture.sheet().document.lines[0]?.notation).toBe("5  6 1' -");expect(fixture.sheet().document.lines[0].anchor).toBeNull();
+  const lyricBox=await page.locator('.marking-current').boundingBox(),notationBox=await page.getByLabel('簡譜第1行',{exact:true}).boundingBox(),markBox=await page.getByRole('button',{name:'這句從這裡開始',exact:true}).boundingBox();expect(notationBox!.y).toBeGreaterThanOrEqual(lyricBox!.y+lyricBox!.height);expect(markBox!.y-notationBox!.y-notationBox!.height).toBeLessThan(30);await page.screenshot({path:`../output/evaluation/listen-mark-2026-11-07/${kind}-quick-fill-320.png`,fullPage:true});
+  await expect(page.getByRole('button',{name:'這句從這裡開始',exact:true})).toBeDisabled();await page.getByRole('button',{name:'播放原曲',exact:true}).click();await expect(page.getByRole('button',{name:'暫停原曲',exact:true})).toBeVisible();await expect(page.getByLabel('播放聲音',{exact:true})).toHaveValue('source');
+  if(kind==='local')await page.waitForTimeout(2150);else await page.waitForTimeout(250);
+  const mark=page.getByRole('button',{name:'這句從這裡開始',exact:true});await mark.scrollIntoViewIfNeeded();const scroll=await page.evaluate(()=>scrollY),compiles=fixture.compiles(),beforeMark=await mark.boundingBox();await page.evaluate(()=>{if((window as any).__scrollCalls)(window as any).__scrollCalls.length=0;});await mark.click();await expect(page.getByLabel('簡譜第2行',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'暫停原曲',exact:true})).toBeVisible();
+  await expect(mark).toBeEnabled();await mark.click();await expect.poll(()=>fixture.sheet().document.lines.filter((r:any)=>r.anchor).length).toBe(2);expect(fixture.compiles()).toBe(compiles);expect(Math.abs(await page.evaluate(()=>scrollY)-scroll),JSON.stringify({scroll,beforeMark,afterMark:await mark.boundingBox(),trace:await page.evaluate(()=>(window as any).__scrollCalls),transport:await page.locator('.timeline-transport').evaluate(el=>({position:getComputedStyle(el).position,rect:el.getBoundingClientRect().toJSON()}))})).toBeLessThan(3);
+  const lines=fixture.sheet().document.lines;expect(lines[0].anchor.end).toBeNull();expect(lines[1].anchor.end).toBeNull();expect(lines[1].anchor.time).toBeGreaterThan(lines[0].anchor.time);
+  await page.getByLabel('簡譜第2行',{exact:true}).fill('3 2  1');await page.getByRole('button',{name:'撤銷上次標記',exact:true}).click();await expect.poll(()=>fixture.sheet().document.lines[1].anchor).toBeNull();await expect(page.getByLabel('簡譜第2行',{exact:true})).toHaveValue('3 2  1');
+  await expect(mark).toBeEnabled();await mark.click();await page.getByRole('button',{name:'暫停原曲',exact:true}).click();await expect(mark).toBeDisabled();await expect.poll(()=>fixture.sheet().document.lines[1].anchor).not.toBeNull();const before=JSON.stringify(fixture.sheet().document);
+  await page.getByRole('button',{name:'查看譜上位置',exact:true}).click();const inline=page.locator(`[data-note-id="${lines[0].id}"]`).first();await expect(inline.locator('.located-lyric')).toHaveText('第一句歌詞');await expect(inline.locator('.located-notation')).toHaveText("5  6 1' -");
+  await page.getByText('練習與編輯',{exact:true}).click();await page.getByRole('button',{name:kind==='metered'?'編輯和弦':'到時間表編輯',exact:true}).click();await page.getByRole('button',{name:/^編輯 .*的 C$/}).first().click();await page.getByLabel('和弦名稱',{exact:true}).fill('Em');await page.getByRole('button',{name:'套用和弦修改',exact:true}).click();await page.getByRole('button',{name:'復原',exact:true}).click();expect(JSON.stringify(fixture.sheet().document)).toBe(before);
+  await page.reload();await expect(page.locator(`[data-note-id="${lines[0].id}"]`).first().locator('.located-notation')).toHaveText("5  6 1' -");expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:`../output/evaluation/listen-mark-2026-11-07/${kind}-320.png`,fullPage:true});
+});
+
+test('listen marking samples advancing audio clock even when rendered playhead is frozen',async({page})=>{
+  await page.addInitScript(()=>{const raf=requestAnimationFrame.bind(window);window.requestAnimationFrame=callback=>callback.name==='updatePlayhead'?123456:raf(callback);});
+  const fixture=await markerFixture(page,score);await quickLyrics(page,'一句\n二句');await page.getByRole('button',{name:'播放原曲',exact:true}).click();await expect(page.getByRole('button',{name:'暫停原曲',exact:true})).toBeVisible();await page.waitForTimeout(550);
+  await expect(page.locator('.playback-status')).toContainText('0.0 /');await page.getByRole('button',{name:'這句從這裡開始',exact:true}).click();await expect.poll(()=>fixture.sheet().document.lines[0]?.anchor?.time).toBeGreaterThan(.3);expect(fixture.sheet().document.lines[0].anchor.end).toBeNull();await page.getByRole('button',{name:'暫停原曲',exact:true}).click();await expect(page.locator('.playback-status')).not.toContainText('0.0 /');
+});
+
+test('listen marking skips blank or title lines without deleting, and preserves existing positions',async({page})=>{
+  const fixed={time:5,end:null,source_start_seconds:0,duration_seconds:8,kind:'seconds',grid_id:null};const initial={...emptySheet(),version:3,document:{source:'已有內容',lines:[newLine('歌曲標題'),newLine(''),newLine('第一句'),{...newLine('已經標記的句子'),anchor:fixed}]}};
+  const fixture=await markerFixture(page,score,initial);await page.getByRole('button',{name:'略過這句',exact:true}).click();await expect(page.getByLabel('簡譜第3行',{exact:true})).toBeVisible();await page.getByRole('button',{name:'播放原曲',exact:true}).click();await expect(page.getByRole('button',{name:'這句從這裡開始',exact:true})).toBeEnabled();await page.getByRole('button',{name:'這句從這裡開始',exact:true}).dblclick();await expect.poll(()=>fixture.sheet().document.lines[2].anchor).not.toBeNull();expect(fixture.sheet().document.lines[0].anchor).toBeNull();expect(fixture.sheet().document.lines[1].anchor).toBeNull();expect(fixture.sheet().document.lines[3].anchor).toEqual(fixed);expect(fixture.sheet().document.lines).toHaveLength(4);
+});
+
+async function revealNotes(page:any,name:string){const summary=page.getByText(name,{exact:true});const details=summary.locator('..');if(await details.getAttribute('open')===null)await summary.click();}
+
+test('listen marking cannot undo an anchor changed in fine tuning',async({page})=>{
+  const fixture=await markerFixture(page,score);await quickLyrics(page,'校對一句');await page.getByLabel('簡譜第1行',{exact:true}).fill('原簡譜');await page.getByRole('button',{name:'播放原曲',exact:true}).click();await expect(page.getByRole('button',{name:'這句從這裡開始',exact:true})).toBeEnabled();await page.getByRole('button',{name:'這句從這裡開始',exact:true}).click();await page.getByRole('button',{name:'暫停原曲',exact:true}).click();
+  await revealNotes(page,'微調位置／文字行');await page.getByLabel('筆記開始秒數').fill('3');await page.getByRole('button',{name:'確認歌詞與簡譜位置',exact:true}).click();await expect.poll(()=>fixture.sheet().document.lines[0]?.anchor?.time).toBe(3);await page.getByRole('button',{name:'撤銷上次標記',exact:true}).click();await expect(page.getByLabel('歌詞標記狀態')).toContainText('已被修改');expect(fixture.sheet().document.lines[0].anchor.time).toBe(3);expect(fixture.sheet().document.lines[0].notation).toBe('原簡譜');
+});
+
+test('listen marking unavailable source still allows immediate notation',async({page})=>{
+  const working={...score,provenance:{...score.provenance,parameters:{candidate_source_job_id:'missing-original'}}};
+  const fixture=await markerFixture(page,working,{...emptySheet(),job_id:'missing-original'});await quickLyrics(page,'可以先填');await page.getByLabel('簡譜第1行',{exact:true}).fill(' 5 6 0 - ');await expect.poll(()=>fixture.sheet().document.lines[0]?.notation).toBe(' 5 6 0 - ');await expect(page.getByRole('button',{name:'播放原曲',exact:true})).toBeDisabled();await expect(page.getByRole('button',{name:'這句從這裡開始',exact:true})).toBeDisabled();await expect(page.getByText('原曲目前無法使用，仍可直接填簡譜；恢復原曲後再聽歌標記。',{exact:true})).toBeVisible();expect(fixture.compiles()).toBe(0);
+});
+
+
+test('listen marking button stays put between long and short phrases',async({page})=>{
+  await page.setViewportSize({width:320,height:844});await markerFixture(page,score);await quickLyrics(page,'一個很長的句子需要在這個手機畫面分成兩行但不應該推動按鈕\n短句');await page.getByRole('button',{name:'播放原曲',exact:true}).click();const mark=page.getByRole('button',{name:'這句從這裡開始',exact:true});await expect(mark).toBeEnabled();await mark.scrollIntoViewIfNeeded();const before=await mark.boundingBox();await mark.click();await expect(page.locator('.marking-current strong')).toHaveText('短句');const after=await mark.boundingBox();expect(Math.abs(after!.y-before!.y)).toBeLessThan(1);await page.screenshot({path:'../output/evaluation/listen-mark-2026-11-07/short-phrase-320.png',fullPage:true});
 });

@@ -11,7 +11,7 @@ import { ChordGridCandidate } from "./ChordGridCandidate";
 import type { AccidentalPreference, AnalysisJob, PlaybackManifest, PlaybackTrack, SongScore } from "./types";
 import { ChordDiagram } from "./ChordDiagram";
 import { ChordFingerings } from "./ChordFingerings";
-import { createMediaTransportClock } from "./transportClock";
+import { createMediaTransportClock, createReviewTransportClock } from "./transportClock";
 import { DiagnosticTimeline } from "./DiagnosticTimeline";
 import { guitarEnvelope } from "./guitarEnvelope";
 import { melodyEnvelope } from "./melodyEnvelope";
@@ -289,6 +289,7 @@ export function App() {
   const pendingAudioTrackSeekRef = useRef<number | null>(null);
   const metronomeContextRef = useRef<AudioContext | null>(null);
   const synthContextRef = useRef<AudioContext | null>(null);
+  const reviewClockRef = useRef<(()=>number)|null>(null);
   const sourceMasterRef=useRef<GainNode|null>(null),guitarMasterRef=useRef<GainNode|null>(null);
   const [sourceVolume,setSourceVolume]=useState(.45);
   const sourceVolumeRef=useRef(.45),guitarVolumeRef=useRef(.24);
@@ -1230,7 +1231,15 @@ export function App() {
     return [Math.max(bounds.start, start), Math.min(bounds.end, next)];
   }
 
+  function readPlaybackTime(){
+    if(reviewClockRef.current)return reviewClockRef.current();
+    const audio=audioRef.current;
+    return audio&&!audio.paused?createMediaTransportClock(audio).now():playbackTime;
+  }
+
   function stopSynth(reset = false) {
+    const stoppedAt=reviewClockRef.current?.();reviewClockRef.current=null;
+    if(stoppedAt!==undefined&&!reset)setPlaybackTime(stoppedAt);
     setActiveReview(null);
     melodyAuditionRef.current?.stop(); melodyAuditionRef.current = null;
     sourceLoadAbortRef.current?.abort(); sourceLoadAbortRef.current = null;
@@ -1583,13 +1592,11 @@ export function App() {
           stopSynth(false); setError(error instanceof Error ? error.message : "Could not schedule compiled score.");
         }
       };
+      const reviewClock=createReviewTransportClock(context,{contextStart:initialContextStart,scoreStart,end:segmentEnd,loop:requestedLoop as [number,number]|null},rate);
+      reviewClockRef.current=reviewClock.now;
       const updatePlayhead = () => {
         if (generation !== synthGenerationRef.current) return;
-        const now = context.currentTime;
-        const time = requestedLoop && now >= firstEnd
-          ? requestedLoop[0] + ((now - firstEnd) % loopDuration) * rate
-          : Math.min(segmentEnd, scoreStart + Math.max(0, now - initialContextStart) * rate);
-        setPlaybackTime(time);
+        setPlaybackTime(reviewClock.now());
         synthAnimationRef.current = window.requestAnimationFrame(updatePlayhead);
       };
       setIsSynthPlaying(true);
@@ -2224,6 +2231,7 @@ export function App() {
                 <ReviewComponent score={score} sourceAvailable={!!analysisJob && analysisJob.status === "completed" && sourceJobId(score) === analysisJob.id}
                   playing={activeReview !== null && isSynthPlaying} preparing={isSynthPreparing}
                   playhead={playbackTime} guitarVolume={synthVolumes.guitar} onVolume={updateGuitarVolume}
+                  readPlaybackTime={readPlaybackTime}
                   performanceLabel={chordPerformance === "original" ? "原版刷奏" : chordPerformance === "continuous" ? "換和弦即彈・連續刷奏" : "換和弦只彈一下"}
                   onStop={() => { audioRef.current?.pause(); stopSynth(false); }} onTools={openPerformanceControls}
                   onPlay={(mode, start, end, loop, from) => void toggleSynthPlayback({start, end, loop, from, reviewMode: mode})}

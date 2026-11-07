@@ -1,5 +1,5 @@
 import {LyricsWorksheet} from './LyricsWorksheet';
-import {LocatedSongNotes} from './SongNotes';
+import {LocatedSongNotes,useSongNotes} from './SongNotes';
 import {localNotePositions,chordTimePieces} from './songNoteTimeline';
 import {ContinuousChordReading} from './ContinuousChordReading';
 import {useEffect, useRef, useState, type ComponentProps} from 'react';
@@ -11,7 +11,8 @@ import {sourceJobId} from './scoreVersion';
 
 const stamp=(seconds:number)=>`${Math.floor(seconds/60)}:${(seconds%60).toFixed(1).padStart(4,'0')}`;
 /** A seconds-based chord sheet. Never derives measures from rejected timing. */
-export function ChordTimelinePage({score,sourceAvailable,playing,preparing,playhead,guitarVolume,onVolume,onPlay,onStop,onEditChord,playbackControls,keyControls,secondaryActions,editPanel,fingeringGuide,speed=1,onSpeed}:ComponentProps<typeof ChordSongPage>){
+export function ChordTimelinePage({score,sourceAvailable,playing,preparing,playhead,guitarVolume,onVolume,onPlay,onStop,onEditChord,playbackControls,keyControls,secondaryActions,editPanel,fingeringGuide,speed=1,onSpeed,readPlaybackTime}:ComponentProps<typeof ChordSongPage>){
+  const notes=useSongNotes();
   const [mode,setMode]=useState<ReviewMode>(score.song.source_type==='example'?'guitar':'mix'),[editing,setEditing]=useState(false);
   const [loop,setLoop]=useState(false),[start,setStart]=useState('0'),[end,setEnd]=useState(String(score.song.duration_seconds));
   const [follow,setFollow]=useState(true);
@@ -34,12 +35,12 @@ export function ChordTimelinePage({score,sourceAvailable,playing,preparing,playh
   const current=score.chords.find(c=>playhead>=c.start&&playhead<c.end);
   const next=score.chords.find(c=>c.start>playhead);
   useEffect(()=>{
-    if(!playing||editing||!follow)return;
+    if(!playing||editing||!follow||notes?.marking)return;
     const element=Array.from(sheetRef.current?.querySelectorAll<HTMLButtonElement>('button')??[]).find(el=>(current?el.dataset.chordId===current.id:el.dataset.gap==='true')&&(!el.dataset.start||playhead>=Number(el.dataset.start)&&playhead<Number(el.dataset.end)));
     if(!element)return;
     const rect=element.getBoundingClientRect(),top=transportRef.current?.getBoundingClientRect().bottom??0;
     if(rect.top<top+16||rect.bottom>window.innerHeight-24)window.scrollBy({top:rect.top-top-16,behavior:'instant'});
-  },[current?.id,playing,editing,follow,previewVisible,compactVisible,playhead]);
+  },[current?.id,playing,editing,follow,previewVisible,compactVisible,playhead,notes?.marking]);
   const duration=score.song.duration_seconds;
   const valid=start.trim()!==''&&end.trim()!==''&&Number(start)>=0&&Number(start)<Number(end)&&Number(end)<=duration;
   const rangeStart=loop?Number(start):(score.song.source_type==='example'?score.chords[0]?.start??0:0),rangeEnd=loop?Number(end):duration;
@@ -47,8 +48,10 @@ export function ChordTimelinePage({score,sourceAvailable,playing,preparing,playh
   const change=(fn:()=>void)=>{onStop();fn();};
   const play=(from?:number)=>onPlay(mode,rangeStart,rangeEnd,loop,from);
   const playNote=(from:number)=>{onStop();const within=loop&&valid&&from>=rangeStart&&from<rangeEnd;if(!within)setLoop(false);onPlay(mode,within?rangeStart:0,within?rangeEnd:duration,within,from);};
+  const toggleMarking=()=>{if(preparing||playing&&mode!=='guitar'){onStop();return;}const targetMode='source' as const;setMode('source');const from=readPlaybackTime?.()??playhead;onPlay(targetMode,0,duration,false,from>=duration?0:from);};
+  const replayMarking=(from:number)=>{const targetMode='source' as const;setMode('source');onStop();onPlay(targetMode,0,score.song.duration_seconds,false,from);};
   return <section className="song-sheet" aria-label="和弦核對">
-    <div className="timeline-transport" ref={transportRef}><div className="song-controls">
+    <div className="timeline-transport" style={notes?.marking?{position:'static'}:undefined} ref={transportRef}><div className="song-controls">
       <button className="primary-action" type="button" disabled={!playing&&!preparing&&(unavailable||loop&&!valid)} onClick={()=>playing||preparing?onStop():play(playhead>=rangeStart&&playhead<rangeEnd?playhead:undefined)}>{preparing?'取消準備':playing?'暫停':'播放'}</button>
       <label>聲音 <select aria-label="播放聲音" value={mode} onChange={e=>change(()=>setMode(e.target.value as ReviewMode))}><option value="mix">原曲＋吉他</option><option value="source">原曲（原調）</option><option value="guitar">吉他</option></select></label>
     </div>
@@ -68,7 +71,7 @@ export function ChordTimelinePage({score,sourceAvailable,playing,preparing,playh
     {hasPreview&&!automaticReading?<label className="partial-preview-toggle"><input type="checkbox" checked={showPreview} onChange={e=>setShowPreview(e.target.checked)}/>預覽可辨識的小節（{Math.round(preview!.covered_seconds)} 秒）</label>:null}
     {previewVisible&&!automaticReading?<p className="sheet-hint">切換看譜方式不改變聲音；撥奏依播放器選項。編輯時回到時間表。</p>:null}
     {fingeringGuide}
-    <LyricsWorksheet onEdit={onStop} positions={positions} playhead={playhead} onSeek={playNote} disabled={unavailable||preparing}/>
+    <LyricsWorksheet playing={playing} preparing={preparing} sourceAvailable={sourceAvailable} canMark={sourceAvailable&&mode!=='guitar'} readTime={readPlaybackTime??(()=>playhead)} onToggleMarking={toggleMarking} onReplayMarking={replayMarking} onEdit={onStop} positions={positions} playhead={playhead} onSeek={playNote} disabled={unavailable||preparing}/>
     <details className="song-options"><summary>練習與編輯</summary>
       <div className="secondary-controls">
         <label><input type="checkbox" checked={follow} onChange={e=>setFollow(e.target.checked)}/>跟隨播放位置</label>

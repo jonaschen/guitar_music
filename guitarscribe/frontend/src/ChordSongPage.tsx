@@ -1,7 +1,7 @@
 import {useEffect, useMemo, useRef, useState, type ComponentProps, type ReactNode} from 'react';
 import {AccompanimentReview, type ReviewMode} from './AccompanimentReview';
 import {readingBars,fullNotePositions} from './songNoteTimeline';
-import {SongNotesProvider,LocatedSongNotes} from './SongNotes';
+import {SongNotesProvider,LocatedSongNotes,useSongNotes} from './SongNotes';
 import {LyricsWorksheet} from './LyricsWorksheet';
 import {ChordTimelinePage} from './ChordTimelinePage';
 import {measureLayout} from './measureLayout';
@@ -13,7 +13,8 @@ type Props=ComponentProps<typeof AccompanimentReview> & {
 export function ChordSongPage(props:Props){
   return <SongNotesProvider score={props.score}>{props.score.analysis.timing_status==='unmetered'||!fullNotePositions(props.score,readingBars(props.score)).length ? <ChordTimelinePage {...props}/> : <MeteredChordSongPage {...props}/>}</SongNotesProvider>;
 }
-function MeteredChordSongPage({score,sourceAvailable,playing,preparing,playhead,guitarVolume,onVolume,onPlay,onStop,onTools,onEditChord,playbackControls,keyControls,secondaryActions,editPanel,fingeringGuide,speed=1,onSpeed}:Props){
+function MeteredChordSongPage({score,sourceAvailable,playing,preparing,playhead,guitarVolume,onVolume,onPlay,onStop,onTools,onEditChord,playbackControls,keyControls,secondaryActions,editPanel,fingeringGuide,speed=1,onSpeed,readPlaybackTime}:Props){
+  const notes=useSongNotes();
   const bars=useMemo(()=>readingBars(score),[score]);
   const positions=useMemo(()=>fullNotePositions(score,bars),[score,bars]);
   const barName=(number:number)=>number===0?'起始片段':`Bar ${number}`;
@@ -22,11 +23,11 @@ function MeteredChordSongPage({score,sourceAvailable,playing,preparing,playhead,
   const transportRef=useRef<HTMLDivElement>(null),sheetRef=useRef<HTMLDivElement>(null);
   const current=score.chords.find(c=>playhead>=c.start&&playhead<c.end),next=score.chords.find(c=>c.start>playhead);
   useEffect(()=>{
-    if(!playing||editing||!follow||!current)return;
+    if(!playing||editing||!follow||notes?.marking||!current)return;
     const element=Array.from(sheetRef.current?.querySelectorAll<HTMLButtonElement>('button[data-chord-id]')??[]).find(el=>el.dataset.chordId===current.id&&playhead>=Number(el.dataset.start)&&playhead<Number(el.dataset.end));
     if(!element)return;const rect=element.getBoundingClientRect(),top=transportRef.current?.getBoundingClientRect().bottom??0;
     if(rect.top<top+16||rect.bottom>innerHeight-24)window.scrollBy({top:rect.top-top-16,behavior:'instant'});
-  },[playing,editing,follow,current?.id,playhead]);
+  },[playing,editing,follow,current?.id,playhead,notes?.marking]);
 
 
   const [startIndex,setStartIndex]=useState(0),[count,setCount]=useState(4);
@@ -37,9 +38,11 @@ function MeteredChordSongPage({score,sourceAvailable,playing,preparing,playhead,
   const change=(action:()=>void)=>{onStop();action();};
   const play=(from?:number)=>onPlay(mode,start,end,loop,from);
   const playNote=(from:number)=>{onStop();const within=loop&&from>=start&&from<end;if(!within)setLoop(false);onPlay(mode,within?start:0,within?end:score.song.duration_seconds,within,from);};
+  const toggleMarking=()=>{if(preparing||playing&&mode!=='guitar'){onStop();return;}const targetMode='source' as const;setMode('source');const from=readPlaybackTime?.()??playhead;onPlay(targetMode,0,score.song.duration_seconds,false,from>=score.song.duration_seconds?0:from);};
+  const replayMarking=(from:number)=>{const targetMode='source' as const;setMode('source');onStop();onPlay(targetMode,0,score.song.duration_seconds,false,from);};
   return <section className="song-sheet" aria-label="和弦核對">
     {score.provenance.parameters?.timing_candidate && score.provenance.parameters?.timing_candidate_confirmed !== true ? <p className="sheet-hint" role="note">拍格試驗稿 · 拍子尚待確認；原稿保留，和弦內容與時間未改。</p> : null}
-    <div className="timeline-transport" ref={transportRef}><div className="song-controls">
+    <div className="timeline-transport" style={notes?.marking?{position:'static'}:undefined} ref={transportRef}><div className="song-controls">
       <button className="primary-action" type="button" disabled={unavailable && !playing && !preparing} onClick={()=>playing||preparing?onStop():play(playhead>=start&&playhead<end?playhead:undefined)}>{preparing?'取消準備':playing?'暫停':'播放'}</button>
       <label>聲音 <select aria-label="播放聲音" value={mode} onChange={e=>change(()=>setMode(e.target.value as ReviewMode))}><option value="mix">原曲＋吉他</option><option value="source">原曲（原調）</option><option value="guitar">吉他</option></select></label>
     </div>
@@ -51,7 +54,7 @@ function MeteredChordSongPage({score,sourceAvailable,playing,preparing,playhead,
     {unavailable?<p role="status">{!sourceAvailable?'原曲暫時無法使用，請選「吉他」播放。':'已移調，與原曲音高不同。請選「吉他」，或回到原調合奏。'}</p>:null}
     {!score.key_context.audio_matches_notation?<p role="status">原曲維持原調；吉他使用目前和弦，可能不同調，供聽感核對。</p>:null}
     {fingeringGuide}
-    <LyricsWorksheet onEdit={onStop} positions={positions} playhead={playhead} onSeek={playNote} disabled={unavailable||preparing}/>
+    <LyricsWorksheet playing={playing} preparing={preparing} sourceAvailable={sourceAvailable} canMark={sourceAvailable&&mode!=='guitar'} readTime={readPlaybackTime??(()=>playhead)} onToggleMarking={toggleMarking} onReplayMarking={replayMarking} onEdit={onStop} positions={positions} playhead={playhead} onSeek={playNote} disabled={unavailable||preparing}/>
     <details className="song-options"><summary>練習與編輯</summary>
       <div className="secondary-controls"><label><input type="checkbox" checked={follow} onChange={e=>setFollow(e.target.checked)}/>跟隨播放</label>
         <label><input type="checkbox" checked={loop} onChange={e=>change(()=>setLoop(e.target.checked))}/>循環選取小節</label>

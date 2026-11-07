@@ -1,0 +1,88 @@
+{
+  "frontend_distinct_tests": 28,
+  "typescript_passed": true,
+  "build_passed": true,
+  "backend_modified": false,
+  "new_models": 0,
+  "new_dependencies": 0,
+  "prior_A23_product_accepted": false,
+  "old_prompt_superseded": true,
+  "consultant_initial_real_jobs": {
+    "checks": {
+      "one_click_import_immediate_notation": true,
+      "live_audio_clock_despite_stalled_ui": true,
+      "double_tap_no_extra_line_or_audio_restart": true,
+      "no_follow_scroll_while_marking": true,
+      "paused_no_mark": true,
+      "undo_keeps_later_notation": true,
+      "previous_replay_preserves_anchor_and_blank_skipped": true,
+      "score_chord_edit_undo_preserves_lyrics_notation_and_anchors": true,
+      "reload_resumes_unmarked_line": true,
+      "full_four_sizes": true,
+      "d8858077556b4403a5d00cb2c9e03a99": {
+        "real_source_mark_saved": true,
+        "inline": true,
+        "four_sizes": true
+      },
+      "a3be29912a7045448765290d7cba2f6c": {
+        "real_source_mark_saved": true,
+        "inline": true,
+        "four_sizes": true
+      }
+    },
+    "errors": [],
+    "productionWrites": 0,
+    "manifestRequests": 5
+  },
+  "scroll_regression_fixed": {
+    "reason": "Browser scroll anchoring after inserting inline lyrics",
+    "scope": "html only while a lyric marking worksheet is open",
+    "programmatic_scroll_calls": 0,
+    "assertion_max_scroll_difference_pixels": 3
+  },
+  "published": false,
+  "chord_accuracy_fixed": false,
+  "chord_density_fixed": false,
+  "consultant_final_real_jobs": {
+    "checks": {
+      "one_click_import_immediate_notation": true,
+      "live_audio_clock_despite_stalled_ui": true,
+      "double_tap_no_extra_line_or_audio_restart": true,
+      "no_follow_scroll_while_marking": true,
+      "paused_no_mark": true,
+      "undo_keeps_later_notation": true,
+      "previous_replay_preserves_anchor_and_blank_skipped": true,
+      "score_chord_edit_undo_preserves_lyrics_notation_and_anchors": true,
+      "reload_resumes_unmarked_line": true,
+      "full_four_sizes": true,
+      "d8858077556b4403a5d00cb2c9e03a99": {
+        "real_source_mark_saved": true,
+        "inline": true,
+        "four_sizes": true
+      },
+      "a3be29912a7045448765290d7cba2f6c": {
+        "real_source_mark_saved": true,
+        "inline": true,
+        "four_sizes": true
+      }
+    },
+    "errors": [],
+    "productionWrites": 0,
+    "manifestRequests": 5
+  },
+  "consultant_final_layout": {
+    "widths": [
+      320,
+      390,
+      844,
+      1440
+    ],
+    "slot_lyric_notation_primary_same_viewport": true,
+    "overflow": false,
+    "transport": "static while notes open",
+    "unknown_mobile_mark_scroll_delta": 0,
+    "anchor_protection_only_when_open": true,
+    "page_errors": 0,
+    "production_writes": 0
+  }
+}

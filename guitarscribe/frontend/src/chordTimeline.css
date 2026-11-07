@@ -83,3 +83,14 @@
 .note-position-editor select{width:100%;}
 .worksheet-line{scroll-margin-top:190px;}
 .chord-product .chord-timeline>div>button{width:100%;}
+
+.lyric-marking{margin:12px 0;}
+.marking-current{margin:8px 0;}
+.marking-current strong{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;min-height:2.8em;font-size:20px;line-height:1.4;}
+.marking-next{font-size:14px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;color:var(--text-muted);line-height:1.4;margin:6px 0;}
+.marking-primary,.marking-secondary{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.chord-product .marking-primary button{margin:0;min-height:48px;}
+.chord-product .marking-secondary button{font-size:14px;padding:4px 8px;margin:8px 0;min-height:44px;}
+.note-fine-tuning{margin-top:8px;}
+/* Inserting inline lyrics must not make the browser anchor the viewport to chords below. */
+html:has(.lyric-worksheet[open] .lyric-marking){overflow-anchor:none;}

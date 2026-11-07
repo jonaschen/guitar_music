@@ -3,12 +3,13 @@ import type {SongScore} from './types';
 import {useWorksheet} from './worksheetState';
 import {sourceJobId} from './scoreVersion';
 import {anchorMatchesSource,anchorStatus,notesInRange,type NotePosition} from './songNoteTimeline';
-type Notes={job:string;api:string;score:SongScore;sheet:ReturnType<typeof useWorksheet>;selected:string|null;editRequest:number;select:(id:string|null)=>void};
+type Notes={job:string;api:string;score:SongScore;sheet:ReturnType<typeof useWorksheet>;selected:string|null;editRequest:number;scrollToEditor:boolean;marking:boolean;setMarking:(value:boolean)=>void;select:(id:string|null,scroll?:boolean)=>void};
 const Context=createContext<Notes|null>(null);
 function SourceNotes({job,score,children}:{job:string;score:SongScore;children:ReactNode}){
-  const api='/backend',sheet=useWorksheet(job,api),[request,setRequest]=useState<{id:string|null;nonce:number}>({id:null,nonce:0});
-  const select=(id:string|null)=>setRequest(previous=>({id,nonce:previous.nonce+1}));
-  return <Context.Provider value={{job,api,score,sheet,selected:request.id,editRequest:request.nonce,select}}>{children}</Context.Provider>;
+  const api='/backend',sheet=useWorksheet(job,api),[request,setRequest]=useState<{id:string|null;nonce:number;scroll:boolean}>({id:null,nonce:0,scroll:true});
+  const [marking,setMarking]=useState(false);
+  const select=(id:string|null,scroll=true)=>setRequest(previous=>({id,nonce:previous.nonce+1,scroll}));
+  return <Context.Provider value={{job,api,score,sheet,selected:request.id,editRequest:request.nonce,scrollToEditor:request.scroll,marking,setMarking,select}}>{children}</Context.Provider>;
 }
 export function SongNotesProvider({score,children}:{score:SongScore;children:ReactNode}){
   const job=sourceJobId(score);

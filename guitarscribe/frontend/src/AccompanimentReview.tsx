@@ -5,7 +5,7 @@ import { notationBars } from "./melodyNotation";
 
 export type ReviewMode = "source" | "guitar" | "mix";
 export function AccompanimentReview({ score, sourceAvailable, playing, preparing, playhead, guitarVolume, performanceLabel, onVolume, onPlay, onStop, onTools, onEditChord }: {
-  score: SongScore; sourceAvailable: boolean; playing: boolean; preparing: boolean; playhead: number;
+  readPlaybackTime?:()=>number; score: SongScore; sourceAvailable: boolean; playing: boolean; preparing: boolean; playhead: number;
   guitarVolume: number; performanceLabel: string; onVolume: (value: number) => void;
   onPlay: (mode: ReviewMode, start: number, end: number, loop: boolean, from?: number) => void;
   onStop: () => void; onTools: () => void; onEditChord?: (id: string, scope?: {start:number;end:number;bar:number}) => void;
