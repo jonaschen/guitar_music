@@ -32,5 +32,19 @@
     "writes": 0,
     "errors": []
   },
-  "published": false
+  "published": true,
+  "frontend_tests": 19,
+  "build_passed": true,
+  "consultant_isolated_browser_passed": true,
+  "original_static_files_unchanged": 84,
+  "existing_databases_unchanged": true,
+  "source_score_audio_manifest_unchanged": true,
+  "old_assets_preserved": true,
+  "new_required_files": 19,
+  "candidate_files": 31,
+  "feature_commit": "caf8f40",
+  "existing_databases_count": 4,
+  "original_jobs_compared": 3,
+  "old_candidate_files_backed_up": 28,
+  "production_readonly_smoke_pending": true
 }

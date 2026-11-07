@@ -23,3 +23,11 @@ anchor保存片段內起點／可選終點秒數、來源offset/duration及拍�
 30項相關後端測試通過；19個不同前端案例通過（17項首輪、增加拍格重確認及同版本舊草稿保護2項；其餘因新增互動斷言而針對性重跑）。包含原筆記Undo／還原、A22離線／衝突／壞草稿、三類譜面320／1440、半開邊界、跨bar單row、同組反覆往返、定位播放、播放中編輯暫停、字幕參考不自動定位、舊筆記複製不刪、拍格重確認。TypeScript通過。
 
 合成三類譜面截圖在 `output/evaluation/song-notes-2026-11-07/`。顧問另以真三job及隔離API驗收通過，包含同版本舊草稿連續刷新；0正式寫入／0頁面例外。本次已獲同候選發布授權，正式入口唯讀驗收另記。音樂辨識、原曲速度音高、和弦Score／伴奏manifest及自動旋律停用策略不變。
+
+## 同候選發布
+
+功能提交 `caf8f40` 已push main，更新原 `http://127.0.0.1:5273/reading-candidate-2026-11-05/`。確認active jobs為0後，四份既有SQLite以backup API做一致備份並通過integrity_check，連同舊28檔候選存於 `output/backups/song-notes-2026-11-07/`。先放新資產、原子換index，再重啟同API單元，保留邀請、引擎及執行環境設定。
+
+新19必要檔不包含歌曲音訊，保留舊hash供已開啟分頁繼續載入，候選現31檔。受邀GET候選逐byte等於最終build；API與工作頁GET回200。原首頁84檔hash、四份既有DBlogical內容、真三job的原Score／input.wav／base manifest發布前後逐項相同。數值見 [結果](evaluation/song-notes-results-2026-11-07.json)。外網ngrok流量限制未變。
+
+若回滾需同時回退前端與API；保留新版工作頁DB與草稿，不能把舊DB直接回灌覆寫新增資料。舊A22頁對已定位資料的寫入會409，請備份草稿再重新整理到新版。
