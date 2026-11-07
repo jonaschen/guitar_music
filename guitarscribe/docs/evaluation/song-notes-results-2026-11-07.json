@@ -46,5 +46,31 @@
   "existing_databases_count": 4,
   "original_jobs_compared": 3,
   "old_candidate_files_backed_up": 28,
-  "production_readonly_smoke_pending": true
+  "consultant_production": {
+    "results": [
+      {
+        "job": "6ea8733485f74db6a5443a3b9d7e829a",
+        "view": "和弦譜",
+        "single_notes_entry": true,
+        "legacy_nested_and_loaded": true,
+        "four_sizes_no_overflow": true
+      },
+      {
+        "job": "d8858077556b4403a5d00cb2c9e03a99",
+        "view": "局部小節預覽",
+        "single_notes_entry": true,
+        "legacy_nested_and_loaded": true,
+        "four_sizes_no_overflow": true
+      },
+      {
+        "job": "a3be29912a7045448765290d7cba2f6c",
+        "view": "連續和弦讀譜",
+        "single_notes_entry": true,
+        "legacy_nested_and_loaded": true,
+        "four_sizes_no_overflow": true
+      }
+    ],
+    "writes": 0,
+    "errors": []
+  }
 }
