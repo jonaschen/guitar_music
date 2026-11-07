@@ -43,7 +43,7 @@ Skill 原稿在 [skills/guitarscribe-autopilot](../../skills/guitarscribe-autopi
 | A21-diatonic-mask | rejected | 原217-state HMM精確重播後，固定自動key＋調內硬限制：HU33 root均−2.628pp、漏多秒數全增，控制亦退步 | [事前方案](Diatonic_Candidate_Plan_2026-11-06.md)、[結果／覆蓋](Diatonic_Candidate_Result_2026-11-06.md)。9baseline exact path/raw/projected gate過、9candidate、零模型；14工程測試過。停止這組固定介入，不調key/HMM/門檻或加行進，不變預設；顧問獨立NumPy全18 path、key/mask/raw與完整diagnostic/hash重評通過，確認否決。 |
 | A22-lyrics-worksheet | rejected | 保存等工程通過，但使用者指出歌詞／旋律筆記各自獨立且脫離小節，產品方式被否決 | 既有發布0a644e2保留至A23驗收替換；不再詢問原逐行填寫題。資料及既有筆記完整保留，由A23沿用。 |
 | A23-song-notes-on-score | rejected | 譜下三層對照與資料保護工程通過，但逐句選小節／秒數太難，使用者已否決易用性 | caf8f40及發布紀錄保留；取消原待驗收題，A24取代。資料及微調能力沿用，不宣稱產品已符合需求。 |
-| A24-listen-and-mark | awaiting_human | 貼整首一鍵加入先填簡譜；邊聽按句首，自動進句，不停播／不捲動 | [流程與時鐘接線](Listen_And_Mark_Lyrics_2026-11-07.md)。28不同UI／純函式案例及tsc/build過，顧問實際source-clock／保存三job通過；最後版slot／四尺寸及無格手機scroll差0複審過，已核准同候選前端發布；不重啟API。和弦過密／準確性仍未解，不新增辨識功能。 |
+| A24-listen-and-mark | awaiting_human | 貼整首一鍵加入先填簡譜；邊聽按句首，自動進句，不停播／不捲動 | [流程與時鐘接線](Listen_And_Mark_Lyrics_2026-11-07.md)。28不同UI／純函式案例及tsc/build過，顧問實際source-clock／保存三job通過；最後版slot／四尺寸及無格手機scroll差0複審過，d27b1e4已push／發布同候選；API及PID不變、4DB／3source／84原檔一致。正式三job四尺寸唯讀亦過，0寫入／0例外。和弦過密／準確性仍未解，不新增辨識功能。 |
 | A01-view | done | 原局部視圖保留；使用者要求共同品質改善，取消單獨閱讀驗收 | 不再要求使用者驗收這一輪；原功能可選，不升預設。 |
 | A01-density | rejected | 後來B人耳確認慢一半、第一拍錯；全曲主速度限制不能判定正確拍速 | 連續性方法從產品恢復程式移除，離線失敗證據保留；不直接加倍或改phase再問同題。 |
 | A01-dbn | done | 你的樣子final0原DBN在15–55秒跟拍／密度／第一拍通過 | 紀錄局部通過，正式新引擎不自動開啟，不擴張全曲。 |

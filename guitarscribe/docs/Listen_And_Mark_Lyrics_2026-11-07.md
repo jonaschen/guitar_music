@@ -29,3 +29,11 @@ WebAudio review的畫面游標與同步讀取共用同一transport clock公式�
 最終無拍格測試曾重現新增譜下文字後瀏覽器自動捲426px；trace無scrollBy／scrollTo／scrollIntoView呼叫。只在有標記區的筆記開啟時對html關閉overflow anchoring後，維持原嚴格scroll差<3px斷言通過；關閉筆記恢復預設。不是將捲動容差放寬。
 
 和弦過密、準確性及整體人工修正成本仍未解決。這次僅縮短填詞／簡譜及手動標記流程，不宣稱修好辨識，也不把工程測試通過當成使用者接受。
+
+## 前端發布
+
+功能 `d27b1e4` 已push main，沿原 `http://127.0.0.1:5273/reading-candidate-2026-11-05/` 更新。發布前active jobs為0，四份SQLite一致backup及integrity_check通過，舊31檔候選完整備份於 `output/backups/listen-mark-2026-11-07/`。先放新hash資產再原子換index；19個必要檔，不帶歌曲音訊，保留全部舊hash後候選現34檔。
+
+只更新前端，API不重啟、MainPID不變，邀請與分析設定不動。受邀GET index回200，逐byte與最終build相同；原首頁84檔、四DBlogical內容、三首原Score／input.wav／base manifest在發布前後逐項相同。數值見 [結果](evaluation/listen-mark-results-2026-11-07.json)。ngrok既有流量限制未變。
+
+回滾只需恢復備份前端index；既有API與工作頁schema沿用。保留現在的DB與草稿，不回灌舊DB覆寫使用者資料。顧問正式5273三job四尺寸唯讀驗收亦通過：短筆記入口、微調折收及舊筆記正常載入，0正式寫入／0頁面例外；獨立before／after確認三份score／manifest、四DBlogical及原84檔完全一致。持久化／時鐘／連標等寫入只在隔離資料庫測試。
