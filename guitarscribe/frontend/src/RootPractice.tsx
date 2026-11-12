@@ -1,5 +1,6 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {RootPracticeGrid} from './RootPracticeGrid';
+import {regridRoots,subdivideRootBar,rootSegmentLabel} from './rootMetricalSegments';
 import type {RootGrid} from './rootPracticeGrid';
 import {useRootPractice} from './useRootPractice';
 import {ROOT_NAMES,mergeRootSegment,parseRootDocument,rootStamp,rootText,splitRootSegment,type RootDocument} from './rootPracticeDocument';
@@ -9,6 +10,7 @@ import './rootPractice.css';
 
 type Candidate={pitch_class:number;name:string;rank:number;score:number};
 type EvidenceState={state:string;message:string};
+type SegmentPlan={document:RootDocument;bars:number;exceptions:Array<{bar:number;start:number;end:number;parts:number}>;review:Array<{start:number;end:number;roots:number[]}>;preserved:number;evidence_available:boolean;note:string;base:string};
 type PlaybackScope='segment'|'whole'|'range'|'locate';
 export function RootPractice({job,title,api,onClose}:{job:string;title:string;api:string;onClose:()=>void}){
   const sheet=useRootPractice(api,job),doc=sheet.document;
@@ -19,6 +21,12 @@ export function RootPractice({job,title,api,onClose}:{job:string;title:string;ap
   const [notice,setNotice]=useState(''),[scope,setScope]=useState<PlaybackScope>('segment');
   const [rangeStart,setRangeStart]=useState('0'),[rangeEnd,setRangeEnd]=useState(''),[rangeLoop,setRangeLoop]=useState(true);
   const [rangeNotice,setRangeNotice]=useState('');
+  const [gridSettings,setGridSettings]=useState<RootGrid|null>(null),[plan,setPlan]=useState<SegmentPlan|null>(null),[planBusy,setPlanBusy]=useState(false),[planNotice,setPlanNotice]=useState('');
+  const [archives,setArchives]=useState<Array<{version:number;document:RootDocument}>>([]);
+  const planRequest=useRef<AbortController|null>(null),planPanel=useRef<HTMLDivElement|null>(null);
+  useEffect(()=>{if(plan)planPanel.current?.scrollIntoView({block:'nearest'});},[plan]);
+  const gridChanged=doc?.schema_version!==2||JSON.stringify(doc.grid)!==JSON.stringify(gridSettings);
+  const updateGridSettings=useCallback((grid:RootGrid|null)=>setGridSettings(old=>JSON.stringify(old)===JSON.stringify(grid)?old:grid),[]);
   const [evidence,setEvidence]=useState<EvidenceState>({state:'loading',message:'正在查看參考音…'}),[candidates,setCandidates]=useState<Candidate[]>([]),[clueMessage,setClueMessage]=useState('');
   const alive=useRef(true),request=useRef<AbortController|null>(null),rankRequest=useRef<AbortController|null>(null);
   const progression=useRef<HTMLElement|null>(null);
@@ -44,7 +52,7 @@ export function RootPractice({job,title,api,onClose}:{job:string;title:string;ap
     const key=`guitarscribe.root-position.${doc.source.fingerprint}`;
     if(!selected||!doc.segments.some(s=>s.id===selected)){
       let saved:string|null=null;try{saved=sessionStorage.getItem(key);}catch{/* Keep the musical default. */}
-      const next=doc.segments.find(s=>s.id===saved)??doc.segments.find(s=>s.original_root!==null&&s.end-s.start>=.5&&s.status!=='confirmed')??doc.segments[0];
+      const next=doc.segments.find(s=>s.id===saved)??(selected?doc.segments.find(s=>position>=s.start&&position<s.end):undefined)??doc.segments.find(s=>s.original_root!==null&&s.end-s.start>=.5&&s.status!=='confirmed')??doc.segments[0];
       setSelected(next.id);
     }else try{sessionStorage.setItem(key,selected);}catch{/* Position is not a musical edit. */}
   },[selected,doc?.source.fingerprint,doc?.segments.length]);
@@ -85,6 +93,35 @@ export function RootPractice({job,title,api,onClose}:{job:string;title:string;ap
     return()=>controller.abort();
   },[doc?.source.fingerprint,segment?.id,segment?.start,segment?.end,evidence.state]);
 
+  useEffect(()=>{planRequest.current?.abort();setPlan(null);setPlanBusy(false);setPlanNotice('');},[doc,gridSettings]);
+  useEffect(()=>()=>planRequest.current?.abort(),[]);
+  function localPlan(next:RootDocument,note:string):SegmentPlan{
+    return {document:next,bars:0,exceptions:[],review:next.segments.filter(s=>s.status==='unsure').map(s=>({start:s.start,end:s.end,roots:[...new Set((doc?.segments??[]).filter(old=>old.status==='confirmed'&&old.start<s.end-1e-8&&old.end>s.start+1e-8).map(old=>old.root!))]})),preserved:next.segments.filter(s=>s.status==='confirmed').length,evidence_available:false,note,base:JSON.stringify(doc)};
+  }
+  async function previewSegments(){
+    if(!doc||!gridSettings)return;
+    planRequest.current?.abort();const controller=new AbortController();planRequest.current=controller;setPlanBusy(true);setPlanNotice('');setPlan(null);
+    try{
+      const response=await fetch(`${endpoint}/root-practice/segment-plan`,{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({document:doc,grid:gridSettings})});
+      if(!response.ok)throw Error(response.status===409?'來源已變動，請先下載備份再重新載入。':'分段預覽暫時無法取得，可使用「只按整小節重排」。');
+      const result=await response.json();const next=parseRootDocument(JSON.stringify(result.document),doc.source);
+      if(!controller.signal.aborted)setPlan({...result,document:next,base:JSON.stringify(doc)});
+    }catch(error){if(!controller.signal.aborted)setPlanNotice(error instanceof Error?error.message:'預覽失敗。');}
+    finally{if(!controller.signal.aborted)setPlanBusy(false);}
+  }
+  function previewWholeBars(){if(!doc||!gridSettings)return;planRequest.current?.abort();setPlanBusy(false);try{setPlan(localPlan(regridRoots(doc,gridSettings),'只按整小節重排，未加入自動細分。'));setPlanNotice('');}catch(error){setPlanNotice(String(error));}}
+  function previewSubdivision(divisor:1|2|4){
+    if(!doc||!segment)return;try{setPlan(localPlan(subdivideRootBar(doc,(segment.start+segment.end)/2,divisor),'手動調整目前小節；所有邊界對齊拍格。'));setPlanNotice('');}catch(error){setPlanNotice(String(error));}
+  }
+  function applyPlan(){
+    if(!plan||!doc||plan.base!==JSON.stringify(doc))return;
+    const time=audioState==='playing'?player.read():position;player.stop();
+    if(sheet.update(plan.document)){setSelected((plan.document.segments.find(s=>time>=s.start&&time<s.end)??plan.document.segments[0]).id);setTrial(null);setPlan(null);setNotice('已套用小節分段；保存成功後，原版本會封存在「歷次保存」。');}
+  }
+  async function loadArchives(){
+    try{const response=await fetch(`${endpoint}/root-practice/history`);if(!response.ok)throw Error();const data=await response.json();setArchives(data.map((a:{version:number;document:RootDocument})=>({...a,document:parseRootDocument(JSON.stringify(a.document),doc!.source)})));setPlanNotice(data.length?'':'目前沒有較早版本。');}catch{setPlanNotice('歷次保存暫時無法載入。');}
+  }
+  function restoreArchive(archive:RootDocument){if(!doc)return;const next=archive.schema_version===1?regridRoots(archive,doc.grid??gridSettings??{bpm:115,beats:4,anchor:0}):archive;setPlan(localPlan(next,'恢復歷次保存；舊版非拍格稿會先轉為目前小節長度。'));}
   function chooseSegment(id:string){player.stop();setSelected(id);setNotice('');setScope('segment');}
   function play(midi=trial,audioMode=mode,nextScope:PlaybackScope='segment',from?:number){
     if(!doc||!segment)return;
@@ -156,7 +193,7 @@ export function RootPractice({job,title,api,onClose}:{job:string;title:string;ap
   }
   async function importBackup(file:File){
     if(!doc)return;
-    try{if(file.size>3_000_000)throw Error('備份檔太大，請選根音練習 JSON。');const next=parseRootDocument(await file.text(),doc.source);player.stop();if(sheet.update(next)){setSelected(next.segments[0].id);setTrial(null);setNotice('已還原備份，可以復原。');}}
+    try{if(file.size>3_000_000)throw Error('備份檔太大，請選根音練習 JSON。');const imported=parseRootDocument(await file.text(),doc.source);const next=doc.schema_version===2&&imported.schema_version===1?regridRoots(imported,doc.grid!):imported;player.stop();if(sheet.update(next)){setSelected(next.segments[0].id);setTrial(null);setNotice('已還原備份，可以復原。');}}
     catch(error){setNotice(error instanceof Error?error.message:'備份無法讀取。');}
   }
   function history(back:boolean){player.stop();setTrial(null);if(back)sheet.undo();else sheet.redo();setNotice('已還原練習內容，請重新選音試聽。');}
@@ -171,8 +208,17 @@ export function RootPractice({job,title,api,onClose}:{job:string;title:string;ap
     <div className="root-save"><span role="status" aria-label="根音保存狀態">{sheet.message}</span><span>{confirmed} 段已採用 · {(doc?.segments.length??0)-confirmed} 段待聽</span></div>
     {sheet.blocked?<div className="root-problem" role="alert"><p>請先保留本頁內容，再處理保存問題。</p><button onClick={()=>download(sheet.rawDraft(),`root-draft-${job}.json`)}>下載原始草稿</button><button onClick={sheet.retry}>重試保存／載入</button><button disabled={sheet.busy} onClick={()=>{if(confirm('確定已下載需要保留的草稿？載入最新版本會替換本頁未保存內容。'))sheet.loadLatest();}}>載入最新版本</button></div>:null}
     {doc&&segment?<>
-      <nav className="root-progression" ref={progression} aria-label="根音行進">{doc.segments.map((s,i)=><button type="button" key={s.id} aria-current={segment.id===s.id?'step':undefined} data-playing={audioState==='playing'&&position>=s.start&&position<s.end} aria-label={`第 ${i+1} 段 ${s.root===null?'待聽':ROOT_NAMES[s.root]} ${rootStamp(s.start)}`} onClick={()=>chooseSegment(s.id)}><small>{i+1}</small><strong>{s.root===null?'?':ROOT_NAMES[s.root]}</strong><span>{s.status==='confirmed'?'已採用':s.status==='unsure'?'再聽':'待聽'}</span></button>)}</nav>
-      <RootPracticeGrid key={doc.source.fingerprint} fingerprint={doc.source.fingerprint} duration={doc.source.duration} position={position} playing={audioState==='playing'} preparing={audioState==='preparing'} locating={scope==='locate'&&audioState!=='idle'} readPosition={()=>audioState==='playing'?player.read():position} onSeek={time=>{player.stop();setPosition(time);setScope('locate');}} onLocate={locateRange} onRange={(start,end)=>editRange(String(start),String(end))} onGrid={setMetronome} range={range}/>
+      <nav className="root-progression" ref={progression} aria-label="根音行進">{doc.segments.map((s,i)=><button type="button" key={s.id} aria-current={segment.id===s.id?'step':undefined} data-playing={audioState==='playing'&&position>=s.start&&position<s.end} aria-label={`第 ${i+1} 段 ${s.root===null?'待聽':ROOT_NAMES[s.root]} ${rootStamp(s.start)}`} onClick={()=>chooseSegment(s.id)}><small>{doc.grid?rootSegmentLabel(doc,s).split(' · ').slice(0,2).join(' · '):i+1}</small>{doc.grid?<small>{rootSegmentLabel(doc,s).split(' · ')[2]}</small>:null}<strong>{s.root===null?'?':ROOT_NAMES[s.root]}</strong><span>{s.status==='confirmed'?'已採用':s.status==='unsure'?'再聽':'待聽'}</span></button>)}</nav>
+      <RootPracticeGrid key={doc.source.fingerprint} fingerprint={doc.source.fingerprint} duration={doc.source.duration} position={position} playing={audioState==='playing'} preparing={audioState==='preparing'} locating={scope==='locate'&&audioState!=='idle'} readPosition={()=>audioState==='playing'?player.read():position} onSeek={time=>{player.stop();setPosition(time);setScope('locate');}} onLocate={locateRange} onRange={(start,end)=>editRange(String(start),String(end))} onGrid={setMetronome} onSettings={updateGridSettings} initialGrid={doc.grid} range={range}/>
+      <section className="root-segmentation" aria-label="小節分段">
+        <h2>以小節抓根音</h2><p>{gridChanged?'拍格尚未套用到分段。請預覽並套用後開始逐段聽辨。':'每小節一段；小節內有換根音線索時，才細分為半／四分之一小節。'}</p>
+        <div className="root-grid-actions"><button disabled={!editable||!gridSettings||planBusy} onClick={()=>void previewSegments()}>{planBusy?'正在檢查小節內換音…':'預覽小節分段'}</button><button disabled={!editable||!gridSettings} onClick={previewWholeBars}>只按整小節重排</button></div>
+        {planNotice?<p role="status">{planNotice}</p>:null}
+        {plan?<div ref={planPanel} className="root-segment-preview" role="region" aria-label="分段預覽"><p>{plan.note}</p><p>原 {doc.segments.length} 段 → {plan.document.segments.length} 段；延用 {plan.preserved} 段根音，{plan.review.length} 段需重新確認。</p>
+          {plan.exceptions.length?<details open><summary>{plan.exceptions.length} 個小節有自動細分建議</summary><ul>{plan.exceptions.map(e=><li key={e.bar}>第 {e.bar} 小節 · {e.parts} 段 · {rootStamp(e.start)}–{rootStamp(e.end)}</li>)}</ul></details>:<p>沒有自動細分建議。{!plan.evidence_available?'未使用音訊線索。':''}</p>}
+          {plan.review.length?<details open><summary>保留待確認的原判斷</summary><ul>{plan.review.map((r,i)=><li key={i}>{rootStamp(r.start)}–{rootStamp(r.end)}：原採用 {r.roots.map(r=>ROOT_NAMES[r]).join('、')}，新段先保留待聽。</li>)}</ul></details>:null}
+          <div className="root-grid-actions"><button className="root-primary" disabled={!editable||plan.base!==JSON.stringify(doc)} onClick={applyPlan}>套用這份分段</button><button onClick={()=>setPlan(null)}>取消預覽</button></div></div>:null}
+      </section>
       <section className="root-range" aria-label="範圍連聽">
         <h2>選擇播放範圍</h2><p>拖動 A 起點、B 終點，或聽原曲時按下方按鈕設定位置。</p>
         <div className="root-range-locate"><button onClick={locateRange}>{scope==='locate'&&audioState!=='idle'?'暫停原曲定位':'聽原曲找起終點'}</button><span>目前位置 <output aria-label="定位目前時間">{rootStamp(position)}</output></span></div>
@@ -190,7 +236,7 @@ export function RootPractice({job,title,api,onClose}:{job:string;title:string;ap
         {!rangeValid?<p role="alert">起點須早於終點至少 0.08 秒，且都在歌曲範圍內。</p>:null}
       </section>
       <section className="root-listen" aria-label="當段聽辨">
-        <div className="root-segment-heading"><h2>{scope==='range'?'選取範圍':scope==='whole'?'整首行進':scope==='locate'?'原曲定位':`第 ${index+1} 段`} <small>{scope==='range'?(rangeValid?`${rootStamp(range.start)}–${rootStamp(range.end)}`:'請修正範圍'):scope!=='segment'?`0:00.0–${rootStamp(doc.source.duration)}`:`${rootStamp(segment.start)}–${rootStamp(segment.end)}`}</small></h2><div><button disabled={index===0} onClick={()=>chooseSegment(doc.segments[index-1].id)}>上一段</button><button disabled={index===doc.segments.length-1} onClick={()=>chooseSegment(doc.segments[index+1].id)}>下一段</button></div></div>
+        <div className="root-segment-heading"><h2>{scope==='range'?'選取範圍':scope==='whole'?'整首行進':scope==='locate'?'原曲定位':doc.grid?rootSegmentLabel(doc,segment):`第 ${index+1} 段`} <small>{scope==='range'?(rangeValid?`${rootStamp(range.start)}–${rootStamp(range.end)}`:'請修正範圍'):scope!=='segment'?`0:00.0–${rootStamp(doc.source.duration)}`:`${rootStamp(segment.start)}–${rootStamp(segment.end)}`}</small></h2><div><button disabled={index===0} onClick={()=>chooseSegment(doc.segments[index-1].id)}>上一段</button><button disabled={index===doc.segments.length-1} onClick={()=>chooseSegment(doc.segments[index+1].id)}>下一段</button></div></div>
         {scope!=='segment'&&playingSegment?<p className="root-range-current" aria-label="連聽目前區段">第 {playingIndex+1} 段 · {scope==='locate'?'只有原曲':playingSegment.status==='confirmed'&&playingSegment.root!==null?`原曲＋根音 ${ROOT_NAMES[playingSegment.root]}`:'只有原曲（根音待聽）'}</p>:null}
         <label className="root-scrubber">播放位置 <output>{rootStamp(position)}</output><input aria-label="根音練習播放位置" type="range" min={scope==='range'&&rangeValid?range.start:scope!=='segment'?0:Math.max(0,segment.start-(context ? .75 : 0))} max={scope==='range'&&rangeValid?range.end:scope!=='segment'?doc.source.duration:Math.min(doc.source.duration,segment.end+(context ? .75 : 0))} step=".01" value={position} onChange={e=>{player.stop();setPosition(Number(e.target.value));}}/></label>
         <div className="root-transport"><button className="root-primary" disabled={scope==='range'&&!rangeValid} onClick={togglePlayback}>{audioState==='preparing'?'取消準備':audioState==='playing'?'暫停':scope==='range'?'播放範圍':scope==='whole'?'播放行進':scope==='locate'?'播放原曲':'播放這段'}</button><button onClick={()=>{setMode('source');play(trial,'source');}}>聽原曲</button><label>聲音 <select aria-label="根音練習聲音" disabled={scope!=='segment'} value={scope==='segment'?mode:scope==='locate'?'source':'mix'} onChange={e=>{player.stop();setMode(e.target.value as RootAudioMode);}}><option value="mix">原曲＋根音</option><option value="source">原曲</option><option value="root">根音</option></select></label></div>
@@ -206,14 +252,15 @@ export function RootPractice({job,title,api,onClose}:{job:string;title:string;ap
           <details open={hideClues||candidates.length===0} className="root-other"><summary>其他音（Eb2–Eb3）</summary><div className="root-pitch-grid">{ROOT_AUDITION_ORDER.map(p=><button type="button" key={p} aria-label={`試聽 ${auditionMidiName(p)}`} aria-pressed={trial===p} onClick={()=>audition(p)}>{auditionMidiName(p)}</button>)}</div></details>
           <p className="root-current" aria-live="polite">{trial===null?'尚未選擇試聽音':`目前試聽 ${auditionMidiName(trial)}${segment.status==='confirmed'&&segment.root===trial%12?' · 已採用':' · 尚未採用'}`}</p>
           <div className="root-pitch-steps"><button type="button" disabled={trial===null||trial<=ROOT_AUDITION_MIN} onClick={()=>stepPitch(-1)}>低半音</button><button type="button" disabled={trial===null||trial>=ROOT_AUDITION_MAX} onClick={()=>stepPitch(1)}>高半音</button><small>逐音比較，採用才保存。</small></div>
-          <div className="root-decide"><button className="root-primary" disabled={!editable||trial===null} onClick={()=>decision(trial===null?null:trial%12,'confirmed')}>採用這個根音</button><button disabled={!editable} onClick={()=>decision(null,'unsure')}>還聽不出來</button></div>
+          <div className="root-decide"><button className="root-primary" disabled={!editable||trial===null||!!doc.grid&&gridChanged} onClick={()=>decision(trial===null?null:trial%12,'confirmed')}>採用這個根音</button><button disabled={!editable||!!doc.grid&&gridChanged} onClick={()=>decision(null,'unsure')}>還聽不出來</button></div>
         </div>
         <div className="root-volumes"><label>原曲音量 <input aria-label="練習原曲音量" type="range" min="0" max="1" step=".01" value={sourceVolume} onChange={e=>setSourceVolume(Number(e.target.value))}/></label><label>根音音量 <input aria-label="練習根音音量" type="range" min="0" max="1" step=".01" value={rootVolume} onChange={e=>setRootVolume(Number(e.target.value))}/></label></div>
         <small className="root-explanation">選音後持續發聲，循環時也不中斷；換音或暫停即停止舊音。前後文也會持續試聽音。根音指和聲根音，例如 C/E 的 C；不是最低音。採用只記音名，試聽八度不代表原曲八度。</small>
         {notice?<p className="root-notice" role="status">{notice}</p>:null}
       </section>
       <div className="root-finish"><button disabled={!editable||!sheet.canUndo} onClick={()=>history(true)}>復原</button><button disabled={!editable||!sheet.canRedo} onClick={()=>history(false)}>重做</button><button onClick={()=>play(null,'mix','whole')}>連聽我的行進</button>{(scope==='range'||scope==='whole')?<span>{scope==='range'?'範圍':'整首'}連聽：待聽處只播放原曲</span>:null}</div>
-      <details className="root-tools"><summary>段落調整</summary><p>換音位置不對時，在想切開的地方暫停；也可以拖動播放位置。調整後相關區段會改為待聽，原和弦譜不變。</p><button disabled={!editable||position-segment.start<.08||segment.end-position<.08} onClick={()=>structure('split')}>從游標處分成兩段</button><button disabled={!editable||index===doc.segments.length-1} onClick={()=>structure('merge')}>與下一段合併</button></details>
+      {doc.grid?<section className="root-tools" aria-label="目前小節細分"><h3>目前小節細分</h3><p>通常整小節一個根音；若小節內換音，可按拍細分，或改回整小節。</p><div className="root-grid-actions"><button disabled={!editable||gridChanged} onClick={()=>previewSubdivision(1)}>整小節一段</button><button disabled={!editable||gridChanged||doc.grid.beats%2!==0} onClick={()=>previewSubdivision(2)}>半小節一段</button><button disabled={!editable||gridChanged||doc.grid.beats%4!==0} onClick={()=>previewSubdivision(4)}>四分之一小節一段</button></div></section>:<details className="root-tools"><summary>段落調整</summary><p>換音位置不對時，在想切開的地方暫停；也可以拖動播放位置。調整後相關區段會改為待聽，原和弦譜不變。</p><button disabled={!editable||position-segment.start<.08||segment.end-position<.08} onClick={()=>structure('split')}>從游標處分成兩段</button><button disabled={!editable||index===doc.segments.length-1} onClick={()=>structure('merge')}>與下一段合併</button></details>}
+      <details className="root-tools"><summary>歷次保存</summary><p>重新分段前的判斷保存在這裡，可下載原稿或預覽恢復。</p><button onClick={()=>void loadArchives()}>載入歷次保存</button>{archives.map(a=><div key={a.version}>版本 {a.version} · {a.document.segments.length} 段 <button onClick={()=>download(JSON.stringify(a.document,null,2),`root-practice-${job}-v${a.version}.json`)}>下載版本 {a.version}</button><button disabled={!editable} onClick={()=>restoreArchive(a.document)}>預覽恢復版本 {a.version}</button></div>)}</details>
       <details className="root-tools"><summary>進度與備份</summary><p>進度自動保存於這首來源的共用練習空間；受邀者共用，並非私人帳號。備份只包含根音與時間，不含音訊。</p><button onClick={()=>download(JSON.stringify(doc,null,2),`root-practice-${job}.json`)}>下載完整練習</button><button onClick={()=>download(rootText(doc),`root-progression-${job}.txt`,'text/plain')}>下載根音行進文字</button><label className="root-import">還原同曲備份 <input aria-label="還原根音備份" disabled={!editable} type="file" accept=".json,application/json" onChange={e=>{const file=e.target.files?.[0];if(file)void importBackup(file);e.target.value='';}}/></label>{doc.source.source_start>0?<p>本頁 0 秒對應原曲 {rootStamp(doc.source.source_start)}，時間不必再次偏移。</p>:null}</details>
     </>:<p>載入後即可選段練習。</p>}
   </main>;

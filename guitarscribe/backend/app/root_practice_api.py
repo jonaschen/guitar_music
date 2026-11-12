@@ -6,9 +6,10 @@ from pydantic import BaseModel, Field
 
 from .core.config import Settings
 from .models.jobs import JobStatus
-from .services.root_practice import RootPracticeStore, PracticeSave, PracticeConflict, initial_document, source_for_job
+from .services.root_practice import RootPracticeStore, PracticeDocument, PracticeSave, PracticeConflict, initial_document, source_for_job
 from .services.root_candidate_jobs import RootCandidateJobs
 from .services.root_candidates import candidates_for_range
+from .services.root_segments import PracticeGrid, segmentation_plan
 
 manager = RootCandidateJobs()
 
@@ -21,6 +22,11 @@ class CandidateRange(BaseModel):
     fingerprint: str = Field(pattern=r'^[0-9a-f]{64}$')
     start: float = Field(ge=0, allow_inf_nan=False)
     end: float = Field(gt=0, allow_inf_nan=False)
+
+
+class SegmentPlan(BaseModel):
+    document: PracticeDocument
+    grid: PracticeGrid
 
 
 def create_root_router(get_job_service):
@@ -55,7 +61,9 @@ def create_root_router(get_job_service):
     async def read(job_id: str, service=Depends(get_job_service), store=Depends(get_root_practice_store)):
         result = await asyncio.to_thread(store.read, job_id)
         if result['document'] is None:
-            result['document'] = initial_document(job_for(job_id, service)).model_dump(mode='json')
+            job = job_for(job_id, service)
+            evidence = await asyncio.to_thread(manager.evidence, service.store.job_dir(job_id), source_for_job(job).model_dump(mode='json'))
+            result['document'] = (await asyncio.to_thread(initial_document, job, evidence)).model_dump(mode='json')
         return result
 
     @router.put('/{job_id}/root-practice')
@@ -69,6 +77,22 @@ def create_root_router(get_job_service):
             raise HTTPException(409, '其他分頁已更新進度；請先下載草稿，再載入最新版本。')
         except ValueError:
             raise HTTPException(422, '練習資料與原曲不符。')
+
+    @router.get('/{job_id}/root-practice/history')
+    async def history(job_id: str, store=Depends(get_root_practice_store)):
+        return await asyncio.to_thread(store.history, job_id)
+
+    @router.post('/{job_id}/root-practice/segment-plan')
+    async def plan(job_id: str, body: SegmentPlan, service=Depends(get_job_service)):
+        job = job_for(job_id, service)
+        source = source_for_job(job)
+        if body.document.source != source:
+            raise HTTPException(409, '拍格草稿與原曲來源不符。')
+        evidence = await asyncio.to_thread(manager.evidence, service.store.job_dir(job_id), source.model_dump(mode='json'))
+        try:
+            return await asyncio.to_thread(segmentation_plan, body.document.model_dump(mode='json'), body.grid, evidence)
+        except ValueError as error:
+            raise HTTPException(422, str(error))
 
     @router.get('/{job_id}/root-candidates')
     async def evidence_status(job_id: str, service=Depends(get_job_service)):

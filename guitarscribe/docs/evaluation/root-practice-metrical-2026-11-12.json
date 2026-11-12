@@ -1,0 +1,282 @@
+{
+  "date": "2026-11-12",
+  "change": "Bar-first root practice with cached change clues for dyadic beat-aligned exceptions, v2 metrical persistence, reviewed migration and atomic history",
+  "backend_tests_passed": 33,
+  "complete_frontend_tests_passed": 24,
+  "final_ui_related_tests_passed": 5,
+  "typescript_production_build": "passed",
+  "production": {
+    "job": "83a3643ab3814172a046cebf709f3413",
+    "old_segments": 159,
+    "proposed_segments": 147,
+    "bars": 125,
+    "exception_bars": 19,
+    "review_segments": 9,
+    "preview_from_real_api": true,
+    "applied_view_in_browser_only": true,
+    "real_audio_played": true,
+    "widths": [
+      320,
+      390,
+      768,
+      1440
+    ],
+    "page_errors": [],
+    "writes": [],
+    "score_and_practice_unchanged": true
+  },
+  "sources": [
+    {
+      "job": "83a3643ab3814172a046cebf709f3413",
+      "source_fingerprint": "b2cd10b791110f0f7e00d7eba2bc6817726c828d6696e68a7ec47b10ae4fab2a",
+      "source_start": 0.0,
+      "duration": 258.1066666666667,
+      "practice_version": 21,
+      "grid": {
+        "bpm": 115.0,
+        "beats": 4,
+        "anchor": 15.959
+      },
+      "old_segments": 159,
+      "new_segments": 147,
+      "bars": 125,
+      "exceptions": [
+        {
+          "bar": 17,
+          "start": 32.65465217391304,
+          "end": 34.741608695652175,
+          "parts": 2
+        },
+        {
+          "bar": 21,
+          "start": 41.002478260869566,
+          "end": 43.08943478260869,
+          "parts": 2
+        },
+        {
+          "bar": 23,
+          "start": 45.176391304347824,
+          "end": 47.26334782608696,
+          "parts": 3
+        },
+        {
+          "bar": 47,
+          "start": 95.26334782608696,
+          "end": 97.35030434782608,
+          "parts": 2
+        },
+        {
+          "bar": 51,
+          "start": 103.61117391304347,
+          "end": 105.69813043478261,
+          "parts": 2
+        },
+        {
+          "bar": 54,
+          "start": 109.87204347826086,
+          "end": 111.959,
+          "parts": 3
+        },
+        {
+          "bar": 65,
+          "start": 132.8285652173913,
+          "end": 134.91552173913044,
+          "parts": 2
+        },
+        {
+          "bar": 70,
+          "start": 143.26334782608694,
+          "end": 145.3503043478261,
+          "parts": 3
+        },
+        {
+          "bar": 71,
+          "start": 145.3503043478261,
+          "end": 147.43726086956522,
+          "parts": 2
+        },
+        {
+          "bar": 72,
+          "start": 147.43726086956522,
+          "end": 149.52421739130435,
+          "parts": 2
+        },
+        {
+          "bar": 75,
+          "start": 153.6981304347826,
+          "end": 155.78508695652175,
+          "parts": 2
+        },
+        {
+          "bar": 79,
+          "start": 162.04595652173913,
+          "end": 164.13291304347825,
+          "parts": 2
+        },
+        {
+          "bar": 80,
+          "start": 164.13291304347825,
+          "end": 166.21986956521738,
+          "parts": 2
+        },
+        {
+          "bar": 81,
+          "start": 166.21986956521738,
+          "end": 168.30682608695653,
+          "parts": 2
+        },
+        {
+          "bar": 82,
+          "start": 168.30682608695653,
+          "end": 170.39378260869566,
+          "parts": 2
+        },
+        {
+          "bar": 83,
+          "start": 170.39378260869566,
+          "end": 172.48073913043478,
+          "parts": 2
+        },
+        {
+          "bar": 89,
+          "start": 182.91552173913044,
+          "end": 185.00247826086957,
+          "parts": 2
+        },
+        {
+          "bar": 97,
+          "start": 199.61117391304347,
+          "end": 201.6981304347826,
+          "parts": 2
+        },
+        {
+          "bar": 114,
+          "start": 235.0894347826087,
+          "end": 237.17639130434782,
+          "parts": 2
+        }
+      ],
+      "preserved": 3,
+      "review_count": 9,
+      "evidence_available": true,
+      "cache_sha256": "490c5831f571e0ed61cbcf1cb4e80b2108af38457c88da17059f37f0c4ba7870",
+      "elapsed_seconds": 0.06523846904747188,
+      "music_correctness": "unknown; no reference labels; second-song BPM is a control grid, not a tempo claim",
+      "user_data_written": false
+    },
+    {
+      "job": "a3be29912a7045448765290d7cba2f6c",
+      "source_fingerprint": "e8af51ef717ac29e9ae4af8dcf94c7bdd5db5aec46fecc0dc7c1cd213ec6f50d",
+      "source_start": 0.0,
+      "duration": 304.47167800453514,
+      "practice_version": 0,
+      "grid": {
+        "bpm": 115.0,
+        "beats": 4,
+        "anchor": 15.959
+      },
+      "old_segments": 146,
+      "new_segments": 168,
+      "bars": 147,
+      "exceptions": [
+        {
+          "bar": 9,
+          "start": 15.959,
+          "end": 18.04595652173913,
+          "parts": 3
+        },
+        {
+          "bar": 18,
+          "start": 34.741608695652175,
+          "end": 36.8285652173913,
+          "parts": 2
+        },
+        {
+          "bar": 31,
+          "start": 61.87204347826086,
+          "end": 63.959,
+          "parts": 3
+        },
+        {
+          "bar": 38,
+          "start": 76.48073913043478,
+          "end": 78.56769565217391,
+          "parts": 3
+        },
+        {
+          "bar": 61,
+          "start": 124.48073913043478,
+          "end": 126.56769565217391,
+          "parts": 3
+        },
+        {
+          "bar": 64,
+          "start": 130.74160869565216,
+          "end": 132.8285652173913,
+          "parts": 3
+        },
+        {
+          "bar": 77,
+          "start": 157.87204347826088,
+          "end": 159.959,
+          "parts": 3
+        },
+        {
+          "bar": 88,
+          "start": 180.82856521739131,
+          "end": 182.91552173913044,
+          "parts": 2
+        },
+        {
+          "bar": 102,
+          "start": 210.04595652173913,
+          "end": 212.13291304347825,
+          "parts": 3
+        },
+        {
+          "bar": 107,
+          "start": 220.48073913043478,
+          "end": 222.5676956521739,
+          "parts": 2
+        },
+        {
+          "bar": 112,
+          "start": 230.91552173913044,
+          "end": 233.00247826086957,
+          "parts": 3
+        },
+        {
+          "bar": 114,
+          "start": 235.0894347826087,
+          "end": 237.17639130434782,
+          "parts": 3
+        }
+      ],
+      "preserved": 0,
+      "review_count": 0,
+      "evidence_available": true,
+      "cache_sha256": "46e32aaf9304e08bd5e906850de0172c5fca82846c0626e31dffd00df6bcd5b4",
+      "elapsed_seconds": 0.07654806203208864,
+      "music_correctness": "unknown; no reference labels; second-song BPM is a control grid, not a tempo claim",
+      "user_data_written": false
+    }
+  ],
+  "publication": {
+    "index_sha256": "47ffdb176b0cf537eb4d713bebb68e3ac0301b745a3be6aea76d3a082fd563c3",
+    "server_restart": true,
+    "protected_site_files": 118,
+    "bundle": "index-CAW4Z57u.js"
+  },
+  "data_audit": {
+    "protected_site_files": 118,
+    "changed_site_files": [],
+    "changed_databases": [
+      "root-practice.sqlite3"
+    ],
+    "root_rows_unchanged": true,
+    "history_rows": 0,
+    "service_config_unchanged": true
+  },
+  "music_accuracy": "unknown; original candidate quality gate failures retained; no reference labels for these change clues",
+  "migration": "Existing user worksheet was not overwritten. Preview and apply in UI; prior stored document archived atomically on save. Mixed/partial old confirmations become unsure."
+}

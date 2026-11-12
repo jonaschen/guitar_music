@@ -3,14 +3,14 @@ import {rootStamp} from './rootPracticeDocument';
 import {rootBarAt,rootBarLength,rootBeatLength,rootNearbyBars,validRootGrid,type RootGrid} from './rootPracticeGrid';
 
 type Preferences={bpm:string;beats:string;anchor:string;click:boolean};
-export function RootPracticeGrid({fingerprint,duration,position,playing,preparing,locating,readPosition,onSeek,onLocate,onRange,onGrid,range}:{
+export function RootPracticeGrid({fingerprint,duration,position,playing,preparing,locating,readPosition,onSeek,onLocate,onRange,onGrid,onSettings,initialGrid,range}:{
   fingerprint:string;duration:number;position:number;playing:boolean;preparing:boolean;locating:boolean;readPosition:()=>number;
-  onSeek:(time:number)=>void;onLocate:()=>void;onRange:(start:number,end:number)=>void;onGrid:(grid:RootGrid|null)=>void;range:{start:number;end:number};
+  onSeek:(time:number)=>void;onLocate:()=>void;onRange:(start:number,end:number)=>void;onGrid:(grid:RootGrid|null)=>void;onSettings:(grid:RootGrid|null)=>void;initialGrid?:RootGrid|null;range:{start:number;end:number};
 }){
   const key=`guitarscribe.root-grid.${fingerprint}`;
   const [prefs,setPrefs]=useState<Preferences>(()=>{
-    const fallback={bpm:'115',beats:'4',anchor:'0',click:false};
-    try{const saved=JSON.parse(localStorage.getItem(key)??'null');if(saved&&validRootGrid(saved,duration))return {bpm:String(saved.bpm),beats:String(saved.beats),anchor:String(saved.anchor),click:saved.click===true};}catch{/* Optional local preference. */}
+    const fallback={bpm:String(initialGrid?.bpm??115),beats:String(initialGrid?.beats??4),anchor:String(initialGrid?.anchor??0),click:false};
+    try{const saved=JSON.parse(localStorage.getItem(key)??'null');if(saved&&validRootGrid(saved,duration))return initialGrid?{...fallback,click:saved.click===true}:{bpm:String(saved.bpm),beats:String(saved.beats),anchor:String(saved.anchor),click:saved.click===true};}catch{/* Optional local preference. */}
     return fallback;
   });
   const [storageFailed,setStorageFailed]=useState(false);
@@ -18,10 +18,12 @@ export function RootPracticeGrid({fingerprint,duration,position,playing,preparin
   const grid={bpm:Number(prefs.bpm),beats:Number(prefs.beats),anchor:Number(prefs.anchor)};
   const valid=!!prefs.bpm.trim()&&!!prefs.beats.trim()&&!!prefs.anchor.trim()&&validRootGrid(grid,duration);
   const length=valid?rootBarLength(grid):0,bars=valid?rootNearbyBars(grid,position,duration):[],current=valid?rootBarAt(grid,position,duration):null;
+  useEffect(()=>{if(initialGrid)setPrefs(p=>({...p,bpm:String(initialGrid.bpm),beats:String(initialGrid.beats),anchor:String(initialGrid.anchor)}));},[initialGrid?.bpm,initialGrid?.beats,initialGrid?.anchor]);
   useEffect(()=>{
+    onSettings(valid?grid:null);
     onGrid(valid&&prefs.click?grid:null);
     if(valid)try{localStorage.setItem(key,JSON.stringify({...grid,click:prefs.click}));setStorageFailed(false);}catch{setStorageFailed(true);}
-  },[prefs.bpm,prefs.beats,prefs.anchor,prefs.click,valid,key,onGrid]);
+  },[prefs.bpm,prefs.beats,prefs.anchor,prefs.click,valid,key,onGrid,onSettings]);
   useEffect(()=>{
     const nav=ruler.current;if(!nav)return;
     const center=()=>{const button=nav.querySelector<HTMLElement>('[aria-current="step"]');if(button){const n=nav.getBoundingClientRect(),b=button.getBoundingClientRect();nav.scrollLeft+=b.left-n.left-(n.width-b.width)/2;}};
@@ -52,7 +54,7 @@ export function RootPracticeGrid({fingerprint,duration,position,playing,preparin
         <small>{rootStamp(bar.start)}–{rootStamp(bar.end)}</small><small>{bar.partial?'不足一小節':'選取這小節'}</small>
       </button>)}</nav>
     </>}
-    <p className="root-grid-hint">對齊點是你指定的第 1 拍。小節編號從歌曲開頭依序計算；設定存在此瀏覽器。移動格線不會更動已採用根音的時間。</p>
+    <p className="root-grid-hint">對齊點是你指定的第 1 拍。小節編號從歌曲開頭依序計算；設定存在此瀏覽器。調整後按「預覽小節分段」檢查，再套用到根音稿。</p>
     {storageFailed?<p role="status">瀏覽器無法保存對拍設定，關閉此頁後可能需要重新設定。</p>:null}
   </section>;
 }

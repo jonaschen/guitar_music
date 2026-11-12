@@ -1,5 +1,6 @@
 import {test,expect,type Page} from '@playwright/test';
 import {readFileSync} from 'node:fs';
+import {regridRoots,subdivideRootBar,isMetricalDocument} from '../src/rootMetricalSegments';
 import {rootClock} from '../src/rootPracticeAudio';
 import {parseRootDocument,splitRootSegment,mergeRootSegment} from '../src/rootPracticeDocument';
 const fixture=JSON.parse(readFileSync(new URL('./fixtures/accepted-chord-grid.json',import.meta.url),'utf8'));
@@ -8,7 +9,7 @@ const seed={schema_version:1 as const,source,segments:[{id:'a',start:0,end:4,ori
 function wav(){const count=8000*8,buffer=Buffer.alloc(44+count*2);buffer.write('RIFF');buffer.writeUInt32LE(36+count*2,4);buffer.write('WAVEfmt ',8);buffer.writeUInt32LE(16,16);buffer.writeUInt16LE(1,20);buffer.writeUInt16LE(1,22);buffer.writeUInt32LE(8000,24);buffer.writeUInt32LE(16000,28);buffer.writeUInt16LE(2,32);buffer.writeUInt16LE(16,34);buffer.write('data',36);buffer.writeUInt32LE(count*2,40);for(let i=0;i<count;i++)buffer.writeInt16LE(Math.round(Math.sin(i/8000*220*Math.PI*2)*2000),44+2*i);return buffer;}
 async function setup(page:Page){
   page.on('pageerror',error=>console.error('ROOT PAGE ERROR',error.message));
-  const server={version:0,document:structuredClone(seed) as any,writes:0,scoreWrites:0,conflict:false,fail:false};
+  const server={history:[] as any[],version:0,document:structuredClone(seed) as any,writes:0,scoreWrites:0,conflict:false,fail:false};
   const score={...fixture,provenance:{...fixture.provenance,parameters:{}},song:{...fixture.song,title:'根音練習測試',duration_seconds:8,source_start_seconds:0},chords:[{...fixture.chords[0],id:'a',start:0,end:4,symbol:'C'},{...fixture.chords[0],id:'b',start:4,end:8,symbol:'G'}],melody:[]};
   score.key_context={source:{key:'C',mode:'major'},target:{key:'C',mode:'major'},shape:{key:'C',mode:'major'},sounding:{key:'C',mode:'major'},transpose_semitones:0,accidental_preference:'auto',audio_matches_notation:true};
   score.guitar={tuning:[40,45,50,55,59,64],tuning_name:'EADGBE',capo:0,max_capo:8,max_fret:15,handedness:'right',difficulty:'beginner',tab_preference:'balanced'};
@@ -22,10 +23,12 @@ async function setup(page:Page){
     if(r.request().method()==='PUT'){
       const body=r.request().postDataJSON();if(server.fail)return r.abort();
       if(server.conflict||body.expected_version!==server.version)return r.fulfill({status:409,json:{detail:'conflict'}});
+      if(server.version)server.history.unshift({version:server.version,document:structuredClone(server.document)});
       server.document=body.document;server.version++;server.writes++;
     }
     return r.fulfill({json:{job_id:'root-job',version:server.version,document:server.document,updated_at:null}});
   });
+  await page.route('**/api/v1/jobs/root-job/root-practice/history',r=>r.fulfill({json:server.history}));
   await page.route('**/api/v1/jobs/root-job/root-candidates',r=>r.fulfill({json:{state:'ready',message:'已準備'}}));
   await page.route('**/api/v1/jobs/root-job/root-candidates/rank',r=>{const body=r.request().postDataJSON();return r.fulfill({json:{...body,status:'available',coverage:1,candidates:[{pitch_class:0,name:'C',rank:1,score:.3},{pitch_class:4,name:'E',rank:2,score:.2},{pitch_class:7,name:'G',rank:3,score:.1}]}});});
   await page.route('**/api/v1/jobs/root-job/root-practice/audio?*',r=>r.fulfill({body:wav(),contentType:'audio/wav'}));
@@ -385,4 +388,55 @@ test('live metronome realignment and disable do not interrupt source playback',a
   const count=records.filter((r:any)=>r.kind==='tone'&&r.event==='start').length;expect(count).toBeGreaterThan(1);await page.waitForTimeout(600);
   records=await page.evaluate(()=>(window as any).__rangeAudio);expect(records.filter((r:any)=>r.kind==='tone'&&r.event==='start')).toHaveLength(count);
   await page.getByRole('button',{name:'暫停對拍',exact:true}).click();expect(server.writes).toBe(0);expect(server.scoreWrites).toBe(0);
+});
+
+test('metrical document validation and manual subdivisions enforce integer beats and preserve decisions conservatively',()=>{
+  const old=structuredClone(seed) as any;old.segments[0].root=4;old.segments[0].status='confirmed';
+  const d=regridRoots(old,{bpm:120,beats:4,anchor:0});expect(d.segments).toHaveLength(4);expect(d.segments[0].root).toBe(4);expect(d.segments[1].root).toBe(4);
+  const half=subdivideRootBar(d,.5,2),quarter=subdivideRootBar(half,.5,4);expect(half.segments).toHaveLength(5);expect(quarter.segments).toHaveLength(7);
+  expect(isMetricalDocument(quarter)).toBe(true);expect(parseRootDocument(JSON.stringify(quarter)).grid?.bpm).toBe(120);
+  const bad=structuredClone(d);bad.segments[0].end=1.5;bad.segments[1].start=1.5;expect(()=>parseRootDocument(JSON.stringify(bad))).toThrow();
+  expect(()=>splitRootSegment(d,d.segments[0].id,.3)).toThrow();expect(()=>mergeRootSegment(d,d.segments[0].id)).toThrow();
+  expect(()=>subdivideRootBar(regridRoots(old,{bpm:120,beats:3,anchor:0}),1,2)).toThrow();
+  const conflict=structuredClone(old);conflict.segments=[{...old.segments[0],end:1},{...old.segments[1],start:1,end:8,root:7,status:'confirmed'}];
+  const next=regridRoots(conflict,{bpm:120,beats:4,anchor:0});expect(next.segments[0].root).toBeNull();expect(next.segments[0].status).toBe('unsure');
+});
+
+test('legacy migration previews exceptions and conflicts before saving, archives original and persists applied grid',async({page})=>{
+  const server=await setup(page);server.version=1;server.document.segments=[{...seed.segments[0],end:1,root:0,status:'confirmed'},{...seed.segments[1],start:1,end:8,root:7,status:'confirmed'}];await page.reload();
+  await page.getByLabel('節拍器 BPM',{exact:true}).fill('120');
+  await page.route('**/root-practice/segment-plan',route=>{const body=route.request().postDataJSON(),next=regridRoots(body.document,body.grid);const divided=subdivideRootBar(next,3,2);return route.fulfill({json:{document:divided,bars:4,exceptions:[{bar:2,start:2,end:4,parts:2}],review:[{start:0,end:2,roots:[0,7]}],preserved:4,evidence_available:true,note:'自動細分是換音線索。'}});});
+  await page.getByRole('button',{name:'預覽小節分段',exact:true}).click();const panel=page.getByRole('region',{name:'分段預覽',exact:true});
+  await expect(panel).toContainText('第 2 小節');await expect(panel).toContainText('原採用 C、G');expect(server.writes).toBe(0);
+  await page.getByRole('button',{name:'套用這份分段',exact:true}).click();await expect.poll(()=>server.version).toBe(2);
+  expect(server.document.schema_version).toBe(2);expect(server.document.segments).toHaveLength(5);expect(server.document.segments[0].root).toBeNull();expect(isMetricalDocument(server.document)).toBe(true);
+  await page.getByText('歷次保存',{exact:true}).click();await page.getByRole('button',{name:'載入歷次保存',exact:true}).click();await expect(page.getByRole('button',{name:'下載版本 1',exact:true})).toBeVisible();
+  expect(server.history[0].document.segments[0].root).toBe(0);expect(server.history[0].document.segments[1].root).toBe(7);
+  await page.reload();await expect(page.getByLabel('節拍器 BPM',{exact:true})).toHaveValue('120');await expect(page.getByRole('region',{name:'目前小節細分'})).toBeVisible();
+  await page.getByLabel('小節對齊點秒數').fill('.25');await expect(page.getByRole('region',{name:'小節分段',exact:true})).toContainText('拍格尚未套用');
+  await page.getByRole('button',{name:'只按整小節重排',exact:true}).click();await page.getByRole('button',{name:'套用這份分段',exact:true}).click();await expect.poll(()=>server.version).toBe(3);
+  expect(server.document.grid.anchor).toBe(.25);expect(isMetricalDocument(server.document)).toBe(true);expect(server.scoreWrites).toBe(0);
+});
+
+test('metrical practice uses bar and beat units for candidate requests, adoption, subdivision, undo and playback',async({page})=>{
+  await captureRangeAudio(page);const server=await setup(page);server.document=regridRoots(structuredClone(seed),{bpm:120,beats:4,anchor:0});server.version=1;
+  const ranges:any[]=[];page.on('request',r=>{if(r.url().endsWith('/root-candidates/rank'))ranges.push(r.postDataJSON());});await page.reload();
+  await expect(page.locator('.root-segment-heading h2')).toContainText('整小節');await expect.poll(()=>ranges.at(-1)?.end).toBe(2);
+  await page.getByRole('button',{name:'參考音 E2',exact:true}).click();await page.getByRole('button',{name:'採用這個根音',exact:true}).click();await expect.poll(()=>server.version).toBe(2);
+  await page.getByRole('button',{name:'半小節一段',exact:true}).click();await page.getByRole('button',{name:'套用這份分段',exact:true}).click();await expect.poll(()=>server.document.segments.length).toBe(5);
+  expect(server.document.segments[0].root).toBe(4);expect(server.document.segments[1].root).toBe(4);
+  await page.getByRole('button',{name:'下一段',exact:true}).click();await expect(page.locator('.root-segment-heading h2')).toContainText('1/2 小節');await expect.poll(()=>ranges.at(-1)?.start).toBe(1);expect(ranges.at(-1).end).toBe(2);
+  await page.getByRole('button',{name:'四分之一小節一段',exact:true}).click();await page.getByRole('button',{name:'套用這份分段',exact:true}).click();await expect.poll(()=>server.document.segments.length).toBe(7);expect(isMetricalDocument(server.document)).toBe(true);
+  await page.getByRole('button',{name:'復原',exact:true}).click();await expect.poll(()=>server.document.segments.length).toBe(5);
+  await page.getByRole('button',{name:'整小節一段',exact:true}).click();await page.getByRole('button',{name:'套用這份分段',exact:true}).click();await expect.poll(()=>server.document.segments.length).toBe(4);
+  await page.getByLabel('聽一點前後文',{exact:true}).uncheck();await page.evaluate(()=>{(window as any).__rangeAudio.length=0;});await page.getByRole('button',{name:'播放這段',exact:true}).click();await expect(page.getByRole('button',{name:'暫停',exact:true})).toBeVisible();
+  const records=await page.evaluate(()=>(window as any).__rangeAudio),sourceNode=records.find((r:any)=>r.kind==='source'&&r.event==='start');expect(sourceNode.loopStart).toBe(0);expect(sourceNode.loopEnd).toBe(2);
+  expect(server.scoreWrites).toBe(0);await page.getByRole('button',{name:'暫停',exact:true}).click();
+});
+
+test('stale segmentation response cannot replace a changed grid or a new root decision',async({page})=>{
+  const server=await setup(page);let release:()=>void=()=>{};const held=new Promise<void>(r=>release=r);
+  await page.route('**/root-practice/segment-plan',async route=>{const body=route.request().postDataJSON();await held;await route.fulfill({json:{document:regridRoots(body.document,body.grid),bars:4,exceptions:[],review:[],preserved:0,evidence_available:false,note:'test'}}).catch(()=>{});});
+  await page.getByRole('button',{name:'預覽小節分段',exact:true}).click();await page.getByLabel('小節對齊點秒數').fill('.25');release();await page.waitForTimeout(200);
+  await expect(page.getByRole('button',{name:'套用這份分段',exact:true})).toHaveCount(0);expect(server.writes).toBe(0);
 });

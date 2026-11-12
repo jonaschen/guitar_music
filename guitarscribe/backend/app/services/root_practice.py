@@ -8,6 +8,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from .root_candidates import initial_segments
+from .root_segments import PracticeGrid, grid_aligned, segmentation_plan
 
 
 class PracticeSource(BaseModel):
@@ -36,12 +37,17 @@ class RootSegment(BaseModel):
 
 class PracticeDocument(BaseModel):
     model_config = ConfigDict(extra='forbid')
-    schema_version: Literal[1] = 1
+    schema_version: Literal[1, 2] = 1
+    grid: PracticeGrid | None = None
     source: PracticeSource
     segments: list[RootSegment] = Field(min_length=1, max_length=6000)
 
     @model_validator(mode='after')
     def continuous(self):
+        if self.schema_version == 2 and (self.grid is None or not grid_aligned(self.segments, self.grid, self.source.duration)):
+            raise ValueError('Segments must align with the saved bar grid')
+        if self.schema_version == 1 and self.grid is not None:
+            raise ValueError('Grid requires schema version 2')
         cursor = 0.
         ids = set()
         for s in self.segments:
@@ -66,8 +72,9 @@ def source_for_job(job):
                           source_start=job.score.song.source_start_seconds)
 
 
-def initial_document(job):
-    return PracticeDocument(source=source_for_job(job), segments=initial_segments(job.score.model_dump(mode='json')))
+def initial_document(job, evidence=None):
+    legacy = PracticeDocument(source=source_for_job(job), segments=initial_segments(job.score.model_dump(mode='json')))
+    return PracticeDocument.model_validate(segmentation_plan(legacy.model_dump(mode='json'), PracticeGrid(bpm=115, beats=4, anchor=0), evidence)['document'])
 
 
 class PracticeConflict(Exception):
@@ -80,12 +87,17 @@ class RootPracticeStore:
         path.parent.mkdir(parents=True, exist_ok=True)
         with sqlite3.connect(path) as db:
             db.execute('CREATE TABLE IF NOT EXISTS root_practice (job_id TEXT PRIMARY KEY, document TEXT NOT NULL, version INTEGER NOT NULL, updated_at TEXT NOT NULL)')
+            db.execute('CREATE TABLE IF NOT EXISTS root_practice_history (job_id TEXT NOT NULL, version INTEGER NOT NULL, document TEXT NOT NULL, PRIMARY KEY(job_id,version))')
 
     def read(self, job_id):
         with sqlite3.connect(self.path) as db:
             row = db.execute('SELECT document,version,updated_at FROM root_practice WHERE job_id=?', (job_id,)).fetchone()
         return dict(job_id=job_id, document=json.loads(row[0]) if row else None, version=row[1] if row else 0,
                     updated_at=row[2] if row else None)
+
+    def history(self, job_id):
+        with sqlite3.connect(self.path) as db:
+            return [dict(version=v, document=json.loads(d)) for v, d in db.execute('SELECT version,document FROM root_practice_history WHERE job_id=? ORDER BY version DESC LIMIT 50', (job_id,))]
 
     def save(self, job_id, document, expected_version):
         document = PracticeDocument.model_validate(document)
@@ -97,8 +109,13 @@ class RootPracticeStore:
             row = db.execute('SELECT document,version FROM root_practice WHERE job_id=?', (job_id,)).fetchone()
             if (row[1] if row else 0) != expected_version:
                 raise PracticeConflict()
-            if row and PracticeDocument.model_validate_json(row[0]).source != document.source:
-                raise ValueError('Source fingerprint changed')
+            if row:
+                old = PracticeDocument.model_validate_json(row[0])
+                if old.source != document.source:
+                    raise ValueError('Source fingerprint changed')
+                if old.schema_version == 2 and document.schema_version == 1:
+                    raise PracticeConflict()
+                db.execute('INSERT OR IGNORE INTO root_practice_history VALUES (?,?,?)', (job_id, row[1], row[0]))
             db.execute('INSERT INTO root_practice VALUES (?,?,?,?) ON CONFLICT(job_id) DO UPDATE SET document=excluded.document,version=excluded.version,updated_at=excluded.updated_at',
                        (job_id, document.model_dump_json(), expected_version + 1, now))
         return dict(job_id=job_id, document=document.model_dump(mode='json'), version=expected_version+1, updated_at=now)

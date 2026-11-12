@@ -43,7 +43,7 @@ export function useRootPractice(api:string,job:string){
         const saved=await response.json() as RootSnapshot;
         if(saved.job_id!==job||JSON.stringify(saved.document)!==encoded){
           // Server key ordering is immaterial; validate content structurally below.
-          if(saved.job_id!==job||JSON.stringify(parseRootDocument(JSON.stringify(saved.document)).segments)!==JSON.stringify(sent.segments)||saved.document.source.fingerprint!==sent.source.fingerprint){block('保存回覆不符；請先下載草稿再重新載入。');return;}
+          if(saved.job_id!==job||JSON.stringify(parseRootDocument(JSON.stringify(saved.document)).segments)!==JSON.stringify(sent.segments)||saved.document.source.fingerprint!==sent.source.fingerprint||saved.document.schema_version!==sent.schema_version||JSON.stringify(saved.document.grid??null)!==JSON.stringify(sent.grid??null)){block('保存回覆不符；請先下載草稿再重新載入。');return;}
         }
         s.version=saved.version;s.saved=encoded;
         if(JSON.stringify(s.document)===encoded){try{sessionStorage.removeItem(draftKey);}catch{/* Server copy is saved. */}}else retain();
@@ -57,7 +57,7 @@ export function useRootPractice(api:string,job:string){
   function update(next:RootDocument,history=true){
     const s=state.current;if(!s.document||s.blocked)return false;
     try{parseRootDocument(JSON.stringify(next),s.document.source);}catch(e){setMessage(e instanceof Error?e.message:'資料無效');return false;}
-    if(history){undo.current=[...undo.current.slice(-49),s.document];redo.current=[];}
+    if(history){undo.current=s.document.schema_version===1&&next.schema_version===2?[]:[...undo.current.slice(-49),s.document];redo.current=[];}
     s.document=next;setDocument(next);retain();setMessage('尚未保存…');setRevision(v=>v+1);return true;
   }
   function travel(back:boolean){const from=back?undo:redo,to=back?redo:undo,s=state.current;if(!s.document||s.blocked||!from.current.length)return;const next=from.current.pop()!;to.current.push(s.document);update(next,false);}
