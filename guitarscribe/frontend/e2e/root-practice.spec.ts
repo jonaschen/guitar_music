@@ -313,3 +313,76 @@ for(const width of [320,390,768,1440])test(`complete practice interface fits ${w
   await page.screenshot({path:`test-results/root-practice-${width}.png`,fullPage:true});
   await page.getByLabel('先自己聽，隱藏參考音').check();await expect(page.locator('.root-candidates')).toHaveCount(0);await expect(page.getByRole('button',{name:'試聽 C3',exact:true})).toBeVisible();
 });
+
+test('manual bar grid derives 115 BPM lengths, shifts both directions and clips song edges',async()=>{
+  const {rootBarAt,rootBarLength,rootNearbyBars,rootGridBeats,validRootGrid}=await import('../src/rootPracticeGrid');
+  const grid={bpm:115,beats:4,anchor:120.123};
+  expect(rootBarLength(grid)).toBeCloseTo(2.086956521739,10);
+  const here=rootBarAt(grid,120.2,300),before=rootBarAt(grid,118.1,300);
+  expect(here.start).toBeCloseTo(120.123,10);expect(before.end).toBeCloseTo(120.123,10);
+  expect(rootBarAt({...grid,anchor:120.133},120.2,300).start-here.start).toBeCloseTo(.01,10);
+  expect(rootNearbyBars(grid,50,300)).toHaveLength(5);
+  const first=rootBarAt(grid,0,300),last=rootBarAt(grid,300,300);expect(first.start).toBe(0);expect(first.partial).toBe(true);expect(last.end).toBe(300);expect(last.partial).toBe(true);
+  const beats=rootGridBeats(grid,120.123,120.123+240/115);expect(beats).toHaveLength(4);expect(beats.map(b=>b.strong)).toEqual([true,false,false,false]);
+  expect(rootGridBeats(grid,120.123-240/115,120.123)).toHaveLength(4);
+  expect(rootBarLength({...grid,beats:3})).toBeCloseTo(180/115,10);
+  expect(validRootGrid({...grid,bpm:0},300)).toBe(false);expect(validRootGrid({...grid,beats:2.5},300)).toBe(false);expect(validRootGrid({...grid,anchor:301},300)).toBe(false);
+});
+
+async function setSlider(page:Page,label:string,value:string){
+  await page.getByLabel(label,{exact:true}).evaluate((el:HTMLInputElement,value)=>{Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value')!.set!.call(el,value);el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));},value);
+}
+
+test('bar controls align anywhere, select a bar, persist per source and leave adopted roots intact',async({page})=>{
+  const server=await setup(page);server.document.segments[0].root=4;server.document.segments[0].status='confirmed';server.version=1;await page.reload();
+  await expect(page.getByLabel('節拍器 BPM',{exact:true})).toHaveValue('115');await expect(page.getByLabel('小節長度',{exact:true})).toContainText('每小節 2.087 秒');
+  await setSlider(page,'小節對齊全曲定位','5.5');await page.getByRole('button',{name:'目前位置設為小節起點',exact:true}).click();
+  await expect(page.getByLabel('小節對齊點秒數')).toHaveValue('5.5');
+  await page.getByRole('button',{name:'延後 10 ms',exact:true}).click();await expect(page.getByLabel('小節對齊點秒數')).toHaveValue('5.51');
+  await page.getByRole('button',{name:'提前 10 ms',exact:true}).click();await expect(page.getByLabel('小節對齊點秒數')).toHaveValue('5.5');
+  // This anchor is late in the source; bars must still exist earlier than it.
+  await page.getByRole('button',{name:'選取第 2 小節',exact:true}).click();
+  expect(Number(await page.getByLabel('連聽起點秒數').inputValue())).toBeCloseTo(5.5-2*240/115,9);
+  expect(Number(await page.getByLabel('連聽終點秒數').inputValue())).toBeCloseTo(5.5-240/115,9);
+  await page.getByLabel('每小節幾拍',{exact:true}).fill('3');await expect(page.getByLabel('小節長度',{exact:true})).toContainText('1.565 秒');
+  await page.getByLabel('節拍器 BPM',{exact:true}).fill('120');await page.reload();
+  await expect(page.getByLabel('節拍器 BPM',{exact:true})).toHaveValue('120');await expect(page.getByLabel('每小節幾拍',{exact:true})).toHaveValue('3');await expect(page.getByLabel('小節對齊點秒數')).toHaveValue('5.5');
+  await page.getByLabel('節拍器 BPM',{exact:true}).fill('');await expect(page.getByRole('navigation',{name:'附近小節'})).toHaveCount(0);
+  await expect(page.getByRole('alert')).toContainText('BPM');await page.getByLabel('節拍器 BPM',{exact:true}).fill('115');
+  expect(server.writes).toBe(0);expect(server.scoreWrites).toBe(0);expect(server.document.segments[0].root).toBe(4);
+  await page.evaluate(()=>localStorage.setItem('guitarscribe.root-grid.'+'b'.repeat(64),JSON.stringify({bpm:90,beats:2,anchor:1,click:false})));
+  server.document.source={...source,fingerprint:'b'.repeat(64)};await page.reload();await expect(page.getByLabel('節拍器 BPM',{exact:true})).toHaveValue('90');await expect(page.getByLabel('小節對齊點秒數')).toHaveValue('1');
+});
+
+test('metronome shares source clock across arbitrary range loops and resumes without a false downbeat',async({page})=>{
+  await captureRangeAudio(page);const server=await setup(page);
+  await page.getByLabel('節拍器 BPM',{exact:true}).fill('120');await page.getByLabel('小節對齊點秒數').fill('.25');await page.getByLabel('播放時加入節拍聲',{exact:true}).check();
+  await page.getByLabel('連聽起點秒數').fill('.1');await page.getByLabel('連聽終點秒數').fill('1.6');
+  await page.getByRole('button',{name:'播放選取範圍',exact:true}).click();await expect(page.getByRole('button',{name:'暫停',exact:true})).toBeVisible();await page.waitForTimeout(3300);
+  let records=await page.evaluate(()=>(window as any).__rangeAudio);
+  const sources=records.filter((r:any)=>r.kind==='source'&&r.event==='start'),clicks=records.filter((r:any)=>r.kind==='tone'&&r.event==='start');
+  expect(sources).toHaveLength(1);expect(clicks.length).toBeGreaterThanOrEqual(6);
+  for(const [i,click] of clicks.entries()){
+    expect(click.at-sources[0].at).toBeCloseTo(.15+i*.5,3);expect(click.hz).toBe(i%3===0?1400:900);
+  }
+  await page.getByRole('button',{name:'暫停範圍',exact:true}).click();
+  await setSlider(page,'根音練習播放位置','.4');await page.evaluate(()=>{(window as any).__rangeAudio.length=0;});
+  await page.getByLabel('循環選取範圍').uncheck();await setSlider(page,'根音練習播放位置','.4');
+  await page.getByRole('button',{name:'播放選取範圍',exact:true}).click();await expect(page.getByRole('button',{name:'暫停',exact:true})).toBeVisible();await page.waitForTimeout(600);
+  records=await page.evaluate(()=>(window as any).__rangeAudio);
+  const resumed=records.find((r:any)=>r.kind==='source'&&r.event==='start'),first=records.find((r:any)=>r.kind==='tone'&&r.event==='start');
+  expect(resumed.offset).toBeCloseTo(.4,9);expect(first.hz).toBe(900);expect(first.at-resumed.at).toBeCloseTo(.35,3);
+  await page.getByRole('button',{name:'暫停範圍',exact:true}).click();expect(server.writes).toBe(0);
+});
+
+test('live metronome realignment and disable do not interrupt source playback',async({page})=>{
+  await captureRangeAudio(page);const server=await setup(page);
+  await page.getByLabel('播放時加入節拍聲',{exact:true}).check();await page.getByRole('button',{name:'播放原曲對拍',exact:true}).click();await expect(page.getByRole('button',{name:'暫停',exact:true})).toBeVisible();
+  await page.waitForTimeout(700);await page.getByRole('button',{name:'目前位置設為小節起點',exact:true}).click();
+  const anchor=Number(await page.getByLabel('小節對齊點秒數').inputValue());expect(anchor).toBeGreaterThan(.5);
+  await page.waitForTimeout(700);await page.getByLabel('播放時加入節拍聲',{exact:true}).uncheck();
+  let records=await page.evaluate(()=>(window as any).__rangeAudio);expect(records.filter((r:any)=>r.kind==='source'&&r.event==='start')).toHaveLength(1);expect(records.filter((r:any)=>r.kind==='source'&&r.event==='stop')).toHaveLength(0);
+  const count=records.filter((r:any)=>r.kind==='tone'&&r.event==='start').length;expect(count).toBeGreaterThan(1);await page.waitForTimeout(600);
+  records=await page.evaluate(()=>(window as any).__rangeAudio);expect(records.filter((r:any)=>r.kind==='tone'&&r.event==='start')).toHaveLength(count);
+  await page.getByRole('button',{name:'暫停對拍',exact:true}).click();expect(server.writes).toBe(0);expect(server.scoreWrites).toBe(0);
+});

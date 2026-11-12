@@ -1,4 +1,5 @@
 import {createRootTone} from './rootPracticeTone';
+import {rootGridBeats,type RootGrid} from './rootPracticeGrid';
 export type RootAudioMode='source'|'mix'|'root';
 export type RootAudioOptions={url:string;start:number;end:number;from?:number;loop:boolean;mode:RootAudioMode;notes:Array<{start:number;end:number;root:number;midi?:number}>};
 export function rootClock(elapsed:number,start:number,end:number,from:number,loop:boolean){
@@ -18,11 +19,27 @@ export class RootPracticeAudio{
   private sourceLevel=.75;private rootLevel=.5;
   private active:{options:RootAudioOptions;clock:number;from:number}|null=null;
   private position=0;
+  private grid:RootGrid|null=null;
+  private clicks=new Set<OscillatorNode>();
+  private clickKeys=new Set<string>();
+  private clearClicks(){
+    for(const node of this.clicks){try{node.stop();}catch{/* Ended already. */}node.disconnect();}
+    this.clicks.clear();this.clickKeys.clear();
+  }
+  metronome(grid:RootGrid|null){this.clearClicks();this.grid=grid;}
+  private click(at:number,end:number,strong:boolean){
+    const context=this.context!;if(end<=at)return;
+    const node=context.createOscillator(),gain=context.createGain();
+    node.frequency.setValueAtTime(strong?1400:900,at);
+    gain.gain.setValueAtTime(0,at);gain.gain.linearRampToValueAtTime(strong?.22:.14,Math.min(at+.002,end));gain.gain.exponentialRampToValueAtTime(.0001,end);
+    node.connect(gain);gain.connect(context.destination);this.clicks.add(node);
+    node.onended=()=>{this.clicks.delete(node);node.disconnect();gain.disconnect();};node.start(at);node.stop(end);
+  }
   constructor(private update:(position:number,state:'idle'|'preparing'|'playing',error?:string)=>void){}
   read(){const a=this.active;return a&&this.context?rootClock(this.context.currentTime-a.clock,a.options.start,a.options.end,a.from,a.options.loop):this.position;}
   volume(source:number,root:number){this.sourceLevel=source;this.rootLevel=root;if(this.context){this.sourceGain?.gain.setTargetAtTime(source,this.context.currentTime,.01);this.rootGain?.gain.setTargetAtTime(root,this.context.currentTime,.01);}}
   stop(){
-    this.position=this.read();this.generation++;this.active=null;this.abort?.abort();this.abort=null;
+    this.clearClicks();this.position=this.read();this.generation++;this.active=null;this.abort?.abort();this.abort=null;
     if(this.timer!==null)clearInterval(this.timer);this.timer=null;
     for(const node of this.nodes){try{node.stop();}catch{/* Ended already. */}node.disconnect();}this.nodes.clear();
     this.sourceGain?.disconnect();this.rootGain?.disconnect();this.sourceGain=null;this.rootGain=null;
@@ -77,6 +94,22 @@ export class RootPracticeAudio{
             tone(a.root,onset,end,a.midi);
           }
         }
+        if(this.grid){
+          // Derive beats from source time, including partial bars and arbitrary loop edges.
+          const horizon=Math.max(0,Math.floor((absolute+.18-options.start)/length));
+          for(let c=Math.max(0,cycle);c<=horizon;c++){
+            if(!options.loop&&c>0)break;
+            const offset=clock+c*length-from;
+            const low=Math.max(options.start,c===0?from:options.start,now-offset);
+            const high=Math.min(options.end,now+.18-offset);
+            for(const beat of rootGridBeats(this.grid,low,high)){
+              const at=offset+beat.time,key=`${c}:${beat.time}`;
+              if(this.clickKeys.has(key))continue;
+              this.clickKeys.add(key);this.click(Math.max(now,at),Math.min(at+.045,offset+options.end),beat.strong);
+            }
+          }
+        }
+        if(cycle>1)for(const key of this.clickKeys)if(Number(key.split(':')[0])<cycle-1)this.clickKeys.delete(key);
         // Keep memory bounded during an indefinitely repeated practice loop.
         if(cycle>1)for(const key of scheduled)if(Number(key.split(':')[0])<cycle-1)scheduled.delete(key);
         this.position=this.read();this.update(this.position,'playing');

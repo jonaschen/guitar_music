@@ -1,0 +1,48 @@
+{
+  "date": "2026-11-12",
+  "change": "Manual BPM bar grid, arbitrary source-time downbeat alignment, whole-grid shift, bar selection and synchronized metronome",
+  "full_playwright_cases_passed": 20,
+  "final_boundary_fix_related_cases_passed": 2,
+  "typescript_production_build": "passed",
+  "production": {
+    "job": "83a3643ab3814172a046cebf709f3413",
+    "bpm": 115,
+    "beats_per_bar": 4,
+    "anchor": 15.959,
+    "start": 15.959,
+    "end": 18.04595652173913,
+    "bar_seconds": 2.086956521739129,
+    "metronome_clicks": 6,
+    "adopted_root_starts": 4,
+    "beat_clock_and_accents_correct": true,
+    "live_shift_keeps_source": true,
+    "settings_restored": true,
+    "widths": [
+      320,
+      390,
+      768,
+      1440
+    ],
+    "page_errors": [],
+    "writes": [],
+    "score_and_practice_unchanged": true
+  },
+  "publication": {
+    "index_sha256": "3bd3e2c747be5f9881cedc9b0748ae1ff4518db6312cbfd4fe0b19b195ef383f",
+    "server_restart": false,
+    "protected_site_files": 118,
+    "bundle": "index-DGJWjGjt.js"
+  },
+  "unchanged_old_site_files": 118,
+  "changed_databases_during_publication": [],
+  "storage": "Per-source localStorage in this browser, separate from score and shared root practice",
+  "limits": [
+    "Fixed tempo and beats per bar; no tempo map or meter changes",
+    "Manual grid does not move or recut existing root decisions",
+    "115 BPM / four clicks per bar is an editable default, not a detected time signature"
+  ],
+  "visual_review": [
+    390,
+    1440
+  ]
+}

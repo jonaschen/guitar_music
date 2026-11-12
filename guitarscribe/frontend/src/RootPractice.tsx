@@ -1,4 +1,6 @@
-import {useEffect,useRef,useState} from 'react';
+import {useCallback,useEffect,useRef,useState} from 'react';
+import {RootPracticeGrid} from './RootPracticeGrid';
+import type {RootGrid} from './rootPracticeGrid';
 import {useRootPractice} from './useRootPractice';
 import {ROOT_NAMES,mergeRootSegment,parseRootDocument,rootStamp,rootText,splitRootSegment,type RootDocument} from './rootPracticeDocument';
 import {RootPracticeAudio,type RootAudioMode} from './rootPracticeAudio';
@@ -21,6 +23,7 @@ export function RootPractice({job,title,api,onClose}:{job:string;title:string;ap
   const alive=useRef(true),request=useRef<AbortController|null>(null),rankRequest=useRef<AbortController|null>(null);
   const progression=useRef<HTMLElement|null>(null);
   const [player]=useState(()=>new RootPracticeAudio((t,s,error)=>{if(alive.current){setPosition(t);setAudioState(s);if(error)setNotice(error);}}));
+  const setMetronome=useCallback((grid:RootGrid|null)=>player.metronome(grid),[player]);
   const index=Math.max(0,doc?.segments.findIndex(s=>s.id===selected)??0),segment=doc?.segments[index];
   const endpoint=`${api}/api/v1/jobs/${encodeURIComponent(job)}`;
   const range={start:rangeStart.trim()?Number(rangeStart):NaN,end:rangeEnd.trim()?Number(rangeEnd):NaN};
@@ -169,6 +172,7 @@ export function RootPractice({job,title,api,onClose}:{job:string;title:string;ap
     {sheet.blocked?<div className="root-problem" role="alert"><p>請先保留本頁內容，再處理保存問題。</p><button onClick={()=>download(sheet.rawDraft(),`root-draft-${job}.json`)}>下載原始草稿</button><button onClick={sheet.retry}>重試保存／載入</button><button disabled={sheet.busy} onClick={()=>{if(confirm('確定已下載需要保留的草稿？載入最新版本會替換本頁未保存內容。'))sheet.loadLatest();}}>載入最新版本</button></div>:null}
     {doc&&segment?<>
       <nav className="root-progression" ref={progression} aria-label="根音行進">{doc.segments.map((s,i)=><button type="button" key={s.id} aria-current={segment.id===s.id?'step':undefined} data-playing={audioState==='playing'&&position>=s.start&&position<s.end} aria-label={`第 ${i+1} 段 ${s.root===null?'待聽':ROOT_NAMES[s.root]} ${rootStamp(s.start)}`} onClick={()=>chooseSegment(s.id)}><small>{i+1}</small><strong>{s.root===null?'?':ROOT_NAMES[s.root]}</strong><span>{s.status==='confirmed'?'已採用':s.status==='unsure'?'再聽':'待聽'}</span></button>)}</nav>
+      <RootPracticeGrid key={doc.source.fingerprint} fingerprint={doc.source.fingerprint} duration={doc.source.duration} position={position} playing={audioState==='playing'} preparing={audioState==='preparing'} locating={scope==='locate'&&audioState!=='idle'} readPosition={()=>audioState==='playing'?player.read():position} onSeek={time=>{player.stop();setPosition(time);setScope('locate');}} onLocate={locateRange} onRange={(start,end)=>editRange(String(start),String(end))} onGrid={setMetronome} range={range}/>
       <section className="root-range" aria-label="範圍連聽">
         <h2>選擇播放範圍</h2><p>拖動 A 起點、B 終點，或聽原曲時按下方按鈕設定位置。</p>
         <div className="root-range-locate"><button onClick={locateRange}>{scope==='locate'&&audioState!=='idle'?'暫停原曲定位':'聽原曲找起終點'}</button><span>目前位置 <output aria-label="定位目前時間">{rootStamp(position)}</output></span></div>
