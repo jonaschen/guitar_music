@@ -39,6 +39,7 @@ from .services.playback_reference import reference_score
 from .fretboard.mapper import SimpleFretboardMapper
 from .postprocess.melody import MelodyPostProcessor
 from .services.melody_edits import MelodyEditRequest, MelodyEditResponse, edit_melody
+from .root_practice_api import create_root_router
 
 
 class TransposeScoreRequest(BaseModel):
@@ -223,6 +224,9 @@ def get_job_service() -> AnalysisJobService:
         youtube_downloader=YouTubeAudioDownloader(settings.youtube_dl_binary, settings.youtube_download_timeout_seconds, settings.max_upload_bytes, js_runtime=settings.youtube_js_runtime) if settings.youtube_enabled else None,
         )
     return _job_service
+
+
+app.include_router(create_root_router(get_job_service))
 
 
 @app.get("/health", response_model=HealthResponse, tags=["System"], summary="Check service health")

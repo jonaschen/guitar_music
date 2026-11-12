@@ -1,4 +1,5 @@
 import {AuditionControls, type AuditionContent, type AuditionPulse} from './AuditionControls';
+import {RootPractice} from './RootPractice';
 import {PerformanceDraftControl} from "./PerformanceDraftControl";
 import {DownbeatRhythmControl} from "./DownbeatRhythmControl";
 import {editChordSlice, removeChordSlice, type ChordEditScope} from "./chordSlice";
@@ -247,6 +248,8 @@ async function getRevision(revisionId: string): Promise<SongScore> {
 }
 
 export function App() {
+  const [rootPractice,setRootPractice]=useState(()=>new URLSearchParams(window.location.search).get('practice')==='roots');
+  const [expiredRootJob,setExpiredRootJob]=useState<string|null>(null);
   const [isLoadingExample, setIsLoadingExample] = useState(false);
   const [status, setStatus] = useState<AnalyzeState>("idle");
   const [file, setFile] = useState<File | null>(null);
@@ -558,6 +561,9 @@ export function App() {
       } catch (restoreError) {
         if (obsolete()) return;
         if (restoreError instanceof ApiError && restoreError.status === 404) {
+          if(new URLSearchParams(window.location.search).get('practice')==='roots'){
+            setExpiredRootJob(savedJobId);setAnalysisJob(null);setStatus('idle');return;
+          }
           if (window.localStorage.getItem("guitarscribe.activeJobId") === savedJobId) {
             window.localStorage.removeItem("guitarscribe.activeJobId");
           }
@@ -2082,6 +2088,14 @@ export function App() {
                   <button type="button" hidden={score?.analysis.timing_status === "unmetered"} onClick={()=>{setCompactEditOpen(false);setChordEditScope(null);setFocusedWorkspace(false);window.requestAnimationFrame(()=>document.querySelector<HTMLElement>(".side-panel")?.scrollIntoView({block:"start"}));}}>調整時間與指型</button></div>
                 </section> : null;
 
+  function openRootPractice(open:boolean){
+    audioRef.current?.pause();stopSynth(false);
+    const url=new URL(window.location.href);if(open)url.searchParams.set('practice','roots');else url.searchParams.delete('practice');
+    window.history.replaceState(null,'',url);setRootPractice(open);
+  }
+  if(rootPractice&&score&&sourceJobId(score))return <RootPractice key={sourceJobId(score)} job={sourceJobId(score)!} title={score.song.title} api={API_BASE} onClose={()=>openRootPractice(false)}/>;
+  if(rootPractice&&expiredRootJob)return <RootPractice key={expiredRootJob} job={expiredRootJob} title="已保存的根音練習" api={API_BASE} onClose={()=>openRootPractice(false)}/>;
+
   return (
     <div className={`page-shell${!MELODY_ENABLED ? " chord-product" : ""}${focusMode ? " focus-workspace" : ""}`}>
       <div className="aurora aurora-left" />
@@ -2091,14 +2105,14 @@ export function App() {
         <section className="hero-card new-song-panel" aria-label="新曲目來源" hidden={MELODY_ENABLED ? focusMode && !showNewSong : productScreen !== "home"}>
           <div className="hero-copy">
             <p className="eyebrow">GuitarScribe</p>
-            <h1>把歌曲變成和弦譜</h1>
+            <h1>{rootPractice?'一起抓出歌曲的根音':'把歌曲變成和弦譜'}</h1>
             <p className="lede">
-              貼上 YouTube 歌曲連結，分析後一邊聽、一邊跟著和弦彈。
+              {rootPractice?'貼上歌曲連結，準備參考音，再一段一段聽辨與整理根音行進。':'貼上 YouTube 歌曲連結，分析後一邊聽、一邊跟著和弦彈。'}
             </p>
           </div>
 
           <form className="intake-card" onSubmit={handleSubmit}>
-            {!MELODY_ENABLED && !score ? <div className="example-entry"><button type="button" disabled={isLoadingExample || analysisBusy} onClick={()=>void openExample()}>{isLoadingExample ? "載入範例…" : "開啟範例：小手拉大手"}</button><small>內附和弦稿，可直接試播吉他與編輯。</small></div> : null}
+            {!MELODY_ENABLED && !score && !rootPractice ? <div className="example-entry"><button type="button" disabled={isLoadingExample || analysisBusy} onClick={()=>void openExample()}>{isLoadingExample ? "載入範例…" : "開啟範例：小手拉大手"}</button><small>內附和弦稿，可直接試播吉他與編輯。</small></div> : null}
             <p role="status">{capabilities ? "分析服務已就緒" : capabilitiesFailed ? "無法取得分析能力，請確認服務後重新整理。" : "正在確認分析能力…"}</p>
             {MELODY_ENABLED && capabilities && !capabilities.melody_available ? <p role="note">目前僅分析拍點與和弦，不會產生旋律；完成後可手動補音。</p> : null}
             {MELODY_ENABLED && capabilities?.melody_available && capabilities.vocal_separation_enabled && melodyMode === "vocal" && separateVocals ? <p>分析完成後先用「原曲＋系統吉他」核對和弦。自動旋律仍屬實驗功能，未達品質驗收門檻。</p> : null}
@@ -2192,6 +2206,7 @@ export function App() {
             {score ? <nav className="workspace-mode" aria-label="工作區模式">
               <div><strong>{focusMode ? accompanimentView ? "和弦核對" : "專注修譜" : "完整工具"}</strong><p>選一段 → 對照來源 → 修譜與重播 → 保存版本</p></div>
               <button type="button" className="ghost-button" onClick={() => { setShowNewSong(value => !value); }}>{showNewSong ? "收起新曲目" : "分析新曲目"}</button>
+              {!MELODY_ENABLED&&sourceJobId(score)?<button type="button" className="ghost-button" onClick={()=>openRootPractice(true)}>根音抓歌練習</button>:null}
               <button type="button" hidden={!MELODY_ENABLED} className="ghost-button" onClick={switchWorkspace}>{focusMode ? "顯示完整工具" : accompanimentView ? "回到和弦核對" : "回到專注修譜"}</button>
               <button type="button" hidden={accompanimentView && focusMode} className="ghost-button" onClick={openPerformanceControls}>伴奏演奏</button>
               <button type="button" hidden={!MELODY_ENABLED} className="ghost-button" onClick={switchEditorView}>{accompanimentView ? "旋律編輯（實驗）" : "簡潔和弦頁"}</button>

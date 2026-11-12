@@ -1,0 +1,180 @@
+{
+  "method": "root-mean-profile-duration-v1",
+  "inference_runs": 0,
+  "sources": [
+    {
+      "recording_id": "00_SS2-88-F_comp",
+      "seconds": {
+        "eligible": 43.629200000000026,
+        "top1": 40.43861661072731,
+        "top3": 41.56120576954549,
+        "baseline": 40.206417064727304,
+        "baseline_error": 3.422782935272721,
+        "rescued": 1.354788704818183,
+        "candidate_covered": 43.629200000000026
+      },
+      "top1": 0.9268704585627809,
+      "top3": 0.9526006841644006,
+      "baseline": 0.921548345253346,
+      "error_rescue": 0.39581496414999395,
+      "mixed_root_segments": 13,
+      "segments": 21,
+      "trace_sha256": "60163fe72718f446d328d874d6cd185e24571c4857097017af39347b82a2a5b2"
+    },
+    {
+      "recording_id": "01_Rock1-90-C#_comp",
+      "seconds": {
+        "eligible": 31.999999999999993,
+        "top1": 31.414421766333327,
+        "top3": 31.414421766333327,
+        "baseline": 31.18222222033333,
+        "baseline_error": 0.8177777796666647,
+        "rescued": 0.232199546,
+        "candidate_covered": 31.999999999999993
+      },
+      "top1": 0.9817006801979167,
+      "top3": 0.9817006801979167,
+      "baseline": 0.9744444443854168,
+      "error_rescue": 0.2839396615724227,
+      "mixed_root_segments": 5,
+      "segments": 8,
+      "trace_sha256": "cb29f36ea29afb9a14e1455a443586ed8152792e78c0c710cecf2f923bc3fb4e"
+    },
+    {
+      "recording_id": "02_Funk3-112-C#_comp",
+      "seconds": {
+        "eligible": 34.284399092970524,
+        "top1": 28.250249426714294,
+        "top3": 30.059455779970534,
+        "baseline": 28.250249426714294,
+        "baseline_error": 6.03414966625623,
+        "rescued": 1.8092063532562368,
+        "candidate_covered": 33.63424036297052
+      },
+      "top1": 0.8239972166380062,
+      "top3": 0.8767677595415039,
+      "baseline": 0.8239972166380062,
+      "error_rescue": 0.29982788848834163,
+      "mixed_root_segments": 15,
+      "segments": 23,
+      "trace_sha256": "c4ef378ab1fad5cdba4628dbb125a8d9f8109e342dcfd1e29f2982eb7baa0ebd"
+    },
+    {
+      "recording_id": "03_SS3-84-Bb_comp",
+      "seconds": {
+        "eligible": 45.70759637188208,
+        "top1": 43.305056683310646,
+        "top3": 43.610181400739215,
+        "baseline": 43.07285713731064,
+        "baseline_error": 2.634739234571436,
+        "rescued": 0.537324263428571,
+        "candidate_covered": 45.70759637188208
+      },
+      "top1": 0.9474367527659056,
+      "top3": 0.9541123327930424,
+      "baseline": 0.9423566443281132,
+      "error_rescue": 0.20393830872449567,
+      "mixed_root_segments": 14,
+      "segments": 20,
+      "trace_sha256": "1dd6dd24c40cf544cf101c7938463478058aa36b2132cc404e6b2df096ab10be"
+    },
+    {
+      "recording_id": "04_Rock2-142-D_comp",
+      "seconds": {
+        "eligible": 27.041600000000003,
+        "top1": 21.634273495633803,
+        "top3": 25.84367722153521,
+        "baseline": 22.768494695352114,
+        "baseline_error": 4.27310530464789,
+        "rescued": 3.075182526183097,
+        "candidate_covered": 27.041600000000003
+      },
+      "top1": 0.8000367395284969,
+      "top3": 0.9557007433559851,
+      "baseline": 0.8419803079459837,
+      "error_rescue": 0.7196598976482506,
+      "mixed_root_segments": 12,
+      "segments": 16,
+      "trace_sha256": "66cfb9e7761f1581bf02be96173131ac5f294afd7b175b419535e0973008ccaf"
+    },
+    {
+      "recording_id": "05_Funk2-119-G_comp",
+      "seconds": {
+        "eligible": 32.26319727891156,
+        "top1": 9.944543152092429,
+        "top3": 16.91130718924769,
+        "baseline": 7.1185380820672215,
+        "baseline_error": 25.14465919684434,
+        "rescued": 9.792769107180469,
+        "candidate_covered": 31.38083900191156
+      },
+      "top1": 0.30823179321389066,
+      "top3": 0.5241671196766836,
+      "baseline": 0.22063957333578235,
+      "error_rescue": 0.3894572215323349,
+      "mixed_root_segments": 13,
+      "segments": 27,
+      "trace_sha256": "7e8e5ee13c3fd15c763890a76db2d0ed4e5e6d11cdba11dbd07f6ba80b9b0d9d"
+    },
+    {
+      "recording_id": "SWD_HU33_04",
+      "seconds": {
+        "eligible": 44.54,
+        "top1": 27.33378685100001,
+        "top3": 35.55074830400001,
+        "baseline": 28.612562362000013,
+        "baseline_error": 15.92743763799999,
+        "rescued": 6.938185941999995,
+        "candidate_covered": 44.54
+      },
+      "top1": 0.6136907689941627,
+      "top3": 0.79817575895824,
+      "baseline": 0.6424014899416258,
+      "error_rescue": 0.43561218695006765,
+      "mixed_root_segments": 26,
+      "segments": 33,
+      "trace_sha256": "4d7c816bd737334f5539e053bf603a82ec39c01e8a3b253abdff12b593456c3c"
+    },
+    {
+      "recording_id": "SWD_HU33_18",
+      "seconds": {
+        "eligible": 42.480000000000004,
+        "top1": 23.523310651000003,
+        "top3": 29.670566892,
+        "baseline": 24.767619040000003,
+        "baseline_error": 17.71238096,
+        "rescued": 6.243219959999998,
+        "candidate_covered": 42.480000000000004
+      },
+      "top1": 0.5537502507297551,
+      "top3": 0.69845967259887,
+      "baseline": 0.583041879472693,
+      "error_rescue": 0.35247773713195907,
+      "mixed_root_segments": 24,
+      "segments": 35,
+      "trace_sha256": "11c7235eea296cadaac9259ed42e207598934a7e32c729147e30e760f86b8f95"
+    },
+    {
+      "recording_id": "SWD_HU33_21",
+      "seconds": {
+        "eligible": 44.660000000000004,
+        "top1": 34.75818593799999,
+        "top3": 39.625124713999995,
+        "baseline": 32.678049883999996,
+        "baseline_error": 11.981950116000004,
+        "rescued": 6.9470748299999965,
+        "candidate_covered": 44.660000000000004
+      },
+      "top1": 0.7782845037617552,
+      "top3": 0.8872620849529779,
+      "baseline": 0.7317073417823554,
+      "error_rescue": 0.5797950052156597,
+      "mixed_root_segments": 12,
+      "segments": 20,
+      "trace_sha256": "1af383347d6d10c01299e7c13a3bf1e0f0f76e752d49e8589021e8bf403fcd17"
+    }
+  ],
+  "development_gate_passed": false,
+  "decision": "do_not_promote_ranking",
+  "limitation": "Previously used development data; not independent generalization or human usability evidence"
+}

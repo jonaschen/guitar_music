@@ -1,0 +1,139 @@
+import {useEffect,useRef,useState} from 'react';
+import {useRootPractice} from './useRootPractice';
+import {ROOT_NAMES,mergeRootSegment,parseRootDocument,rootStamp,rootText,splitRootSegment,type RootDocument} from './rootPracticeDocument';
+import {RootPracticeAudio,type RootAudioMode} from './rootPracticeAudio';
+import './rootPractice.css';
+
+type Candidate={pitch_class:number;name:string;rank:number;score:number};
+type EvidenceState={state:string;message:string};
+export function RootPractice({job,title,api,onClose}:{job:string;title:string;api:string;onClose:()=>void}){
+  const sheet=useRootPractice(api,job),doc=sheet.document;
+  const [selected,setSelected]=useState(''),[trial,setTrial]=useState<number|null>(null);
+  const [position,setPosition]=useState(0),[audioState,setAudioState]=useState<'idle'|'preparing'|'playing'>('idle');
+  const [mode,setMode]=useState<RootAudioMode>('mix'),[loop,setLoop]=useState(true),[context,setContext]=useState(true);
+  const [sourceVolume,setSourceVolume]=useState(.75),[rootVolume,setRootVolume]=useState(.5),[hideClues,setHideClues]=useState(false);
+  const [notice,setNotice]=useState(''),[whole,setWhole]=useState(false);
+  const [evidence,setEvidence]=useState<EvidenceState>({state:'loading',message:'正在查看參考音…'}),[candidates,setCandidates]=useState<Candidate[]>([]),[clueMessage,setClueMessage]=useState('');
+  const alive=useRef(true),request=useRef<AbortController|null>(null),rankRequest=useRef<AbortController|null>(null);
+  const progression=useRef<HTMLElement|null>(null);
+  const [player]=useState(()=>new RootPracticeAudio((t,s,error)=>{if(alive.current){setPosition(t);setAudioState(s);if(error)setNotice(error);}}));
+  const index=Math.max(0,doc?.segments.findIndex(s=>s.id===selected)??0),segment=doc?.segments[index];
+  const endpoint=`${api}/api/v1/jobs/${encodeURIComponent(job)}`;
+  useEffect(()=>{
+    if(!doc)return;
+    const key=`guitarscribe.root-position.${doc.source.fingerprint}`;
+    if(!selected||!doc.segments.some(s=>s.id===selected)){
+      let saved:string|null=null;try{saved=sessionStorage.getItem(key);}catch{/* Keep the musical default. */}
+      const next=doc.segments.find(s=>s.id===saved)??doc.segments.find(s=>s.original_root!==null&&s.end-s.start>=.5&&s.status!=='confirmed')??doc.segments[0];
+      setSelected(next.id);
+    }else try{sessionStorage.setItem(key,selected);}catch{/* Position is not a musical edit. */}
+  },[selected,doc?.source.fingerprint,doc?.segments.length]);
+  useEffect(()=>{alive.current=true;return()=>{alive.current=false;request.current?.abort();rankRequest.current?.abort();player.dispose();};},[player]);
+  useEffect(()=>{player.volume(sourceVolume,rootVolume);},[sourceVolume,rootVolume,player]);
+  useEffect(()=>{
+    if(!segment)return;
+    player.stop();setTrial(segment.root);setPosition(segment.start);setWhole(false);
+  },[segment?.id,segment?.start,segment?.end,doc?.source.fingerprint]);
+  useEffect(()=>{
+    const nav=progression.current;if(!nav)return;
+    const center=()=>{const button=nav.querySelector<HTMLElement>('[aria-current=step]');if(button){const n=nav.getBoundingClientRect(),b=button.getBoundingClientRect();nav.scrollLeft+=b.left-n.left-(n.width-b.width)/2;}};
+    center();const observer=new ResizeObserver(center);observer.observe(nav);return()=>observer.disconnect();
+  },[segment?.id,doc?.segments.length]);
+  async function refreshEvidence(method='GET'){
+    request.current?.abort();const controller=new AbortController();request.current=controller;
+    try{
+      const response=await fetch(`${endpoint}/root-candidates`,{method,signal:controller.signal});
+      if(!response.ok)throw Error('參考音暫時無法取得，可先自行聽辨。');
+      const state=await response.json() as EvidenceState;
+      if(!controller.signal.aborted)setEvidence(state);
+    }catch(error){if(!controller.signal.aborted)setEvidence({state:'failed',message:error instanceof Error?error.message:'參考音暫時無法取得。'});}
+  }
+  useEffect(()=>{if(doc)void refreshEvidence();},[doc?.source.fingerprint]);
+  useEffect(()=>{if(!['running','cancelling'].includes(evidence.state))return;const timer=setTimeout(()=>void refreshEvidence(),1200);return()=>clearTimeout(timer);},[evidence]);
+  useEffect(()=>{
+    rankRequest.current?.abort();setCandidates([]);
+    if(!doc||!segment||evidence.state!=='ready'){setClueMessage('尚無這段的參考音，可以選「其他音」自行比較。');return;}
+    const controller=new AbortController();rankRequest.current=controller;setClueMessage('正在整理這段線索…');
+    void (async()=>{try{
+      const response=await fetch(`${endpoint}/root-candidates/rank`,{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,
+        body:JSON.stringify({fingerprint:doc.source.fingerprint,start:segment.start,end:segment.end})});
+      if(!response.ok)throw Error('這段線索暫時無法取得，可以選其他音。');
+      const result=await response.json();
+      if(controller.signal.aborted||result.fingerprint!==doc.source.fingerprint||result.start!==segment.start||result.end!==segment.end)return;
+      setCandidates(result.candidates??[]);setClueMessage(result.status==='available'?'三個參考音都可能不合；可選其他音，或先保留待聽。':result.status==='ambiguous'?'這段線索太接近，無法區分前三個音。請自行選音或先跳過。':'這段線索不足，請自行選音或先跳過。');
+    }catch(error){if(!controller.signal.aborted)setClueMessage(error instanceof Error?error.message:'線索取得失敗。');}})();
+    return()=>controller.abort();
+  },[doc?.source.fingerprint,segment?.id,segment?.start,segment?.end,evidence.state]);
+
+  function chooseSegment(id:string){player.stop();setSelected(id);setNotice('');setWhole(false);}
+  function play(root=trial,audioMode=mode,all=false,from?:number){
+    if(!doc||!segment)return;
+    setNotice('');setWhole(all);
+    const start=all?0:Math.max(0,segment.start-(context ? .75 : 0)),end=all?doc.source.duration:Math.min(doc.source.duration,segment.end+(context ? .75 : 0));
+    const notes=all?doc.segments.filter(s=>s.status==='confirmed'&&s.root!==null).map(s=>({start:s.start,end:s.end,root:s.root!})):root===null?[]:[{start:segment.start,end:segment.end,root}];
+    void player.play({url:`${endpoint}/root-practice/audio?fingerprint=${doc.source.fingerprint}`,start,end,from,loop:all?false:loop,mode:audioMode,notes});
+  }
+  function audition(root:number){setTrial(root);const next=mode==='source'?'mix':mode;setMode(next);play(root,next);}
+  function togglePlayback(){
+    if(audioState!=='idle'){player.stop();return;}
+    if(!doc||!segment)return;
+    const inRange=whole?position>=0&&position<doc.source.duration:position>=segment.start&&position<segment.end;
+    play(trial,mode,whole,inRange?position:undefined);
+  }
+  function decision(root:number|null,status:'confirmed'|'unsure'){
+    if(!doc||!segment)return;
+    if(sheet.update({...doc,segments:doc.segments.map(s=>s.id===segment.id?{...s,root,status}:s)})){
+      setNotice(status==='confirmed'?`已採用 ${ROOT_NAMES[root!]}；這是你的聽辨判斷。`:'已保留待聽，可隨時回來。');
+      if(status==='unsure'){player.stop();setTrial(null);}
+    }
+  }
+  function structure(action:'split'|'merge'){
+    if(!doc||!segment)return;const time=audioState==='idle'?position:player.read();player.stop();
+    try{const next=action==='split'?splitRootSegment(doc,segment.id,time):mergeRootSegment(doc,segment.id);if(sheet.update(next)){setTrial(null);setNotice('區段已調整，相關根音改為待聽；可復原。');}}
+    catch(error){setNotice(error instanceof Error?error.message:'區段調整失敗。');}
+  }
+  function download(text:string,name:string,type='application/json'){
+    const url=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+  async function importBackup(file:File){
+    if(!doc)return;
+    try{if(file.size>3_000_000)throw Error('備份檔太大，請選根音練習 JSON。');const next=parseRootDocument(await file.text(),doc.source);player.stop();if(sheet.update(next)){setSelected(next.segments[0].id);setTrial(null);setNotice('已還原備份，可以復原。');}}
+    catch(error){setNotice(error instanceof Error?error.message:'備份無法讀取。');}
+  }
+  function history(back:boolean){player.stop();setTrial(null);if(back)sheet.undo();else sheet.redo();setNotice('已還原練習內容，請重新選音試聽。');}
+  const confirmed=doc?.segments.filter(s=>s.status==='confirmed').length??0;
+  const editable=!!doc&&!sheet.blocked;
+  const candidateBusy=['running','cancelling'].includes(evidence.state);
+  return <main className="root-practice" aria-label="根音抓歌練習">
+    <header className="root-header"><div><h1>{title}</h1><p>根音抓歌練習 · 一段一段，聽出自己的版本</p></div><button type="button" onClick={()=>{player.stop();onClose();}}>返回和弦頁</button></header>
+    <p className="root-intro">聽原曲、比較單音，決定這段要用哪個根音。參考音仍屬實驗線索，沒有標準答案評分。</p>
+    <div className="root-save"><span role="status" aria-label="根音保存狀態">{sheet.message}</span><span>{confirmed} 段已採用 · {(doc?.segments.length??0)-confirmed} 段待聽</span></div>
+    {sheet.blocked?<div className="root-problem" role="alert"><p>請先保留本頁內容，再處理保存問題。</p><button onClick={()=>download(sheet.rawDraft(),`root-draft-${job}.json`)}>下載原始草稿</button><button onClick={sheet.retry}>重試保存／載入</button><button disabled={sheet.busy} onClick={()=>{if(confirm('確定已下載需要保留的草稿？載入最新版本會替換本頁未保存內容。'))sheet.loadLatest();}}>載入最新版本</button></div>:null}
+    {doc&&segment?<>
+      <nav className="root-progression" ref={progression} aria-label="根音行進">{doc.segments.map((s,i)=><button type="button" key={s.id} aria-current={segment.id===s.id?'step':undefined} data-playing={audioState==='playing'&&position>=s.start&&position<s.end} aria-label={`第 ${i+1} 段 ${s.root===null?'待聽':ROOT_NAMES[s.root]} ${rootStamp(s.start)}`} onClick={()=>chooseSegment(s.id)}><small>{i+1}</small><strong>{s.root===null?'?':ROOT_NAMES[s.root]}</strong><span>{s.status==='confirmed'?'已採用':s.status==='unsure'?'再聽':'待聽'}</span></button>)}</nav>
+      <section className="root-listen" aria-label="當段聽辨">
+        <div className="root-segment-heading"><h2>第 {index+1} 段 <small>{rootStamp(segment.start)}–{rootStamp(segment.end)}</small></h2><div><button disabled={index===0} onClick={()=>chooseSegment(doc.segments[index-1].id)}>上一段</button><button disabled={index===doc.segments.length-1} onClick={()=>chooseSegment(doc.segments[index+1].id)}>下一段</button></div></div>
+        <label className="root-scrubber">播放位置 <output>{rootStamp(position)}</output><input aria-label="根音練習播放位置" type="range" min={whole?0:Math.max(0,segment.start-(context ? .75 : 0))} max={whole?doc.source.duration:Math.min(doc.source.duration,segment.end+(context ? .75 : 0))} step=".01" value={position} onChange={e=>{player.stop();setPosition(Number(e.target.value));}}/></label>
+        <div className="root-transport"><button className="root-primary" onClick={togglePlayback}>{audioState==='preparing'?'取消準備':audioState==='playing'?'暫停':whole?'播放行進':'播放這段'}</button><button onClick={()=>{setMode('source');play(trial,'source');}}>聽原曲</button><label>聲音 <select aria-label="根音練習聲音" value={mode} onChange={e=>{player.stop();setMode(e.target.value as RootAudioMode);}}><option value="mix">原曲＋根音</option><option value="source">原曲</option><option value="root">根音</option></select></label></div>
+        <div className="root-options"><label><input type="checkbox" checked={loop} onChange={e=>{player.stop();setLoop(e.target.checked);}}/>循環這段</label><label><input type="checkbox" checked={context} onChange={e=>{player.stop();setContext(e.target.checked);}}/>聽一點前後文</label><label><input type="checkbox" checked={hideClues} onChange={e=>setHideClues(e.target.checked)}/>先自己聽，隱藏參考音</label></div>
+        <div className="root-clues">
+          <div className="root-clue-title"><h3>{hideClues?'先自己試試':'三個參考音'}</h3><span>點音名試聽，不會改稿</span></div>
+          {!hideClues?<>
+            <div className="root-candidates" aria-label="參考音">{candidates.map(c=><button type="button" key={c.pitch_class} aria-pressed={trial===c.pitch_class} onClick={()=>audition(c.pitch_class)}><strong>{c.name}</strong><span>試聽</span></button>)}</div>
+            <p className="root-clue-message">{clueMessage}</p>
+            {evidence.state!=='ready'?<div className="root-evidence"><span role="status">{evidence.message}</span>{candidateBusy?<button disabled={evidence.state==='cancelling'} onClick={()=>void refreshEvidence('DELETE')}>取消準備參考音</button>:<button disabled={evidence.state==='unavailable'||evidence.state==='loading'} onClick={()=>void refreshEvidence('POST')}>準備參考音</button>}</div>:null}
+          </>:<p>先聽原曲，再從十二個音中比較。取消勾選即可看線索。</p>}
+          <details open={hideClues||candidates.length===0} className="root-other"><summary>其他音（十二音）</summary><div className="root-pitch-grid">{ROOT_NAMES.map((name,p)=><button type="button" key={p} aria-label={`試聽 ${name}`} aria-pressed={trial===p} onClick={()=>audition(p)}>{name}</button>)}</div></details>
+          <p className="root-current" aria-live="polite">{trial===null?'尚未選擇試聽音':`目前試聽 ${ROOT_NAMES[trial]}${segment.status==='confirmed'&&segment.root===trial?' · 已採用':' · 尚未採用'}`}</p>
+          <div className="root-decide"><button className="root-primary" disabled={!editable||trial===null} onClick={()=>decision(trial,'confirmed')}>採用這個根音</button><button disabled={!editable} onClick={()=>decision(null,'unsure')}>還聽不出來</button></div>
+        </div>
+        <div className="root-volumes"><label>原曲音量 <input aria-label="練習原曲音量" type="range" min="0" max="1" step=".01" value={sourceVolume} onChange={e=>setSourceVolume(Number(e.target.value))}/></label><label>根音音量 <input aria-label="練習根音音量" type="range" min="0" max="1" step=".01" value={rootVolume} onChange={e=>setRootVolume(Number(e.target.value))}/></label></div>
+        <small className="root-explanation">根音指和聲根音，例如 C/E 的 C；不是最低音。試音以固定間隔撥奏供比較，並非原曲節奏。原曲維持原調原速。</small>
+        {notice?<p className="root-notice" role="status">{notice}</p>:null}
+      </section>
+      <div className="root-finish"><button disabled={!editable||!sheet.canUndo} onClick={()=>history(true)}>復原</button><button disabled={!editable||!sheet.canRedo} onClick={()=>history(false)}>重做</button><button disabled={!confirmed} onClick={()=>{setMode('mix');play(null,'mix',true);}}>連聽我的行進</button>{whole?<span>行進模式：待聽處只播放原曲</span>:null}</div>
+      <details className="root-tools"><summary>段落調整</summary><p>換音位置不對時，在想切開的地方暫停；也可以拖動播放位置。調整後相關區段會改為待聽，原和弦譜不變。</p><button disabled={!editable||position-segment.start<.08||segment.end-position<.08} onClick={()=>structure('split')}>從游標處分成兩段</button><button disabled={!editable||index===doc.segments.length-1} onClick={()=>structure('merge')}>與下一段合併</button></details>
+      <details className="root-tools"><summary>進度與備份</summary><p>進度自動保存於這首來源的共用練習空間；受邀者共用，並非私人帳號。備份只包含根音與時間，不含音訊。</p><button onClick={()=>download(JSON.stringify(doc,null,2),`root-practice-${job}.json`)}>下載完整練習</button><button onClick={()=>download(rootText(doc),`root-progression-${job}.txt`,'text/plain')}>下載根音行進文字</button><label className="root-import">還原同曲備份 <input aria-label="還原根音備份" disabled={!editable} type="file" accept=".json,application/json" onChange={e=>{const file=e.target.files?.[0];if(file)void importBackup(file);e.target.value='';}}/></label>{doc.source.source_start>0?<p>本頁 0 秒對應原曲 {rootStamp(doc.source.source_start)}，時間不必再次偏移。</p>:null}</details>
+    </>:<p>載入後即可選段練習。</p>}
+  </main>;
+}

@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "protected_site_files": 118,
+  "protected_databases": 4,
+  "environment_unchanged": true,
+  "authorization_required": true,
+  "final_page_sha256": "0e196fb21cb87bff1d42857527c9035ee8d825a5416ad258445103af455aefa5",
+  "real_sources_checked": 2,
+  "browser_widths": [
+    320,
+    390,
+    768,
+    1440
+  ],
+  "source_fingerprint_guard": true,
+  "copied_human_decisions": 0,
+  "production_root_practice_rows": 0
+}
