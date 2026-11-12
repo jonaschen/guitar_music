@@ -222,7 +222,7 @@ test('selected range loops known roots with source-only gaps, clips boundaries a
   // A trial C is deliberately different from the adopted E; range playback must ignore it.
   await page.getByRole('button',{name:'參考音 C3',exact:true}).click();await page.getByRole('button',{name:'暫停',exact:true}).click();
   await page.evaluate(()=>{(window as any).__rangeAudio.length=0;});
-  await page.getByText('微調範圍時間',{exact:true}).click();
+
   await page.getByLabel('連聽起點秒數').fill('1');await page.getByLabel('連聽終點秒數').fill('3');
   await page.getByRole('button',{name:'播放選取範圍',exact:true}).click();await expect(page.getByRole('button',{name:'暫停範圍',exact:true})).toBeVisible();
   await page.waitForTimeout(4250);
@@ -250,13 +250,13 @@ test('selected range loops known roots with source-only gaps, clips boundaries a
   expect(records.find((r:any)=>r.kind==='tone'&&r.event==='stop'&&r.id===g.id).at-g.at).toBeCloseTo(1.001,2);
   await expect(page.getByRole('button',{name:'播放範圍',exact:true})).toBeVisible({timeout:5000});
   expect(server.writes).toBe(0);expect(server.scoreWrites).toBe(0);
-  await page.reload();await page.getByText('微調範圍時間',{exact:true}).click();
+  await page.reload();
   await expect(page.getByLabel('連聽起點秒數')).toHaveValue('1');await expect(page.getByLabel('連聽終點秒數')).toHaveValue('6');await expect(page.getByLabel('循環選取範圍')).not.toBeChecked();
 });
 
 test('range selection works without any adopted root and rejects invalid or empty bounds',async({page})=>{
   await captureRangeAudio(page);const server=await setup(page);
-  await page.getByRole('button',{name:'下一段',exact:true}).click();await page.getByRole('button',{name:'設這段為起點',exact:true}).click();
+  await page.getByText('按段落選起終點',{exact:true}).click();await page.getByRole('button',{name:'下一段',exact:true}).click();await page.getByRole('button',{name:'設這段為起點',exact:true}).click();
   await expect(page.getByLabel('連聽起始段')).toHaveValue('b');
   await page.getByLabel('連聽結束段').selectOption('a');await expect(page.getByLabel('連聽起始段')).toHaveValue('a');
   await page.getByLabel('循環選取範圍').uncheck();await page.getByRole('button',{name:'播放選取範圍',exact:true}).click();
@@ -265,7 +265,7 @@ test('range selection works without any adopted root and rejects invalid or empt
   const records=await page.evaluate(()=>(window as any).__rangeAudio);
   const source=records.find((r:any)=>r.kind==='source'&&r.event==='start');expect(source.offset).toBe(0);expect(source.duration).toBe(4);
   expect(records.filter((r:any)=>r.kind==='tone')).toHaveLength(0);
-  await page.getByText('微調範圍時間',{exact:true}).click();await page.getByLabel('連聽起點秒數').fill('7');
+  await page.getByLabel('連聽起點秒數').fill('7');
   await expect(page.getByRole('button',{name:'播放選取範圍',exact:true})).toBeDisabled();
   await expect(page.getByRole('button',{name:'播放範圍',exact:true})).toBeDisabled();
   await expect(page.getByRole('alert')).toContainText('起點須早於終點');
@@ -274,8 +274,36 @@ test('range selection works without any adopted root and rejects invalid or empt
   expect(server.writes).toBe(0);
 });
 
+test('visible A/B sliders select arbitrary boundaries and live markers preserve uninterrupted source playback',async({page})=>{
+  await captureRangeAudio(page);const server=await setup(page);
+  const start=page.getByLabel('連聽起點秒數'),end=page.getByLabel('連聽終點秒數');
+  await expect(start).toBeVisible();await expect(end).toBeVisible();
+  const drag=async(label:string,value:string)=>page.getByLabel(label).evaluate((el:HTMLInputElement,v)=>{Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value')!.set!.call(el,v);el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));},value);
+  await drag('拖曳範圍起點','1.25');await drag('拖曳範圍終點','2.75');
+  await expect(start).toHaveValue('1.25');await expect(end).toHaveValue('2.75');
+  await page.getByLabel('拖曳範圍起點').focus();await page.keyboard.press('ArrowRight');await expect(start).toHaveValue('1.26');
+  await drag('拖曳範圍起點','4');expect(Number(await start.inputValue())).toBeCloseTo(2.67,2);
+  await drag('拖曳範圍起點','0');await drag('拖曳範圍終點','1');
+  await page.getByRole('button',{name:'聽原曲找起終點',exact:true}).click();await expect(page.getByRole('button',{name:'暫停',exact:true})).toBeVisible();
+  await expect.poll(async()=>Number(await page.getByLabel('根音練習播放位置').inputValue())).toBeGreaterThan(1.1);
+  await page.getByRole('button',{name:'目前位置設為起點',exact:true}).click();const markedStart=Number(await start.inputValue());
+  expect(markedStart).toBeGreaterThan(1);await expect(end).toHaveValue('8'); // A beyond old B begins a fresh range.
+  await page.waitForTimeout(500);await page.getByRole('button',{name:'目前位置設為終點',exact:true}).click();
+  const markedEnd=Number(await end.inputValue());expect(markedEnd-markedStart).toBeGreaterThan(.3);
+  await expect(page.getByRole('button',{name:'暫停原曲定位',exact:true})).toBeVisible();
+  let records=await page.evaluate(()=>(window as any).__rangeAudio);
+  expect(records.filter((r:any)=>r.kind==='source'&&r.event==='start')).toHaveLength(1);expect(records.filter((r:any)=>r.event==='stop'||r.kind==='tone')).toHaveLength(0);
+  await page.getByRole('button',{name:'暫停原曲定位',exact:true}).click();
+  await page.getByRole('button',{name:'播放選取範圍',exact:true}).click();await expect(page.getByRole('button',{name:'暫停範圍',exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:'暫停',exact:true})).toBeVisible();
+  records=await page.evaluate(()=>(window as any).__rangeAudio);const source=records.filter((r:any)=>r.kind==='source'&&r.event==='start').at(-1);
+  expect(source.offset).toBeCloseTo(markedStart,2);expect(source.loopStart).toBeCloseTo(markedStart,2);expect(source.loopEnd).toBeCloseTo(markedEnd,2);
+  expect(server.writes).toBe(0);
+});
+
 for(const width of [320,390,768,1440])test(`complete practice interface fits ${width}px and uses visible keyboard focus`,async({page})=>{
   await page.setViewportSize({width,height:844});await setup(page);
+  await expect(page.getByLabel('拖曳範圍起點')).toBeVisible();await expect(page.getByLabel('拖曳範圍終點')).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   const panel=page.locator('.root-clues');await panel.scrollIntoViewIfNeeded();
   const first=await page.locator('.root-candidates button').first().boundingBox(),adopt=await page.getByRole('button',{name:'採用這個根音'}).boundingBox();

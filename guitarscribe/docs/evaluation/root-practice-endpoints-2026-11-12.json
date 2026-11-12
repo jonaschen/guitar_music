@@ -1,0 +1,40 @@
+{
+  "date": "2026-11-12",
+  "change": "Visible A/B range sliders, direct seconds inputs, uninterrupted source playback with live endpoint markers",
+  "focused_playwright_cases_passed": 7,
+  "typescript_production_build": "passed",
+  "checks": [
+    "native slider pointer and keyboard changes",
+    "minimum interval and crossing clamp",
+    "live A then B without source interruption or root tones",
+    "range playback starts at marked A",
+    "known and unknown intervals, loop, resume, invalid bounds",
+    "320/390/768/1440 widths"
+  ],
+  "production": {
+    "job": "83a3643ab3814172a046cebf709f3413",
+    "start": 15.936009069999999,
+    "end": 19.936009069999997,
+    "source_continuous_and_looped": true,
+    "adopted_root_starts": 4,
+    "unknown_segments_do_not_add_tones": true,
+    "source_score_unchanged": true,
+    "practice_unchanged": true,
+    "page_errors": [],
+    "widths": [
+      320,
+      390,
+      768,
+      1440
+    ]
+  },
+  "publication": {
+    "index_sha256": "6c92e5438fdd3f2c58c552371cacd6d0db91a709e841f7a06f19df0472c0f325",
+    "server_restart": false,
+    "protected_site_files": 118
+  },
+  "protected_files_unchanged": true,
+  "changed_databases_during_publication": [],
+  "scope": "Frontend only; three-stage transcription remains planned, candidate quality unchanged",
+  "execution_note": "Initial backup attempted nonexistent work path and stopped before publication; corrected to output/web-preview/work. A prematurely started check against old UI was cancelled before interaction."
+}

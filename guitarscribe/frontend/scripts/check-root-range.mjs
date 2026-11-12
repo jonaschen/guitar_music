@@ -3,7 +3,7 @@ import {chromium} from 'playwright';
 import fs from 'node:fs/promises';
 const base='http://127.0.0.1:5273',job=process.env.ROOT_PRACTICE_JOB||'83a3643ab3814172a046cebf709f3413';
 const credentials=JSON.parse(await fs.readFile(new URL('../../output/web-preview/access.json',import.meta.url),'utf8'));
-const out=new URL('../../output/evaluation/root-practice-range-2026-11-12/',import.meta.url);await fs.mkdir(out,{recursive:true});
+const out=new URL('../../output/evaluation/root-practice-endpoints-2026-11-12/',import.meta.url);await fs.mkdir(out,{recursive:true});
 const browser=await chromium.launch({executablePath:'/usr/bin/google-chrome',headless:true});
 try{
   const context=await browser.newContext({httpCredentials:{...credentials,send:'always'},viewport:{width:1440,height:1000}});
@@ -25,7 +25,7 @@ try{
   });
   await page.goto(base+'/root-practice-2026-11-12/?practice=roots&job='+job);
   await page.getByRole('region',{name:'範圍連聽',exact:true}).waitFor();
-  await page.getByText('微調範圍時間',{exact:true}).click();await page.getByLabel('連聽起點秒數').fill(String(start));await page.getByLabel('連聽終點秒數').fill(String(end));
+  await page.getByLabel('連聽起點秒數').fill(String(start));await page.getByLabel('連聽終點秒數').fill(String(end));
   for(const width of [320,390,768,1440]){
     await page.setViewportSize({width,height:900});
     if(!await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))throw Error('Overflow '+width);
