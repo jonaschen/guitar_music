@@ -1,0 +1,41 @@
+{
+  "passed": true,
+  "protected_site_files": 118,
+  "unchanged_databases": [
+    "lyric-worksheets.sqlite3",
+    "melody-notes.sqlite3",
+    "revisions/guitarscribe.sqlite3",
+    "jobs/jobs.sqlite3"
+  ],
+  "concurrent_database_changes": {
+    "root-practice.sqlite3": {
+      "before": "0a22129c41345daf00de5b989da3adc3aee8e0e98aa0023e949cd0a5fe225325",
+      "after": "df7f167858ca9edbb612399051721a9fd71396e4115e2103c6d79f13f1d6bcdc",
+      "concurrent_saves_outside_check": true,
+      "evidence": "Server log has PUT at 19:45:54 Asia/Taipei, after read-only browser check; no rollback performed."
+    }
+  },
+  "browser_cases_passed": 15,
+  "production_check": {
+    "job": "83a3643ab3814172a046cebf709f3413",
+    "start": 15.936009069999999,
+    "end": 19.936009069999997,
+    "source_continuous_and_looped": true,
+    "adopted_root_starts": 4,
+    "unknown_segments_do_not_add_tones": true,
+    "source_score_unchanged": true,
+    "practice_unchanged": true,
+    "page_errors": [],
+    "widths": [
+      320,
+      390,
+      768,
+      1440
+    ]
+  },
+  "publication": {
+    "index_sha256": "282143e83b563e7b30fadb7daf4bf27d915e5827b4aaad4e15a13ad80ee71a2a",
+    "bundle": "index-UsNjLwQ6.js",
+    "server_restart": false
+  }
+}

@@ -197,6 +197,83 @@ test('rendered root tones have actual Eb2-Eb3 fundamentals and steady late audio
   for(const r of results){expect(r.detected).toBe(r.midi);expect(r.late).toBeGreaterThan(.05);expect(r.late/r.early).toBeGreaterThan(.95);expect(r.late/r.early).toBeLessThan(1.05);expect(r.after).toBe(0);}
 });
 
+async function captureRangeAudio(page:Page){
+  await page.addInitScript(()=>{
+    const records:any[]=[];(window as any).__rangeAudio=records;
+    const values=new WeakMap<AudioParam,number>(),setValue=AudioParam.prototype.setValueAtTime;
+    AudioParam.prototype.setValueAtTime=function(value:number,time:number){values.set(this,value);return setValue.call(this,value,time);};
+    let next=0;
+    for(const [kind,prototype]of [['tone',OscillatorNode.prototype],['source',AudioBufferSourceNode.prototype]]as const){
+      const start=prototype.start,stop=prototype.stop,ids=new WeakMap<any,number>();
+      prototype.start=function(...args:any[]){const id=++next;ids.set(this,id);const source=this as AudioBufferSourceNode;
+        records.push({kind,id,event:'start',at:args[0],offset:args[1],duration:args[2],hz:values.get((this as OscillatorNode).frequency),loop:source.loop,loopStart:source.loopStart,loopEnd:source.loopEnd});return(start as any).apply(this,args);};
+      prototype.stop=function(...args:any[]){records.push({kind,id:ids.get(this),event:'stop',at:args[0]??this.context.currentTime});return(stop as any).apply(this,args);};
+    }
+  });
+}
+
+test('selected range loops known roots with source-only gaps, clips boundaries and resumes in an unknown segment',async({page})=>{
+  await captureRangeAudio(page);const server=await setup(page);
+  server.version=1;server.document.segments=[
+    {id:'a',start:0,end:2,original_root:4,root:4,status:'confirmed'},
+    {id:'b',start:2,end:5,original_root:0,root:null,status:'pending'},
+    {id:'c',start:5,end:8,original_root:7,root:7,status:'confirmed'}];
+  await page.reload();await expect(page.locator('.root-progression button')).toHaveCount(3);
+  // A trial C is deliberately different from the adopted E; range playback must ignore it.
+  await page.getByRole('button',{name:'參考音 C3',exact:true}).click();await page.getByRole('button',{name:'暫停',exact:true}).click();
+  await page.evaluate(()=>{(window as any).__rangeAudio.length=0;});
+  await page.getByText('微調範圍時間',{exact:true}).click();
+  await page.getByLabel('連聽起點秒數').fill('1');await page.getByLabel('連聽終點秒數').fill('3');
+  await page.getByRole('button',{name:'播放選取範圍',exact:true}).click();await expect(page.getByRole('button',{name:'暫停範圍',exact:true})).toBeVisible();
+  await page.waitForTimeout(4250);
+  let records=await page.evaluate(()=>(window as any).__rangeAudio);
+  const source=records.find((r:any)=>r.kind==='source'&&r.event==='start'),tones=records.filter((r:any)=>r.kind==='tone'&&r.event==='start');
+  expect(source.loop).toBe(true);expect(source.loopStart).toBe(1);expect(source.loopEnd).toBe(3);expect(source.offset).toBe(1);
+  expect(records.filter((r:any)=>r.kind==='source'&&r.event==='start')).toHaveLength(1);
+  expect(tones.length).toBeGreaterThanOrEqual(3);
+  for(const [i,tone]of tones.entries()){
+    expect(tone.hz).toBeCloseTo(82.4069,3);expect(tone.at-source.at).toBeCloseTo(i*2,2);
+    const stop=records.find((r:any)=>r.kind==='tone'&&r.event==='stop'&&r.id===tone.id);expect(stop.at-tone.at).toBeCloseTo(1.001,2);
+  }
+  await page.getByRole('button',{name:'暫停範圍',exact:true}).click();
+  await page.getByLabel('連聽終點秒數').fill('6');await page.getByLabel('循環選取範圍').uncheck();
+  await page.getByRole('button',{name:'播放選取範圍',exact:true}).click();await page.waitForTimeout(1350);
+  await page.getByRole('button',{name:'暫停範圍',exact:true}).click();
+  const paused=Number(await page.getByLabel('根音練習播放位置').inputValue());expect(paused).toBeGreaterThan(2);expect(paused).toBeLessThan(5);
+  await page.evaluate(()=>{(window as any).__rangeAudio.length=0;});
+  await page.getByRole('button',{name:'播放選取範圍',exact:true}).click();
+  await expect.poll(()=>page.evaluate(()=>(window as any).__rangeAudio.filter((r:any)=>r.kind==='tone'&&r.event==='start').length),{timeout:6000}).toBe(1);
+  records=await page.evaluate(()=>(window as any).__rangeAudio);
+  const resumed=records.find((r:any)=>r.kind==='source'&&r.event==='start'),g=records.find((r:any)=>r.kind==='tone'&&r.event==='start');
+  expect(resumed.loop).toBe(false);expect(resumed.offset).toBeCloseTo(paused,2);expect(resumed.duration).toBeCloseTo(6-paused,2);
+  expect(g.hz).toBeCloseTo(97.9989,3);expect(g.at-resumed.at).toBeCloseTo(5-paused,2);
+  expect(records.find((r:any)=>r.kind==='tone'&&r.event==='stop'&&r.id===g.id).at-g.at).toBeCloseTo(1.001,2);
+  await expect(page.getByRole('button',{name:'播放範圍',exact:true})).toBeVisible({timeout:5000});
+  expect(server.writes).toBe(0);expect(server.scoreWrites).toBe(0);
+  await page.reload();await page.getByText('微調範圍時間',{exact:true}).click();
+  await expect(page.getByLabel('連聽起點秒數')).toHaveValue('1');await expect(page.getByLabel('連聽終點秒數')).toHaveValue('6');await expect(page.getByLabel('循環選取範圍')).not.toBeChecked();
+});
+
+test('range selection works without any adopted root and rejects invalid or empty bounds',async({page})=>{
+  await captureRangeAudio(page);const server=await setup(page);
+  await page.getByRole('button',{name:'下一段',exact:true}).click();await page.getByRole('button',{name:'設這段為起點',exact:true}).click();
+  await expect(page.getByLabel('連聽起始段')).toHaveValue('b');
+  await page.getByLabel('連聽結束段').selectOption('a');await expect(page.getByLabel('連聽起始段')).toHaveValue('a');
+  await page.getByLabel('循環選取範圍').uncheck();await page.getByRole('button',{name:'播放選取範圍',exact:true}).click();
+  await expect(page.getByRole('button',{name:'暫停範圍',exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:'暫停',exact:true})).toBeVisible();
+  const records=await page.evaluate(()=>(window as any).__rangeAudio);
+  const source=records.find((r:any)=>r.kind==='source'&&r.event==='start');expect(source.offset).toBe(0);expect(source.duration).toBe(4);
+  expect(records.filter((r:any)=>r.kind==='tone')).toHaveLength(0);
+  await page.getByText('微調範圍時間',{exact:true}).click();await page.getByLabel('連聽起點秒數').fill('7');
+  await expect(page.getByRole('button',{name:'播放選取範圍',exact:true})).toBeDisabled();
+  await expect(page.getByRole('button',{name:'播放範圍',exact:true})).toBeDisabled();
+  await expect(page.getByRole('alert')).toContainText('起點須早於終點');
+  await page.getByLabel('連聽起點秒數').fill('');await expect(page.getByRole('button',{name:'播放選取範圍',exact:true})).toBeDisabled();
+  await page.getByLabel('連聽起點秒數').fill('0');await page.getByLabel('連聽終點秒數').fill('9');await expect(page.getByRole('button',{name:'播放選取範圍',exact:true})).toBeDisabled();
+  expect(server.writes).toBe(0);
+});
+
 for(const width of [320,390,768,1440])test(`complete practice interface fits ${width}px and uses visible keyboard focus`,async({page})=>{
   await page.setViewportSize({width,height:844});await setup(page);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
