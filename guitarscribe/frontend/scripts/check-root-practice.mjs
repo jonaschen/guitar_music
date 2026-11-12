@@ -44,13 +44,21 @@ try{
     if(!await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))throw Error('Horizontal overflow '+width);
     await page.screenshot({path:new URL(`real-${job}-${write?'write':'readonly'}-${width}.png`,out).pathname,fullPage:true});
   }
-  const auditionRoot=Number(await page.locator('.root-candidates button').nth(1).getAttribute('data-root'));
-  await page.locator('.root-candidates button').nth(1).click();
+  let auditionRoot=Number(await page.locator('.root-candidates button').nth(1).getAttribute('data-root'));
+  let auditionMidi=40+(auditionRoot-4+12)%12;
+  if(process.env.ROOT_PRACTICE_AUDITION_MIDI){
+    auditionMidi=Number(process.env.ROOT_PRACTICE_AUDITION_MIDI);
+    if(!Number.isInteger(auditionMidi)||auditionMidi<39||auditionMidi>51)throw Error('Invalid audition pitch');
+    auditionRoot=auditionMidi%12;
+    const name=['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'][auditionRoot]+(Math.floor(auditionMidi/12)-1);
+    await page.locator('.root-other summary').click();
+    await page.getByRole('button',{name:'試聽 '+name,exact:true}).click();
+  }else await page.locator('.root-candidates button').nth(1).click();
   await page.getByRole('button',{name:'暫停',exact:true}).waitFor({timeout:45000});
   const segment=snapshot.document.segments[index];
   await page.waitForTimeout(Math.ceil((segment.end-segment.start+1.5)*1000)+250);
   const tones=await page.evaluate(()=>window.__rootTones.map(t=>({frequency:t.node.frequency.value,ended:t.ended})));
-  const expectedHz=440*2**((40+(auditionRoot-4+12)%12-69)/12);
+  const expectedHz=440*2**((auditionMidi-69)/12);
   if(tones.length!==1||tones[0].ended||Math.abs(tones[0].frequency-expectedHz)>.001)throw Error('Reference did not remain one sustained low-register tone across the source loop');
   const position=await page.getByLabel('根音練習播放位置').inputValue();
   await page.getByRole('button',{name:'暫停',exact:true}).click();

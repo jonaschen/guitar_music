@@ -104,3 +104,5 @@ npm run build -- --base=/root-practice-2026-11-12/
 這是試聽與比較流程修正，不是候選辨識品質改善。原九來源結果與失敗門檻保留；資料格式與後端無需改動。
 
 驗證：13項不同的根音測試通過；12音以真正OfflineAudioContext合成後獨立比對28–64 MIDI範圍基頻，確認40–51及後段音量穩定、區段結束歸零。真WebAudio驗證E2跨原曲循環仍只有一個持續節點、B2／C3半音連續、換音與暫停取消舊音、零保存。首次新增檢查誤讀尚未到排程時間的AudioParam預設值440Hz；改讀排程值後單項重查通過，獨立實際音訊驗證原已通過。TypeScript／build通過；兩首正式真曲持續跨循環、四尺寸與0例外／0改稿通過，118舊網站檔案及5份資料庫相同。只更新原根音入口前端，服務無需重啟。[驗證摘要](evaluation/root-practice-register-2026-11-12.json)；回退index保留於 `output/backups/root-practice-register-2026-11-12/`。
+
+使用者再要求追加較低的Eb2：已在「其他音」加入Eb2，保留E2–Eb3，形成39–51 MIDI的13個實際音高。E2的低半音可降至Eb2，Eb2／Eb3分開選取與發聲；原三候選的預設音域保持。試聽狀態區分八度，採用資料仍只保存Eb音級，不改舊稿格式。13項根音測試整批通過，13音實際合成基頻與持續音驗證通過，build通過；正式入口Eb2為77.7817459Hz，跨原曲循環持續，四尺寸0例外、試聽0改稿。證據 `output/evaluation/root-practice-eb2-2026-11-12/`，原入口前端已更新；回退index在 `output/backups/root-practice-eb2-2026-11-12/`。

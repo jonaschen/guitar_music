@@ -1,6 +1,6 @@
 import {createRootTone} from './rootPracticeTone';
 export type RootAudioMode='source'|'mix'|'root';
-export type RootAudioOptions={url:string;start:number;end:number;from?:number;loop:boolean;mode:RootAudioMode;notes:Array<{start:number;end:number;root:number}>};
+export type RootAudioOptions={url:string;start:number;end:number;from?:number;loop:boolean;mode:RootAudioMode;notes:Array<{start:number;end:number;root:number;midi?:number}>};
 export function rootClock(elapsed:number,start:number,end:number,from:number,loop:boolean){
   const position=from+Math.max(0,elapsed);
   return loop?start+((position-start)%(end-start)):Math.min(end,position);
@@ -53,13 +53,13 @@ export class RootPracticeAudio{
         this.nodes.add(node);node.onended=()=>{this.nodes.delete(node);node.disconnect();};
         if(options.loop)node.start(clock,from);else node.start(clock,from,options.end-from);
       }
-      const notes=options.mode==='source'?[]:options.notes.map(n=>({time:Math.max(n.start,options.start),end:Math.min(n.end,options.end),root:n.root})).filter(n=>n.end>n.time);
+      const notes=options.mode==='source'?[]:options.notes.map(n=>({time:Math.max(n.start,options.start),end:Math.min(n.end,options.end),root:n.root,midi:n.midi})).filter(n=>n.end>n.time);
       const hold=options.loop&&notes.length===1&&notes[0].time===options.start&&notes[0].end===options.end;
-      const tone=(root:number,start:number,end?:number)=>{
-        const node=createRootTone(context,root,start,this.rootGain!,end);
+      const tone=(root:number,start:number,end?:number,midi?:number)=>{
+        const node=createRootTone(context,root,start,this.rootGain!,end,midi);
         this.nodes.add(node);node.addEventListener('ended',()=>this.nodes.delete(node));
       };
-      if(hold)tone(notes[0].root,clock);
+      if(hold)tone(notes[0].root,clock,undefined,notes[0].midi);
       const attacks=hold?[]:notes;
       const scheduled=new Set<string>();const length=options.end-options.start;
       const tick=()=>{
@@ -74,7 +74,7 @@ export class RootPracticeAudio{
             if(at>now+.18||end<=now||scheduled.has(key))continue;
             scheduled.add(key);const onset=Math.max(at,now);
             // Sustained roots share the source clock and stop at decision boundaries.
-            tone(a.root,onset,end);
+            tone(a.root,onset,end,a.midi);
           }
         }
         // Keep memory bounded during an indefinitely repeated practice loop.

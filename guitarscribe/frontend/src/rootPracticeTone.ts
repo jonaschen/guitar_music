@@ -2,12 +2,12 @@ import {rootAuditionMidi} from './rootPracticePitch';
 
 // Steady harmonics keep the reference audible throughout comparison, without
 // periodic pluck attacks or a decaying four-second sample.
-export function createRootTone(context:BaseAudioContext,root:number,start:number,destination:AudioNode,end?:number){
+export function createRootTone(context:BaseAudioContext,root:number,start:number,destination:AudioNode,end?:number,midi=rootAuditionMidi(root)){
   const oscillator=context.createOscillator(),gain=context.createGain();
   const real=new Float32Array(7),imag=new Float32Array(7);
   for(let harmonic=1;harmonic<imag.length;harmonic++)imag[harmonic]=1/harmonic**1.5;
   oscillator.setPeriodicWave(context.createPeriodicWave(real,imag));
-  oscillator.frequency.setValueAtTime(440*2**((rootAuditionMidi(root)-69)/12),start);
+  oscillator.frequency.setValueAtTime(440*2**((midi-69)/12),start);
   const fade=Math.min(.015,end===undefined?.015:(end-start)/2);
   gain.gain.setValueAtTime(0,start);
   gain.gain.linearRampToValueAtTime(.3,start+fade);

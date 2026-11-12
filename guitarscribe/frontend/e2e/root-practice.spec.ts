@@ -59,7 +59,7 @@ test('audition never writes, adoption saves, reopen and unsure/undo/redo preserv
 
 test('manual twelve notes, split/merge, backup restore and sequential decisions work',async({page})=>{
   const server=await setup(page);
-  await page.getByText('其他音（十二音）',{exact:true}).click();await page.getByRole('button',{name:'試聽 Bb2',exact:true}).click();await page.getByRole('button',{name:'採用這個根音',exact:true}).click();await expect.poll(()=>server.document.segments[0].root).toBe(10);
+  await page.getByText('其他音（Eb2–Eb3）',{exact:true}).click();await page.getByRole('button',{name:'試聽 Bb2',exact:true}).click();await page.getByRole('button',{name:'採用這個根音',exact:true}).click();await expect.poll(()=>server.document.segments[0].root).toBe(10);
   await page.getByRole('button',{name:'暫停',exact:true}).click();
   await page.getByLabel('根音練習播放位置').evaluate((el:HTMLInputElement)=>{Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value')!.set!.call(el,'2');el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));});
   await page.getByText('段落調整',{exact:true}).click();await page.getByRole('button',{name:'從游標處分成兩段'}).click();await expect.poll(()=>server.document.segments.length).toBe(3);
@@ -147,9 +147,14 @@ test('real audio holds low E across source loops, steps across B/C and cancels o
   const source=records.find((r:any)=>r.kind==='source'&&r.event==='start');
   expect(Math.abs(source.when-tones[0].when)).toBeLessThan(.001);
   expect(records.filter((r:any)=>r.event==='stop')).toHaveLength(0);
+  await page.getByRole('button',{name:'低半音',exact:true}).click();
+  await expect(page.locator('.root-current')).toContainText('Eb2');
   await expect(page.getByRole('button',{name:'低半音',exact:true})).toBeDisabled();
-  await page.getByText('其他音（十二音）',{exact:true}).click();
-  await expect(page.locator('.root-pitch-grid button')).toHaveText(['E2','F2','Gb2','G2','Ab2','A2','Bb2','B2','C3','Db3','D3','Eb3']);
+  records=await page.evaluate(()=>(window as any).__rootAudio);
+  expect(records.filter((r:any)=>r.kind==='tone'&&r.event==='start').at(-1).hz).toBeCloseTo(77.7817,3);
+  await page.getByRole('button',{name:'高半音',exact:true}).click();await expect(page.locator('.root-current')).toContainText('E2');
+  await page.getByText('其他音（Eb2–Eb3）',{exact:true}).click();
+  await expect(page.locator('.root-pitch-grid button')).toHaveText(['Eb2','E2','F2','Gb2','G2','Ab2','A2','Bb2','B2','C3','Db3','D3','Eb3']);
   await page.getByRole('button',{name:'試聽 B2',exact:true}).click();
   await page.getByRole('button',{name:'高半音',exact:true}).click();
   await expect(page.locator('.root-current')).toContainText('C3');
@@ -157,20 +162,26 @@ test('real audio holds low E across source loops, steps across B/C and cancels o
   expect(records.filter((r:any)=>r.kind==='tone'&&r.event==='start').at(-1).hz).toBeCloseTo(130.8128,3);
   await page.getByRole('button',{name:'低半音',exact:true}).click();await expect(page.locator('.root-current')).toContainText('B2');
   await page.getByRole('button',{name:'試聽 Eb3',exact:true}).click();await expect(page.getByRole('button',{name:'高半音',exact:true})).toBeDisabled();
+  records=await page.evaluate(()=>(window as any).__rootAudio);
+  expect(records.filter((r:any)=>r.kind==='tone'&&r.event==='start').at(-1).hz).toBeCloseTo(155.5635,3);
+  await page.getByRole('button',{name:'試聽 Eb2',exact:true}).click();
+  await expect(page.getByRole('button',{name:'試聽 Eb2',exact:true})).toHaveAttribute('aria-pressed','true');
+  await expect(page.getByRole('button',{name:'試聽 Eb3',exact:true})).toHaveAttribute('aria-pressed','false');
   await page.getByRole('button',{name:'暫停',exact:true}).click();
   records=await page.evaluate(()=>(window as any).__rootAudio);
   for(const r of records.filter((r:any)=>r.event==='start'))expect(records.some((s:any)=>s.event==='stop'&&s.id===r.id&&s.kind===r.kind)).toBe(true);
   expect(server.writes).toBe(0);
+  await page.getByRole('button',{name:'採用這個根音',exact:true}).click();await expect.poll(()=>server.document.segments[0].root).toBe(3);
 });
 
-test('rendered root tones have actual E2-Eb3 fundamentals and steady late audio with silence at the segment end',async({page})=>{
+test('rendered root tones have actual Eb2-Eb3 fundamentals and steady late audio with silence at the segment end',async({page})=>{
   await setup(page);
   const results=await page.evaluate(async()=>{
     const modulePath='/src/rootPracticeTone.ts';const {createRootTone}=await import(modulePath);
     const results=[];
-    for(let midi=40;midi<=51;midi++){
+    for(let midi=39;midi<=51;midi++){
       const context=new OfflineAudioContext(1,44100*3,44100);
-      createRootTone(context,midi%12,0,context.destination,2.5);
+      createRootTone(context,midi%12,0,context.destination,2.5,midi);
       const data=(await context.startRendering()).getChannelData(0);
       let best=0,detected=0;
       for(let note=28;note<=64;note++){
