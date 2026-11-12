@@ -2,6 +2,7 @@ import {useEffect,useRef,useState} from 'react';
 import {useRootPractice} from './useRootPractice';
 import {ROOT_NAMES,mergeRootSegment,parseRootDocument,rootStamp,rootText,splitRootSegment,type RootDocument} from './rootPracticeDocument';
 import {RootPracticeAudio,type RootAudioMode} from './rootPracticeAudio';
+import {ROOT_AUDITION_MIN,ROOT_AUDITION_MAX,ROOT_AUDITION_ORDER,rootAuditionMidi,rootAuditionName} from './rootPracticePitch';
 import './rootPractice.css';
 
 type Candidate={pitch_class:number;name:string;rank:number;score:number};
@@ -70,10 +71,15 @@ export function RootPractice({job,title,api,onClose}:{job:string;title:string;ap
     if(!doc||!segment)return;
     setNotice('');setWhole(all);
     const start=all?0:Math.max(0,segment.start-(context ? .75 : 0)),end=all?doc.source.duration:Math.min(doc.source.duration,segment.end+(context ? .75 : 0));
-    const notes=all?doc.segments.filter(s=>s.status==='confirmed'&&s.root!==null).map(s=>({start:s.start,end:s.end,root:s.root!})):root===null?[]:[{start:segment.start,end:segment.end,root}];
+    const notes=all?doc.segments.filter(s=>s.status==='confirmed'&&s.root!==null).map(s=>({start:s.start,end:s.end,root:s.root!})):root===null?[]:[{start,end,root}];
     void player.play({url:`${endpoint}/root-practice/audio?fingerprint=${doc.source.fingerprint}`,start,end,from,loop:all?false:loop,mode:audioMode,notes});
   }
   function audition(root:number){setTrial(root);const next=mode==='source'?'mix':mode;setMode(next);play(root,next);}
+  function stepPitch(direction:-1|1){
+    if(trial===null)return;
+    const midi=rootAuditionMidi(trial)+direction;
+    if(midi>=ROOT_AUDITION_MIN&&midi<=ROOT_AUDITION_MAX)audition(midi%12);
+  }
   function togglePlayback(){
     if(audioState!=='idle'){player.stop();return;}
     if(!doc||!segment)return;
@@ -119,16 +125,18 @@ export function RootPractice({job,title,api,onClose}:{job:string;title:string;ap
         <div className="root-clues">
           <div className="root-clue-title"><h3>{hideClues?'先自己試試':'三個參考音'}</h3><span>點音名試聽，不會改稿</span></div>
           {!hideClues?<>
-            <div className="root-candidates" aria-label="參考音">{candidates.map(c=><button type="button" key={c.pitch_class} aria-pressed={trial===c.pitch_class} onClick={()=>audition(c.pitch_class)}><strong>{c.name}</strong><span>試聽</span></button>)}</div>
+            <div className="root-candidates" aria-label="參考音，由低到高">{[...candidates].sort((a,b)=>rootAuditionMidi(a.pitch_class)-rootAuditionMidi(b.pitch_class)).map(c=><button type="button" key={c.pitch_class} data-root={c.pitch_class} aria-label={`參考音 ${rootAuditionName(c.pitch_class)}`} aria-pressed={trial===c.pitch_class} onClick={()=>audition(c.pitch_class)}><strong>{rootAuditionName(c.pitch_class)}</strong><span>試聽</span></button>)}</div>
             <p className="root-clue-message">{clueMessage}</p>
             {evidence.state!=='ready'?<div className="root-evidence"><span role="status">{evidence.message}</span>{candidateBusy?<button disabled={evidence.state==='cancelling'} onClick={()=>void refreshEvidence('DELETE')}>取消準備參考音</button>:<button disabled={evidence.state==='unavailable'||evidence.state==='loading'} onClick={()=>void refreshEvidence('POST')}>準備參考音</button>}</div>:null}
           </>:<p>先聽原曲，再從十二個音中比較。取消勾選即可看線索。</p>}
-          <details open={hideClues||candidates.length===0} className="root-other"><summary>其他音（十二音）</summary><div className="root-pitch-grid">{ROOT_NAMES.map((name,p)=><button type="button" key={p} aria-label={`試聽 ${name}`} aria-pressed={trial===p} onClick={()=>audition(p)}>{name}</button>)}</div></details>
-          <p className="root-current" aria-live="polite">{trial===null?'尚未選擇試聽音':`目前試聽 ${ROOT_NAMES[trial]}${segment.status==='confirmed'&&segment.root===trial?' · 已採用':' · 尚未採用'}`}</p>
+          <p className="root-register">由低到高排列 · E2 是吉他第六弦空弦音；試聽範圍 E2–Eb3。</p>
+          <details open={hideClues||candidates.length===0} className="root-other"><summary>其他音（十二音）</summary><div className="root-pitch-grid">{ROOT_AUDITION_ORDER.map(p=><button type="button" key={p} aria-label={`試聽 ${rootAuditionName(p)}`} aria-pressed={trial===p} onClick={()=>audition(p)}>{rootAuditionName(p)}</button>)}</div></details>
+          <p className="root-current" aria-live="polite">{trial===null?'尚未選擇試聽音':`目前試聽 ${rootAuditionName(trial)}${segment.status==='confirmed'&&segment.root===trial?' · 已採用':' · 尚未採用'}`}</p>
+          <div className="root-pitch-steps"><button type="button" disabled={trial===null||rootAuditionMidi(trial)<=ROOT_AUDITION_MIN} onClick={()=>stepPitch(-1)}>低半音</button><button type="button" disabled={trial===null||rootAuditionMidi(trial)>=ROOT_AUDITION_MAX} onClick={()=>stepPitch(1)}>高半音</button><small>逐音比較，採用才保存。</small></div>
           <div className="root-decide"><button className="root-primary" disabled={!editable||trial===null} onClick={()=>decision(trial,'confirmed')}>採用這個根音</button><button disabled={!editable} onClick={()=>decision(null,'unsure')}>還聽不出來</button></div>
         </div>
         <div className="root-volumes"><label>原曲音量 <input aria-label="練習原曲音量" type="range" min="0" max="1" step=".01" value={sourceVolume} onChange={e=>setSourceVolume(Number(e.target.value))}/></label><label>根音音量 <input aria-label="練習根音音量" type="range" min="0" max="1" step=".01" value={rootVolume} onChange={e=>setRootVolume(Number(e.target.value))}/></label></div>
-        <small className="root-explanation">根音指和聲根音，例如 C/E 的 C；不是最低音。試音以固定間隔撥奏供比較，並非原曲節奏。原曲維持原調原速。</small>
+        <small className="root-explanation">選音後持續發聲，循環時也不中斷；換音或暫停即停止舊音。前後文也會持續試聽音。根音指和聲根音，例如 C/E 的 C；不是最低音。採用只記音名，試聽八度不代表原曲八度。</small>
         {notice?<p className="root-notice" role="status">{notice}</p>:null}
       </section>
       <div className="root-finish"><button disabled={!editable||!sheet.canUndo} onClick={()=>history(true)}>復原</button><button disabled={!editable||!sheet.canRedo} onClick={()=>history(false)}>重做</button><button disabled={!confirmed} onClick={()=>{setMode('mix');play(null,'mix',true);}}>連聽我的行進</button>{whole?<span>行進模式：待聽處只播放原曲</span>:null}</div>

@@ -45,12 +45,12 @@ test('document and clock preserve source time, uncertainty and split/merge seman
 
 test('audition never writes, adoption saves, reopen and unsure/undo/redo preserve the original score',async({page})=>{
   const server=await setup(page);const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.locator('.root-candidates button').nth(1).click();
+  await page.getByRole('button',{name:'參考音 E2',exact:true}).click();
   await expect(page.getByRole('button',{name:'暫停',exact:true})).toBeVisible();
   await page.getByRole('button',{name:'暫停',exact:true}).click();await page.waitForTimeout(650);expect(server.writes).toBe(0);
   await page.getByRole('button',{name:'採用這個根音',exact:true}).click();await expect.poll(()=>server.version).toBe(1);expect(server.document.segments[0].root).toBe(4);
   await expect(page.getByLabel('根音保存狀態')).toHaveText('已保存');
-  await page.reload();await expect(page.locator('.root-current')).toContainText('E · 已採用');
+  await page.reload();await expect(page.locator('.root-current')).toContainText('E2 · 已採用');
   await page.getByRole('button',{name:'還聽不出來',exact:true}).click();await expect.poll(()=>server.version).toBe(2);
   await page.getByRole('button',{name:'復原',exact:true}).click();await expect.poll(()=>server.document.segments[0].root).toBe(4);
   await page.getByRole('button',{name:'重做',exact:true}).click();await expect.poll(()=>server.document.segments[0].status).toBe('unsure');
@@ -59,7 +59,7 @@ test('audition never writes, adoption saves, reopen and unsure/undo/redo preserv
 
 test('manual twelve notes, split/merge, backup restore and sequential decisions work',async({page})=>{
   const server=await setup(page);
-  await page.getByText('其他音（十二音）',{exact:true}).click();await page.getByRole('button',{name:'試聽 Bb',exact:true}).click();await page.getByRole('button',{name:'採用這個根音',exact:true}).click();await expect.poll(()=>server.document.segments[0].root).toBe(10);
+  await page.getByText('其他音（十二音）',{exact:true}).click();await page.getByRole('button',{name:'試聽 Bb2',exact:true}).click();await page.getByRole('button',{name:'採用這個根音',exact:true}).click();await expect.poll(()=>server.document.segments[0].root).toBe(10);
   await page.getByRole('button',{name:'暫停',exact:true}).click();
   await page.getByLabel('根音練習播放位置').evaluate((el:HTMLInputElement)=>{Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value')!.set!.call(el,'2');el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));});
   await page.getByText('段落調整',{exact:true}).click();await page.getByRole('button',{name:'從游標處分成兩段'}).click();await expect.poll(()=>server.document.segments.length).toBe(3);
@@ -85,7 +85,7 @@ test('expired analysis keeps the saved practice reachable, exportable and usable
   await page.route('**/api/v1/jobs/root-job/root-practice/audio?*',r=>r.fulfill({status:404,json:{detail:'expired'}}));
   await page.reload();
   await expect(page.getByRole('heading',{name:'已保存的根音練習',exact:true})).toBeVisible();
-  await expect(page.locator('.root-current')).toContainText('E · 已採用');
+  await expect(page.locator('.root-current')).toContainText('E2 · 已採用');
   expect(new URL(page.url()).searchParams.get('job')).toBe('root-job');
   await page.getByLabel('根音練習聲音').selectOption('root');
   await page.getByRole('button',{name:'播放這段',exact:true}).click();
@@ -99,7 +99,7 @@ test('expired analysis keeps the saved practice reachable, exportable and usable
 
 test('conflict keeps the local draft and requires explicit reload instead of overwriting',async({page})=>{
   const server=await setup(page);server.conflict=true;
-  await page.locator('.root-candidates button').first().click();await page.getByRole('button',{name:'採用這個根音'}).click();
+  await page.getByRole('button',{name:'參考音 C3',exact:true}).click();await page.getByRole('button',{name:'採用這個根音'}).click();
   await expect(page.getByLabel('根音保存狀態')).toContainText('另一分頁');expect(server.writes).toBe(0);
   const raw=await page.evaluate(()=>sessionStorage.getItem('guitarscribe.root-practice.v1.root-job'));expect(JSON.parse(raw!).document.segments[0].root).toBe(0);
   await expect(page.getByRole('button',{name:'採用這個根音'})).toBeDisabled();
@@ -118,34 +118,72 @@ test('late candidate response never replaces a newer segment and missing clues a
   await page.route('**/root-candidates/rank',async r=>{const body=r.request().postDataJSON();if(body.start===0)await held;await r.fulfill({json:{...body,status:'insufficient',candidates:[]}}).catch(()=>{});});
   await page.getByRole('button',{name:'下一段',exact:true}).click();await expect(page.locator('.root-candidates button')).toHaveCount(0);
   await page.getByRole('button',{name:'上一段',exact:true}).click();await page.getByRole('button',{name:'下一段',exact:true}).click();release();
-  await expect(page.locator('.root-segment-heading h2')).toContainText('第 2 段');await expect(page.getByRole('button',{name:'試聽 F',exact:true})).toBeVisible();
+  await expect(page.locator('.root-segment-heading h2')).toContainText('第 2 段');await expect(page.getByRole('button',{name:'試聽 F2',exact:true})).toBeVisible();
 });
 
-test('real WebAudio uses the chosen pitch, aligned source clock, and cancels old voices',async({page})=>{
+test('real audio holds low E across source loops, steps across B/C and cancels old tones',async({page})=>{
   await page.addInitScript(()=>{
     const records:Array<any>=[];(window as any).__rootAudio=records;
-    const start=AudioBufferSourceNode.prototype.start,stop=AudioBufferSourceNode.prototype.stop;
-    const ids=new WeakMap<AudioBufferSourceNode,number>();let next=0;
-    AudioBufferSourceNode.prototype.start=function(...args:Parameters<AudioBufferSourceNode['start']>){
-      const id=++next;ids.set(this,id);let pitch:number|null=null;
-      if(this.buffer&&Math.abs(this.buffer.duration-4)<.01){
-        const data=this.buffer.getChannelData(0),sr=this.buffer.sampleRate;let best=-1;
-        for(let p=0;p<12;p++){const hz=440*2**((48+p-69)/12);let real=0,imag=0;for(let i=0;i<6000;i++){const phase=2*Math.PI*hz*i/sr;real+=data[i]*Math.cos(phase);imag+=data[i]*Math.sin(phase);}const energy=real*real+imag*imag;if(energy>best){best=energy;pitch=p;}}
-      }
-      records.push({kind:'start',id,when:args[0],duration:this.buffer?.duration,pitch});return start.apply(this,args);
-    };
-    AudioBufferSourceNode.prototype.stop=function(...args:Parameters<AudioBufferSourceNode['stop']>){records.push({kind:'stop',id:ids.get(this),when:args[0]??0});return stop.apply(this,args);};
+    const scheduled=new WeakMap<AudioParam,number>(),setValue=AudioParam.prototype.setValueAtTime;
+    AudioParam.prototype.setValueAtTime=function(value:number,time:number){scheduled.set(this,value);return setValue.call(this,value,time);};
+    let next=0;
+    for(const [kind,prototype] of [['tone',OscillatorNode.prototype],['source',AudioBufferSourceNode.prototype]] as const){
+      const start=prototype.start,stop=prototype.stop,ids=new WeakMap<any,number>();
+      prototype.start=function(...args:any[]){
+        const id=++next;ids.set(this,id);records.push({kind,id,event:'start',when:args[0],hz:scheduled.get((this as OscillatorNode).frequency)});
+        return (start as any).apply(this,args);
+      };
+      prototype.stop=function(...args:any[]){records.push({kind,id:ids.get(this),event:'stop',when:args[0]??0});return (stop as any).apply(this,args);};
+    }
   });
-  const server=await setup(page);await page.locator('.root-candidates button').nth(1).click();
+  const server=await setup(page);
+  await expect(page.locator('.root-candidates strong')).toHaveText(['E2','G2','C3']);
+  await page.getByRole('button',{name:'參考音 E2',exact:true}).click();
   await expect(page.getByRole('button',{name:'暫停',exact:true})).toBeVisible();
+  await page.waitForTimeout(5100); // Source loop is 4.75 seconds; held tone must not retrigger.
   let records=await page.evaluate(()=>(window as any).__rootAudio);
-  const sourceStart=records.find((r:any)=>r.kind==='start'&&r.duration===8),noteStart=records.find((r:any)=>r.kind==='start'&&r.pitch===4);
-  expect(sourceStart).toBeTruthy();expect(noteStart).toBeTruthy();expect(Math.abs(sourceStart.when-noteStart.when)).toBeLessThan(.01);
-  await page.locator('.root-candidates button').nth(2).click();await page.waitForTimeout(250);
-  await page.getByRole('button',{name:'暫停',exact:true}).click();records=await page.evaluate(()=>(window as any).__rootAudio);
-  expect(records.some((r:any)=>r.kind==='start'&&r.pitch===7)).toBe(true);
-  for(const r of records.filter((r:any)=>r.kind==='start'))expect(records.some((s:any)=>s.kind==='stop'&&s.id===r.id)).toBe(true);
+  const tones=records.filter((r:any)=>r.kind==='tone'&&r.event==='start');
+  expect(tones).toHaveLength(1);expect(tones[0].hz).toBeCloseTo(82.4069,3);
+  const source=records.find((r:any)=>r.kind==='source'&&r.event==='start');
+  expect(Math.abs(source.when-tones[0].when)).toBeLessThan(.001);
+  expect(records.filter((r:any)=>r.event==='stop')).toHaveLength(0);
+  await expect(page.getByRole('button',{name:'低半音',exact:true})).toBeDisabled();
+  await page.getByText('其他音（十二音）',{exact:true}).click();
+  await expect(page.locator('.root-pitch-grid button')).toHaveText(['E2','F2','Gb2','G2','Ab2','A2','Bb2','B2','C3','Db3','D3','Eb3']);
+  await page.getByRole('button',{name:'試聽 B2',exact:true}).click();
+  await page.getByRole('button',{name:'高半音',exact:true}).click();
+  await expect(page.locator('.root-current')).toContainText('C3');
+  records=await page.evaluate(()=>(window as any).__rootAudio);
+  expect(records.filter((r:any)=>r.kind==='tone'&&r.event==='start').at(-1).hz).toBeCloseTo(130.8128,3);
+  await page.getByRole('button',{name:'低半音',exact:true}).click();await expect(page.locator('.root-current')).toContainText('B2');
+  await page.getByRole('button',{name:'試聽 Eb3',exact:true}).click();await expect(page.getByRole('button',{name:'高半音',exact:true})).toBeDisabled();
+  await page.getByRole('button',{name:'暫停',exact:true}).click();
+  records=await page.evaluate(()=>(window as any).__rootAudio);
+  for(const r of records.filter((r:any)=>r.event==='start'))expect(records.some((s:any)=>s.event==='stop'&&s.id===r.id&&s.kind===r.kind)).toBe(true);
   expect(server.writes).toBe(0);
+});
+
+test('rendered root tones have actual E2-Eb3 fundamentals and steady late audio with silence at the segment end',async({page})=>{
+  await setup(page);
+  const results=await page.evaluate(async()=>{
+    const modulePath='/src/rootPracticeTone.ts';const {createRootTone}=await import(modulePath);
+    const results=[];
+    for(let midi=40;midi<=51;midi++){
+      const context=new OfflineAudioContext(1,44100*3,44100);
+      createRootTone(context,midi%12,0,context.destination,2.5);
+      const data=(await context.startRendering()).getChannelData(0);
+      let best=0,detected=0;
+      for(let note=28;note<=64;note++){
+        const hz=440*2**((note-69)/12);let re=0,im=0;
+        for(let i=0;i<12000;i++){const phase=2*Math.PI*hz*i/44100;re+=data[i+44100]*Math.cos(phase);im+=data[i+44100]*Math.sin(phase);}
+        const power=re*re+im*im;if(power>best){best=power;detected=note;}
+      }
+      const rms=(seconds:number)=>{let sum=0;const start=Math.round(seconds*44100);for(let i=start;i<start+4410;i++)sum+=data[i]**2;return Math.sqrt(sum/4410);};
+      results.push({midi,detected,early:rms(.2),late:rms(2.2),after:rms(2.7)});
+    }
+    return results;
+  });
+  for(const r of results){expect(r.detected).toBe(r.midi);expect(r.late).toBeGreaterThan(.05);expect(r.late/r.early).toBeGreaterThan(.95);expect(r.late/r.early).toBeLessThan(1.05);expect(r.after).toBe(0);}
 });
 
 for(const width of [320,390,768,1440])test(`complete practice interface fits ${width}px and uses visible keyboard focus`,async({page})=>{
@@ -157,5 +195,5 @@ for(const width of [320,390,768,1440])test(`complete practice interface fits ${w
   expect(first!.height).toBeGreaterThanOrEqual(44);
   await page.locator('.root-candidates button').first().focus();await expect(page.locator('.root-candidates button').first()).toBeFocused();
   await page.screenshot({path:`test-results/root-practice-${width}.png`,fullPage:true});
-  await page.getByLabel('先自己聽，隱藏參考音').check();await expect(page.locator('.root-candidates')).toHaveCount(0);await expect(page.getByRole('button',{name:'試聽 C',exact:true})).toBeVisible();
+  await page.getByLabel('先自己聽，隱藏參考音').check();await expect(page.locator('.root-candidates')).toHaveCount(0);await expect(page.getByRole('button',{name:'試聽 C3',exact:true})).toBeVisible();
 });

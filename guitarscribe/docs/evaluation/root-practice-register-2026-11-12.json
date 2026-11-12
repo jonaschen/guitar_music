@@ -1,0 +1,34 @@
+{
+  "passed": true,
+  "protected_databases": 5,
+  "protected_site_files": 118,
+  "server_restart": false,
+  "register": "E2\u2013Eb3",
+  "midi_range": [
+    40,
+    51
+  ],
+  "browser_cases_passed": 13,
+  "rendered_fundamentals_checked": 12,
+  "real_sources": [
+    {
+      "job": "83a3643ab3814172a046cebf709f3413",
+      "root_frequency_hz": 97.99885559082031,
+      "sustained_across_source_loop": true,
+      "source_score_unchanged": true,
+      "audition_did_not_save": true
+    },
+    {
+      "job": "a3be29912a7045448765290d7cba2f6c",
+      "root_frequency_hz": 116.54093933105469,
+      "sustained_across_source_loop": true,
+      "source_score_unchanged": true,
+      "audition_did_not_save": true
+    }
+  ],
+  "publication": {
+    "index_sha256": "9fbdfcc4237fa54ec45e310b87a467e3e58c52b350f95d447b371717c964aa1f",
+    "bundle": "index-GSkBUX8S.js",
+    "server_restart": false
+  }
+}

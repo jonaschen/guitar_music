@@ -1,4 +1,4 @@
-import {createPluckedVoice,preparePluckedBuffers} from './pluckedTone';
+import {createRootTone} from './rootPracticeTone';
 export type RootAudioMode='source'|'mix'|'root';
 export type RootAudioOptions={url:string;start:number;end:number;from?:number;loop:boolean;mode:RootAudioMode;notes:Array<{start:number;end:number;root:number}>};
 export function rootClock(elapsed:number,start:number,end:number,from:number,loop:boolean){
@@ -10,7 +10,7 @@ export class RootPracticeAudio{
   private buffer:AudioBuffer|null=null;
   private bufferUrl='';
   private generation=0;
-  private nodes=new Set<AudioBufferSourceNode>();
+  private nodes=new Set<AudioScheduledSourceNode>();
   private timer:ReturnType<typeof setInterval>|null=null;
   private abort:AbortController|null=null;
   private sourceGain:GainNode|null=null;
@@ -44,7 +44,6 @@ export class RootPracticeAudio{
         if(ticket!==this.generation)return;this.buffer=buffer;this.bufferUrl=options.url;
       }
       if(options.mode!=='root'&&this.buffer!.duration+.08<options.end)throw Error('音訊長度與練習不符，請重新載入歌曲。');
-      const buffers=await preparePluckedBuffers(context,options.mode==='source'?[]:options.notes.map(n=>48+n.root),()=>ticket!==this.generation);
       if(ticket!==this.generation)return;
       this.sourceGain=context.createGain();this.rootGain=context.createGain();this.sourceGain.connect(context.destination);this.rootGain.connect(context.destination);this.volume(this.sourceLevel,this.rootLevel);
       const clock=context.currentTime+.04,from=this.position;
@@ -54,9 +53,14 @@ export class RootPracticeAudio{
         this.nodes.add(node);node.onended=()=>{this.nodes.delete(node);node.disconnect();};
         if(options.loop)node.start(clock,from);else node.start(clock,from,options.end-from);
       }
-      const attacks=options.mode==='source'?[]:options.notes.flatMap(n=>{
-        const events=[];for(let t=Math.max(n.start,options.start);t<Math.min(n.end,options.end)-.001;t+=.8)events.push({time:t,end:Math.min(t+.5,n.end,options.end),root:n.root});return events;
-      });
+      const notes=options.mode==='source'?[]:options.notes.map(n=>({time:Math.max(n.start,options.start),end:Math.min(n.end,options.end),root:n.root})).filter(n=>n.end>n.time);
+      const hold=options.loop&&notes.length===1&&notes[0].time===options.start&&notes[0].end===options.end;
+      const tone=(root:number,start:number,end?:number)=>{
+        const node=createRootTone(context,root,start,this.rootGain!,end);
+        this.nodes.add(node);node.addEventListener('ended',()=>this.nodes.delete(node));
+      };
+      if(hold)tone(notes[0].root,clock);
+      const attacks=hold?[]:notes;
       const scheduled=new Set<string>();const length=options.end-options.start;
       const tick=()=>{
         if(ticket!==this.generation)return;
@@ -68,12 +72,9 @@ export class RootPracticeAudio{
           for(let i=0;i<attacks.length;i++){
             const a=attacks[i],at=clock+(a.time-options.start)+c*length-(from-options.start),end=at+a.end-a.time,key=`${c}:${i}`;
             if(at>now+.18||end<=now||scheduled.has(key))continue;
-            scheduled.add(key);const onset=Math.max(at,now),offset=Math.max(0,now-at);
-            // Single notes share the source clock; their regular pulse is only an audition aid.
-            const gate=context.createGain();gate.connect(this.rootGain!);
-            gate.gain.setValueAtTime(1,onset);gate.gain.setValueAtTime(1,Math.max(onset,end-.015));gate.gain.linearRampToValueAtTime(0,end);
-            const node=createPluckedVoice(context,buffers.get(48+a.root)!,onset,end,.65,offset,null,gate);
-            if(node){node.stop(end+.001);this.nodes.add(node);node.addEventListener('ended',()=>{this.nodes.delete(node);gate.disconnect();});}else gate.disconnect();
+            scheduled.add(key);const onset=Math.max(at,now);
+            // Sustained roots share the source clock and stop at decision boundaries.
+            tone(a.root,onset,end);
           }
         }
         // Keep memory bounded during an indefinitely repeated practice loop.
