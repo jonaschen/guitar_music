@@ -16,6 +16,7 @@ type PlaybackScope='segment'|'whole'|'range'|'locate';
 export function RootPractice({job,title,api,onClose}:{job:string;title:string;api:string;onClose:()=>void}){
   const sheet=useRootPractice(api,job),doc=sheet.document;
   const [selected,setSelected]=useState(''),[trial,setTrial]=useState<number|null>(null);
+  const selectedSeek=useRef<{id:string;time:number}|null>(null);
   const [position,setPosition]=useState(0),[audioState,setAudioState]=useState<'idle'|'preparing'|'playing'>('idle');
   const [playbackBounds,setPlaybackBounds]=useState<{start:number;end:number}|null>(null);
   const [mode,setMode]=useState<RootAudioMode>('source'),[loop,setLoop]=useState(true),[context,setContext]=useState(true);
@@ -69,7 +70,8 @@ export function RootPractice({job,title,api,onClose}:{job:string;title:string;ap
   useEffect(()=>{player.volume(sourceVolume,rootVolume);},[sourceVolume,rootVolume,player]);
   useEffect(()=>{
     if(!segment)return;
-    player.stop();setTrial(segment.root===null?null:rootAuditionMidi(segment.root));setPosition(segment.start);setScope('segment');
+    const seek=selectedSeek.current;selectedSeek.current=null;
+    player.stop();setTrial(segment.root===null?null:rootAuditionMidi(segment.root));setPosition(seek?.id===segment.id?seek.time:segment.start);setScope('segment');
   },[segment?.id,segment?.start,segment?.end,doc?.source.fingerprint]);
   useEffect(()=>{
     const nav=progression.current;if(!nav)return;
@@ -132,12 +134,19 @@ export function RootPractice({job,title,api,onClose}:{job:string;title:string;ap
     try{const response=await fetch(`${endpoint}/root-practice/history`);if(!response.ok)throw Error();const data=await response.json();setArchives(data.map((a:{version:number;document:RootDocument})=>({...a,document:parseRootDocument(JSON.stringify(a.document),doc!.source)})));setHistoryNotice(data.length?'':'目前沒有較早版本。');}catch{setHistoryNotice('歷次保存暫時無法載入。');}
   }
   function restoreArchive(archive:RootDocument){if(!doc)return;const next=archive.schema_version===1?regridRoots(archive,doc.grid??gridSettings??{bpm:115,beats:4,anchor:0}):archive;showTools(true);setPlan(localPlan(next,'恢復歷次保存；舊版非拍格稿會先轉為目前小節長度。'));}
-  function chooseSegment(id:string){
+  function chooseSegment(id:string,time?:number,alignRange=true){
     const next=doc?.segments.find(s=>s.id===id);if(!next)return;
-    player.stop();setSelected(id);setTrial(next.root===null?null:rootAuditionMidi(next.root));setPosition(next.start);
-    setRangeStart(String(next.start));setRangeEnd(String(next.end));setMode('source');setNotice('');setScope('segment');
+    const at=time??next.start;
+    selectedSeek.current=id!==segment?.id?{id,time:at}:null;
+    player.stop();setSelected(id);setTrial(next.root===null?null:rootAuditionMidi(next.root));setPosition(at);
+    if(alignRange){setRangeStart(String(next.start));setRangeEnd(String(next.end));}
+    setMode('source');setNotice('');setScope('segment');
   }
-  function practiceAt(time:number){const next=doc?.segments.find(s=>time>=s.start&&time<s.end);if(next)chooseSegment(next.id);}
+  function seekVisual(time:number){
+    const next=doc?.segments.find(s=>time>=s.start&&time<s.end);if(!next)return;
+    if(next.id!==segment?.id)chooseSegment(next.id,time,false);
+    else{player.stop();setPosition(time);setScope('locate');}
+  }
   function play(midi=trial,audioMode=mode,nextScope:PlaybackScope='segment',from?:number){
     if(!doc||!segment)return;
     if(nextScope==='range'&&!rangeValid){setNotice('請選擇有效的連聽起點與終點。');return;}
@@ -243,8 +252,8 @@ export function RootPractice({job,title,api,onClose}:{job:string;title:string;ap
       {doc.grid&&gridChanged?<div role="alert" aria-label="拍格需要確認" className="root-problem">拍格已改動，採用前請預覽並套用分段。<button onClick={()=>{showTools(true);toolsPanel.current?.scrollIntoView({block:'nearest'});}}>調整並套用拍格</button></div>:null}
       <div className="root-workspace">
       <RootSpectrogram key={`spectrum-${doc.source.fingerprint}`} document={doc} api={api} position={position} playing={audioState==='playing'} range={range} grid={gridSettings}
-        onSeek={time=>{player.stop();setPosition(time);setScope('locate');}} onRange={(start,end)=>editRange(String(start),String(end))}
-        onPlay={playVisualRange} onPause={()=>player.stop()} onPracticeAt={practiceAt} selectedId={selected} playbackControls={toolsOpen}/>
+        onSeek={seekVisual} onRange={(start,end)=>editRange(String(start),String(end))}
+        onPlay={playVisualRange} onPause={()=>player.stop()} onUseSelectedRange={()=>{if(segment)editRange(String(segment.start),String(segment.end));}} selectedId={selected} playbackControls={toolsOpen}/>
       <section className="root-listen" aria-label="當段聽辨">
         <div className="root-segment-heading"><h2 aria-label="目前判斷段落">目前判斷：{doc.grid?rootSegmentLabel(doc,segment):`第 ${index+1} 段`} <small>{rootStamp(segment.start)}–{rootStamp(segment.end)}</small></h2><div><button disabled={index===0} onClick={()=>chooseSegment(doc.segments[index-1].id)}>上一段</button><button disabled={index===doc.segments.length-1} onClick={()=>chooseSegment(doc.segments[index+1].id)}>下一段</button></div></div>
         {scope!=='segment'&&playingSegment?<p className="root-range-current" aria-label="連聽目前區段">播放游標：第 {playingIndex+1} 段 · {scope==='locate'||mode==='source'?'只有原曲':playingSegment.status==='confirmed'&&playingSegment.root!==null?`原曲＋根音 ${ROOT_NAMES[playingSegment.root]}`:'只有原曲（根音待聽）'}</p>:null}

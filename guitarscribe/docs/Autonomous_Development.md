@@ -1,5 +1,8 @@
 # Codex 自主開發工作表
 
+**2026-11-14 視覺操作更新已完成：** 依使用者最新回饋，點頻譜／方向鍵會同步右側段落，保留精確游標秒數、A–B 與縮放；拖曳仍只改回聽範圍。新增常顯 A 開始／B 結束說明、兩次點選標記按鈕與圖上標籤；目前段落快捷鍵改用右側選定段落。圖預設 2 倍高、可選 1–4 倍，桌面加寬並新增 60／120 秒時間窗。T6–T8 已依 TDD 完成，45 項完整回歸、TypeScript／build、兩曲四尺寸真瀏覽器驗證通過；每曲 1 source／0 tone、0 寫稿與頁面例外。programmer-session 已唯讀審查。沿用原視覺入口，166 個其他網站檔案不變，服務未重啟。[本輪驗證](evaluation/root-cursor-follow-2026-11-14.json)、[操作說明](Root_Visual_Practice_User_Guide_2026-11-14.md)。回退：`output/backups/root-cursor-follow-2026-11-14/`。目前無剩餘工程待辦，使用者已肯定開發方向，主觀順手程度待自然使用回饋。
+
+
 **2026-11-14 最新工作已完成：** 使用者要求故事清單、故事地圖、排序代辦及 TDD 全部完成，暫時無法測試。partner-session 統一實作／發布，programmer-session 唯讀審查。[故事與代辦](Root_Practice_Stories_2026-11-14.md) T1–T5 全部 `done`，涵蓋採用目標、原曲播放、工具折收、持續練習、保存與交付。41 項完整回歸、最終文字標示重查、TypeScript／build、兩曲真音訊四尺寸通過；每曲 1 source／0 tone、0 寫稿，166 其他網站檔案不變。[驗證摘要](evaluation/root-workflow-2026-11-14.json)。同 `/visual-practice-2026-11-14/` 已更新，回退在 `output/backups/root-workflow-2026-11-14/`。本輪沒有剩餘可驗證開發待辦；主觀操作是否順手單列 `awaiting_human`，使用者方便後自然使用回饋即可，不要求立即試用。主旋律與新自動辨識未擴張。
 
 更新：2026-11-06。這是接續工作用的短表；最新產品決策仍見 [Next_Decision.md](Next_Decision.md)。

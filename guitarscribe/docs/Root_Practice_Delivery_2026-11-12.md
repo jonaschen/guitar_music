@@ -198,3 +198,8 @@ npm run build -- --base=/root-practice-2026-11-12/
 programmer-session 唯讀指出的缺口均先補重現測試再修正。41 項完整根音測試通過；最後目視發現游標所在段與採用段並列時需明示語義，補「播放游標」標籤及相關 Red／Green 重查。TypeScript／build通過，兩首真音訊於最後建置通過四尺寸、A–B、目標保持、來源不中斷與手機控制不遮擋；每曲 1 source／0 tone，0 寫稿／頁面例外，Score 與保存稿前後相同，166 個其他網站檔案不變。
 
 同視覺入口已更新；[驗證與 TDD 摘要](evaluation/root-workflow-2026-11-14.json)含程式雜湊、失敗與修正紀錄。檢查工具 `frontend/scripts/check-root-workflow.mjs`，證據 `output/evaluation/root-workflow-2026-11-14/`，回退 `output/backups/root-workflow-2026-11-14/`。原根音入口、後端、服務及模型均未改；不回灌舊資料庫。主觀易用性與音樂準確率未宣稱通過，目前不需要使用者配合測試。
+
+
+## 2026-11-14 游標同步、A–B 標記與大圖更新
+
+**2026-11-14 視覺操作更新已完成：** 依使用者最新回饋，點頻譜／方向鍵會同步右側段落，保留精確游標秒數、A–B 與縮放；拖曳仍只改回聽範圍。新增常顯 A 開始／B 結束說明、兩次點選標記按鈕與圖上標籤；目前段落快捷鍵改用右側選定段落。圖預設 2 倍高、可選 1–4 倍，桌面加寬並新增 60／120 秒時間窗。T6–T8 已依 TDD 完成，45 項完整回歸、TypeScript／build、兩曲四尺寸真瀏覽器驗證通過；每曲 1 source／0 tone、0 寫稿與頁面例外。programmer-session 已唯讀審查。沿用原視覺入口，166 個其他網站檔案不變，服務未重啟。[本輪驗證](evaluation/root-cursor-follow-2026-11-14.json)、[操作說明](Root_Visual_Practice_User_Guide_2026-11-14.md)。回退：`output/backups/root-cursor-follow-2026-11-14/`。目前無剩餘工程待辦，使用者已肯定開發方向，主觀順手程度待自然使用回饋。

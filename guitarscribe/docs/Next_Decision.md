@@ -1,5 +1,8 @@
 # Codex：最新檢查點與下一個決策
 
+**2026-11-14 視覺操作更新已完成：** 依使用者最新回饋，點頻譜／方向鍵會同步右側段落，保留精確游標秒數、A–B 與縮放；拖曳仍只改回聽範圍。新增常顯 A 開始／B 結束說明、兩次點選標記按鈕與圖上標籤；目前段落快捷鍵改用右側選定段落。圖預設 2 倍高、可選 1–4 倍，桌面加寬並新增 60／120 秒時間窗。T6–T8 已依 TDD 完成，45 項完整回歸、TypeScript／build、兩曲四尺寸真瀏覽器驗證通過；每曲 1 source／0 tone、0 寫稿與頁面例外。programmer-session 已唯讀審查。沿用原視覺入口，166 個其他網站檔案不變，服務未重啟。[本輪驗證](evaluation/root-cursor-follow-2026-11-14.json)、[操作說明](Root_Visual_Practice_User_Guide_2026-11-14.md)。回退：`output/backups/root-cursor-follow-2026-11-14/`。目前無剩餘工程待辦，使用者已肯定開發方向，主觀順手程度待自然使用回饋。
+
+
 **2026-11-14 操作整理與 TDD 待辦已全部完成：** 使用者認可方向，要求操作更合理，並指示整理故事、故事地圖、排序代辦後自主完成。六則故事、T1–T5 均完成：[故事地圖與結果](Root_Practice_Stories_2026-11-14.md)。目前採用目標常駐、圖上明確選段、主要原曲播放與實際範圍分列、比較／成果／節拍聲標明、工具折收、手機吸頂控制、歷史恢復預覽可見；單純定位與試聽不改稿。41 項完整回歸及最後標示重查、TypeScript／build、兩首真曲四尺寸／0 合成根音／0 寫稿通過，166 其他網站檔案保持。[使用說明](Root_Visual_Practice_User_Guide_2026-11-14.md)、[驗證摘要](evaluation/root-workflow-2026-11-14.json)。沿用 `http://localhost:5273/visual-practice-2026-11-14/?practice=roots&visual=1`，原入口仍在、後端與模型未改。programmer-session 已參與唯讀審查，partner-session 統一交付。現在不需使用者測試，主觀易用性保留待回饋；不要把此狀態重新當成工程阻塞。下方為歷史紀錄。
 
 **2026-11-14 個人練習視覺化已提供獨立入口：** 使用者要輔助抓和弦與根音行進，並要求跨 session 協調避免覆蓋。partner-session 與 programmer-session 已確認檔案分工，後者完成唯讀審查，來源一致性建議已修正。新 `/visual-practice-2026-11-14/?practice=roots&visual=1` 顯示原曲 E1–E4 頻譜、待核對原分析和弦、已採用根音音級，支援拖曳 A–B 與同步循環。沿用原 YouTube 匯入與根音稿；看圖不改稿，明確採用仍寫同一練習資料。原根音入口及 166 個既有網站檔案不變，後端未改、服務未重啟。29 項完整根音回歸、TypeScript／build、兩首真曲四尺寸與零寫稿檢查通過。詳見[交付與限制](Root_Practice_Delivery_2026-11-12.md#2026-11-14-低頻與和聲視覺化)、[驗證摘要](evaluation/root-spectrum-2026-11-14.json)。後續建置需保留新增 RootSpectrogram／rootSpectrum／worker／CSS 與 RootPractice 接點，不以舊 checkout 覆蓋新入口。這是能量線索視圖，不是自動低音／根音辨識；根音圖沒有原曲八度。下一步讓使用者用近期練習的一小段評估是否有幫助，工程通過不代表人耳或易用性已驗收。

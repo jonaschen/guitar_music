@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState, type PointerEvent} from 'react';
+import {useEffect, useRef, useState, type CSSProperties, type PointerEvent} from 'react';
 import {ROOT_NAMES, rootStamp, type RootDocument} from './rootPracticeDocument';
 import {rootGridBeats, type RootGrid} from './rootPracticeGrid';
 import {SPECTRUM_RATE, SPECTRUM_LOW_MIDI, SPECTRUM_HIGH_MIDI, spectrumColor, type SpectrumData} from './rootSpectrum';
@@ -10,16 +10,18 @@ type Props = {
   document: RootDocument; api: string; position: number; playing: boolean; range: Range; grid: RootGrid | null;
   onSeek: (time: number) => void; onRange: (start: number, end: number) => void;
   onPlay: (start: number, end: number) => void; onPause: () => void;
-  onPracticeAt: (time: number) => void; selectedId: string; playbackControls: boolean;
+  onUseSelectedRange: () => void; selectedId: string; playbackControls: boolean;
 };
 const noteName = (midi: number) => ROOT_NAMES[((midi % 12) + 12) % 12] + (Math.floor(midi / 12) - 1);
 const clamp = (value: number, low: number, high: number) => Math.max(low, Math.min(high, value));
 
-export function RootSpectrogram({document: doc, api, position, playing, range, grid, onSeek, onRange, onPlay, onPause, onPracticeAt, selectedId, playbackControls}: Props) {
+export function RootSpectrogram({document: doc, api, position, playing, range, grid, onSeek, onRange, onPlay, onPause, onUseSelectedRange, selectedId, playbackControls}: Props) {
   const [open, setOpen] = useState(() => new URLSearchParams(location.search).get('visual') === '1');
   const [data, setData] = useState<SpectrumData | null>(null), [chords, setChords] = useState<Chord[]>([]);
   const [state, setState] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle'), [message, setMessage] = useState('');
   const [view, setView] = useState<Range>({start: 0, end: Math.min(30, doc.source.duration)});
+  const [heightScale, setHeightScale] = useState(() => {try {const value = Number(sessionStorage.getItem('guitarscribe.spectrum-height')); return [1,2,3,4].includes(value) ? value : 2;} catch {return 2;}});
+  const [rangeMessage, setRangeMessage] = useState('');
   const [contrast, setContrast] = useState(60), [dragRange, setDragRange] = useState<Range | null>(null);
   const [probe, setProbe] = useState<{time: number; midi: number} | null>(null);
   const canvas = useRef<HTMLCanvasElement>(null), worker = useRef<Worker | null>(null), controller = useRef<AbortController | null>(null);
@@ -35,15 +37,16 @@ export function RootSpectrogram({document: doc, api, position, playing, range, g
   }
   useEffect(() => () => cancel(), []);
   useEffect(() => {
-    cancel(); setData(null); setChords([]); setState('idle'); setMessage('');
+    cancel(); setRangeMessage(''); setData(null); setChords([]); setState('idle'); setMessage('');
     setView({start: 0, end: Math.min(30, doc.source.duration)});
   }, [doc.source.fingerprint]);
   useEffect(() => {
     const selected = doc.segments.find(s => s.id === selectedId);
     if (!selected) return;
+    const focus = position >= selected.start && position < selected.end ? position : selected.start;
     setView(old => {
-      if (selected.start >= old.start && selected.start < old.end) return old;
-      const width = old.end - old.start, start = Math.max(0, Math.min(selected.start, doc.source.duration - width));
+      if (focus >= old.start && focus < old.end) return old;
+      const width = old.end - old.start, start = Math.max(0, Math.min(focus, doc.source.duration - width));
       return {start, end: start + width};
     });
   }, [selectedId, doc.source.fingerprint]);
@@ -126,6 +129,19 @@ export function RootSpectrogram({document: doc, api, position, playing, range, g
     const start = clamp(center - width / 2, 0, Math.max(0, doc.source.duration - width));
     setView({start, end: start + width});
   }
+  function markRange(side: 'start' | 'end') {
+    if (side === 'start') {
+      if (position > doc.source.duration - .08) return;
+      const end = rangeValid && range.end - position >= .08 ? range.end : doc.source.duration;
+      onRange(position, end);
+      setRangeMessage(`已設 A 開始 ${rootStamp(position)}${end !== range.end ? '；B 暫設歌曲結尾，再點結束位置設定 B。' : '；接著點圖選結束位置，再設定 B。'}`);
+    } else {
+      if (position < .08) return;
+      const start = rangeValid && position - range.start >= .08 ? range.start : 0;
+      onRange(start, position);
+      setRangeMessage(`已設 B 結束 ${rootStamp(position)}${start !== range.start ? '；A 暫設歌曲開頭，可再設定 A。' : '；按「播放原曲範圍」回聽。'}`);
+    }
+  }
   function point(event: PointerEvent<HTMLDivElement>) {
     const box = event.currentTarget.getBoundingClientRect();
     return {time: clamp(view.start + (event.clientX - box.left) / box.width * length, view.start, view.end),
@@ -139,7 +155,7 @@ export function RootSpectrogram({document: doc, api, position, playing, range, g
   const currentRoot = doc.segments.find(s => position >= s.start && position < s.end);
   const cursor = position >= view.start && position <= view.end ? <i className="rs-cursor" style={{left: `${left(position)}%`}}/> : null;
 
-  return <section className="root-spectrum" aria-label="低頻與和聲視覺化">
+  return <section className="root-spectrum" aria-label="低頻與和聲視覺化" style={{'--rs-height-scale': heightScale} as CSSProperties}>
     <div className="rs-heading"><div><h2>看著音樂抓行進</h2><p>低頻的亮線、和弦的變化，和你自己的判斷。</p></div><button aria-expanded={open} onClick={() => setOpen(!open)}>{open ? '收起視覺化' : '開啟視覺化'}</button></div>
     {open && <>
       <p className="rs-explain">上圖看頻率能量，下圖看和聲判斷。亮線可能是基音、泛音或鼓聲，不會自動變成根音答案。</p>
@@ -148,9 +164,23 @@ export function RootSpectrogram({document: doc, api, position, playing, range, g
         <span role="status" aria-label="頻譜狀態">{message || '音訊只在此瀏覽器繪圖，不上傳到其他服務。'}</span>
       </div>
       <div className="rs-actions" aria-label="圖表縮放">
-        <button onClick={() => zoom(10)}>看 10 秒</button><button onClick={() => zoom(30)}>看 30 秒</button><button onClick={() => setView({start: 0, end: doc.source.duration})}>看全曲</button>
+        <button onClick={() => zoom(10)}>看 10 秒</button><button onClick={() => zoom(30)}>看 30 秒</button><button onClick={() => zoom(60)}>看 60 秒</button><button onClick={() => zoom(120)}>看 120 秒</button><button onClick={() => setView({start: 0, end: doc.source.duration})}>看全曲</button>
         <button disabled={!rangeValid} onClick={() => setView({start: range.start, end: range.end})}>放大 A–B</button>
         <button disabled={view.start <= 0} onClick={() => zoom(length, (view.start + view.end) / 2 - length * .8)}>往前看</button><button disabled={view.end >= doc.source.duration} onClick={() => zoom(length, (view.start + view.end) / 2 + length * .8)}>往後看</button>
+      </div>
+      <label className="rs-size">圖的高度 <select aria-label="頻譜高度" value={heightScale} onChange={e => {const value = Number(e.target.value); setHeightScale(value); try {sessionStorage.setItem('guitarscribe.spectrum-height', String(value));} catch {}}}>
+        <option value="1">1 倍（精簡）</option><option value="2">2 倍</option><option value="3">3 倍</option><option value="4">4 倍</option>
+      </select></label>
+      <div className="rs-range-guide" role="group" aria-label="設定反覆練習範圍">
+        <strong>A 是開始，B 是結束：只反覆聽兩點之間。</strong>
+        <p>在圖上按住滑鼠，從開始拖到結束再放開。觸控可左右拖曳；也可以點圖移動游標，再用下方按鈕分別設定。</p>
+        <div className="rs-range-values"><span>A 開始 <output aria-label="A 開始時間">{rangeValid ? rootStamp(range.start) : '未設定'}</output></span><span>B 結束 <output aria-label="B 結束時間">{rangeValid ? rootStamp(range.end) : '未設定'}</output></span><span>游標 {rootStamp(position)}</span></div>
+        <div className="rs-actions">
+          <button disabled={position > doc.source.duration - .08} onClick={() => markRange('start')}>游標設為 A（開始）</button>
+          <button disabled={position < .08} onClick={() => markRange('end')}>游標設為 B（結束）</button>
+          <button onClick={() => {onUseSelectedRange(); setRangeMessage('已用右側目前判斷段落設定 A–B。');}}>以目前段落設定 A–B</button>
+        </div>
+        <p role="status">{rangeMessage || '選好範圍後，按上方「播放原曲範圍」。勾選「A–B 循環」就會反覆播放。'}</p>
       </div>
       <div className="rs-time-axis">{ticks.map((t, i) => <span key={i} style={{left: `${i * 25}%`}}>{rootStamp(t)}</span>)}</div>
       <div className="rs-chart-title"><h3>低頻頻譜 · E1–E4</h3><span className="rs-legend">弱 <i/> 強</span></div>
@@ -158,17 +188,21 @@ export function RootSpectrogram({document: doc, api, position, playing, range, g
         onKeyDown={e => {if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) {e.preventDefault(); onSeek(e.key === 'Home' ? view.start : e.key === 'End' ? Math.max(view.start, view.end - .01) : clamp(position + (e.key === 'ArrowRight' ? 1 : -1) * (e.shiftKey ? 1 : .1), 0, doc.source.duration - .01));}}}
         onPointerDown={e => {if (e.button !== 0) return; const p = point(e); drag.current = {time: p.time, x: e.clientX, pointer: e.pointerId}; e.currentTarget.setPointerCapture(e.pointerId); setProbe(p);}}
         onPointerMove={e => {const p = point(e); setProbe(p); if (drag.current?.pointer === e.pointerId && Math.abs(e.clientX - drag.current.x) > 4) setDragRange({start: Math.min(p.time, drag.current.time), end: Math.max(p.time, drag.current.time)});}}
-        onPointerUp={e => {const d = drag.current; if (!d || d.pointer !== e.pointerId) return; const p = point(e); drag.current = null; setDragRange(null); if (Math.abs(e.clientX - d.x) > 4 && Math.abs(p.time - d.time) >= .08) onRange(Math.min(p.time, d.time), Math.max(p.time, d.time)); else onSeek(Math.min(p.time, doc.source.duration - .01));}}
+        onPointerUp={e => {const d = drag.current; if (!d || d.pointer !== e.pointerId) return; const p = point(e); drag.current = null; setDragRange(null); if (Math.abs(e.clientX - d.x) > 4 && Math.abs(p.time - d.time) >= .08) {onRange(Math.min(p.time, d.time), Math.max(p.time, d.time)); setRangeMessage('已選取圖中 A–B 範圍；按「播放原曲範圍」回聽。');} else onSeek(Math.min(p.time, doc.source.duration - .01));}}
         onPointerCancel={() => {drag.current = null; setDragRange(null);}}>
         <canvas ref={canvas} width="1400" height="360" aria-label="原曲低頻能量圖" data-ready={!!data}/>
         {!data && <div className="rs-empty">{state === 'loading' ? '正在準備低頻圖…' : '按「產生低頻圖」查看原曲'}</div>}
         {[28, 36, 40, 48, 52, 60, 64].map(m => <div className="rs-note-line" key={m} style={{top: `${(64 - m) / 36 * 100}%`}}><span>{noteName(m)}</span></div>)}
         {beats.map(b => <i className={b.strong ? 'rs-beat strong' : 'rs-beat'} key={b.time} style={{left: `${left(b.time)}%`}}/>)}
         {shownRange && shownRange.start < view.end && shownRange.end > view.start && <div className="rs-selection" style={percent(shownRange.start, shownRange.end)}/>}
+        {shownRange && <>
+          {shownRange.start >= view.start && shownRange.start <= view.end && <span className="rs-boundary rs-boundary-a" style={{left: `clamp(0px, ${left(shownRange.start)}%, calc(100% - 58px))`}}>A 開始</span>}
+          {shownRange.end >= view.start && shownRange.end <= view.end && <span className="rs-boundary rs-boundary-b" style={{left: `clamp(58px, ${left(shownRange.end)}%, 100%)`}}>B 結束</span>}
+        </>}
         {cursor}
       </div>
       <div className="rs-readout"><span>{probe ? `${rootStamp(probe.time)} · 指向 ${noteName(probe.midi)} 附近（游標刻度）` : '點圖定位；左右拖曳選 A–B。鍵盤左右鍵移動 0.1 秒，Shift 移動 1 秒。'}</span><label>顯示較弱線索 <input aria-label="頻譜顯示範圍" type="range" min="35" max="80" step="5" value={contrast} onChange={e => setContrast(Number(e.target.value))}/></label></div>
-      <button onClick={() => onPracticeAt(position)}>練習游標所在段</button>
+      <p>點圖或用方向鍵移動游標，右側會切到對應段落；拖曳只調整 A–B。</p>
       <h3 className="rs-lane-title">原分析和弦 <small>自動辨識，待核對</small></h3>
       <div className="rs-plot rs-chords" aria-label="原分析和弦時間軸">
         {visibleChords.length ? visibleChords.map((c, i) => <button key={i} title={`${c.symbol} ${rootStamp(c.start)}–${rootStamp(c.end)}`} aria-label={`查看和弦 ${c.symbol} ${rootStamp(c.start)}`} style={percent(c.start, c.end)} onClick={() => {onRange(c.start, Math.min(c.end, doc.source.duration)); onSeek(c.start);}}>{c.symbol}</button>) : <span className="rs-no-chords">{data ? '此範圍沒有原分析和弦' : '產生低頻圖時一併讀取'}</span>}

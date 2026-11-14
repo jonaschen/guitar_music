@@ -43,20 +43,28 @@ async function setup(page:Page, advanced=true){
   return Object.assign(server,{score});
 }
 
-test('workflow target stays explicit while seeking; practice cursor binds one segment without writing',async({page})=>{
+test('workflow visual cursor automatically selects its segment and preserves exact time without writing',async({page})=>{
   const server=await setup(page,false);
   await expect(page.getByLabel('目前判斷段落')).toContainText('第 1 段');
   await page.getByRole('button',{name:'開啟視覺化',exact:true}).click();
   const chart=page.getByRole('slider',{name:'頻譜定位時間'});
   await chart.focus();await page.keyboard.press('End');
-  await expect(page.getByLabel('目前判斷段落')).toContainText('第 1 段');
-  expect(server.writes).toBe(0);
-  await page.getByRole('button',{name:'練習游標所在段',exact:true}).click();
   await expect(page.getByLabel('目前判斷段落')).toContainText('第 2 段');
+  expect(Number(await chart.getAttribute('aria-valuenow'))).toBeCloseTo(7.99,2);
+  await page.keyboard.press('ArrowLeft');
+  expect(Number(await chart.getAttribute('aria-valuenow'))).toBeCloseTo(7.89,2);
   await expect(page.getByLabel('採用目標')).toContainText('0:04.0–0:08.0');
-  await expect(page.getByLabel('主要播放範圍')).toContainText('0:04.0–0:08.0');
+  await expect(page.getByLabel('主要播放範圍')).toContainText('0:00.0–0:04.0');
   await expect(page.locator('.root-current')).toContainText('尚未選擇試聽音');
   expect(server.writes).toBe(0);
+  // Pointer seeking crosses into another segment while preserving the clicked time.
+  await chart.evaluate(el=>el.scrollIntoView({block:'center'}));
+  const seekBox=(await chart.boundingBox())!;
+  await page.mouse.click(seekBox.x+seekBox.width*.25,seekBox.y+seekBox.height*.5);
+  await expect(page.getByLabel('目前判斷段落')).toContainText('第 1 段');
+  expect(Number(await chart.getAttribute('aria-valuenow'))).toBeCloseTo(2,1);
+  await chart.focus();await page.keyboard.press('End');
+  await expect(page.getByLabel('目前判斷段落')).toContainText('第 2 段');
   // A cross-segment listening range never changes the one adoption target.
   await chart.scrollIntoViewIfNeeded();const box=(await chart.boundingBox())!;
   await page.mouse.move(box.x+box.width*.1,box.y+box.height*.5);await page.mouse.down();
@@ -67,6 +75,86 @@ test('workflow target stays explicit while seeking; practice cursor binds one se
   await page.getByRole('button',{name:'採用這個根音',exact:true}).click();
   await expect.poll(()=>server.document.segments[1].root).toBe(4);
   expect(server.document.segments[0].root).toBeNull();expect(server.scoreWrites).toBe(0);
+});
+
+test('workflow visual selection preserves the zoomed view and A-B when the segment begins before the view',async({page})=>{
+  const server=await setup(page);
+  await page.getByRole('button',{name:'開啟視覺化',exact:true}).click();
+  const chart=page.getByRole('slider',{name:'頻譜定位時間'});
+  await chart.focus();await page.keyboard.press('End');
+  await page.getByLabel('連聽起點秒數').fill('1');await page.getByLabel('連聽終點秒數').fill('3');
+  await page.getByRole('button',{name:'放大 A–B',exact:true}).click();
+  await chart.evaluate(el=>el.scrollIntoView({block:'center'}));const box=(await chart.boundingBox())!;
+  await page.mouse.click(box.x+box.width/2,box.y+box.height/2);
+  await expect(page.getByLabel('目前判斷段落')).toContainText('第 1 段');
+  expect(Number(await chart.getAttribute('aria-valuenow'))).toBeCloseTo(2,1);
+  await expect(page.getByLabel('主要播放範圍')).toContainText('0:01.0–0:03.0');
+  await expect(page.locator('.rs-time-axis')).toContainText('0:01.0');
+  await expect(page.locator('.rs-time-axis')).toContainText('0:03.0');
+  expect(server.writes).toBe(0);
+  await page.getByRole('button',{name:'以目前段落設定 A–B',exact:true}).click();
+  await expect(page.getByLabel('主要播放範圍')).toContainText('0:00.0–0:04.0');
+});
+
+test('workflow visual A-B controls work with tools closed and explain start and end',async({page})=>{
+  const server=await setup(page,false);
+  await page.getByRole('button',{name:'開啟視覺化',exact:true}).click();
+  const controls=page.getByRole('group',{name:'設定反覆練習範圍'});
+  await expect(controls).toContainText('A 是開始，B 是結束');
+  const chart=page.getByRole('slider',{name:'頻譜定位時間'});
+  async function seek(fraction:number){
+    await chart.evaluate(el=>el.scrollIntoView({block:'center'}));const box=(await chart.boundingBox())!;
+    await page.mouse.click(box.x+box.width*fraction,box.y+box.height*.5);
+  }
+  await seek(.75);await controls.getByRole('button',{name:'游標設為 A（開始）',exact:true}).click();
+  await expect(page.getByLabel('主要播放範圍')).toContainText('0:06.0–0:08.0');
+  await seek(.875);await controls.getByRole('button',{name:'游標設為 B（結束）',exact:true}).click();
+  await expect(page.getByLabel('主要播放範圍')).toContainText('0:06.0–0:07.0');
+  await expect(controls.getByLabel('A 開始時間')).toHaveText('0:06.0');
+  await expect(controls.getByLabel('B 結束時間')).toHaveText('0:07.0');
+  await expect(page.locator('.rs-boundary-a')).toContainText('A');
+  await expect(page.locator('.rs-boundary-b')).toContainText('B');
+  await chart.focus();await page.keyboard.press('Home');
+  await expect(controls.getByRole('button',{name:'游標設為 B（結束）',exact:true})).toBeDisabled();
+  await expect(page.getByLabel('主要播放範圍')).toContainText('0:06.0–0:07.0');
+  expect(server.writes).toBe(0);expect(server.scoreWrites).toBe(0);
+});
+
+test('workflow visual current-segment A-B uses the selected target after a cross-segment reverse drag',async({page})=>{
+  const server=await setup(page,false);
+  await page.getByRole('button',{name:'開啟視覺化',exact:true}).click();
+  const chart=page.getByRole('slider',{name:'頻譜定位時間'});
+  await chart.focus();await page.keyboard.press('End');
+  await chart.evaluate(el=>el.scrollIntoView({block:'center'}));const box=(await chart.boundingBox())!;
+  await page.mouse.move(box.x+box.width*.9,box.y+box.height*.5);await page.mouse.down();
+  await page.mouse.move(box.x+box.width*.1,box.y+box.height*.5,{steps:8});await page.mouse.up();
+  await expect(page.getByLabel('主要播放範圍')).toContainText('0:00.8–0:07.2');
+  await expect(page.getByLabel('採用目標')).toContainText('第 2 段');
+  await page.getByRole('button',{name:'以目前段落設定 A–B',exact:true}).click();
+  await expect(page.getByLabel('採用目標')).toContainText('第 2 段');
+  await expect(page.getByLabel('主要播放範圍')).toContainText('0:04.0–0:08.0');
+  expect(server.writes).toBe(0);expect(server.scoreWrites).toBe(0);
+});
+
+test('workflow visual size expands two to four times without changing time or decisions',async({page})=>{
+  const server=await setup(page,false);
+  await page.getByRole('button',{name:'開啟視覺化',exact:true}).click();
+  const chart=page.getByRole('slider',{name:'頻譜定位時間'});
+  await expect(page.getByLabel('頻譜高度')).toHaveValue('2');
+  expect((await chart.boundingBox())!.height).toBe(600);
+  await page.getByLabel('頻譜高度').selectOption('4');
+  expect((await chart.boundingBox())!.height).toBe(1200);
+  await page.getByRole('button',{name:'看 60 秒',exact:true}).click();
+  await page.getByRole('button',{name:'看 120 秒',exact:true}).click();
+  await expect(page.locator('.rs-time-axis')).toContainText('0:08.0');
+  await page.setViewportSize({width:390,height:900});
+  expect((await chart.boundingBox())!.height).toBe(1000);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.getByLabel('頻譜高度').selectOption('3');
+  await page.reload();
+  await page.getByRole('button',{name:'開啟視覺化',exact:true}).click();
+  await expect(page.getByLabel('頻譜高度')).toHaveValue('3');
+  expect(server.writes).toBe(0);expect(server.scoreWrites).toBe(0);
 });
 
 test('workflow primary playback defaults to original audio and one short segment',async({page})=>{

@@ -1,0 +1,158 @@
+{
+  "date": "2026-11-14",
+  "scope": "T6-T8 manual cursor follow, visible A/B marking and larger visualization",
+  "status": "done",
+  "entry": "http://localhost:5273/visual-practice-2026-11-14/?practice=roots&visual=1",
+  "tests": {
+    "full_root_regression": {
+      "passed": 45,
+      "failed": 0,
+      "elapsed": "2.0m"
+    },
+    "targeted_visual_green": {
+      "passed": 5,
+      "failed": 0
+    },
+    "typescript": "passed",
+    "production_build": "passed; existing AlphaTab large chunk warning"
+  },
+  "tdd_red": [
+    "Manual End seek left adoption target on old segment.",
+    "Initial automatic selection overwrote A/B and panned away from clicked zoomed position.",
+    "A/B setting group missing with tools folded.",
+    "After reverse cross-segment drag, current-segment action incorrectly selected cursor segment.",
+    "Graph height preference missing."
+  ],
+  "behavior": [
+    "Manual chart click or keyboard seeks select the containing segment without snapping seconds or changing A/B/zoom.",
+    "Hover, playback progress and A/B dragging do not change adoption target.",
+    "Visible A/B controls and labeled markers; current-segment range uses selected segment.",
+    "Start beyond old end extends B to song end; end before old start resets A to song beginning with an explicit message.",
+    "Chart defaults to 2x height, supports 1–4x per-tab preference, wider desktop chart, 60/120 second windows."
+  ],
+  "browser": [
+    {
+      "job": "83a3643ab3814172a046cebf709f3413",
+      "duration": 258.1066666666667,
+      "generation_ms": 3430,
+      "distinct_sampled_colors": 7902,
+      "original_chords_in_view": 20,
+      "range": [
+        2.5,
+        6.500000143950841
+      ],
+      "playback_position": 2.716,
+      "adoption_target": "將記錄到 第 4 段 · 0:05.4–0:07.4",
+      "selected_segment": "第 4 段 F 0:05.4",
+      "manual_seek_exact_time": 6.999999712098319,
+      "visual_height_multipliers": [
+        2,
+        4
+      ],
+      "visible_time_windows": [
+        60,
+        120
+      ],
+      "direct_a_b_marking": true,
+      "tools_fold_preserved_source": true,
+      "mobile_player_and_decision_unobscured": true,
+      "audio": {
+        "sources": 1,
+        "tones": 0
+      },
+      "widths": [
+        320,
+        390,
+        768,
+        1440
+      ],
+      "source_score_unchanged": true,
+      "practice_unchanged": true,
+      "unexpected_writes": [],
+      "page_errors": []
+    },
+    {
+      "job": "a3be29912a7045448765290d7cba2f6c",
+      "duration": 304.47167800453514,
+      "generation_ms": 3966,
+      "distinct_sampled_colors": 8272,
+      "original_chords_in_view": 15,
+      "range": [
+        2.5,
+        6.500000143950841
+      ],
+      "playback_position": 2.7373333333333334,
+      "adoption_target": "將記錄到 第 4 小節 · 整小節 · 第 1–4 拍 · 0:06.3–0:08.3",
+      "selected_segment": "第 4 段 待聽 0:06.3",
+      "manual_seek_exact_time": 6.999999712098319,
+      "visual_height_multipliers": [
+        2,
+        4
+      ],
+      "visible_time_windows": [
+        60,
+        120
+      ],
+      "direct_a_b_marking": true,
+      "tools_fold_preserved_source": true,
+      "mobile_player_and_decision_unobscured": true,
+      "audio": {
+        "sources": 1,
+        "tones": 0
+      },
+      "widths": [
+        320,
+        390,
+        768,
+        1440
+      ],
+      "source_score_unchanged": true,
+      "practice_unchanged": true,
+      "unexpected_writes": [],
+      "page_errors": []
+    }
+  ],
+  "publication": {
+    "candidate": "visual-practice-2026-11-14",
+    "protected_files_unchanged": 166,
+    "candidate_manifest": {
+      "index.html": "cf04253b2f278fc097714cb9ea21a81b5c6ed9068c17bad3ada59013a3dcdcbe",
+      "assets/alphaTab.worklet-C9PLHa2u.js": "f47e9cd065a042e2327bef9fb88c9fd48eacb4594f2793bc020baa2b889cdfcd",
+      "assets/AlphaTabScore-Cxv5iJB_.js": "a5219b8f59d9c8e4e05e91e6132eee6e8de1c65f785bcd0f75172fc857e2079b",
+      "assets/alphaTab.worker-BQCj0a_w.js": "e48f42ed0c6e5ac6df54ce21dafb771972ac600357567a4eb2174da876ced3b2",
+      "assets/index-CrYIe-KU.js": "ee8f33534922b7debb3d2653427d112c639bbe290f9046c43b702d67e610622a",
+      "assets/rootSpectrum.worker-B5N4ZDsn.js": "ea24d2a1632004689ef14468b51993fb53c96002796dff5df06a983ac30e337a",
+      "assets/index-M3DAulMc.js": "9834e615b3169de5639e61d960167f3e8d207775e99e1b743136e5aa977c59da",
+      "assets/index-CRzzGO1q.css": "1d936870eb49edaf454fd276c52fa22295638af9c9afcc28f4be0a4609ce174c",
+      "assets/index-C_3guKSg.js": "fce8ab101359e1c8fdd12ef2874cb209d983e40b30702a415afacf79b709c6f5",
+      "assets/AlphaTabScore-DyfDImao.js": "2726a08f9ae8bdc752a35b7b756531891971e61cf07ac78bf022897267f242fa",
+      "assets/index-C3wj2p3m.js": "3f58331ea86486f46a7157b7127570bbb91018c68f465364141df868ad9a0578",
+      "assets/AlphaTabScore-B8J2d53j.js": "57db3ebb90604a3d66f826102303d74c6a273983f6ee1b2cd2c5dd5ab7369234",
+      "assets/AlphaTabScore-9G327o1H.js": "19f8593520d151ec557dc48a9a2e201fffa65f21e04f14f0b38f0cf4da87097b",
+      "assets/index-lvAv2Av3.css": "7013b706249c01ac87b9411b59f2e698c81153cf7fe4effc2e9fffb5784bc9e0",
+      "assets/Bravura-BVtSfpnN.woff2": "181e0e7c4889f9ad57dde0a11988fa61b941617aa499ecdb9dfd4713896c2b19",
+      "assets/AlphaTabScore-DrutCkgH.js": "4aa00e73d4beb8295f833921ecfac3b794f6303b59df0149a6cd9b499bbeb8d8",
+      "assets/AlphaTabScore-BWLq9fbn.js": "541d4841806480036bc366984cbb3f8c7ac99848e8060812396313e308a938d6",
+      "assets/index-4kWwwKE6.js": "01b0564988869014a7831279af4d635fc6e1172ad550d0ce82dd84af4bf617e4",
+      "assets/index-Dew0aQLE.js": "a95a8598a8357582e4b46826f905e5e6da6730885d941f25b207bcb2f02f1d1c",
+      "assets/index-nKHpMqhm.css": "2c1b35e5ad66acfc20fd54df970749c38b3004550602d0102cbf24f06c291139"
+    },
+    "backup": "guitarscribe/output/backups/root-cursor-follow-2026-11-14",
+    "service_restarted": false
+  },
+  "review": "programmer-session read-only review found no remaining blocker; shared files coordinated",
+  "visual_review": "1440px final browser screenshot inspected; A/B labels, help and expanded spectrum visible",
+  "limitations": [
+    "No new bass extraction or chord recognition model.",
+    "Enlarging the display does not improve FFT resolution.",
+    "User subjective usability remains for normal practice feedback, not a prerequisite for completed engineering."
+  ],
+  "source_sha256": {
+    "frontend/src/RootPractice.tsx": "d937ae4df4d5dd9e4cfbb590c4fdab206e3c168a3812945a3db0e8eb088bcc08",
+    "frontend/src/RootSpectrogram.tsx": "b0294f07418ed3cb0336231fa0dc426412995c757130dd292ab9ee6efe957cbb",
+    "frontend/src/rootPractice.css": "fc9ef49e03407a643c9ceae0b1570bc45bf019fbf80e48734b97f15e024ac31a",
+    "frontend/src/rootSpectrogram.css": "62d301f786006a3c7d46c0ed29ca1f94c96b13a1f07ca671492b978276eaf43e",
+    "frontend/e2e/root-practice.spec.ts": "f828b39ef83ddacc961dc6c3db6d842ed24f84b3b9db78fbda669577763633ef",
+    "frontend/scripts/check-root-workflow.mjs": "e92c9ba83f31a0d4f57ee8c4b52b0af04868dbc254dcfe3a3c7f095cd0e99495"
+  }
+}
