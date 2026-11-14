@@ -2,12 +2,13 @@ import {test,expect,type Page} from '@playwright/test';
 import {readFileSync} from 'node:fs';
 import {regridRoots,subdivideRootBar,isMetricalDocument} from '../src/rootMetricalSegments';
 import {rootClock} from '../src/rootPracticeAudio';
+import {makeSpectrum, midiHz, spectrumMidi, spectrumColor, SPECTRUM_RATE} from '../src/rootSpectrum';
 import {parseRootDocument,splitRootSegment,mergeRootSegment} from '../src/rootPracticeDocument';
 const fixture=JSON.parse(readFileSync(new URL('./fixtures/accepted-chord-grid.json',import.meta.url),'utf8'));
 const source={job_id:'root-job',fingerprint:'a'.repeat(64),duration:8,source_start:0};
 const seed={schema_version:1 as const,source,segments:[{id:'a',start:0,end:4,original_root:0,root:null,status:'pending' as const},{id:'b',start:4,end:8,original_root:7,root:null,status:'pending' as const}]};
 function wav(){const count=8000*8,buffer=Buffer.alloc(44+count*2);buffer.write('RIFF');buffer.writeUInt32LE(36+count*2,4);buffer.write('WAVEfmt ',8);buffer.writeUInt32LE(16,16);buffer.writeUInt16LE(1,20);buffer.writeUInt16LE(1,22);buffer.writeUInt32LE(8000,24);buffer.writeUInt32LE(16000,28);buffer.writeUInt16LE(2,32);buffer.writeUInt16LE(16,34);buffer.write('data',36);buffer.writeUInt32LE(count*2,40);for(let i=0;i<count;i++)buffer.writeInt16LE(Math.round(Math.sin(i/8000*220*Math.PI*2)*2000),44+2*i);return buffer;}
-async function setup(page:Page){
+async function setup(page:Page, advanced=true){
   page.on('pageerror',error=>console.error('ROOT PAGE ERROR',error.message));
   const server={history:[] as any[],version:0,document:structuredClone(seed) as any,writes:0,scoreWrites:0,conflict:false,fail:false};
   const score={...fixture,provenance:{...fixture.provenance,parameters:{}},song:{...fixture.song,title:'根音練習測試',duration_seconds:8,source_start_seconds:0},chords:[{...fixture.chords[0],id:'a',start:0,end:4,symbol:'C'},{...fixture.chords[0],id:'b',start:4,end:8,symbol:'G'}],melody:[]};
@@ -35,8 +36,348 @@ async function setup(page:Page){
   await page.goto('/?job=root-job&practice=roots');
   try{await expect(page.getByRole('main',{name:'根音抓歌練習'})).toBeVisible({timeout:20000});}catch(error){console.error('ROOT BODY',await page.locator('body').innerText());throw error;}
   await expect(page.locator('.root-candidates button')).toHaveCount(3);
-  return server;
+  if(advanced&&await page.getByText('練習設定與進階工具',{exact:true}).count()){
+    const tools=page.locator('details.root-advanced');
+    if(!await tools.evaluate(el=>(el as HTMLDetailsElement).open))await page.getByText('練習設定與進階工具',{exact:true}).click();
+  }
+  return Object.assign(server,{score});
 }
+
+test('workflow target stays explicit while seeking; practice cursor binds one segment without writing',async({page})=>{
+  const server=await setup(page,false);
+  await expect(page.getByLabel('目前判斷段落')).toContainText('第 1 段');
+  await page.getByRole('button',{name:'開啟視覺化',exact:true}).click();
+  const chart=page.getByRole('slider',{name:'頻譜定位時間'});
+  await chart.focus();await page.keyboard.press('End');
+  await expect(page.getByLabel('目前判斷段落')).toContainText('第 1 段');
+  expect(server.writes).toBe(0);
+  await page.getByRole('button',{name:'練習游標所在段',exact:true}).click();
+  await expect(page.getByLabel('目前判斷段落')).toContainText('第 2 段');
+  await expect(page.getByLabel('採用目標')).toContainText('0:04.0–0:08.0');
+  await expect(page.getByLabel('主要播放範圍')).toContainText('0:04.0–0:08.0');
+  await expect(page.locator('.root-current')).toContainText('尚未選擇試聽音');
+  expect(server.writes).toBe(0);
+  // A cross-segment listening range never changes the one adoption target.
+  await chart.scrollIntoViewIfNeeded();const box=(await chart.boundingBox())!;
+  await page.mouse.move(box.x+box.width*.1,box.y+box.height*.5);await page.mouse.down();
+  await page.mouse.move(box.x+box.width*.9,box.y+box.height*.5,{steps:6});await page.mouse.up();
+  await expect(page.getByLabel('採用目標')).toContainText('第 2 段');
+  await expect(page.getByLabel('連聽目前區段')).toContainText('播放游標');
+  await page.getByRole('button',{name:'參考音 E2',exact:true}).click();
+  await page.getByRole('button',{name:'採用這個根音',exact:true}).click();
+  await expect.poll(()=>server.document.segments[1].root).toBe(4);
+  expect(server.document.segments[0].root).toBeNull();expect(server.scoreWrites).toBe(0);
+});
+
+test('workflow primary playback defaults to original audio and one short segment',async({page})=>{
+  await captureRangeAudio(page);const server=await setup(page,false);
+  await expect(page.getByLabel('主要播放範圍')).toContainText('0:00.0–0:04.0');
+  await page.getByRole('button',{name:'播放原曲範圍',exact:true}).click();
+  await expect(page.getByLabel('目前播放聲音')).toContainText('原曲');
+  await expect(page.getByRole('button',{name:'暫停播放',exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'暫停播放',exact:true}).click();
+  let records=await page.evaluate(()=>(window as any).__rangeAudio);
+  expect(records.filter((r:any)=>r.kind==='tone'&&r.event==='start')).toHaveLength(0);
+  expect(records.find((r:any)=>r.kind==='source'&&r.event==='start').loopEnd).toBe(4);
+  await page.getByRole('button',{name:'參考音 E2',exact:true}).click();
+  await expect(page.getByLabel('目前播放聲音')).toContainText('比較音');
+  await page.getByRole('button',{name:'暫停播放',exact:true}).click();
+  await page.getByRole('button',{name:'播放原曲範圍',exact:true}).click();
+  await expect(page.getByLabel('目前播放聲音')).toContainText('原曲');
+  await page.getByRole('button',{name:'暫停播放',exact:true}).click();
+  expect(server.writes).toBe(0);
+});
+
+test('workflow keeps tools optional and preserves target, playback and pending-grid guidance when folded',async({page})=>{
+  const server=await setup(page,false);
+  const settings=page.locator('details.root-advanced');
+  await expect(settings).toBeVisible();
+  await expect(settings).not.toHaveAttribute('open','');
+  await expect(page.getByRole('region',{name:'小節分段'})).toBeHidden();
+  await expect(page.getByRole('button',{name:'採用這個根音',exact:true})).toBeVisible();
+  for(const width of [320,390,768,1440]){
+    await page.setViewportSize({width,height:1000});
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  }
+  await page.getByText('練習設定與進階工具',{exact:true}).click();
+  await expect(page.getByRole('region',{name:'小節分段'})).toBeVisible();
+  await page.getByRole('button',{name:'播放原曲範圍',exact:true}).click();
+  await expect(page.getByRole('button',{name:'暫停播放',exact:true})).toBeVisible();
+  await page.getByText('練習設定與進階工具',{exact:true}).click();
+  await expect(page.getByRole('button',{name:'暫停播放',exact:true})).toBeVisible();
+  await expect(page.getByLabel('目前判斷段落')).toContainText('第 1 段');
+  await page.getByRole('button',{name:'暫停播放',exact:true}).click();
+  expect(server.writes).toBe(0);expect(server.scoreWrites).toBe(0);
+});
+
+test('workflow journey adopts one segment, clears unadopted trial on next, marks unsure, undoes and reopens',async({page})=>{
+  const server=await setup(page,false);
+  await expect(page.getByLabel('採用目標')).toContainText('第 1 段');
+  await page.getByRole('button',{name:'參考音 E2',exact:true}).click();
+  await page.getByRole('button',{name:'採用這個根音',exact:true}).click();
+  await expect.poll(()=>server.document.segments[0].root).toBe(4);
+  await expect(page.getByLabel('目前判斷段落')).toContainText('第 1 段');
+  await page.getByRole('button',{name:'參考音 C3',exact:true}).click();
+  const writes=server.writes;
+  await page.getByRole('button',{name:'下一段',exact:true}).click();
+  await expect(page.getByLabel('目前判斷段落')).toContainText('第 2 段');
+  await expect(page.locator('.root-current')).toContainText('尚未選擇試聽音');
+  await expect(page.getByRole('button',{name:'採用這個根音',exact:true})).toBeDisabled();
+  expect(server.writes).toBe(writes);
+  await page.getByRole('button',{name:'還聽不出來',exact:true}).click();
+  await expect.poll(()=>server.document.segments[1].status).toBe('unsure');
+  await page.getByRole('button',{name:'復原',exact:true}).click();
+  await expect.poll(()=>server.document.segments[1].status).toBe('pending');
+  await expect(page.getByLabel('根音保存狀態')).toHaveText('已保存');
+  await page.reload();
+  await expect(page.getByLabel('目前判斷段落')).toContainText('第 2 段');
+  expect(server.document.segments[0].root).toBe(4);expect(server.scoreWrites).toBe(0);
+});
+
+test('workflow grid mismatch stays visible outside closed tools and opens the correction controls',async({page})=>{
+  const server=await setup(page,false);server.version=1;
+  server.document=regridRoots(server.document,{bpm:120,beats:4,anchor:0});
+  await page.reload();
+  await page.getByText('練習設定與進階工具',{exact:true}).click();
+  await page.getByLabel('節拍器 BPM').fill('115');
+  await page.getByText('練習設定與進階工具',{exact:true}).click();
+  await expect(page.getByRole('alert',{name:'拍格需要確認'})).toBeVisible();
+  await expect(page.getByRole('button',{name:'採用這個根音',exact:true})).toBeDisabled();
+  await page.getByRole('button',{name:'調整並套用拍格',exact:true}).click();
+  await expect(page.getByRole('region',{name:'小節分段'})).toBeVisible();
+  expect(server.writes).toBe(0);
+});
+
+test('workflow review distinguishes actual audition bounds and respects the non-looping preference',async({page})=>{
+  await captureRangeAudio(page);await setup(page);
+  await page.getByLabel('連聽起點秒數').fill('1');await page.getByLabel('連聽終點秒數').fill('6');
+  await page.getByRole('button',{name:'參考音 E2',exact:true}).click();
+  await expect(page.getByLabel('正在播放範圍')).toContainText('0:00.0–0:04.8');
+  await expect(page.getByLabel('主要播放範圍')).toContainText('0:01.0–0:06.0');
+  await page.getByRole('button',{name:'暫停播放',exact:true}).click();
+  await page.getByLabel('循環原曲範圍',{exact:true}).uncheck();
+  await page.getByRole('button',{name:'播放原曲範圍',exact:true}).click();
+  await expect(page.getByRole('button',{name:'暫停播放',exact:true})).toBeVisible();
+  const source=await page.evaluate(()=>(window as any).__rangeAudio.filter((r:any)=>r.kind==='source'&&r.event==='start').at(-1));
+  expect(source.loop).toBe(false);expect(source.offset).toBe(1);expect(source.duration).toBe(5);
+  await expect(page.getByLabel('循環原曲範圍',{exact:true})).not.toBeChecked();
+  await page.getByRole('button',{name:'暫停播放',exact:true}).click();
+});
+
+test('workflow review archive restore reveals its preview and history failures remain visible',async({page})=>{
+  const server=await setup(page,false);server.version=2;
+  server.history=[{version:1,document:structuredClone(server.document)}];
+  await page.getByText('歷次保存',{exact:true}).click();
+  await page.getByRole('button',{name:'載入歷次保存',exact:true}).click();
+  await page.getByRole('button',{name:'預覽恢復版本 1',exact:true}).click();
+  await expect(page.getByRole('region',{name:'分段預覽'})).toBeVisible();
+  expect(server.writes).toBe(0);
+  await page.getByText('練習設定與進階工具',{exact:true}).click();
+  await page.route('**/api/v1/jobs/root-job/root-practice/history',r=>r.fulfill({status:503}));
+  await page.getByRole('button',{name:'載入歷次保存',exact:true}).click();
+  await expect(page.getByText('歷次保存暫時無法載入。',{exact:true})).toBeVisible();
+  expect(server.writes).toBe(0);
+});
+
+test('workflow review primary playback does not override an explicit disabled loop',async({page})=>{
+  await captureRangeAudio(page);await setup(page);
+  await page.getByLabel('循環選取範圍',{exact:true}).uncheck();
+  await page.getByRole('button',{name:'播放原曲範圍',exact:true}).click();
+  await expect(page.getByRole('button',{name:'暫停播放',exact:true})).toBeVisible();
+  const source=await page.evaluate(()=>(window as any).__rangeAudio.find((r:any)=>r.kind==='source'&&r.event==='start'));
+  expect(source.loop).toBe(false);
+  await expect(page.getByLabel('循環選取範圍',{exact:true})).not.toBeChecked();
+});
+
+test('workflow mobile keeps the primary player reachable beside the decision task',async({page})=>{
+  await page.setViewportSize({width:390,height:844});await setup(page,false);
+  await page.getByRole('button',{name:'開啟視覺化',exact:true}).click();
+  await page.getByRole('button',{name:'還聽不出來',exact:true}).scrollIntoViewIfNeeded();
+  const primary=page.getByRole('button',{name:'播放原曲範圍',exact:true});
+  const box=(await primary.boundingBox())!;
+  expect(box.y).toBeGreaterThanOrEqual(0);expect(box.y+box.height).toBeLessThan(844);
+  await primary.focus();await page.keyboard.press('Enter');
+  await expect(page.getByRole('button',{name:'暫停播放',exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'暫停播放',exact:true}).click();
+});
+
+test('workflow range review labels adopted roots rather than the unadopted comparison tone',async({page})=>{
+  const server=await setup(page);server.version=1;server.document.segments[0]={...server.document.segments[0],root:4,status:'confirmed'};
+  await page.reload();
+  await page.getByRole('button',{name:'參考音 C3',exact:true}).click();
+  await page.getByRole('button',{name:'暫停播放',exact:true}).click();
+  await page.getByRole('button',{name:'播放選取範圍',exact:true}).click();
+  await expect(page.getByLabel('目前播放聲音')).toContainText('原曲＋已採用根音');
+  await expect(page.getByLabel('目前播放聲音')).not.toContainText('比較音');
+  expect(server.writes).toBe(0);
+});
+
+test('workflow sound label exposes an enabled metronome even when tools are folded',async({page})=>{
+  await setup(page);
+  await page.getByLabel('播放時加入節拍聲').check();
+  await page.getByText('練習設定與進階工具',{exact:true}).click();
+  await page.getByRole('button',{name:'播放原曲範圍',exact:true}).click();
+  await expect(page.getByLabel('目前播放聲音')).toContainText('原曲＋節拍聲');
+  await page.getByRole('button',{name:'暫停播放',exact:true}).click();
+});
+
+test('spectrum resolves E2 then A2 at source time, preserves antiphase stereo and silence',()=>{
+  const rate=SPECTRUM_RATE;
+  const samples=Float32Array.from({length:4*rate},(_,i)=>.3*Math.sin(2*Math.PI*midiHz(i<2*rate?40:45)*i/rate));
+  const inverse=Float32Array.from(samples,n=>-n);
+  const mono=makeSpectrum([samples],rate),stereo=makeSpectrum([samples,inverse],rate);
+  function peakAt(time:number){const col=Math.floor(time*rate/stereo.hop),row=Array.from({length:stereo.rows},(_,r)=>r).reduce((a,b)=>stereo.values[col*stereo.rows+a]>stereo.values[col*stereo.rows+b]?a:b);return spectrumMidi(row);}
+  expect(peakAt(.8)).toBeCloseTo(40,0);expect(peakAt(2.8)).toBeCloseTo(45,0);
+  expect(stereo.peak).toBeCloseTo(mono.peak,5);expect(stereo.duration).toBe(4);
+  const silent=makeSpectrum([new Float32Array(rate)],rate);
+  expect(silent.peak).toBe(-120);expect(spectrumColor(-120,-120,60)).toEqual([20,36,64]);
+});
+
+test('spectrum worker, zoom, drag, keyboard and loop use local time without writes',async({page})=>{
+  const server=await setup(page);server.version=1;
+  server.document.source.source_start=42;
+  server.score.song.source_start_seconds=42;
+  server.document.segments[0]={...server.document.segments[0],root:3,status:'confirmed'};
+  server.document.segments[1]={...server.document.segments[1],root:10,status:'confirmed'};
+  await page.reload();const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.getByRole('button',{name:'開啟視覺化',exact:true}).click();
+  await page.getByRole('button',{name:'產生低頻圖',exact:true}).click();
+  await expect(page.getByLabel('頻譜狀態')).toContainText('已就緒',{timeout:30000});
+  await expect(page.locator('.root-spectrum canvas')).toHaveAttribute('data-ready','true');
+  await expect(page.getByLabel('原分析和弦時間軸').getByRole('button')).toHaveCount(2);
+  await expect(page.getByLabel('已採用根音音級圖').getByRole('button')).toHaveCount(2);
+  for(const width of [320,390,768,1440]){
+    await page.setViewportSize({width,height:1000});
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  }
+  const chart=page.getByRole('slider',{name:'頻譜定位時間'});await chart.scrollIntoViewIfNeeded();const box=(await chart.boundingBox())!;
+  await page.mouse.move(box.x+box.width*.2,box.y+box.height*.5);await page.mouse.down();
+  await page.mouse.move(box.x+box.width*.7,box.y+box.height*.5,{steps:8});await page.mouse.up();
+  const start=Number(await page.getByLabel('連聽起點秒數').inputValue()),end=Number(await page.getByLabel('連聽終點秒數').inputValue());
+  expect(start).toBeCloseTo(1.6,1);expect(end).toBeCloseTo(5.6,1);
+  await page.getByRole('button',{name:'放大 A–B',exact:true}).click();
+  await expect(page.locator('.rs-time-axis')).toContainText('0:01.6');
+  await chart.focus();await page.keyboard.press('ArrowRight');
+  expect(Number(await chart.getAttribute('aria-valuenow'))).toBeCloseTo(1.7,1);
+  await page.getByRole('button',{name:'循環 A–B 原曲',exact:true}).click();
+  await expect(page.getByRole('button',{name:'暫停圖表播放',exact:true})).toBeVisible();
+  await expect.poll(async()=>Number(await chart.getAttribute('aria-valuenow'))).toBeGreaterThan(start);
+  await page.getByRole('button',{name:'暫停圖表播放',exact:true}).click();
+  await expect(page.getByLabel('根音保存狀態')).toHaveText('已保存');
+  expect(server.writes).toBe(0);expect(server.scoreWrites).toBe(0);expect(errors).toEqual([]);
+  expect(server.document.source.source_start).toBe(42);
+});
+
+test('spectrum plays only source with adopted roots, cancels trial tones and resumes without adding them',async({page})=>{
+  await captureRangeAudio(page);
+  const server=await setup(page);server.version=1;
+  server.document.segments[0]={...server.document.segments[0],root:4,status:'confirmed'};
+  server.document.segments[1]={...server.document.segments[1],root:7,status:'confirmed'};
+  await page.reload();
+  await page.getByRole('button',{name:'參考音 E2',exact:true}).click();
+  await expect(page.getByRole('button',{name:'暫停',exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'開啟視覺化',exact:true}).click();
+  // This action must stop the already sounding trial and begin source-only playback.
+  await page.getByRole('button',{name:'聽目前圖中範圍',exact:true}).click();
+  await expect(page.getByRole('button',{name:'暫停圖表播放',exact:true})).toBeVisible();
+  await expect(page.getByLabel('根音練習聲音')).toHaveValue('source');
+  const initial=await page.evaluate(()=>(window as any).__rangeAudio);
+  const trial=initial.filter((r:any)=>r.kind==='tone'&&r.event==='start');
+  expect(trial.length).toBeGreaterThan(0);
+  for(const tone of trial)expect(initial.some((r:any)=>r.kind==='tone'&&r.event==='stop'&&r.id===tone.id)).toBe(true);
+  await page.getByRole('button',{name:'暫停圖表播放',exact:true}).click();
+  await page.getByLabel('連聽起點秒數').fill('1');await page.getByLabel('連聽終點秒數').fill('2.2');
+  await page.getByRole('button',{name:'循環 A–B 原曲',exact:true}).click();
+  await expect(page.getByRole('button',{name:'暫停圖表播放',exact:true})).toBeVisible();
+  await page.waitForTimeout(1500); // Cross the 1.2-second loop boundary.
+  await expect(page.getByLabel('連聽目前區段')).toContainText('只有原曲');
+  await page.getByRole('button',{name:'暫停',exact:true}).click();
+  await page.getByRole('button',{name:'播放範圍',exact:true}).click();
+  await expect(page.getByRole('button',{name:'暫停',exact:true})).toBeVisible();
+  await expect(page.getByLabel('根音練習聲音')).toHaveValue('source');
+  await page.waitForTimeout(250);
+  await page.getByRole('button',{name:'暫停圖表播放',exact:true}).click();
+  await page.getByRole('button',{name:'播放選取範圍',exact:true}).click();
+  await expect(page.getByRole('button',{name:'暫停範圍',exact:true})).toBeVisible();
+  await expect(page.getByLabel('根音練習聲音')).toHaveValue('source');
+  await page.getByRole('button',{name:'暫停範圍',exact:true}).click();
+  const records=await page.evaluate(()=>(window as any).__rangeAudio);
+  expect(records.filter((r:any)=>r.kind==='tone'&&r.event==='start')).toEqual(trial);
+  const sources=records.filter((r:any)=>r.kind==='source'&&r.event==='start');
+  expect(sources.length).toBeGreaterThanOrEqual(4);
+  expect(sources.at(-1).loopStart).toBe(1);expect(sources.at(-1).loopEnd).toBe(2.2);
+  expect(sources.at(-1).offset).toBeGreaterThanOrEqual(1);expect(sources.at(-1).offset).toBeLessThan(2.2);
+  expect(server.writes).toBe(0);expect(server.scoreWrites).toBe(0);
+});
+
+test('spectrum missing audio and cancellation keep the saved roots available',async({page})=>{
+  const server=await setup(page);
+  await page.route('**/api/v1/jobs/root-job/root-practice/audio?*',r=>r.fulfill({status:404}));
+  await page.getByRole('button',{name:'開啟視覺化',exact:true}).click();
+  await page.getByRole('button',{name:'產生低頻圖',exact:true}).click();
+  await expect(page.getByLabel('頻譜狀態')).toContainText('無法取得');
+  await expect(page.getByLabel('已採用根音音級圖')).toBeVisible();
+  let release:()=>void=()=>{};const pending=new Promise<void>(resolve=>{release=resolve;});
+  await page.route('**/api/v1/jobs/root-job/root-practice/audio?*',async r=>{await pending;await r.fulfill({body:wav(),contentType:'audio/wav'}).catch(()=>{});});
+  await page.getByRole('button',{name:'產生低頻圖',exact:true}).click();
+  await page.getByRole('button',{name:'取消產生',exact:true}).click();release();
+  await expect(page.getByLabel('頻譜狀態')).toContainText('已取消');
+  await page.waitForTimeout(300);await expect(page.locator('.root-spectrum canvas')).toHaveAttribute('data-ready','false');
+  expect(server.writes).toBe(0);expect(server.scoreWrites).toBe(0);
+});
+
+test('spectrum hides chords from mismatched or replaced original sources',async({page})=>{
+  const server=await setup(page);
+  await page.getByRole('button',{name:'開啟視覺化',exact:true}).click();
+  server.score.song.source_start_seconds=42;
+  await page.getByRole('button',{name:'產生低頻圖',exact:true}).click();
+  await expect(page.getByLabel('頻譜狀態')).toContainText('已隱藏和弦層');
+  await expect(page.getByLabel('原分析和弦時間軸').getByRole('button')).toHaveCount(0);
+  await expect(page.locator('.root-spectrum canvas')).toHaveAttribute('data-ready','true');
+  server.score.song.source_start_seconds=0;
+  await page.route('**/api/v1/jobs/root-job/root-practice/audio?*',r=>{
+    server.score.chords[0].symbol='F';
+    return r.fulfill({body:wav(),contentType:'audio/wav'});
+  });
+  await page.getByRole('button',{name:'重新產生低頻圖',exact:true}).click();
+  await expect(page.getByLabel('頻譜狀態')).toContainText('已就緒。 原分析來源無法核對');
+  await expect(page.getByLabel('原分析和弦時間軸').getByRole('button')).toHaveCount(0);
+  expect(server.writes).toBe(0);expect(server.scoreWrites).toBe(0);
+});
+
+test('spectrum cancellation terminates an active worker and ignores its late result',async({page})=>{
+  const server=await setup(page);
+  await page.evaluate(()=>{
+    const RealWorker=window.Worker;
+    (window as any).__spectrumWorker={started:false,terminated:false};
+    window.Worker=class extends RealWorker {
+      constructor(url:string|URL,options?:WorkerOptions){
+        super(url,options);
+        this.addEventListener('message',event=>{
+          if(!event.data.result)return;
+          event.stopImmediatePropagation();
+          // Simulate an already queued completion arriving after termination.
+          const callback=this.onmessage;
+          (window as any).__lateSpectrum=()=>callback?.call(this,new MessageEvent('message',{data:event.data}));
+        });
+      }
+      postMessage(message:any,transfer:Transferable[]){
+        (window as any).__spectrumWorker.started=true;
+        super.postMessage(message,transfer);
+      }
+      terminate(){(window as any).__spectrumWorker.terminated=true;super.terminate();}
+    } as typeof Worker;
+  });
+  await page.getByRole('button',{name:'開啟視覺化',exact:true}).click();
+  await page.getByRole('button',{name:'產生低頻圖',exact:true}).click();
+  await expect.poll(()=>page.evaluate(()=>typeof (window as any).__lateSpectrum)).toBe('function');
+  await page.getByRole('button',{name:'取消產生',exact:true}).click();
+  await page.evaluate(()=>(window as any).__lateSpectrum());
+  await expect(page.getByLabel('頻譜狀態')).toContainText('已取消');
+  await expect(page.locator('.root-spectrum canvas')).toHaveAttribute('data-ready','false');
+  expect(await page.evaluate(()=>(window as any).__spectrumWorker)).toEqual({started:true,terminated:true});
+  expect(server.writes).toBe(0);expect(server.scoreWrites).toBe(0);
+});
 
 test('document and clock preserve source time, uncertainty and split/merge semantics',()=>{
   const d=parseRootDocument(JSON.stringify(seed));
@@ -73,7 +414,7 @@ test('manual twelve notes, split/merge, backup restore and sequential decisions 
   const download=page.waitForEvent('download');await page.getByRole('button',{name:'下載完整練習'}).click();expect((await download).suggestedFilename()).toBe('root-practice-root-job.json');
   const restored=structuredClone(seed) as any;restored.segments[1].root=2;restored.segments[1].status='confirmed';
   await page.getByLabel('還原根音備份').setInputFiles({name:'roots.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(restored))});await expect.poll(()=>server.document.segments[1].root,{timeout:15000}).toBe(2);
-  await page.getByRole('button',{name:'連聽我的行進'}).click();await expect(page.getByRole('button',{name:'暫停',exact:true})).toBeVisible();expect(server.scoreWrites).toBe(0);
+  await page.getByRole('button',{name:'回顧我的行進（含已採用根音）'}).click();await expect(page.getByRole('button',{name:'暫停',exact:true})).toBeVisible();expect(server.scoreWrites).toBe(0);
   await page.getByRole('button',{name:'暫停',exact:true}).click();
   await page.getByLabel('根音練習播放位置').evaluate((el:HTMLInputElement)=>{Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value')!.set!.call(el,'6');el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));});
   await expect(page.getByLabel('根音練習播放位置')).toHaveValue('6');await page.getByRole('button',{name:'播放行進',exact:true}).click();await expect(page.getByRole('button',{name:'暫停',exact:true})).toBeVisible();
@@ -228,7 +569,7 @@ test('selected range loops known roots with source-only gaps, clips boundaries a
 
   await page.getByLabel('連聽起點秒數').fill('1');await page.getByLabel('連聽終點秒數').fill('3');
   await page.getByRole('button',{name:'播放選取範圍',exact:true}).click();await expect(page.getByRole('button',{name:'暫停範圍',exact:true})).toBeVisible();
-  await page.waitForTimeout(4250);
+  await expect.poll(()=>page.evaluate(()=>(window as any).__rangeAudio.filter((r:any)=>r.kind==='tone'&&r.event==='start').length),{timeout:8000}).toBeGreaterThanOrEqual(3);
   let records=await page.evaluate(()=>(window as any).__rangeAudio);
   const source=records.find((r:any)=>r.kind==='source'&&r.event==='start'),tones=records.filter((r:any)=>r.kind==='tone'&&r.event==='start');
   expect(source.loop).toBe(true);expect(source.loopStart).toBe(1);expect(source.loopEnd).toBe(3);expect(source.offset).toBe(1);
@@ -423,6 +764,9 @@ test('metrical practice uses bar and beat units for candidate requests, adoption
   const ranges:any[]=[];page.on('request',r=>{if(r.url().endsWith('/root-candidates/rank'))ranges.push(r.postDataJSON());});await page.reload();
   await expect(page.locator('.root-segment-heading h2')).toContainText('整小節');await expect.poll(()=>ranges.at(-1)?.end).toBe(2);
   await page.getByRole('button',{name:'參考音 E2',exact:true}).click();await page.getByRole('button',{name:'採用這個根音',exact:true}).click();await expect.poll(()=>server.version).toBe(2);
+  // Subdivision preserves the current playback position. Freeze it before asserting which half is selected.
+  await page.getByRole('button',{name:'暫停',exact:true}).click();
+  await page.getByLabel('小節對齊全曲定位',{exact:true}).evaluate((el:HTMLInputElement)=>{Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value')!.set!.call(el,'0');el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));});
   await page.getByRole('button',{name:'半小節一段',exact:true}).click();await page.getByRole('button',{name:'套用這份分段',exact:true}).click();await expect.poll(()=>server.document.segments.length).toBe(5);
   expect(server.document.segments[0].root).toBe(4);expect(server.document.segments[1].root).toBe(4);
   await page.getByRole('button',{name:'下一段',exact:true}).click();await expect(page.locator('.root-segment-heading h2')).toContainText('1/2 小節');await expect.poll(()=>ranges.at(-1)?.start).toBe(1);expect(ranges.at(-1).end).toBe(2);

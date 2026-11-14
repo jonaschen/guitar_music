@@ -1,5 +1,7 @@
 # Codex 自主開發工作表
 
+**2026-11-14 最新工作已完成：** 使用者要求故事清單、故事地圖、排序代辦及 TDD 全部完成，暫時無法測試。partner-session 統一實作／發布，programmer-session 唯讀審查。[故事與代辦](Root_Practice_Stories_2026-11-14.md) T1–T5 全部 `done`，涵蓋採用目標、原曲播放、工具折收、持續練習、保存與交付。41 項完整回歸、最終文字標示重查、TypeScript／build、兩曲真音訊四尺寸通過；每曲 1 source／0 tone、0 寫稿，166 其他網站檔案不變。[驗證摘要](evaluation/root-workflow-2026-11-14.json)。同 `/visual-practice-2026-11-14/` 已更新，回退在 `output/backups/root-workflow-2026-11-14/`。本輪沒有剩餘可驗證開發待辦；主觀操作是否順手單列 `awaiting_human`，使用者方便後自然使用回饋即可，不要求立即試用。主旋律與新自動辨識未擴張。
+
 更新：2026-11-06。這是接續工作用的短表；最新產品決策仍見 [Next_Decision.md](Next_Decision.md)。
 
 **負責人變更：** 使用者指定 `session-developer` 負責開發交付，原 session 轉顧問；接手狀態、第一段工作及每段審查方式見 [交接文件](Session_Developer_Handoff_2026-11-05.md)。已收到接任確認與首段計畫，後續透過跨 session 訊息直接回報顧問；未建立定時監看排程。

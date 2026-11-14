@@ -1,0 +1,228 @@
+{
+  "date": "2026-11-14",
+  "scope": "T1-T5 existing root-practice workflow usability",
+  "status": "done",
+  "entry": "http://localhost:5273/visual-practice-2026-11-14/?practice=roots&visual=1",
+  "stories": [
+    "US1",
+    "US2",
+    "US3",
+    "US4",
+    "US5",
+    "US6"
+  ],
+  "tasks": {
+    "T1": "done",
+    "T2": "done",
+    "T3": "done",
+    "T4": "done",
+    "T5": "done"
+  },
+  "tests": {
+    "full_root_regression": {
+      "passed": 41,
+      "failed": 0,
+      "elapsed": "1.7m"
+    },
+    "final_cursor_label_targeted_regression": {
+      "passed": 1,
+      "failed": 0
+    },
+    "typescript": "passed",
+    "production_build": "passed; existing AlphaTab large chunk warning"
+  },
+  "tdd": {
+    "red": [
+      {
+        "task": "T1",
+        "result": "missing 目前判斷段落; target workflow test failed before implementation"
+      },
+      {
+        "task": "T2",
+        "result": "missing 主要播放範圍; source playback workflow test failed before implementation"
+      },
+      {
+        "task": "T3",
+        "result": "missing details.root-advanced; corrected null matcher in test then reran to verify actual missing UI"
+      },
+      {
+        "task": "T4",
+        "result": "Journey failed before implementation: missing adoption target; grid mismatch scenario failed waiting for missing settings disclosure"
+      },
+      {
+        "task": "T5-review",
+        "result": "actual playback interval absent; archive restore preview hidden while tools closed"
+      },
+      {
+        "task": "T5-review-loop",
+        "result": "real source.loop true despite unchecked looping; test expected false and failed"
+      },
+      {
+        "task": "T3-mobile",
+        "result": "Primary button was offscreen at y=-1684px when working at decision controls on 390px; expected y >= 0"
+      },
+      {
+        "task": "T5-sound-label",
+        "result": "range review incorrectly labeled comparison tone instead of adopted roots"
+      },
+      {
+        "task": "T5-metronome-label",
+        "result": "enabled metronome hidden from primary sound description after folding tools"
+      },
+      {
+        "task": "T1-visual-review",
+        "result": "Cursor segment label did not say it described the playback cursor, next to a different adoption target; added assertion failed before wording fix"
+      }
+    ],
+    "green": [
+      {
+        "tasks": [
+          "T1",
+          "T2",
+          "T3",
+          "T4"
+        ],
+        "workflow_tests_passed": 5,
+        "typescript": "passed",
+        "remaining": "full regression, real-song browser, responsive visual review and handoff"
+      },
+      {
+        "tasks": [
+          "T5-review",
+          "T5-review-loop"
+        ],
+        "workflow_tests_passed": 8,
+        "typescript": "passed"
+      },
+      {
+        "task": "T5",
+        "full_root_practice_passed": 39,
+        "mobile_player": "remains visible at adoption controls"
+      },
+      {
+        "task": "T5-final-regression",
+        "full_root_practice_passed": 41,
+        "failed": 0,
+        "elapsed": "1.7m",
+        "typescript": "passed"
+      },
+      {
+        "task": "T1-final-wording",
+        "targeted_regression_passed": 1,
+        "production_build": "passed; existing AlphaTab size warning"
+      }
+    ]
+  },
+  "browser": [
+    {
+      "job": "83a3643ab3814172a046cebf709f3413",
+      "duration": 258.1066666666667,
+      "generation_ms": 3430,
+      "distinct_sampled_colors": 7902,
+      "original_chords_in_view": 20,
+      "range": [
+        2.5,
+        6.499999435329407
+      ],
+      "playback_position": 2.7586666666666666,
+      "adoption_target": "將記錄到 第 4 段 · 0:05.4–0:07.4",
+      "selected_segment": "第 4 段 F 0:05.4",
+      "tools_fold_preserved_source": true,
+      "mobile_player_and_decision_unobscured": true,
+      "audio": {
+        "sources": 1,
+        "tones": 0
+      },
+      "widths": [
+        320,
+        390,
+        768,
+        1440
+      ],
+      "source_score_unchanged": true,
+      "practice_unchanged": true,
+      "unexpected_writes": [],
+      "page_errors": []
+    },
+    {
+      "job": "a3be29912a7045448765290d7cba2f6c",
+      "duration": 304.47167800453514,
+      "generation_ms": 3465,
+      "distinct_sampled_colors": 8272,
+      "original_chords_in_view": 15,
+      "range": [
+        2.5,
+        6.499999435329407
+      ],
+      "playback_position": 2.7373333333333334,
+      "adoption_target": "將記錄到 第 4 小節 · 整小節 · 第 1–4 拍 · 0:06.3–0:08.3",
+      "selected_segment": "第 4 段 待聽 0:06.3",
+      "tools_fold_preserved_source": true,
+      "mobile_player_and_decision_unobscured": true,
+      "audio": {
+        "sources": 1,
+        "tones": 0
+      },
+      "widths": [
+        320,
+        390,
+        768,
+        1440
+      ],
+      "source_score_unchanged": true,
+      "practice_unchanged": true,
+      "unexpected_writes": [],
+      "page_errors": []
+    }
+  ],
+  "publication": {
+    "protected_site_files": 166,
+    "changed_protected_files": [],
+    "candidate_files": {
+      "index.html": "1c535678aeab7ed6c12ccd45bd706b022d43b91e86ee01f3e4bfa09d8a69402c",
+      "assets/alphaTab.worklet-C9PLHa2u.js": "f47e9cd065a042e2327bef9fb88c9fd48eacb4594f2793bc020baa2b889cdfcd",
+      "assets/alphaTab.worker-BQCj0a_w.js": "e48f42ed0c6e5ac6df54ce21dafb771972ac600357567a4eb2174da876ced3b2",
+      "assets/index-CrYIe-KU.js": "ee8f33534922b7debb3d2653427d112c639bbe290f9046c43b702d67e610622a",
+      "assets/rootSpectrum.worker-B5N4ZDsn.js": "ea24d2a1632004689ef14468b51993fb53c96002796dff5df06a983ac30e337a",
+      "assets/index-M3DAulMc.js": "9834e615b3169de5639e61d960167f3e8d207775e99e1b743136e5aa977c59da",
+      "assets/index-CRzzGO1q.css": "1d936870eb49edaf454fd276c52fa22295638af9c9afcc28f4be0a4609ce174c",
+      "assets/index-C_3guKSg.js": "fce8ab101359e1c8fdd12ef2874cb209d983e40b30702a415afacf79b709c6f5",
+      "assets/AlphaTabScore-DyfDImao.js": "2726a08f9ae8bdc752a35b7b756531891971e61cf07ac78bf022897267f242fa",
+      "assets/index-C3wj2p3m.js": "3f58331ea86486f46a7157b7127570bbb91018c68f465364141df868ad9a0578",
+      "assets/AlphaTabScore-B8J2d53j.js": "57db3ebb90604a3d66f826102303d74c6a273983f6ee1b2cd2c5dd5ab7369234",
+      "assets/AlphaTabScore-9G327o1H.js": "19f8593520d151ec557dc48a9a2e201fffa65f21e04f14f0b38f0cf4da87097b",
+      "assets/index-lvAv2Av3.css": "7013b706249c01ac87b9411b59f2e698c81153cf7fe4effc2e9fffb5784bc9e0",
+      "assets/Bravura-BVtSfpnN.woff2": "181e0e7c4889f9ad57dde0a11988fa61b941617aa499ecdb9dfd4713896c2b19",
+      "assets/AlphaTabScore-DrutCkgH.js": "4aa00e73d4beb8295f833921ecfac3b794f6303b59df0149a6cd9b499bbeb8d8",
+      "assets/AlphaTabScore-BWLq9fbn.js": "541d4841806480036bc366984cbb3f8c7ac99848e8060812396313e308a938d6",
+      "assets/index-Dew0aQLE.js": "a95a8598a8357582e4b46826f905e5e6da6730885d941f25b207bcb2f02f1d1c"
+    }
+  },
+  "prior_browser_failure": "Script reused chart coordinates after choosing a segment scrolled the page. Recenter and reread the chart box before dragging; final two-song check passed.",
+  "visual_review": "Inspected desktop 1440px and mobile 390px decision viewport; player and decision button remain usable; clarified playback cursor label distinct from adoption target",
+  "collaboration": "programmer-session read-only review; raised issues reproduced and fixed; partner-session owns integration and publication",
+  "source_sha256": {
+    "frontend/src/RootPractice.tsx": "dc98c4e402d7911bfca5cab0efe1b958f13c2ac2aa770ab03ef0907cca0c1035",
+    "frontend/src/rootPractice.css": "1c2180497b9bd6b1f78c303890d8303b15e44606c091113468892de420448f58",
+    "frontend/src/RootSpectrogram.tsx": "77311cd23bfb7d5df4cd1e0ab710ebf1441745085449eff6fee85bd5c49375ec",
+    "frontend/src/rootSpectrum.ts": "d20801b8222ad7be58de608e89b270300c96d8d73f41ca5c7fb0375f813d8711",
+    "frontend/src/rootSpectrum.worker.ts": "6892e4e314c3f8970d2a4f4475a1fe89cba8cb4faf26699e41cd6380e7fb61cc",
+    "frontend/src/rootSpectrogram.css": "d96d2872da5aaef362e1db40d63307f93dae99819c64fa838685d768d69e276f",
+    "frontend/e2e/root-practice.spec.ts": "f09d65c1a33f99646203c014a0452dee19389f42d828a206acf314415fb2de4a",
+    "frontend/scripts/check-root-workflow.mjs": "c9aefd8dc39dbb9f77c6ab8aa864423939ded1c42960a0ae5c2ccc68238624e5"
+  },
+  "backup": "output/backups/root-workflow-2026-11-14/",
+  "preserved": {
+    "backend_unchanged": true,
+    "service_not_restarted": true,
+    "database_not_restored": true,
+    "source_score_and_saved_practice_unchanged_in_both_readonly_runs": true
+  },
+  "human_usability": "awaiting_human; user does not need to test now",
+  "limits": [
+    "No new music accuracy claim",
+    "No new automatic bass/root model",
+    "Responsive browser widths, not physical mobile-device testing",
+    "Original three-stage harmonic-analysis expansion remains a separate plan"
+  ]
+}

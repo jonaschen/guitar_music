@@ -1,0 +1,83 @@
+{
+  "date": "2026-11-14",
+  "change": "Spectrogram playback and resume use original audio only; existing explicit audition retained",
+  "tests": {
+    "full_root_practice_passed": 30,
+    "typescript": "passed",
+    "production_build": "passed"
+  },
+  "browser": [
+    {
+      "job": "83a3643ab3814172a046cebf709f3413",
+      "duration": 258.1066666666667,
+      "generation_ms": 5071,
+      "distinct_sampled_colors": 7902,
+      "original_chords_in_view": 20,
+      "range": [
+        2.5,
+        6.500000137466568
+      ],
+      "playback_position": 2.7053333333333334,
+      "audio": {
+        "sources": 1,
+        "tones": 0
+      },
+      "widths": [
+        320,
+        390,
+        768,
+        1440
+      ],
+      "source_score_unchanged": true,
+      "practice_unchanged": true,
+      "unexpected_writes": [],
+      "page_errors": []
+    },
+    {
+      "job": "a3be29912a7045448765290d7cba2f6c",
+      "duration": 304.47167800453514,
+      "generation_ms": 3981,
+      "distinct_sampled_colors": 8272,
+      "original_chords_in_view": 15,
+      "range": [
+        2.5,
+        6.500000137466568
+      ],
+      "playback_position": 2.7373333333333334,
+      "audio": {
+        "sources": 1,
+        "tones": 0
+      },
+      "widths": [
+        320,
+        390,
+        768,
+        1440
+      ],
+      "source_score_unchanged": true,
+      "practice_unchanged": true,
+      "unexpected_writes": [],
+      "page_errors": []
+    }
+  ],
+  "preservation": {
+    "protected_site_files": 166,
+    "changed_protected_files": [],
+    "candidate_files": {
+      "index.html": "5876aa92f099fb9d70e6e625ad1b1127f4426bb3e6effa11e3d40d6fd7ddaf8e",
+      "assets/alphaTab.worklet-C9PLHa2u.js": "f47e9cd065a042e2327bef9fb88c9fd48eacb4594f2793bc020baa2b889cdfcd",
+      "assets/alphaTab.worker-BQCj0a_w.js": "e48f42ed0c6e5ac6df54ce21dafb771972ac600357567a4eb2174da876ced3b2",
+      "assets/rootSpectrum.worker-B5N4ZDsn.js": "ea24d2a1632004689ef14468b51993fb53c96002796dff5df06a983ac30e337a",
+      "assets/index-M3DAulMc.js": "9834e615b3169de5639e61d960167f3e8d207775e99e1b743136e5aa977c59da",
+      "assets/index-CRzzGO1q.css": "1d936870eb49edaf454fd276c52fa22295638af9c9afcc28f4be0a4609ce174c",
+      "assets/AlphaTabScore-DyfDImao.js": "2726a08f9ae8bdc752a35b7b756531891971e61cf07ac78bf022897267f242fa",
+      "assets/index-C3wj2p3m.js": "3f58331ea86486f46a7157b7127570bbb91018c68f465364141df868ad9a0578",
+      "assets/AlphaTabScore-B8J2d53j.js": "57db3ebb90604a3d66f826102303d74c6a273983f6ee1b2cd2c5dd5ab7369234",
+      "assets/Bravura-BVtSfpnN.woff2": "181e0e7c4889f9ad57dde0a11988fa61b941617aa499ecdb9dfd4713896c2b19",
+      "assets/AlphaTabScore-BWLq9fbn.js": "541d4841806480036bc366984cbb3f8c7ac99848e8060812396313e308a938d6",
+      "assets/index-Dew0aQLE.js": "a95a8598a8357582e4b46826f905e5e6da6730885d941f25b207bcb2f02f1d1c"
+    }
+  },
+  "prior_failure": "One old loop test saw two instead of three scheduled tone starts after fixed 4250ms; changed to wait for actual third event within 8s while preserving pitch/time assertions; full run passed",
+  "next_change": "Workflow usability revision is separately tracked in Root_Practice_Stories_2026-11-14.md"
+}

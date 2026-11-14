@@ -1,0 +1,92 @@
+{
+  "date": "2026-11-14",
+  "purpose": "Personal chord and root progression practice; frequency clues plus human decisions",
+  "entry": "http://localhost:5273/visual-practice-2026-11-14/?practice=roots&visual=1",
+  "collaboration": {
+    "implementation": "partner-session",
+    "read_only_review": "programmer-session",
+    "source_consistency_issue": "Resolved with source metadata and original-score snapshots bracketing fingerprint-checked audio"
+  },
+  "tests": {
+    "full_root_practice": {
+      "passed": 29,
+      "failed": 0
+    },
+    "typescript": "passed",
+    "production_build": "passed; existing AlphaTab large chunk warning",
+    "prior_failures": [
+      "Old metrical test assumed playback stayed in first half; now pauses and seeks to zero before subdivision; original assertions retained",
+      "One real-browser run did not observe a valid cursor after fixed 1.3s wait; now requires actual cursor advancement within 5s; final two-song run passed"
+    ]
+  },
+  "browser": [
+    {
+      "job": "83a3643ab3814172a046cebf709f3413",
+      "duration": 258.1066666666667,
+      "generation_ms": 3557,
+      "distinct_sampled_colors": 7902,
+      "original_chords_in_view": 20,
+      "range": [
+        2.5,
+        6.500000137466568
+      ],
+      "playback_position": 2.7373333333333334,
+      "widths": [
+        320,
+        390,
+        768,
+        1440
+      ],
+      "source_score_unchanged": true,
+      "practice_unchanged": true,
+      "unexpected_writes": [],
+      "page_errors": []
+    },
+    {
+      "job": "a3be29912a7045448765290d7cba2f6c",
+      "duration": 304.47167800453514,
+      "generation_ms": 3526,
+      "distinct_sampled_colors": 8272,
+      "original_chords_in_view": 15,
+      "range": [
+        2.5,
+        6.500000137466568
+      ],
+      "playback_position": 2.7053333333333334,
+      "widths": [
+        320,
+        390,
+        768,
+        1440
+      ],
+      "source_score_unchanged": true,
+      "practice_unchanged": true,
+      "unexpected_writes": [],
+      "page_errors": []
+    }
+  ],
+  "preservation": {
+    "existing_site_files_checked": 166,
+    "existing_site_files_changed": [],
+    "backend_changed": false,
+    "service_restarted": false,
+    "database_restored": false
+  },
+  "source_sha256": {
+    "frontend/src/RootSpectrogram.tsx": "01da8c12ab7a3bb1bc7770d5ae875fb71b3bd3518db5272681643327472b7f66",
+    "frontend/src/rootSpectrum.ts": "d20801b8222ad7be58de608e89b270300c96d8d73f41ca5c7fb0375f813d8711",
+    "frontend/src/rootSpectrum.worker.ts": "6892e4e314c3f8970d2a4f4475a1fe89cba8cb4faf26699e41cd6380e7fb61cc",
+    "frontend/src/rootSpectrogram.css": "d96d2872da5aaef362e1db40d63307f93dae99819c64fa838685d768d69e276f",
+    "frontend/src/RootPractice.tsx": "9a29c51000c1b04e09345e5c6342a375366a8c72a468527155a25de03cd880ee",
+    "frontend/e2e/root-practice.spec.ts": "7135f8bc8d17d6aca3adf1121926ed12f1ea3ab2bc785976afff713d3404eb30",
+    "frontend/scripts/check-root-spectrum.mjs": "19cb87d489148e1030a106dca2d2000ecf2538773d3fc2ce8e09fa6fd36d126b"
+  },
+  "evidence_directory": "guitarscribe/output/evaluation/root-spectrum-2026-11-14",
+  "limitations": [
+    "Mixed-audio energy, not separated bass or inferred chord roots",
+    "0.74-second FFT window smears fast changes",
+    "Adopted root chart shows pitch class without original octave",
+    "No new music accuracy or human usability result",
+    "Existing YouTube import reused; arbitrary new videos not verified"
+  ]
+}

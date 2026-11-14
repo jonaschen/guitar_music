@@ -20,3 +20,15 @@
 @media(max-width:600px){.root-grid-settings label{flex:1 1 100px}.root-grid-settings output{flex-basis:100%;padding:0}.root-grid-actions button{padding:8px 10px}.root-grid-anchor{gap:4px 12px}}
 .root-segmentation{border-bottom:1px solid #cbd5de;padding:0 0 16px;margin-bottom:20px}.root-segmentation p{font-size:14px;color:var(--rp-muted)}.root-segment-preview{background:#edf4fc;padding:16px;border-left:3px solid var(--rp-blue)}.root-segment-preview ul{max-height:220px;overflow:auto;padding-left:24px;font-size:14px}.root-progression small{max-width:140px;font-size:12px;white-space:normal}.root-segmentation summary{min-height:44px;padding:10px 0;cursor:pointer}
 .root-segment-heading{align-items:flex-start;flex-wrap:wrap}.root-segment-heading h2{flex:1 1 190px}.root-segment-heading>div{flex-shrink:0}.root-segment-heading button{white-space:nowrap}
+
+.root-practice [hidden]{display:none!important}
+.root-workflow-transport{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 0 18px;border-bottom:1px solid #cbd5de;margin-bottom:16px;position:sticky;top:0;z-index:20;background:#fff}
+.root-workflow-transport>label{display:flex;align-items:center;gap:6px;font-size:14px}
+.root-workflow-transport>div{flex:1 1 220px}.root-workflow-transport p{margin:4px 0;font-size:14px}.root-workflow-transport>span{flex-basis:100%;font-size:14px;color:var(--rp-muted)}
+.root-workspace{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:24px;align-items:start}
+.root-workspace>*{min-width:0}.root-workspace .root-spectrum{margin-top:0;padding-top:14px}.root-workspace .root-listen{padding-top:14px}
+.root-workspace .root-clues{padding:14px}.root-workspace .root-candidates{gap:6px}.root-workspace .root-candidates button{padding:8px 4px;min-height:68px}.root-workspace .root-candidates strong{font-size:26px}
+.root-workspace .root-pitch-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.root-workspace .root-volumes{grid-template-columns:1fr;gap:8px}
+.root-adoption-target{font-size:14px;font-weight:600;border-top:1px solid #cbd5de;padding-top:12px;color:var(--rp-ink)}
+.root-advanced>summary{font-weight:600}.root-advanced>.root-grid{margin-top:16px}
+@media(max-width:800px){.root-workspace{grid-template-columns:minmax(0,1fr);gap:12px}.root-workspace .root-spectrum{margin-bottom:0}.root-workspace .root-listen{padding-top:0}}
