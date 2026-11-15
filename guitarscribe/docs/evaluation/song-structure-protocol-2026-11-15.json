@@ -1,0 +1,87 @@
+{
+  "id": "song-structure-2026-11-15-v1",
+  "fixed_at": "2026-11-15T02:10:50.760179+00:00",
+  "status": "preregistered_before_predictions",
+  "upstream_commit": "18e78903c0365147a2c5d4e5e57ebf88cb7d800e",
+  "candidate_commit": "c83bc00800fe5e6edf568ace427fd35587d7d567",
+  "candidate": "all-in-one-infer pure-PyTorch port; not claimed full upstream equivalence",
+  "model": "harmonix-fold0",
+  "model_selection": "Fixed before inference, single-fold CPU feasibility baseline; not the 8-fold ensemble",
+  "device": "cpu",
+  "threads": 2,
+  "sources": [
+    {
+      "title": "膽小鬼",
+      "job": "83a3643ab3814172a046cebf709f3413",
+      "audio": "output/web-preview/work/jobs/83a3643ab3814172a046cebf709f3413/input.wav",
+      "audio_sha256": "20eec0a5cfad88d81a95b6362764ad9e350d16d661729c9c8a0f60b1fcc45423",
+      "root_source": {
+        "job_id": "83a3643ab3814172a046cebf709f3413",
+        "fingerprint": "b2cd10b791110f0f7e00d7eba2bc6817726c828d6696e68a7ec47b10ae4fab2a",
+        "duration": 258.1066666666667,
+        "source_start": 0.0
+      },
+      "root_version": 38,
+      "reference_status": "not_annotated"
+    },
+    {
+      "title": "沒那麼簡單",
+      "job": "a3be29912a7045448765290d7cba2f6c",
+      "audio": "output/web-preview/work/jobs/a3be29912a7045448765290d7cba2f6c/input.wav",
+      "audio_sha256": "c5bace9475e843af08a825e995ad4b962a98c19e2c1d519ef20c23bd26d05ade",
+      "root_source": {
+        "job_id": "a3be29912a7045448765290d7cba2f6c",
+        "fingerprint": "e8af51ef717ac29e9ae4af8dcf94c7bdd5db5aec46fecc0dc7c1cd213ec6f50d",
+        "duration": 304.47167800453514,
+        "source_start": 0.0
+      },
+      "root_version": 0,
+      "reference_status": "not_annotated"
+    }
+  ],
+  "holdout": "not yet selected; no generalization claim",
+  "resource_limits": {
+    "seconds_per_song": 1200,
+    "memory_max_bytes": 2684354560,
+    "swap_max_bytes": 536870912,
+    "cpu_quota_percent": 200
+  },
+  "quality_gate": {
+    "reference_required": true,
+    "full_song_annotation_coverage_min": 0.95,
+    "verse_and_chorus_min_instances_each_across_reference_set": 2,
+    "verse_and_chorus_min_seconds_each": 30,
+    "duration_weighted_label_accuracy_per_song_min": 0.85,
+    "verse_chorus_recall_per_song_min": 0.8,
+    "whole_chorus_omissions_max": 0,
+    "boundary_f1_3s_min": 0.8,
+    "boundary_report_windows_seconds": [
+      0.5,
+      3.0
+    ],
+    "section_correction_fraction_max": 0.25,
+    "no_reference_action": "awaiting_human; publish isolated draft review only, never a quality-pass or production default"
+  },
+  "engineering_gate": {
+    "coverage": 1,
+    "finite_ordered_nonoverlapping": true,
+    "max_endpoint_rounding_seconds": 0.05,
+    "gaps": "explicit unknown; do not claim model identified them",
+    "source_unchanged": true,
+    "root_score_unchanged": true,
+    "no_audio_upload": true
+  },
+  "labels": {
+    "intro": "前奏",
+    "verse": "主歌",
+    "chorus": "副歌",
+    "bridge": "橋段",
+    "outro": "尾奏",
+    "inst": "器樂段（間奏候選）",
+    "solo": "獨奏段（間奏候選）",
+    "break": "停頓／過渡段",
+    "start": "開頭未判定",
+    "end": "結尾未判定",
+    "unknown": "未判定"
+  }
+}

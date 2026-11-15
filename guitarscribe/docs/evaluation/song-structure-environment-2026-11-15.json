@@ -1,0 +1,26 @@
+{
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "packages": {
+    "all-in-one-infer": "3.1.0",
+    "demucs": "4.0.1",
+    "demucs-infer": "4.4.0",
+    "madmom-infer": "0.3.0",
+    "torch": "2.5.1+cpu",
+    "torchaudio": "2.5.1+cpu",
+    "numpy": "1.26.4",
+    "scipy": "1.17.1",
+    "librosa": "0.11.0",
+    "soundfile": "0.14.0",
+    "hydra-core": "1.3.8",
+    "omegaconf": "2.3.1",
+    "matplotlib": "3.9.4",
+    "contourpy": "1.3.1"
+  },
+  "upstream_commit": "18e78903c0365147a2c5d4e5e57ebf88cb7d800e",
+  "candidate_commit": "c83bc00800fe5e6edf568ace427fd35587d7d567",
+  "demucs_checkpoint": {
+    "file": "955717e8-8726e21a.th",
+    "sha256": "8726e21a993978c7ba086d3872e7608d7d5bfca646ca4aca459ffda844faa8b4"
+  },
+  "isolation": "Separate venv with readonly .pth access to existing base packages; all new installs confined to structure venv; original Demucs CLI runs in unchanged base venv."
+}
