@@ -2,9 +2,15 @@
 import {chromium} from 'playwright';
 import fs from 'node:fs/promises';
 import {createHash} from 'node:crypto';
+import {resolve,sep} from 'node:path';
+import {pathToFileURL} from 'node:url';
 const base='http://127.0.0.1:5273';
 const root=new URL('../../output/evaluation/song-structure-2026-11-15/',import.meta.url);
 const protocol=JSON.parse(await fs.readFile(new URL('protocol-v2.json',root),'utf8'));
+const option=name=>{const i=process.argv.indexOf(name);return i<0?null:process.argv[i+1]};
+const reviewData=option('--review-data')?JSON.parse(await fs.readFile(option('--review-data'),'utf8')):null;
+const evidence=option('--output-dir')?pathToFileURL(resolve(option('--output-dir'))+sep):root;
+await fs.mkdir(evidence,{recursive:true});
 const credentials=JSON.parse(await fs.readFile(new URL('../../output/web-preview/access.json',import.meta.url),'utf8'));
 const browser=await chromium.launch({executablePath:'/usr/bin/google-chrome',headless:true});
 const context=await browser.newContext({httpCredentials:{username:credentials.username,password:credentials.password,origin:base,send:'always'},viewport:{width:1440,height:1100}});
@@ -25,7 +31,8 @@ try{
     const before=await get(source.job),saved=await get(source.job+'/root-practice');
     const originalRoot=JSON.parse(await fs.readFile(new URL(source.job+'/root-before.json',root),'utf8'));
     const originalScore=JSON.parse(await fs.readFile(new URL(source.job+'/score-before.json',root),'utf8'));
-    const candidate=JSON.parse(await fs.readFile(new URL(source.job+'/run-fold0-original-demucs/candidate.json',root),'utf8'));
+    const candidate=reviewData?reviewData.find(c=>c.job===source.job):JSON.parse(await fs.readFile(new URL(source.job+'/run-fold0-original-demucs/candidate.json',root),'utf8'));
+    if(!candidate)throw Error('Missing expected review document');
     await page.getByLabel('選擇歌曲').selectOption({label:source.title});
     if(!await page.locator('audio').evaluate(a=>a.paused))throw Error('Switching songs did not stop playback');
     await page.waitForFunction(()=>document.querySelector('audio').readyState>=1);
@@ -47,7 +54,7 @@ try{
       await page.setViewportSize({width,height:1100});
       if(!await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))throw Error('Overflow '+width);
       await page.evaluate(()=>window.scrollTo(0,0));
-      await page.screenshot({fullPage:true,path:new URL(source.job+'-'+width+'.png',root).pathname});
+      await page.screenshot({fullPage:true,path:new URL(source.job+'-'+width+'.png',evidence).pathname});
     }
     const after=await get(source.job),savedAfter=await get(source.job+'/root-practice');
     if(hash(saved)!==hash(savedAfter)||hash(before.score)!==hash(after.score))throw Error('Practice or Score changed during review');
@@ -60,6 +67,6 @@ try{
     }
   }
   if(errors.length||writes.length)throw Error(JSON.stringify({errors,writes}));
-  await fs.writeFile(new URL(jobArg>=0?'browser-'+selected[0].job+'.json':'browser.json',root),JSON.stringify({results,errors,writes},null,2)+'\n');
+  await fs.writeFile(new URL(jobArg>=0?'browser-'+selected[0].job+'.json':'browser.json',evidence),JSON.stringify({results,errors,writes},null,2)+'\n');
   console.log(JSON.stringify({results,errors,writes},null,2));
 }finally{await browser.close()}

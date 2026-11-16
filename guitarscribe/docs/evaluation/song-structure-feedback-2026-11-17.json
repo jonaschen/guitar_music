@@ -1,0 +1,55 @@
+{
+  "date": "2026-11-17",
+  "tests": {
+    "backend": 60,
+    "browser": 9
+  },
+  "changed_site_files": [
+    "structure-review-2026-11-15/index.html"
+  ],
+  "model_runs": 0,
+  "feedback": "feedback/song-structure-83a3643-2026-11-17.json",
+  "browser": {
+    "results": [
+      {
+        "job": "83a3643ab3814172a046cebf709f3413",
+        "title": "膽小鬼",
+        "section_count": 13,
+        "section_time": 42.95,
+        "boundary_start": 39.95,
+        "boundary_stopped_at": 46.134472,
+        "widths": [
+          320,
+          390,
+          768,
+          1440
+        ],
+        "practice_unchanged": true,
+        "score_unchanged": true,
+        "oscillators": 0,
+        "switch_loaded_correct_source": true
+      },
+      {
+        "job": "a3be29912a7045448765290d7cba2f6c",
+        "title": "沒那麼簡單",
+        "section_count": 14,
+        "section_time": 19.92,
+        "boundary_start": 16.92,
+        "boundary_stopped_at": 22.931484,
+        "widths": [
+          320,
+          390,
+          768,
+          1440
+        ],
+        "practice_unchanged": true,
+        "score_unchanged": true,
+        "oscillators": 0,
+        "switch_loaded_correct_source": true
+      }
+    ],
+    "errors": [],
+    "writes": []
+  },
+  "independent_reference": false
+}

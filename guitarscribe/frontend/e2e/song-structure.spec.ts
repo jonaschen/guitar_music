@@ -74,3 +74,24 @@ test('sub-frame tail is explicit and directs audition to its boundary',async({pa
   await expect(tail.getByRole('button',{name:'聽這段',exact:true})).toBeDisabled();
   await expect(tail.getByRole('button',{name:'聽交界',exact:true})).toBeEnabled();
 });
+
+test('user feedback shows original numbering and separates name from boundary confirmation',async({page})=>{
+  const revised={...candidates[0],feedback:{date:'2026-11-17'},sections:[
+    {start:0,end:2,display_label:'前奏',original_numbers:[1,2],name_review_status:'user_confirmed',removed_internal_boundaries:[1]},
+    {start:2,end:4,display_label:'副歌',original_numbers:[8],name_review_status:'user_corrected'},
+    {start:4,end:8,display_label:'收尾段（較接近主歌）',original_numbers:[12],name_review_status:'user_corrected'}]};
+  await page.route('http://structure.test/**',route=>route.request().url().includes('/root-practice/audio')
+    ?route.fulfill({body:wav(),contentType:'audio/wav'})
+    :route.fulfill({contentType:'text/html',body:template.replace('__CANDIDATES__',JSON.stringify([revised,candidates[1]]))}));
+  await page.goto('http://structure.test/',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('#summary')).not.toContainText('全部待確認');
+  const intro=page.locator('.section').first();
+  await expect(intro).toContainText('原第 1、2 段');
+  await expect(intro).toContainText('名稱已確認');
+  await expect(intro).toContainText('外側邊界待確認');
+  await expect(page.locator('.section').nth(1)).toContainText('原第 8 段');
+  await expect(page.locator('.section').nth(2)).toContainText('收尾段（較接近主歌）');
+  await page.getByLabel('選擇歌曲').selectOption('1');
+  await expect(page.locator('#summary')).toContainText('全部待確認');
+  await expect(page.locator('.section')).not.toContainText('名稱已確認');
+});

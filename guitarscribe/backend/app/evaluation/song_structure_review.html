@@ -5,17 +5,18 @@
 *{box-sizing:border-box}body{margin:0;background:#f3f6f7;color:#203345;font:17px/1.6 system-ui,sans-serif}main{max-width:1080px;margin:auto;padding:24px}h1{font-size:28px;line-height:1.3}h2{font-size:21px}p{max-width:800px}button,select,a{font:inherit}button,select{min-height:44px;padding:8px 12px;border:1px solid #a6b5c3;border-radius:5px;background:white;color:#203345;cursor:pointer}button:disabled{background:#e0e6eb;color:#637382;cursor:default}button:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #185a9d;outline-offset:3px}a{color:#185a9d}header{border-top:4px solid #267b85}label{display:flex;gap:12px;align-items:center;flex-wrap:wrap}select{max-width:100%}.notice{background:#fff4d7;padding:12px 16px;border-left:4px solid #ad781c}.player{position:sticky;top:0;background:#fff;padding:12px;z-index:3;border-bottom:2px solid #267b85}audio{width:100%;display:block}#playing{font-size:15px;margin:5px 0;min-height:24px}#error{color:#9c2434}#overview{display:flex;height:28px;overflow:hidden;border:1px solid #fff;margin:22px 0 8px}#overview span{min-width:0;background:#267b85;border-right:2px solid #fff}#overview span:nth-child(even){background:#185a9d}.section{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;padding:15px 12px;border-bottom:1px solid #cbd5de;background:white}.section[aria-current=true]{border-left:4px solid #185a9d;background:#e8f1fc}.section p{margin:2px 0;font-size:14px;color:#526477}.section strong{font-size:20px}.actions{display:flex;flex-wrap:wrap;gap:8px}.primary{background:#185a9d;color:#fff}#summary{font-size:15px;color:#526477}.foot{margin-top:24px;font-size:15px}@media(max-width:600px){main{padding:16px 12px}.section{grid-template-columns:1fr}.actions button{flex:1}h1{font-size:24px}.player{padding:8px}}
 </style>
 <main><header><h1>先看懂整首，再練一個段落</h1>
-<p class="notice">這是歌曲結構的模型初稿，<strong>尚未確認正確</strong>。名稱、邊界都可能需要調整；不會更改你已保存的根音。</p></header>
+<p class="notice" id="notice">這是歌曲結構的模型初稿，<strong>尚未確認正確</strong>。名稱、邊界都可能需要調整；不會更改你已保存的根音。</p></header>
 <label>歌曲 <select id="song" aria-label="選擇歌曲"></select></label>
 <p id="summary"></p><div id="overview" aria-label="歌曲結構時間帶"></div>
 <section class="player" aria-label="原曲回聽"><audio id="audio" controls preload="metadata"></audio><p id="playing" role="status">點選下方段落，聽原曲核對。</p><p id="error" role="alert"></p></section>
 <h2>段落名稱與起訖</h2><div id="sections"></div>
 <p class="foot">「聽交界」播放段落開始前後各 3 秒；「聽這段」只播放該段。回聽只有原曲。器樂段／獨奏段先列為間奏候選；橋段與間奏分開保留。</p>
 <p><a id="practice">回到這首歌的根音練習</a></p>
-<p class="foot">此頁提供核對，尚未提供名稱修改與結構保存。現有練習進度仍在原頁。模型：All-In-One 的單一 fold0 CPU 推論候選；沒有本錄音的獨立標註，因此不報正確率。</p></main>
+<p class="foot">此頁提供核對；你提供的回饋另存並保留原模型初稿，尚未提供直接編輯與保存的操作介面。現有練習進度仍在原頁。模型：All-In-One 的單一 fold0 CPU 推論候選；沒有本錄音的獨立標註，因此不報正確率。</p></main>
 <script>
 const candidates=__CANDIDATES__;
 const song=document.querySelector('#song'),audio=document.querySelector('#audio'),rows=document.querySelector('#sections'),overview=document.querySelector('#overview'),playing=document.querySelector('#playing'),error=document.querySelector('#error');
+const originalNotice=document.querySelector('#notice').innerHTML;
 let current=null,limit=null,ticket=0;
 const stamp=t=>`${Math.floor(t/60)}:${(t%60).toFixed(1).padStart(4,'0')}`;
 candidates.forEach((c,i)=>{const o=document.createElement('option');o.value=String(i);o.textContent=c.title;song.append(o)});
@@ -39,15 +40,19 @@ async function listen(start,end,label){
 function load(){
  ++ticket;audio.pause();limit=null;current=candidates[Number(song.value)];if(!current)return;
  error.textContent='';playing.textContent='點選下方段落，聽原曲核對。';rows.replaceChildren();overview.replaceChildren();
+ if(current.feedback)document.querySelector('#notice').textContent='已記錄你的部分修正；其餘名稱與邊界仍待核對。原段號保留在每段下方，根音練習進度保持不變。';
+ else document.querySelector('#notice').innerHTML=originalNotice;
  audio.src=`/backend/api/v1/jobs/${encodeURIComponent(current.job)}/root-practice/audio?fingerprint=${encodeURIComponent(current.fingerprint)}`;
  document.querySelector('#practice').href=`/visual-practice-2026-11-14/?practice=roots&visual=1&job=${encodeURIComponent(current.job)}`;
- document.querySelector('#summary').textContent=`全長 ${stamp(current.duration)} · ${current.sections.length} 個歌曲段落初稿 · 全部待確認${current.source_start?` · 本頁 0 秒對應原錄音 ${stamp(current.source_start)}`:''}`;
+ document.querySelector('#summary').textContent=`全長 ${stamp(current.duration)} · ${current.sections.length} 個歌曲段落${current.feedback?' · 含已記錄回饋':'初稿 · 全部待確認'}${current.source_start?` · 本頁 0 秒對應原錄音 ${stamp(current.source_start)}`:''}`;
  current.sections.forEach((s,i)=>{
   const bar=document.createElement('span');bar.style.flex=String(s.end-s.start);bar.title=`${s.display_label} ${stamp(s.start)}–${stamp(s.end)}`;overview.append(bar);
   const row=document.createElement('section');row.className='section';row.dataset.index=String(i);row.setAttribute('aria-label',`第 ${i+1} 段 ${s.display_label}`);
   const text=document.createElement('div'),name=document.createElement('strong'),time=document.createElement('p'),actions=document.createElement('div');
   const tiny=s.end-s.start<.1;
-  name.textContent=`${i+1}. ${s.display_label}`;time.textContent=`${stamp(s.start)}–${stamp(s.end)} · 待確認${tiny?' · 少於 0.1 秒，請聽交界核對':''}`;text.append(name,time);actions.className='actions';
+  const nameStatus={user_confirmed:'名稱已確認',user_corrected:'名稱已修正',unreviewed:'名稱待確認'}[s.name_review_status]||'名稱待確認';
+  const review=s.original_numbers?`原第 ${s.original_numbers.join('、')} 段 · ${nameStatus} · ${s.removed_internal_boundaries?'已合併；外側邊界待確認':'邊界待確認'}`:'待確認';
+  name.textContent=`${i+1}. ${s.display_label}`;time.textContent=`${stamp(s.start)}–${stamp(s.end)} · ${review}${tiny?' · 少於 0.1 秒，請聽交界核對':''}`;text.append(name,time);actions.className='actions';
   const play=document.createElement('button');play.className='primary';play.textContent='聽這段';play.disabled=tiny;play.onclick=()=>listen(s.start,s.end,s.display_label);
   const boundary=document.createElement('button');boundary.textContent='聽交界';boundary.onclick=()=>listen(Math.max(0,s.start-3),Math.min(current.duration,s.start+3),`${s.display_label}的交界`);
   actions.append(play,boundary);row.append(text,actions);rows.append(row);

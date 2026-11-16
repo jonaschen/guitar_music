@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "job": "83a3643ab3814172a046cebf709f3413",
+  "audio_sha256": "20eec0a5cfad88d81a95b6362764ad9e350d16d661729c9c8a0f60b1fcc45423",
+  "candidate_sha256": "b786bca8fd8c42c667c80735f499f2c6139996026ad26f1992cf30adb09ecc56",
+  "reviewer": "user",
+  "date": "2026-11-17",
+  "independent_of_candidate": false,
+  "original_message": "1,2 都是前奏沒錯  但是應該可以合併 (邊界錯誤). 8. 9. 是副歌. 12. 是收尾段,比較接近主歌. 13, 14 尾奏沒錯.",
+  "operations": [
+    {
+      "kind": "merge",
+      "ids": [
+        "section-1",
+        "section-2"
+      ],
+      "label": "intro"
+    },
+    {
+      "kind": "rename",
+      "ids": [
+        "section-8",
+        "section-9"
+      ],
+      "label": "chorus"
+    },
+    {
+      "kind": "rename",
+      "ids": [
+        "section-12"
+      ],
+      "label": "closing",
+      "similar_to": "verse"
+    },
+    {
+      "kind": "confirm_name",
+      "ids": [
+        "section-13",
+        "section-14"
+      ],
+      "label": "outro"
+    }
+  ]
+}
