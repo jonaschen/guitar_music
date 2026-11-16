@@ -249,3 +249,17 @@ systemd transient unit可能在stop後立即被回收，並非只有重開機才
 保持TTL31536000、small0／Chordino／DBN恢復、旋律off，並帶原DBN/Chordino Python路徑與Node執行檔。不要拿run_local_preview.sh重建web，它是8000/app.api且會覆寫不同TTL/旋律設定。維護前仍先保存完整service啟動資料與目前環境（私下保管，不提交憑證），確認無分析工作再停機。
 
 本次重建未取到停機前submission rate的直接runtime證據：舊文字寫20/hr，但重建時未帶該值而採預設5/hr。依顧問決策保持5/hr、不未經證據擴大，這個差異明列而不宣稱全部環境完全相同；引擎、TTL及資料路徑已逐項核對。重建腳本預設亦為5，可在有新明確決策時指定GUITARSCRIBE_SUBMISSION_RATE_LIMIT。
+
+## 2026-11-17 歌曲結構保存與回退
+
+新增獨立 `work/song-structure.sqlite3`；與 `root-practice.sqlite3`、Score 分開。邀請站實際路徑為 `output/web-preview/work/song-structure.sqlite3`。備份需包含此檔，運行中的 SQLite 請用 SQLite backup API；不要直接複製活動中的 DB／WAL。外層邀請驗證仍保護所有 `/backend/api/v1/jobs/{job}/song-structure` 路由。
+
+API 的 GET／PUT 用目前來源驗證和版本 CAS；history 保留最近 50 次舊稿，export 為結構 JSON。專用 audio 路由須同時提供 fingerprint 與 audio_sha256，每次驗證目前來源，支援 Range；裁切來源使用 `analysis-source.wav` 的本地時間。
+
+兩曲初稿透過 `backend/scripts/seed_song_structure.py` 一次建立，只填不存在的結構，使用版本 0；相同稿重跑跳過，任何人工異稿拒絕覆寫。整批先檢查，但非跨歌曲交易；中途失敗保留已成功歌曲，可換新輸出目錄重跑，不重試覆蓋衝突。原模型結果、feedback sidecar、root 與 Score 不能用 seed 改寫。
+
+本輪回退備份：`output/evaluation/song-structure-editor-2026-11-17/before-deploy/`，含一致 SQLite 備份、視覺入口、網站 hash 清單及原服務設定（不提交到 Git）。只發布 `frontend/dist/assets` 與 index，不將 `dist/listening` 私有錄音複製到網站。原只讀結構核對頁保持原樣。
+
+若需回退前端，可還原備份中的 `visual-practice-2026-11-14/`；保留新結構 DB，勿覆蓋使用者後續修改。後端回退前先確認邀請站和開發站兩份 jobs DB 均無進行中分析，再使用一致環境重啟 `guitarscribe-friends-web`。不要用部署前 DB 覆蓋部署後人工進度。
+
+可重現的隔離驗證：先在 frontend 執行 `npm run build`，再執行 `npx --no-install playwright test --config playwright.structure-fullstack.config.ts`。fixture 僅使用臨時目錄與 localhost:5287，不讀寫正式 work。正式曲唯讀查核為 `node scripts/check-structure-editor.mjs`；保留兩曲來源、根音及結構前後快照，阻止寫稿請求，僅放行原本的唯讀 `root-candidates/rank` POST。

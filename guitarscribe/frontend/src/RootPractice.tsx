@@ -1,5 +1,6 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {RootPracticeGrid} from './RootPracticeGrid';
+import {RootStructureNav,type PracticeSection} from './RootStructureNav';
 import {RootSpectrogram} from './RootSpectrogram';
 import {regridRoots,subdivideRootBar,rootSegmentLabel} from './rootMetricalSegments';
 import type {RootGrid} from './rootPracticeGrid';
@@ -15,6 +16,7 @@ type SegmentPlan={document:RootDocument;bars:number;exceptions:Array<{bar:number
 type PlaybackScope='segment'|'whole'|'range'|'locate';
 export function RootPractice({job,title,api,onClose}:{job:string;title:string;api:string;onClose:()=>void}){
   const sheet=useRootPractice(api,job),doc=sheet.document;
+  const [practiceSection,setPracticeSection]=useState<PracticeSection|null>(null);
   const [selected,setSelected]=useState(''),[trial,setTrial]=useState<number|null>(null);
   const selectedSeek=useRef<{id:string;time:number}|null>(null);
   const [position,setPosition]=useState(0),[audioState,setAudioState]=useState<'idle'|'preparing'|'playing'>('idle');
@@ -137,6 +139,7 @@ export function RootPractice({job,title,api,onClose}:{job:string;title:string;ap
   function chooseSegment(id:string,time?:number,alignRange=true){
     const next=doc?.segments.find(s=>s.id===id);if(!next)return;
     const at=time??next.start;
+    if(practiceSection&&(next.end<=practiceSection.start||next.start>=practiceSection.end))setPracticeSection(null);
     selectedSeek.current=id!==segment?.id?{id,time:at}:null;
     player.stop();setSelected(id);setTrial(next.root===null?null:rootAuditionMidi(next.root));setPosition(at);
     if(alignRange){setRangeStart(String(next.start));setRangeEnd(String(next.end));}
@@ -231,6 +234,13 @@ export function RootPractice({job,title,api,onClose}:{job:string;title:string;ap
     catch(error){setNotice(error instanceof Error?error.message:'備份無法讀取。');}
   }
   function history(back:boolean){player.stop();setTrial(null);if(back)sheet.undo();else sheet.redo();setNotice('已還原練習內容，請重新選音試聽。');}
+  function selectPracticeSection(section:PracticeSection|null){
+    setPracticeSection(section);if(!doc)return;player.stop();
+    if(section){const next=doc.segments.find(s=>s.start<section.end&&s.end>section.start);if(next){chooseSegment(next.id,Math.max(section.start,next.start),false);setPracticeSection(section);}editRange(String(section.start),String(section.end));}
+  }
+  const visibleSegments=(doc?.segments??[]).map((s,i)=>({s,i})).filter(({s})=>!practiceSection||s.start<practiceSection.end&&s.end>practiceSection.start);
+  const visibleIndex=visibleSegments.findIndex(({s})=>s.id===segment?.id);
+  useEffect(()=>{if(practiceSection&&segment&&(segment.end<=practiceSection.start||segment.start>=practiceSection.end))setPracticeSection(null);},[practiceSection,segment?.id,segment?.start,segment?.end]);
   const confirmed=doc?.segments.filter(s=>s.status==='confirmed').length??0;
   const playingIndex=doc?.segments.findIndex(s=>position>=s.start&&position<s.end)??-1;
   const playingSegment=playingIndex>=0?doc?.segments[playingIndex]:undefined;
@@ -242,7 +252,8 @@ export function RootPractice({job,title,api,onClose}:{job:string;title:string;ap
     <div className="root-save"><span role="status" aria-label="根音保存狀態">{sheet.message}</span><span>{confirmed} 段已採用 · {(doc?.segments.length??0)-confirmed} 段待聽</span></div>
     {sheet.blocked?<div className="root-problem" role="alert"><p>請先保留本頁內容，再處理保存問題。</p><button onClick={()=>download(sheet.rawDraft(),`root-draft-${job}.json`)}>下載原始草稿</button><button onClick={sheet.retry}>重試保存／載入</button><button disabled={sheet.busy} onClick={()=>{if(confirm('確定已下載需要保留的草稿？載入最新版本會替換本頁未保存內容。'))sheet.loadLatest();}}>載入最新版本</button></div>:null}
     {doc&&segment?<>
-      <nav className="root-progression" ref={progression} aria-label="根音行進">{doc.segments.map((s,i)=><button type="button" key={s.id} aria-current={segment.id===s.id?'step':undefined} data-playing={audioState==='playing'&&position>=s.start&&position<s.end} aria-label={`第 ${i+1} 段 ${s.root===null?'待聽':ROOT_NAMES[s.root]} ${rootStamp(s.start)}`} onClick={()=>chooseSegment(s.id)}><small>{doc.grid?rootSegmentLabel(doc,s).split(' · ').slice(0,2).join(' · '):i+1}</small>{doc.grid?<small>{rootSegmentLabel(doc,s).split(' · ')[2]}</small>:null}<strong>{s.root===null?'?':ROOT_NAMES[s.root]}</strong><span>{s.status==='confirmed'?'已採用':s.status==='unsure'?'再聽':'待聽'}</span></button>)}</nav>
+      <RootStructureNav api={api} job={job} document={doc} active={practiceSection} onSelect={selectPracticeSection}/>
+      <nav className="root-progression" ref={progression} aria-label="根音行進">{visibleSegments.map(({s,i})=><button type="button" key={s.id} aria-current={segment.id===s.id?'step':undefined} data-playing={audioState==='playing'&&position>=s.start&&position<s.end} aria-label={`第 ${i+1} 段 ${s.root===null?'待聽':ROOT_NAMES[s.root]} ${rootStamp(s.start)}`} onClick={()=>chooseSegment(s.id)}><small>{doc.grid?rootSegmentLabel(doc,s).split(' · ').slice(0,2).join(' · '):i+1}</small>{doc.grid?<small>{rootSegmentLabel(doc,s).split(' · ')[2]}</small>:null}<strong>{s.root===null?'?':ROOT_NAMES[s.root]}</strong><span>{s.status==='confirmed'?'已採用':s.status==='unsure'?'再聽':'待聽'}</span></button>)}</nav>
       <section className="root-workflow-transport" aria-label="主要播放控制">
         <div><strong>先聽原曲，再比較</strong><p aria-label="主要播放範圍">原曲 A–B：{rangeValid?`${rootStamp(range.start)}–${rootStamp(range.end)}`:'請設定有效範圍'}</p>{audioState!=='idle'&&playbackBounds?<p aria-label="正在播放範圍">{audioState==='preparing'?'準備播放':'正在播放'}：{rootStamp(playbackBounds.start)}–{rootStamp(playbackBounds.end)}</p>:null}</div>
         <button className="root-primary" disabled={audioState==='idle'&&!rangeValid} onClick={primaryPlayback}>{audioState==='preparing'?'取消準備播放':audioState==='playing'?'暫停播放':'播放原曲範圍'}</button>
@@ -255,7 +266,7 @@ export function RootPractice({job,title,api,onClose}:{job:string;title:string;ap
         onSeek={seekVisual} onRange={(start,end)=>editRange(String(start),String(end))}
         onPlay={playVisualRange} onPause={()=>player.stop()} onUseSelectedRange={()=>{if(segment)editRange(String(segment.start),String(segment.end));}} selectedId={selected} playbackControls={toolsOpen}/>
       <section className="root-listen" aria-label="當段聽辨">
-        <div className="root-segment-heading"><h2 aria-label="目前判斷段落">目前判斷：{doc.grid?rootSegmentLabel(doc,segment):`第 ${index+1} 段`} <small>{rootStamp(segment.start)}–{rootStamp(segment.end)}</small></h2><div><button disabled={index===0} onClick={()=>chooseSegment(doc.segments[index-1].id)}>上一段</button><button disabled={index===doc.segments.length-1} onClick={()=>chooseSegment(doc.segments[index+1].id)}>下一段</button></div></div>
+        <div className="root-segment-heading"><h2 aria-label="目前判斷段落">目前判斷：{doc.grid?rootSegmentLabel(doc,segment):`第 ${index+1} 段`} <small>{rootStamp(segment.start)}–{rootStamp(segment.end)}</small></h2><div><button disabled={visibleIndex<=0} onClick={()=>chooseSegment(visibleSegments[visibleIndex-1].s.id)}>上一段</button><button disabled={visibleIndex<0||visibleIndex===visibleSegments.length-1} onClick={()=>chooseSegment(visibleSegments[visibleIndex+1].s.id)}>下一段</button></div></div>
         {scope!=='segment'&&playingSegment?<p className="root-range-current" aria-label="連聽目前區段">播放游標：第 {playingIndex+1} 段 · {scope==='locate'||mode==='source'?'只有原曲':playingSegment.status==='confirmed'&&playingSegment.root!==null?`原曲＋根音 ${ROOT_NAMES[playingSegment.root]}`:'只有原曲（根音待聽）'}</p>:null}
         <label hidden={!toolsOpen} className="root-scrubber">播放位置 <output>{rootStamp(position)}</output><input aria-label="根音練習播放位置" type="range" min={scope==='range'&&rangeValid?range.start:scope!=='segment'?0:Math.max(0,segment.start-(context ? .75 : 0))} max={scope==='range'&&rangeValid?range.end:scope!=='segment'?doc.source.duration:Math.min(doc.source.duration,segment.end+(context ? .75 : 0))} step=".01" value={position} onChange={e=>{player.stop();setPosition(Number(e.target.value));}}/></label>
         <div hidden={!toolsOpen} className="root-transport"><button className="root-primary" disabled={scope==='range'&&!rangeValid} onClick={togglePlayback}>{audioState==='preparing'?'取消準備':audioState==='playing'?'暫停':scope==='range'?'播放範圍':scope==='whole'?'播放行進':scope==='locate'?'播放原曲':'播放這段'}</button><button onClick={()=>{setMode('source');play(trial,'source');}}>聽原曲</button><label>聲音 <select aria-label="根音練習聲音" disabled={scope!=='segment'} value={scope==='segment'||scope==='range'?mode:scope==='locate'?'source':'mix'} onChange={e=>{player.stop();setMode(e.target.value as RootAudioMode);}}><option value="mix">原曲＋根音</option><option value="source">原曲</option><option value="root">根音</option></select></label></div>

@@ -1,0 +1,27 @@
+import {test,expect} from '@playwright/test';
+test('real API persists editor changes, history and conflicts while root/Score stay untouched',async({page,context,request})=>{
+ const endpoint='/backend/api/v1/jobs/fixture-song/song-structure';
+ await page.goto('/?job=fixture-song&practice=structure');
+ await page.getByRole('button',{name:'建立手動結構'}).click();
+ await expect(page.getByLabel('結構保存狀態')).toHaveText('已保存');
+ await page.getByLabel('段落類別').selectOption('intro');await page.getByRole('button',{name:'套用名稱'}).click();
+ await expect(page.getByLabel('結構保存狀態')).toHaveText('已保存');
+ await page.getByLabel('分開位置秒數').fill('4');await page.getByRole('button',{name:'在此分開'}).click();
+ await expect(page.getByLabel('結構保存狀態')).toHaveText('已保存');
+ await page.getByRole('button',{name:'選取第 2 段 前奏',exact:true}).click();
+ await page.getByLabel('段落類別').selectOption('chorus');await page.getByRole('button',{name:'套用名稱'}).click();
+ await expect(page.getByLabel('結構保存狀態')).toHaveText('已保存');
+ const backup=(await (await request.get(endpoint)).json()).document;
+ await page.reload();await expect(page.getByRole('button',{name:'選取第 2 段 副歌',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'聽這段',exact:true}).click();await expect.poll(()=>page.locator('audio').evaluate(a=>(a as HTMLAudioElement).currentTime)).toBeGreaterThan(0);
+ const audio=await request.get((await page.locator('audio').getAttribute('src'))!,{headers:{Range:'bytes=0-43'}});expect(audio.status()).toBe(206);
+ const other=await context.newPage();await other.goto('/?job=fixture-song&practice=structure');await expect(other.getByLabel('結構保存狀態')).toHaveText('已保存');
+ await page.getByLabel('段落名稱').fill('前奏已核對');await page.getByRole('button',{name:'套用名稱'}).click();await expect(page.getByLabel('結構保存狀態')).toHaveText('已保存');
+ await other.getByLabel('段落名稱').fill('衝突草稿');await other.getByRole('button',{name:'套用名稱'}).click();await expect(other.getByLabel('結構保存狀態')).toContainText('版本或來源已變動');
+ expect((await (await request.get(endpoint)).json()).document.sections[0].display_label).toBe('前奏已核對');
+ await page.getByRole('button',{name:'復原',exact:true}).click();await expect(page.getByLabel('結構保存狀態')).toHaveText('已保存');
+ expect((await (await request.get(endpoint)).json()).document).toEqual(backup);
+ await page.getByText('備份與歷次保存',{exact:true}).click();await page.getByRole('button',{name:'查看歷次保存'}).click();await expect(page.getByRole('button',{name:'預覽版本 1',exact:true})).toBeVisible();
+ expect(await (await request.get('/backend/fixture/invariants')).json()).toEqual({roots_unchanged:true,score_unchanged:true});
+ await other.close();
+});

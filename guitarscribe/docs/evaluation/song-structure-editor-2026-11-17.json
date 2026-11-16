@@ -1,0 +1,93 @@
+{
+  "date": "2026-11-17",
+  "scope": "ST4-ST7 engineering delivery; musical quality awaiting human",
+  "tests": {
+    "backend_regression_passed": 129,
+    "backend_model_test_deselected": 1,
+    "seed_tests_passed": 21,
+    "root_browser_passed": 46,
+    "structure_browser_and_document_passed": 21,
+    "isolated_real_api_browser_passed": 1,
+    "final_playback_and_surface_rechecks_passed": 3,
+    "typescript_build": "passed",
+    "production_build": "passed",
+    "long_list_row_layout_recheck_passed": 1
+  },
+  "production_seed": [
+    {
+      "job": "83a3643ab3814172a046cebf709f3413",
+      "version": 1,
+      "section_count": 13,
+      "created": true
+    },
+    {
+      "job": "a3be29912a7045448765290d7cba2f6c",
+      "version": 1,
+      "section_count": 14,
+      "created": true
+    }
+  ],
+  "production_read_only_browser": {
+    "results": [
+      {
+        "job": "83a3643ab3814172a046cebf709f3413",
+        "sections": 13,
+        "root_segments": 159,
+        "filtered_root_segments": 14,
+        "widths": [
+          320,
+          390,
+          768,
+          1440
+        ],
+        "played_at": 43.081871,
+        "source_sha_checked": true,
+        "roots_unchanged": true,
+        "score_unchanged": true,
+        "structure_unchanged": true,
+        "oscillators": 0
+      },
+      {
+        "job": "a3be29912a7045448765290d7cba2f6c",
+        "sections": 14,
+        "root_segments": 151,
+        "filtered_root_segments": 15,
+        "widths": [
+          320,
+          390,
+          768,
+          1440
+        ],
+        "played_at": 20.048013,
+        "source_sha_checked": true,
+        "roots_unchanged": true,
+        "score_unchanged": true,
+        "structure_unchanged": true,
+        "oscillators": 0
+      }
+    ],
+    "errors": [],
+    "writes": [],
+    "read_only_rank_requests": 4
+  },
+  "integrity": {
+    "existing_site_files_unchanged": 186,
+    "existing_site_files_changed": [
+      "visual-practice-2026-11-14/index.html"
+    ],
+    "protected_databases_unchanged": [
+      "root-practice.sqlite3",
+      "lyric-worksheets.sqlite3",
+      "melody-notes.sqlite3",
+      "revisions/guitarscribe.sqlite3",
+      "jobs/jobs.sqlite3"
+    ]
+  },
+  "model_inferences": 0,
+  "unresolved": [
+    "Semantic label and boundary quality requires human review; no accuracy claim",
+    "One-click new-song automatic structure analysis is not integrated",
+    "ST8-ST11 comparison/reuse/repeat notation is not implemented",
+    "Offline unsaved drafts survive same-tab refresh; persistence after closing tab is not guaranteed"
+  ]
+}

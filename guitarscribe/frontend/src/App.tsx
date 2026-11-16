@@ -1,5 +1,6 @@
 import {AuditionControls, type AuditionContent, type AuditionPulse} from './AuditionControls';
 import {RootPractice} from './RootPractice';
+import {SongStructurePage} from './SongStructurePage';
 import {PerformanceDraftControl} from "./PerformanceDraftControl";
 import {DownbeatRhythmControl} from "./DownbeatRhythmControl";
 import {editChordSlice, removeChordSlice, type ChordEditScope} from "./chordSlice";
@@ -248,6 +249,7 @@ async function getRevision(revisionId: string): Promise<SongScore> {
 }
 
 export function App() {
+  const [structureJob]=useState(()=>{const p=new URLSearchParams(window.location.search);return p.get('practice')==='structure'?p.get('job'):null;});
   const [rootPractice,setRootPractice]=useState(()=>new URLSearchParams(window.location.search).get('practice')==='roots');
   const [expiredRootJob,setExpiredRootJob]=useState<string|null>(null);
   const [isLoadingExample, setIsLoadingExample] = useState(false);
@@ -561,6 +563,9 @@ export function App() {
       } catch (restoreError) {
         if (obsolete()) return;
         if (restoreError instanceof ApiError && restoreError.status === 404) {
+          if(new URLSearchParams(window.location.search).get('practice')==='structure'){
+            setAnalysisJob(null);setStatus('idle');return;
+          }
           if(new URLSearchParams(window.location.search).get('practice')==='roots'){
             setExpiredRootJob(savedJobId);setAnalysisJob(null);setStatus('idle');return;
           }
@@ -2093,6 +2098,7 @@ export function App() {
     const url=new URL(window.location.href);if(open)url.searchParams.set('practice','roots');else url.searchParams.delete('practice');
     window.history.replaceState(null,'',url);setRootPractice(open);
   }
+  if(structureJob)return <SongStructurePage key={structureJob} job={structureJob} title={score?.song.title??"歌曲結構"} api={API_BASE}/>;
   if(rootPractice&&score&&sourceJobId(score))return <RootPractice key={sourceJobId(score)} job={sourceJobId(score)!} title={score.song.title} api={API_BASE} onClose={()=>openRootPractice(false)}/>;
   if(rootPractice&&expiredRootJob)return <RootPractice key={expiredRootJob} job={expiredRootJob} title="已保存的根音練習" api={API_BASE} onClose={()=>openRootPractice(false)}/>;
 

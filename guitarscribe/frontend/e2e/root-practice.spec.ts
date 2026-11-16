@@ -872,3 +872,17 @@ test('stale segmentation response cannot replace a changed grid or a new root de
   await page.getByRole('button',{name:'預覽小節分段',exact:true}).click();await page.getByLabel('小節對齊點秒數').fill('.25');release();await page.waitForTimeout(200);
   await expect(page.getByRole('button',{name:'套用這份分段',exact:true})).toHaveCount(0);expect(server.writes).toBe(0);
 });
+
+test('song structure filters whole root segments and scopes original audio without changing decisions',async({page})=>{
+ const sections=[{id:'intro',start:0,end:3,label:'intro',display_label:'前奏'},{id:'verse',start:3,end:8,label:'verse',display_label:'主歌'}];
+ await page.route('**/api/v1/jobs/root-job/song-structure',r=>r.fulfill({json:{source_matches:true,document:{source:{...source,audio_sha256:'b'.repeat(64)},sections}}}));
+ const server=await setup(page,false);
+ await page.getByLabel('歌曲大段').selectOption('intro');
+ await expect(page.getByRole('navigation',{name:'根音行進'}).getByRole('button')).toHaveCount(1);
+ await expect(page.getByLabel('主要播放範圍')).toContainText('0:00.0–0:03.0');
+ await expect(page.getByLabel('採用目標')).toContainText('0:00.0–0:04.0');
+ await expect(page.getByLabel('歌曲結構導覽')).toContainText('跨交界');
+ expect(server.document.segments).toHaveLength(2);expect(server.writes).toBe(0);
+ await page.getByLabel('歌曲大段').selectOption('');
+ await expect(page.getByRole('navigation',{name:'根音行進'}).getByRole('button')).toHaveCount(2);
+});
