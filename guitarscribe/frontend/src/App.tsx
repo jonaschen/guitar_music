@@ -2093,6 +2093,13 @@ export function App() {
                   <button type="button" hidden={score?.analysis.timing_status === "unmetered"} onClick={()=>{setCompactEditOpen(false);setChordEditScope(null);setFocusedWorkspace(false);window.requestAnimationFrame(()=>document.querySelector<HTMLElement>(".side-panel")?.scrollIntoView({block:"start"}));}}>調整時間與指型</button></div>
                 </section> : null;
 
+  function openVisualPractice(){
+    audioRef.current?.pause();stopSynth(false);
+    const url=new URL('/visual-practice-2026-11-14/',window.location.origin);
+    url.searchParams.set('practice','roots');url.searchParams.set('visual','1');
+    const job=score?sourceJobId(score):new URLSearchParams(window.location.search).get('job');if(job)url.searchParams.set('job',job);
+    window.location.assign(url.href);
+  }
   function openRootPractice(open:boolean){
     audioRef.current?.pause();stopSynth(false);
     const url=new URL(window.location.href);if(open)url.searchParams.set('practice','roots');else url.searchParams.delete('practice');
@@ -2118,6 +2125,7 @@ export function App() {
           </div>
 
           <form className="intake-card" onSubmit={handleSubmit}>
+            {!MELODY_ENABLED&&!rootPractice&&productScreen==="home"?<button type="button" disabled={analysisBusy} onClick={openVisualPractice}>視覺化練習</button>:null}
             {!MELODY_ENABLED && !score && !rootPractice ? <div className="example-entry"><button type="button" disabled={isLoadingExample || analysisBusy} onClick={()=>void openExample()}>{isLoadingExample ? "載入範例…" : "開啟範例：小手拉大手"}</button><small>內附和弦稿，可直接試播吉他與編輯。</small></div> : null}
             <p role="status">{capabilities ? "分析服務已就緒" : capabilitiesFailed ? "無法取得分析能力，請確認服務後重新整理。" : "正在確認分析能力…"}</p>
             {MELODY_ENABLED && capabilities && !capabilities.melody_available ? <p role="note">目前僅分析拍點與和弦，不會產生旋律；完成後可手動補音。</p> : null}
@@ -2212,7 +2220,7 @@ export function App() {
             {score ? <nav className="workspace-mode" aria-label="工作區模式">
               <div><strong>{focusMode ? accompanimentView ? "和弦核對" : "專注修譜" : "完整工具"}</strong><p>選一段 → 對照來源 → 修譜與重播 → 保存版本</p></div>
               <button type="button" className="ghost-button" onClick={() => { setShowNewSong(value => !value); }}>{showNewSong ? "收起新曲目" : "分析新曲目"}</button>
-              {!MELODY_ENABLED&&sourceJobId(score)?<button type="button" className="ghost-button" onClick={()=>openRootPractice(true)}>根音抓歌練習</button>:null}
+              {!MELODY_ENABLED&&sourceJobId(score)?<button type="button" className="ghost-button" onClick={openVisualPractice}>視覺化練習</button>:null}
               <button type="button" hidden={!MELODY_ENABLED} className="ghost-button" onClick={switchWorkspace}>{focusMode ? "顯示完整工具" : accompanimentView ? "回到和弦核對" : "回到專注修譜"}</button>
               <button type="button" hidden={accompanimentView && focusMode} className="ghost-button" onClick={openPerformanceControls}>伴奏演奏</button>
               <button type="button" hidden={!MELODY_ENABLED} className="ghost-button" onClick={switchEditorView}>{accompanimentView ? "旋律編輯（實驗）" : "簡潔和弦頁"}</button>

@@ -886,3 +886,18 @@ test('song structure filters whole root segments and scopes original audio witho
  await page.getByLabel('歌曲大段').selectOption('');
  await expect(page.getByRole('navigation',{name:'根音行進'}).getByRole('button')).toHaveCount(2);
 });
+
+test('main song screen opens visual practice for the current song without writing',async({page})=>{
+ const server=await setup(page,false);await page.goto('/?job=root-job');
+ await page.getByRole('button',{name:'視覺化練習',exact:true}).click();
+ await expect(page).toHaveURL(/\/visual-practice-2026-11-14\/\?practice=roots&visual=1&job=root-job/);
+ await expect(page.getByRole('main',{name:'根音抓歌練習'})).toBeVisible();
+ await expect(page.getByRole('slider',{name:'頻譜定位時間'})).toBeVisible();
+ expect(server.writes).toBe(0);expect(server.scoreWrites).toBe(0);
+});
+test('empty home offers visual practice without requiring an analyzed song',async({page})=>{
+ await page.route('**/backend/**',r=>r.fulfill({json:new URL(r.request().url()).pathname.endsWith('/capabilities')?{melody_available:false,youtube_enabled:true}:[]}));
+ await page.goto('/');await page.getByRole('button',{name:'視覺化練習',exact:true}).click();
+ await expect(page).toHaveURL(/\/visual-practice-2026-11-14\/\?practice=roots&visual=1$/);
+ await expect(page.getByRole('heading',{name:'一起抓出歌曲的根音'})).toBeVisible();
+});

@@ -1,0 +1,48 @@
+{
+  "date": "2026-11-17",
+  "entry_tests_passed": 2,
+  "main_product_regression_passed": 4,
+  "typescript_and_build": "passed",
+  "real_browser": {
+    "results": [
+      {
+        "job": null,
+        "main_entry_visible": true,
+        "current_song_preserved": true,
+        "visual_open": false,
+        "url": "/visual-practice-2026-11-14/?practice=roots&visual=1"
+      },
+      {
+        "job": "83a3643ab3814172a046cebf709f3413",
+        "main_entry_visible": true,
+        "current_song_preserved": true,
+        "visual_open": true,
+        "url": "/visual-practice-2026-11-14/?practice=roots&visual=1&job=83a3643ab3814172a046cebf709f3413"
+      },
+      {
+        "job": "a3be29912a7045448765290d7cba2f6c",
+        "main_entry_visible": true,
+        "current_song_preserved": true,
+        "visual_open": true,
+        "url": "/visual-practice-2026-11-14/?practice=roots&visual=1&job=a3be29912a7045448765290d7cba2f6c"
+      }
+    ],
+    "errors": [],
+    "writes": []
+  },
+  "existing_site_files_changed": [
+    "index.html",
+    "visual-practice-2026-11-14/index.html"
+  ],
+  "existing_site_files_unchanged": 194,
+  "databases_unchanged": [
+    "song-structure.sqlite3",
+    "root-practice.sqlite3",
+    "lyric-worksheets.sqlite3",
+    "melody-notes.sqlite3",
+    "revisions/guitarscribe.sqlite3",
+    "jobs/jobs.sqlite3"
+  ],
+  "backend_restarted": false,
+  "backup": "output/evaluation/visual-main-entry-2026-11-17/before/"
+}
