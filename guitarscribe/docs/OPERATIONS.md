@@ -1,5 +1,7 @@
 # GuitarScribe operations guide
 
+**2026-11-17 段落和弦資料：** 首次採用後新增 `work/chord-practice.sqlite3`（版本與歷史同一DB）；GET不建立資料庫。備份時將其併入既有工作目錄的一致性備份，勿只備份原六份DB。歌曲結構、根音與Score仍分別保留，詳見 [操作與交付](Section_Chord_Practice_2026-11-17.md)。
+
 **2026-11-17 手機介紹入口更新：** 原 ngrok 本月流量已耗盡。現在使用獨立 `guitarscribe-mobile-tunnel` 連到同一個有邀請登入的網站；現行 URL、固定版本、啟停、回退與限制見 [手機隧道維運](Mobile_Demo_Tunnel_2026-11-17.md)。此為使用者自己手機的現場示範，尚無逐人資料隔離。
 
 朋友直接使用維護者提供的 HTTPS 網址與邀請帳密，不需要安裝環境，見 [中文入門指南](../../README.md)。以下先說明 2026-10-30 已運行的受邀網頁試用；舊 Docker 章節保留供開發參考。

@@ -28,6 +28,7 @@ test('tap starts cold audio before metadata and background/pagehide stop without
  let release!:()=>void;const gate=new Promise<void>(resolve=>{release=resolve;});
  await page.addInitScript(()=>{(window as any).playStates=[];const original=HTMLMediaElement.prototype.play;HTMLMediaElement.prototype.play=function(){(window as any).playStates.push(this.readyState);return original.call(this);};});
  await fixture(page,false,false,gate);
+ await page.getByRole('button',{name:'介紹第 2 段 副歌',exact:true}).tap();
  await page.getByRole('button',{name:'下一步：聽這一段',exact:true}).tap();
  try{await page.getByRole('button',{name:'播放選定段落',exact:true}).tap();await expect.poll(()=>page.evaluate(()=>(window as any).playStates)).toEqual([0]);}finally{release();}
  await expect.poll(()=>page.locator('audio').evaluate(a=>(a as HTMLAudioElement).currentTime)).toBeGreaterThanOrEqual(4);

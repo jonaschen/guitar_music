@@ -1,0 +1,89 @@
+{
+  "backend_tests": 117,
+  "new_backend_tests": 40,
+  "frontend_section_chord_tests": 11,
+  "existing_visual_regressions": 14,
+  "mobile_demo_regressions": 6,
+  "real_api_browser_tests": 1,
+  "build": "passed",
+  "local": {
+    "base": "http://127.0.0.1:5273",
+    "results": [
+      {
+        "job": "84defcef7fd44bbc8a1024b24d65c78e",
+        "sections": 9,
+        "section": "副歌",
+        "start": 118.13,
+        "end": 157.15,
+        "visible_chords": 21,
+        "total_chords": 161,
+        "chord_version": 0,
+        "spectrum_colors": 8196,
+        "unchanged": true
+      },
+      {
+        "job": "83a3643ab3814172a046cebf709f3413",
+        "sections": 13,
+        "section": "副歌",
+        "start": 63.3,
+        "end": 99.3,
+        "visible_chords": 24,
+        "total_chords": 161,
+        "chord_version": 0,
+        "spectrum_colors": 7732,
+        "unchanged": true
+      },
+      {
+        "job": "a3be29912a7045448765290d7cba2f6c",
+        "sections": 14,
+        "section": "副歌",
+        "start": 95.95,
+        "end": 121.49,
+        "visible_chords": 16,
+        "total_chords": 166,
+        "chord_version": 0,
+        "spectrum_colors": 8869,
+        "unchanged": true
+      }
+    ],
+    "writes": [],
+    "errors": []
+  },
+  "external": {
+    "base": "https://undergraduate-touched-participating-jane.trycloudflare.com",
+    "results": [
+      {
+        "job": "84defcef7fd44bbc8a1024b24d65c78e",
+        "sections": 9,
+        "section": "副歌",
+        "start": 118.13,
+        "end": 157.15,
+        "visible_chords": 21,
+        "total_chords": 161,
+        "chord_version": 0,
+        "spectrum_colors": 8196,
+        "unchanged": true
+      }
+    ],
+    "writes": [],
+    "errors": []
+  },
+  "invariants": {
+    "databases_unchanged": {
+      "song-structure.sqlite3": true,
+      "root-practice.sqlite3": true,
+      "lyric-worksheets.sqlite3": true,
+      "melody-notes.sqlite3": true,
+      "revisions/guitarscribe.sqlite3": true,
+      "jobs/jobs.sqlite3": true
+    },
+    "existing_site_files": 218,
+    "changed_existing_files": [
+      "index.html",
+      "visual-practice-2026-11-14/index.html"
+    ],
+    "chord_database_created_by_read": false,
+    "both_entrypoints_match_dist": true,
+    "index_sha256": "6f2f51f51772bde3107667662cd4cbf5a8b993b4e3da9f25bdb5251ce3613c4e"
+  }
+}

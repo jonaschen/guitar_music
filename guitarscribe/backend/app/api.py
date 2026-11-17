@@ -41,6 +41,7 @@ from .postprocess.melody import MelodyPostProcessor
 from .services.melody_edits import MelodyEditRequest, MelodyEditResponse, edit_melody
 from .root_practice_api import create_root_router
 from .song_structure_api import create_song_structure_router
+from .chord_practice_api import create_chord_practice_router
 
 
 class TransposeScoreRequest(BaseModel):
@@ -229,6 +230,7 @@ def get_job_service() -> AnalysisJobService:
 
 app.include_router(create_root_router(get_job_service))
 app.include_router(create_song_structure_router(get_job_service))
+app.include_router(create_chord_practice_router(get_job_service))
 
 
 @app.get("/health", response_model=HealthResponse, tags=["System"], summary="Check service health")
