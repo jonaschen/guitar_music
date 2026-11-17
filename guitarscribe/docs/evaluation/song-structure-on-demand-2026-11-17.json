@@ -1,0 +1,30 @@
+{
+  "date": "2026-11-17",
+  "recording": "梁靜茹 可惜不是你 Official Music Video",
+  "audio_sha256": "364f87e0c51d1b12fb2076c79f24c213115c6b1bbca308502423c7e202189390",
+  "duration": 287.82297052154195,
+  "candidate_sections": 17,
+  "elapsed_seconds": 1032.7765052111354,
+  "musical_quality": "unreviewed; no reference accuracy claimed",
+  "same_recording_jobs": 2,
+  "tests": {
+    "backend_collaborator_unique": 184,
+    "runner_weights": 2,
+    "structure_editor": 26,
+    "root_related": 4,
+    "isolated_real_api_browser": 2
+  },
+  "live": {
+    "candidate_preview_jobs": 2,
+    "writes": 0,
+    "page_errors": 0,
+    "existing_database_logical_dumps_unchanged": 6
+  },
+  "artifacts": "output/evaluation/song-structure-on-demand-2026-11-17/",
+  "notes": [
+    "Real model executed once in bounded standalone unit; completed run imported with provenance, not a second HTTP inference.",
+    "Lifecycle timeout/cancellation/scope survival tested with deterministic subprocess fixtures.",
+    "Two lifecycle tests timed out under heavy model/build memory pressure; exact unchanged tests passed after releasing own tasks.",
+    "Unrelated read-only structure review suite accidentally invoked and interrupted; excluded from pass counts."
+  ]
+}

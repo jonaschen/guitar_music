@@ -15,6 +15,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from app.evaluation.song_structure import summarize_candidate, verify_source, validate_stems
 
 
+def configured_model_cache(protocol, fallback):
+    """Check the installed weights before starting expensive local inference."""
+    for item in protocol.get('runtime_weights', []):
+        verify_source(Path(item['path']), item['sha256'])
+    cache = Path(protocol.get('model_cache', fallback))
+    if 'model_cache' in protocol and not cache.is_dir():
+        raise FileNotFoundError('Configured model cache is missing')
+    return cache
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--protocol', type=Path, required=True)
@@ -25,6 +35,7 @@ def main():
     source = next(s for s in protocol['sources'] if s['job'] == args.job)
     audio = Path(source['audio']).resolve()
     verify_source(audio, source['audio_sha256'])
+    cache = configured_model_cache(protocol, args.out.parent / 'model-cache')
     # An existing result is evidence, not permission to overwrite or reuse stale caches.
     args.out.mkdir(parents=True, exist_ok=False)
     manifest = dict(protocol_id=protocol['id'], protocol_sha256=hashlib.sha256(args.protocol.read_bytes()).hexdigest(),
@@ -32,7 +43,9 @@ def main():
                     device=protocol['device'], status='running')
     manifest_path = args.out / 'manifest.json'
     def save():
-        manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n')
+        temporary = manifest_path.with_suffix('.tmp')
+        temporary.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n')
+        temporary.replace(manifest_path)
     save()
     started = time.monotonic()
     try:
@@ -63,7 +76,6 @@ def main():
         torch.set_num_interop_threads(1)
         torch.manual_seed(0)
         # This path is separate from the running app and shared by this experiment's tracks.
-        cache = args.out.parent / 'model-cache'
         torch.hub.set_dir(str(cache))
         manifest['versions'] = {n: importlib.metadata.version(n) for n in
                                 ['all-in-one-infer', 'demucs-infer', 'madmom-infer', 'torch', 'numpy', 'librosa', 'scipy']}

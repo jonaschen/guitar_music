@@ -155,3 +155,53 @@ test('long section lists scroll without shrinking names and timestamps over neig
  const first=page.getByRole('navigation',{name:'歌曲段落清單'}).getByRole('button').first();
  await expect(first).toBeVisible();expect(await first.evaluate(b=>b.querySelector('small')!.getBoundingClientRect().bottom<=b.getBoundingClientRect().bottom)).toBe(true);
 });
+
+async function analysisMock(page:Page){
+ const analysis={state:'idle',candidate:null as StructureDocument|null,starts:0,cancels:0,fail:false};
+ await page.route('**/song-structure/analysis',r=>{
+  if(analysis.fail)return r.abort();
+  if(r.request().method()==='POST'){const b=r.request().postDataJSON();expect(b.fingerprint).toBe(source.fingerprint);expect(b.audio_sha256).toBe(source.audio_sha256);analysis.starts++;analysis.state='running';analysis.candidate=null;}
+  if(r.request().method()==='DELETE'){analysis.cancels++;analysis.state='cancelled';analysis.candidate=null;}
+  return r.fulfill({json:{job_id:source.job_id,...analysis,run_id:analysis.starts?'run-1':null,elapsed_seconds:analysis.state==='running'?12:0,message:analysis.state==='running'?'正在分析歌曲結構':'結構分析狀態'}});
+ });return analysis;
+}
+test('new song analyzes structure without manual sections and only explicit apply saves the candidate',async({page})=>{
+ const server=await setup(page,true),analysis=await analysisMock(page);await page.reload();
+ await page.getByRole('button',{name:'分析歌曲結構',exact:true}).click();await expect(page.getByLabel('歌曲結構分析狀態')).toContainText('正在分析');
+ expect(analysis.starts).toBe(1);expect(server.writes).toBe(0);
+ analysis.state='ready';analysis.candidate=structuredClone(seed);analysis.candidate.sections.forEach(s=>{s.name_review_status='unreviewed';s.boundary_review_status='unreviewed';});
+ await expect(page.getByRole('region',{name:'自動結構初稿預覽'})).toContainText('主歌');
+ expect(server.writes).toBe(0);await page.getByRole('button',{name:'套用分析初稿',exact:true}).click();
+ await expect(page.getByLabel('結構保存狀態')).toHaveText('已保存');expect(server.document!.sections).toHaveLength(3);expect(server.otherWrites).toBe(0);
+ await expect(page.getByRole('link',{name:'練這段根音',exact:true})).toHaveAttribute('href',/structure=a/);
+});
+test('analysis status survives page reload and cancellation never changes the saved structure',async({page})=>{
+ const server=await setup(page),analysis=await analysisMock(page);analysis.state='running';analysis.starts=1;await page.reload();
+ await expect(page.getByLabel('歌曲結構分析狀態')).toContainText('正在分析');await page.getByRole('button',{name:'取消結構分析',exact:true}).click();
+ expect(analysis.cancels).toBe(1);expect(server.writes).toBe(0);expect(server.document).toEqual(seed);
+});
+test('reanalyzing preserves an edited structure until the user previews and replaces it',async({page})=>{
+ const server=await setup(page),analysis=await analysisMock(page);await page.reload();
+ await page.getByRole('button',{name:'重新分析結構',exact:true}).click();expect(server.writes).toBe(0);
+ analysis.state='ready';analysis.candidate=structuredClone(seed);analysis.candidate.sections[1].display_label='候選副歌';analysis.candidate.sections[1].label='chorus';
+ await expect(page.getByRole('region',{name:'自動結構初稿預覽'})).toContainText('候選副歌');
+ expect(server.document).toEqual(seed);expect(server.writes).toBe(0);
+ await page.getByRole('button',{name:'以初稿替換目前結構',exact:true}).click();await expect(page.getByLabel('結構保存狀態')).toHaveText('已保存');
+ expect(server.document!.sections[1].display_label).toBe('候選副歌');await page.getByRole('button',{name:'復原',exact:true}).click();
+ await expect.poll(()=>server.document!.sections[1].label).toBe('verse');
+});
+test('foreign analysis result and interrupted connection cannot overwrite the draft',async({page})=>{
+ const server=await setup(page),analysis=await analysisMock(page);analysis.state='ready';analysis.candidate=structuredClone(seed);analysis.candidate.source.audio_sha256='d'.repeat(64);await page.reload();
+ await expect(page.getByLabel('歌曲結構分析狀態')).toContainText('來源');await expect(page.getByRole('region',{name:'自動結構初稿預覽'})).toHaveCount(0);expect(server.writes).toBe(0);
+ analysis.fail=true;await page.getByRole('button',{name:'更新分析狀態',exact:true}).click();await expect(page.getByLabel('歌曲結構分析狀態')).toContainText('連線');
+ expect(server.document).toEqual(seed);
+});
+
+test('candidate audition and current structure never play two recordings together',async({page})=>{
+ await setup(page);const analysis=await analysisMock(page);analysis.state='ready';analysis.candidate=structuredClone(seed);await page.reload();
+ await expect(page.getByRole('region',{name:'自動結構初稿預覽'})).toBeVisible();
+ await page.getByRole('button',{name:'聽這段',exact:true}).click();await expect.poll(()=>page.locator('.ss-player audio').evaluate(a=>(a as HTMLAudioElement).paused)).toBe(false);
+ await page.getByRole('button',{name:/預覽回聽 前奏/}).click();await expect.poll(()=>page.locator('.ss-player audio').evaluate(a=>(a as HTMLAudioElement).paused)).toBe(true);
+ await expect.poll(()=>page.locator('.ss-analysis-preview audio').evaluate(a=>(a as HTMLAudioElement).paused)).toBe(false);
+ await page.getByRole('button',{name:'聽這段',exact:true}).click();await expect.poll(()=>page.locator('.ss-analysis-preview audio').evaluate(a=>(a as HTMLAudioElement).paused)).toBe(true);
+});

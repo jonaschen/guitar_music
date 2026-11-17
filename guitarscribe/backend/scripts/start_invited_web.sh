@@ -7,6 +7,13 @@ if systemctl --user is-active --quiet guitarscribe-friends-web; then
   printf '%s\n' 'Invited web service is already running; no changes made.'
   exit 0
 fi
+structure_runtime_dir="${GUITARSCRIBE_STRUCTURE_RUNTIME_DIR:-$HOME/.cache/guitarscribe-structure-runtime}"
+structure_protocol="${GUITARSCRIBE_STRUCTURE_PROTOCOL:-$project_dir/output/web-preview/structure-runtime/protocol.json}"
+structure_options=()
+if [[ -x "$structure_runtime_dir/bin/python" && -f "$structure_protocol" ]]; then
+  structure_options+=(--setenv="GUITARSCRIBE_STRUCTURE_PYTHON=$structure_runtime_dir/bin/python"
+                      --setenv="GUITARSCRIBE_STRUCTURE_PROTOCOL=$structure_protocol")
+fi
 systemd-run --user --unit=guitarscribe-friends-web \
   --property="WorkingDirectory=$project_dir/backend" --property=Restart=on-failure \
   --setenv="GUITARSCRIBE_WEB_ACCESS_FILE=$project_dir/output/web-preview/access.json" \
@@ -21,4 +28,5 @@ systemd-run --user --unit=guitarscribe-friends-web \
   --setenv="GUITARSCRIBE_YOUTUBE_JS_RUNTIME=node:${GUITARSCRIBE_NODE_BINARY:-$HOME/.nvm/versions/node/v24.14.0/bin/node}" \
   --setenv="PYTHONPATH=$HOME/.cache/guitarscribe-beat-dbn/python:$HOME/.cache/guitarscribe-chordino-diagnostic/python" \
   --setenv="VAMP_PATH=$HOME/.cache/guitarscribe-chordino-diagnostic/source" --setenv=OMP_NUM_THREADS=2 \
+  "${structure_options[@]}" \
   "$runtime_dir/bin/python" -m uvicorn app.web:create_app --factory --host 127.0.0.1 --port 5273

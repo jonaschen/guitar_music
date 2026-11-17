@@ -3,7 +3,7 @@ import type {RootDocument} from './rootPracticeDocument';
 import {rootStamp} from './rootPracticeDocument';
 export type PracticeSection={id:string;start:number;end:number;name:string};
 export function RootStructureNav({api,job,document,active,onSelect}:{api:string;job:string;document:RootDocument;active:PracticeSection|null;onSelect:(s:PracticeSection|null)=>void}){
- const [sections,setSections]=useState<PracticeSection[]>([]),[message,setMessage]=useState('');
+ const [sections,setSections]=useState<PracticeSection[]>([]),[message,setMessage]=useState(''),[emptyLink,setEmptyLink]=useState('分析歌曲結構');
  const callback=useRef(onSelect);callback.current=onSelect;
  const url=new URL(window.location.href);url.searchParams.set('practice','structure');url.searchParams.set('job',job);
  for(const key of ['structure','structure_source','section_start','section_end','section_name'])url.searchParams.delete(key);
@@ -12,7 +12,15 @@ export function RootStructureNav({api,job,document,active,onSelect}:{api:string;
   void(async()=>{try{
    const response=await fetch(`${api}/api/v1/jobs/${encodeURIComponent(job)}/song-structure`,{signal:controller.signal});
    if(!response.ok)throw Error();const result=await response.json();if(controller.signal.aborted)return;
-   const doc=result.document;if(!doc){setMessage('尚無歌曲結構，可先建立段落。');return;}
+   const doc=result.document;if(!doc){
+    setMessage(`這 ${document.segments.length} 個是細部根音區段，不必逐段填結構名稱。先分析歌曲結構，再選主歌或副歌練習。`);
+    try{const reply=await fetch(`${api}/api/v1/jobs/${encodeURIComponent(job)}/song-structure/analysis`,{signal:controller.signal});
+     if(reply.ok){const analysis=await reply.json();if(controller.signal.aborted)return;
+      if(analysis.job_id===job&&analysis.state==='ready'&&analysis.candidate?.source?.fingerprint===document.source.fingerprint&&Array.isArray(analysis.candidate.sections)&&analysis.candidate.sections.length){setEmptyLink('查看結構初稿');setMessage(`已分析出 ${analysis.candidate.sections.length} 個歌曲大段；先查看並套用初稿，再選主歌或副歌練習。不必先填完 ${document.segments.length} 個細部根音區段。`);}
+      else if(analysis.job_id===job&&['running','cancelling'].includes(analysis.state)){setEmptyLink('查看分析進度');setMessage('歌曲結構正在處理，可先繼續練習，稍後查看分析結果。');}
+     }
+    }catch{/* The saved root worksheet remains available. */}return;
+   }
    if(!result.source_matches||doc.source.fingerprint!==document.source.fingerprint||doc.source.source_start!==document.source.source_start||Math.abs(doc.source.duration-document.source.duration)>1e-7){setMessage('歌曲結構來源已變動，暫不套用範圍。');return;}
    let cursor=0;const ids=new Set<string>();const list:PracticeSection[]=doc.sections.map((s:any)=>{if(typeof s.id!=='string'||ids.has(s.id)||!Number.isFinite(s.start)||!Number.isFinite(s.end)||s.start!==cursor||s.end<=s.start||s.end>doc.source.duration||typeof s.display_label!=='string')throw Error();cursor=s.end;ids.add(s.id);return {id:s.id,start:s.start,end:s.end,name:s.display_label};});
    if(!list.length||Math.abs(cursor-doc.source.duration)>1e-7)throw Error();setSections(list);
@@ -25,5 +33,5 @@ export function RootStructureNav({api,job,document,active,onSelect}:{api:string;
  },[api,job,document.source.fingerprint,document.source.duration,document.source.source_start]);
  const overlap=active?document.segments.filter(s=>s.start<active.end&&s.end>active.start):document.segments;
  const crossing=!!active&&overlap.some(s=>s.start<active.start||s.end>active.end);
- return <section aria-label="歌曲結構導覽" className="root-structure-nav"><div><label>歌曲大段 <select aria-label="歌曲大段" value={active?.id??''} onChange={e=>{const next=sections.find(s=>s.id===e.target.value)??null;callback.current(next);const link=new URL(window.location.href);for(const k of ['structure','structure_source','section_start','section_end','section_name'])link.searchParams.delete(k);window.history.replaceState(null,'',link);}}><option value="">整首歌曲</option>{sections.map((s,i)=><option value={s.id} key={s.id}>{i+1}. {s.name} {rootStamp(s.start)}–{rootStamp(s.end)}</option>)}</select></label><a href={url.pathname+url.search}>整理歌曲結構</a></div>{active?<p>目前 {active.name} · 顯示 {overlap.length}／{document.segments.length} 個根音區段。{crossing?'跨交界的小節會完整保留，採用範圍仍以右側標示為準。':'根音區段與進度保持原樣。'}</p>:null}{message?<p role="status">{message}</p>:null}</section>;
+ return <section aria-label="歌曲結構導覽" className="root-structure-nav"><div><label>歌曲大段 <select aria-label="歌曲大段" value={active?.id??''} onChange={e=>{const next=sections.find(s=>s.id===e.target.value)??null;callback.current(next);const link=new URL(window.location.href);for(const k of ['structure','structure_source','section_start','section_end','section_name'])link.searchParams.delete(k);window.history.replaceState(null,'',link);}}><option value="">整首歌曲</option>{sections.map((s,i)=><option value={s.id} key={s.id}>{i+1}. {s.name} {rootStamp(s.start)}–{rootStamp(s.end)}</option>)}</select></label><a href={url.pathname+url.search}>{sections.length?'整理歌曲結構':emptyLink}</a></div>{active?<p>目前 {active.name} · 顯示 {overlap.length}／{document.segments.length} 個根音區段。{crossing?'跨交界的小節會完整保留，採用範圍仍以右側標示為準。':'根音區段與進度保持原樣。'}</p>:null}{message?<p role="status">{message}</p>:null}</section>;
 }

@@ -1,4 +1,5 @@
 import {useEffect,useRef,useState} from 'react';
+import {StructureAnalysisPanel} from './StructureAnalysisPanel';
 import {useSongStructure} from './useSongStructure';
 import {STRUCTURE_NAMES,parseStructure,renameSection,moveBoundary,splitSection,mergeSection,confirmSection,blankStructure,structurePracticeUrl,type StructureDocument,type StructureLabel,type StructureSection} from './songStructureDocument';
 import {rootStamp} from './rootPracticeDocument';
@@ -27,12 +28,13 @@ export function SongStructurePage({api,job,title}:{api:string;job:string;title:s
  function download(text:string,name:string){const href=URL.createObjectURL(new Blob([text],{type:'application/json'})),a=document.createElement('a');a.href=href;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(href),1000);}
  async function importFile(file:File){try{if(!doc||file.size>8_000_000)throw Error('請選擇這首歌的結構 JSON 備份。');const raw=JSON.parse(await file.text());setPreview(parseStructure(JSON.stringify(raw.document??raw),doc.source));setNotice('已載入備份預覽，按「套用預覽」後才會保存。');}catch(error){setNotice(String(error));}}
  async function history(){try{const response=await fetch(sheet.endpoint+'/history');if(!response.ok)throw Error();const data=await response.json();setArchives(data);if(!data.length)setNotice('目前沒有較早的保存版本。');}catch{setNotice('歷次保存暫時無法載入。');}}
- return <main className="song-structure" aria-label="歌曲結構編輯">
+ return <main className="song-structure" aria-label="歌曲結構編輯" onPlayCapture={event=>{const current=event.target;if(current instanceof HTMLAudioElement)event.currentTarget.querySelectorAll('audio').forEach(player=>{if(player!==current)player.pause();});}}>
   <header className="ss-header"><div><h1>{title}</h1><p>歌曲結構 · 先選一段，再聽與修正</p></div><a href={rootHref}>返回根音練習</a></header>
   <div className="ss-toolbar"><span className="ss-status" role="status" aria-label="結構保存狀態">{sheet.message}</span><button disabled={!sheet.canUndo||sheet.blocked} onClick={()=>{stop();sheet.undo();}}>復原</button><button disabled={!sheet.canRedo||sheet.blocked} onClick={()=>{stop();sheet.redo();}}>重做</button><button disabled={!doc} onClick={()=>download(JSON.stringify(doc,null,2),`song-structure-${job}.json`)}>下載結構備份</button></div>
   {sheet.blocked?<section className="ss-error" role="alert"><p>未保存的草稿會保留在本分頁。請先下載，再處理版本或連線問題。</p><div className="ss-actions"><button onClick={()=>download(sheet.rawDraft(),`structure-draft-${job}.json`)}>下載原始草稿</button><button disabled={sheet.busy} onClick={sheet.retry}>重試保存／載入</button><button disabled={sheet.busy} onClick={()=>{if(confirm('已下載要保留的草稿嗎？載入最新版本會替換本頁草稿。'))sheet.loadLatest();}}>載入最新版本</button></div></section>:null}
   {notice?<p role="status" className="ss-error">{notice}</p>:null}
-  {!doc&&sheet.source&&!sheet.blocked?<section><p>這首歌尚無結構初稿。可以先建立整首未判定的段落，再依回聽分開與命名。</p><button className="ss-primary" onClick={()=>sheet.update(blankStructure(sheet.source!))}>建立手動結構</button></section>:null}
+  <StructureAnalysisPanel endpoint={sheet.endpoint} job={job} source={sheet.source} disabled={sheet.blocked||sheet.busy} hasDocument={!!doc} onApply={next=>{stop();const applied=sheet.update(next);if(applied){setSelected(next.sections[0].id);setNotice('已套用分析初稿；名稱與邊界仍待確認。');}return applied;}}/>
+  {!doc&&sheet.source&&!sheet.blocked?<section><p>也可以自行圈選段落：</p><button onClick={()=>sheet.update(blankStructure(sheet.source!))}>建立手動結構</button></section>:null}
   {doc&&section?<>
    <p className="ss-help">共 {doc.sections.length} 段，{doc.sections.filter(s=>s.name_review_status==='user_confirmed').length} 段名稱已確認。名稱與時間邊界分開核對；修改結構不會改寫根音。{doc.source.source_start?` 本頁 0 秒對應原錄音 ${rootStamp(doc.source.source_start)}。`:''}</p>
    <div className="ss-player" aria-label="結構原曲回聽"><audio ref={audio} controls={sheet.audioAllowed} preload="metadata" src={sheet.audioAllowed?`${api}/api/v1/jobs/${encodeURIComponent(job)}/song-structure/audio?fingerprint=${doc.source.fingerprint}&audio_sha256=${doc.source.audio_sha256}`:undefined} onError={()=>setNotice('原曲目前無法載入，結構仍可查看與下載。')} onTimeUpdate={()=>{const a=audio.current;if(!a)return;setPosition(a.currentTime);if(limit.current!==null&&a.currentTime>=limit.current){a.pause();limit.current=null;}}}/>

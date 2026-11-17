@@ -25,3 +25,17 @@ test('real API persists editor changes, history and conflicts while root/Score s
  expect(await (await request.get('/backend/fixture/invariants')).json()).toEqual({roots_unchanged:true,score_unchanged:true});
  await other.close();
 });
+
+test('new song goes through real analysis API and subprocess to preview and explicit saved draft',async({page,request})=>{
+ const endpoint='/backend/api/v1/jobs/fixture-analysis/song-structure';
+ await page.goto('/?job=fixture-analysis&practice=structure');
+ await page.getByRole('button',{name:'分析歌曲結構',exact:true}).click();
+ await expect(page.getByLabel('歌曲結構分析狀態')).toContainText('正在分析');
+ await page.reload();await expect(page.getByRole('region',{name:'自動結構初稿預覽'})).toContainText('副歌',{timeout:15000});
+ expect((await (await request.get(endpoint)).json()).document).toBeNull();
+ await page.getByRole('button',{name:'套用分析初稿',exact:true}).click();await expect(page.getByLabel('結構保存狀態')).toHaveText('已保存');
+ const saved=await (await request.get(endpoint)).json();expect(saved.version).toBe(1);expect(saved.document.sections).toHaveLength(2);
+ expect(saved.document.sections.every((s:any)=>s.name_review_status==='unreviewed'&&s.boundary_review_status==='unreviewed')).toBe(true);
+ await expect(page.getByRole('link',{name:'練這段根音',exact:true})).toHaveAttribute('href',/section_start=0&section_end=3/);
+ expect(await (await request.get('/backend/fixture/invariants')).json()).toEqual({roots_unchanged:true,score_unchanged:true});
+});

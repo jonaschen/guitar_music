@@ -901,3 +901,19 @@ test('empty home offers visual practice without requiring an analyzed song',asyn
  await expect(page).toHaveURL(/\/visual-practice-2026-11-14\/\?practice=roots&visual=1$/);
  await expect(page.getByRole('heading',{name:'一起抓出歌曲的根音'})).toBeVisible();
 });
+
+test('a song without structure explains fine root segments and offers analysis before manual filling',async({page})=>{
+ const server=await setup(page,false);
+ await page.route('**/api/v1/jobs/root-job/song-structure',r=>r.fulfill({json:{job_id:'root-job',version:0,document:null,current_source:{...source,audio_sha256:'b'.repeat(64)},source_matches:true,source_error:null}}));
+ await page.reload();const nav=page.getByRole('region',{name:'歌曲結構導覽'});
+ await expect(nav).toContainText('不必逐段填結構名稱');await expect(nav.getByRole('link',{name:'分析歌曲結構'})).toHaveAttribute('href',/practice=structure/);
+ expect(server.writes).toBe(0);expect(server.scoreWrites).toBe(0);
+});
+
+test('a completed structure candidate is discoverable from the root page without saving it',async({page})=>{
+ const server=await setup(page,false);
+ await page.route('**/api/v1/jobs/root-job/song-structure',r=>r.fulfill({json:{job_id:'root-job',document:null}}));
+ await page.route('**/song-structure/analysis',r=>r.fulfill({json:{job_id:'root-job',state:'ready',candidate:{source,sections:[{id:'intro'},{id:'verse'}]}}}));
+ await page.reload();const nav=page.getByRole('region',{name:'歌曲結構導覽'});
+ await expect(nav).toContainText('已分析出 2 個歌曲大段');await expect(nav.getByRole('link',{name:'查看結構初稿'})).toBeVisible();expect(server.writes).toBe(0);
+});

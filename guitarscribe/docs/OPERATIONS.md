@@ -263,3 +263,13 @@ API 的 GET／PUT 用目前來源驗證和版本 CAS；history 保留最近 50 �
 若需回退前端，可還原備份中的 `visual-practice-2026-11-14/`；保留新結構 DB，勿覆蓋使用者後續修改。後端回退前先確認邀請站和開發站兩份 jobs DB 均無進行中分析，再使用一致環境重啟 `guitarscribe-friends-web`。不要用部署前 DB 覆蓋部署後人工進度。
 
 可重現的隔離驗證：先在 frontend 執行 `npm run build`，再執行 `npx --no-install playwright test --config playwright.structure-fullstack.config.ts`。fixture 僅使用臨時目錄與 localhost:5287，不讀寫正式 work。正式曲唯讀查核為 `node scripts/check-structure-editor.mjs`；保留兩曲來源、根音及結構前後快照，阻止寫稿請求，僅放行原本的唯讀 `root-candidates/rank` POST。
+
+## 歌曲結構分析（2026-11-17）
+
+結構分析使用獨立 runtime，設定 `GUITARSCRIBE_STRUCTURE_PYTHON` 與 `GUITARSCRIBE_STRUCTURE_PROTOCOL`；主機範本在 `output/web-preview/structure-runtime/protocol.json`。啟動腳本只在兩者存在時加入環境。固定模型與Demucs權重在本機cache，runner先核對SHA，缺少／改動就失敗，不在請求中安裝依賴。
+
+候選工作在 `work/structure-analysis/`，global flock避免兩首並行；systemd user scope限制 MemoryMax=2.5GiB、MemorySwapMax=0.5GiB、CPUQuota=200%、RuntimeMaxSec最多1200秒。服務程序意外退出時scope仍有硬時間上限；再次查詢會回收並標記中斷。取消會停止整個scope與子程序。無systemd監督時API回unavailable，不放行無限制推論。維護重啟前也須查結構分析state，等待或明確取消後才重啟。
+
+GET/POST/DELETE `jobs/{job}/song-structure/analysis` 分別查詢、啟動及取消；POST核對來源fingerprint及audio SHA。ready只表示候選可預覽，使用者明確套用才透過結構PUT保存，根音及Score不動。內部已完成run匯入必須核對原manifest／模型／音訊／時間範圍；無對外任意路徑匯入API。同錄音不同job可嚴格重綁候選但不繼承人工編輯。
+
+本輪回退入口與六資料庫一致備份在 `output/evaluation/song-structure-on-demand-2026-11-17/before-deploy/`。回退程式或HTML時保留後續使用者資料，不把舊SQLite覆蓋回去。
