@@ -1,0 +1,130 @@
+{
+  "unit_browser_tests": 6,
+  "existing_spectrum_entry_regressions": 13,
+  "tunnel_tests": 15,
+  "production_build": "passed",
+  "physical_mobile_tested": false,
+  "local": {
+    "base": "http://127.0.0.1:5273",
+    "results": [
+      {
+        "job": "83a3643ab3814172a046cebf709f3413",
+        "title": "膽小鬼",
+        "sections": 13,
+        "candidate_only": false,
+        "played_at": 63.433606,
+        "spectrum_verified": true,
+        "roots_version": 38,
+        "progress_unchanged": true
+      },
+      {
+        "job": "84defcef7fd44bbc8a1024b24d65c78e",
+        "title": "梁靜茹 Fish Leong【可惜不是你 Unfortunately Not You】Official Music Video",
+        "sections": 17,
+        "candidate_only": false,
+        "played_at": 118.255692,
+        "spectrum_verified": true,
+        "roots_version": 0,
+        "progress_unchanged": true
+      },
+      {
+        "job": "a3be29912a7045448765290d7cba2f6c",
+        "title": "黃小琥 Tiger Huang - 沒那麼簡單 [Official 官方完整版MV]",
+        "sections": 14,
+        "candidate_only": false,
+        "played_at": 96.070746,
+        "spectrum_verified": true,
+        "roots_version": 0,
+        "progress_unchanged": true
+      }
+    ],
+    "writes": [],
+    "errors": [],
+    "audio": [
+      {
+        "path": "/backend/api/v1/jobs/83a3643ab3814172a046cebf709f3413/song-structure/audio",
+        "status": 206
+      },
+      {
+        "path": "/backend/api/v1/jobs/83a3643ab3814172a046cebf709f3413/song-structure/audio",
+        "status": 206
+      },
+      {
+        "path": "/backend/api/v1/jobs/83a3643ab3814172a046cebf709f3413/song-structure/audio",
+        "status": 200
+      },
+      {
+        "path": "/backend/api/v1/jobs/84defcef7fd44bbc8a1024b24d65c78e/song-structure/audio",
+        "status": 206
+      },
+      {
+        "path": "/backend/api/v1/jobs/84defcef7fd44bbc8a1024b24d65c78e/song-structure/audio",
+        "status": 206
+      },
+      {
+        "path": "/backend/api/v1/jobs/84defcef7fd44bbc8a1024b24d65c78e/song-structure/audio",
+        "status": 200
+      },
+      {
+        "path": "/backend/api/v1/jobs/a3be29912a7045448765290d7cba2f6c/song-structure/audio",
+        "status": 206
+      },
+      {
+        "path": "/backend/api/v1/jobs/a3be29912a7045448765290d7cba2f6c/song-structure/audio",
+        "status": 206
+      },
+      {
+        "path": "/backend/api/v1/jobs/a3be29912a7045448765290d7cba2f6c/song-structure/audio",
+        "status": 200
+      }
+    ]
+  },
+  "external": {
+    "base": "https://undergraduate-touched-participating-jane.trycloudflare.com",
+    "results": [
+      {
+        "job": "83a3643ab3814172a046cebf709f3413",
+        "title": "膽小鬼",
+        "sections": 13,
+        "candidate_only": false,
+        "played_at": 63.434805,
+        "spectrum_verified": true,
+        "roots_version": 38,
+        "progress_unchanged": true
+      }
+    ],
+    "writes": [],
+    "errors": [],
+    "audio": [
+      {
+        "path": "/backend/api/v1/jobs/83a3643ab3814172a046cebf709f3413/song-structure/audio",
+        "status": 206
+      },
+      {
+        "path": "/backend/api/v1/jobs/83a3643ab3814172a046cebf709f3413/song-structure/audio",
+        "status": 206
+      },
+      {
+        "path": "/backend/api/v1/jobs/83a3643ab3814172a046cebf709f3413/song-structure/audio",
+        "status": 200
+      }
+    ]
+  },
+  "invariants": {
+    "databases_unchanged": {
+      "song-structure.sqlite3": true,
+      "root-practice.sqlite3": true,
+      "lyric-worksheets.sqlite3": true,
+      "melody-notes.sqlite3": true,
+      "revisions/guitarscribe.sqlite3": true,
+      "jobs/jobs.sqlite3": true
+    },
+    "existing_site_files": 215,
+    "changed_existing_files": [
+      "index.html",
+      "visual-practice-2026-11-14/index.html"
+    ],
+    "both_entrypoints_match_dist": true,
+    "index_sha256": "9be330bfeb508d9d4bc0d29dddb0099f85c53874adfa43f9a2209b96498d4475"
+  }
+}

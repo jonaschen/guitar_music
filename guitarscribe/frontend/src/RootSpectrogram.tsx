@@ -7,7 +7,7 @@ import './rootSpectrogram.css';
 type Chord = {start: number; end: number; symbol: string};
 type Range = {start: number; end: number};
 type Props = {
-  document: RootDocument; api: string; position: number; playing: boolean; range: Range; grid: RootGrid | null;
+  document: RootDocument; api: string; audioUrl?:string; initialOpen?:boolean; presentation?:boolean; position: number; playing: boolean; range: Range; grid: RootGrid | null;
   onSeek: (time: number) => void; onRange: (start: number, end: number) => void;
   onPlay: (start: number, end: number) => void; onPause: () => void;
   onUseSelectedRange: () => void; selectedId: string; playbackControls: boolean;
@@ -15,8 +15,8 @@ type Props = {
 const noteName = (midi: number) => ROOT_NAMES[((midi % 12) + 12) % 12] + (Math.floor(midi / 12) - 1);
 const clamp = (value: number, low: number, high: number) => Math.max(low, Math.min(high, value));
 
-export function RootSpectrogram({document: doc, api, position, playing, range, grid, onSeek, onRange, onPlay, onPause, onUseSelectedRange, selectedId, playbackControls}: Props) {
-  const [open, setOpen] = useState(() => new URLSearchParams(location.search).get('visual') === '1');
+export function RootSpectrogram({document: doc, api, audioUrl, initialOpen, presentation=false, position, playing, range, grid, onSeek, onRange, onPlay, onPause, onUseSelectedRange, selectedId, playbackControls}: Props) {
+  const [open, setOpen] = useState(() => initialOpen??new URLSearchParams(location.search).get('visual') === '1');
   const [data, setData] = useState<SpectrumData | null>(null), [chords, setChords] = useState<Chord[]>([]);
   const [state, setState] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle'), [message, setMessage] = useState('');
   const [view, setView] = useState<Range>({start: 0, end: Math.min(30, doc.source.duration)});
@@ -73,7 +73,7 @@ export function RootSpectrogram({document: doc, api, position, playing, range, g
       // A changed source or unavailable snapshot suppresses the chord layer.
       const original = await readOriginal();
       if (ticket !== generation.current) return;
-      const response = await fetch(`${endpoint}/root-practice/audio?fingerprint=${doc.source.fingerprint}`, {signal: abort.signal});
+      const response = await fetch(audioUrl??`${endpoint}/root-practice/audio?fingerprint=${doc.source.fingerprint}`, {signal: abort.signal});
       if (!response.ok) throw Error(response.status === 409 ? '來源已變動，請重新開啟這首歌。' : '原曲音訊目前無法取得；仍可查看下方根音工作稿。');
       if (Number(response.headers.get('Content-Length')) > 160_000_000) throw Error('音檔太大，請先分析較短片段。');
       const bytes = await response.arrayBuffer();
@@ -178,9 +178,9 @@ export function RootSpectrogram({document: doc, api, position, playing, range, g
         <div className="rs-actions">
           <button disabled={position > doc.source.duration - .08} onClick={() => markRange('start')}>游標設為 A（開始）</button>
           <button disabled={position < .08} onClick={() => markRange('end')}>游標設為 B（結束）</button>
-          <button onClick={() => {onUseSelectedRange(); setRangeMessage('已用右側目前判斷段落設定 A–B。');}}>以目前段落設定 A–B</button>
+          <button onClick={() => {onUseSelectedRange(); setRangeMessage(presentation?'已用介紹段落設定 A–B。':'已用右側目前判斷段落設定 A–B。');}}>以目前段落設定 A–B</button>
         </div>
-        <p role="status">{rangeMessage || '選好範圍後，按上方「播放原曲範圍」。勾選「A–B 循環」就會反覆播放。'}</p>
+        <p role="status">{rangeMessage || (presentation?'選好範圍後，按「播放目前範圍」。勾選「A–B 循環」就會反覆播放。':'選好範圍後，按上方「播放原曲範圍」。勾選「A–B 循環」就會反覆播放。')}</p>
       </div>
       <div className="rs-time-axis">{ticks.map((t, i) => <span key={i} style={{left: `${i * 25}%`}}>{rootStamp(t)}</span>)}</div>
       <div className="rs-chart-title"><h3>低頻頻譜 · E1–E4</h3><span className="rs-legend">弱 <i/> 強</span></div>
@@ -188,7 +188,7 @@ export function RootSpectrogram({document: doc, api, position, playing, range, g
         onKeyDown={e => {if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) {e.preventDefault(); onSeek(e.key === 'Home' ? view.start : e.key === 'End' ? Math.max(view.start, view.end - .01) : clamp(position + (e.key === 'ArrowRight' ? 1 : -1) * (e.shiftKey ? 1 : .1), 0, doc.source.duration - .01));}}}
         onPointerDown={e => {if (e.button !== 0) return; const p = point(e); drag.current = {time: p.time, x: e.clientX, pointer: e.pointerId}; e.currentTarget.setPointerCapture(e.pointerId); setProbe(p);}}
         onPointerMove={e => {const p = point(e); setProbe(p); if (drag.current?.pointer === e.pointerId && Math.abs(e.clientX - drag.current.x) > 4) setDragRange({start: Math.min(p.time, drag.current.time), end: Math.max(p.time, drag.current.time)});}}
-        onPointerUp={e => {const d = drag.current; if (!d || d.pointer !== e.pointerId) return; const p = point(e); drag.current = null; setDragRange(null); if (Math.abs(e.clientX - d.x) > 4 && Math.abs(p.time - d.time) >= .08) {onRange(Math.min(p.time, d.time), Math.max(p.time, d.time)); setRangeMessage('已選取圖中 A–B 範圍；按「播放原曲範圍」回聽。');} else onSeek(Math.min(p.time, doc.source.duration - .01));}}
+        onPointerUp={e => {const d = drag.current; if (!d || d.pointer !== e.pointerId) return; const p = point(e); drag.current = null; setDragRange(null); if (Math.abs(e.clientX - d.x) > 4 && Math.abs(p.time - d.time) >= .08) {onRange(Math.min(p.time, d.time), Math.max(p.time, d.time)); setRangeMessage(presentation?'已選取 A–B；按「播放目前範圍」回聽。':'已選取圖中 A–B 範圍；按「播放原曲範圍」回聽。');} else onSeek(Math.min(p.time, doc.source.duration - .01));}}
         onPointerCancel={() => {drag.current = null; setDragRange(null);}}>
         <canvas ref={canvas} width="1400" height="360" aria-label="原曲低頻能量圖" data-ready={!!data}/>
         {!data && <div className="rs-empty">{state === 'loading' ? '正在準備低頻圖…' : '按「產生低頻圖」查看原曲'}</div>}
@@ -202,7 +202,7 @@ export function RootSpectrogram({document: doc, api, position, playing, range, g
         {cursor}
       </div>
       <div className="rs-readout"><span>{probe ? `${rootStamp(probe.time)} · 指向 ${noteName(probe.midi)} 附近（游標刻度）` : '點圖定位；左右拖曳選 A–B。鍵盤左右鍵移動 0.1 秒，Shift 移動 1 秒。'}</span><label>顯示較弱線索 <input aria-label="頻譜顯示範圍" type="range" min="35" max="80" step="5" value={contrast} onChange={e => setContrast(Number(e.target.value))}/></label></div>
-      <p>點圖或用方向鍵移動游標，右側會切到對應段落；拖曳只調整 A–B。</p>
+      <p>{presentation?'點圖定位時間，拖曳或用 A、B 按鈕調整回聽範圍。':'點圖或用方向鍵移動游標，右側會切到對應段落；拖曳只調整 A–B。'}</p>
       <h3 className="rs-lane-title">原分析和弦 <small>自動辨識，待核對</small></h3>
       <div className="rs-plot rs-chords" aria-label="原分析和弦時間軸">
         {visibleChords.length ? visibleChords.map((c, i) => <button key={i} title={`${c.symbol} ${rootStamp(c.start)}–${rootStamp(c.end)}`} aria-label={`查看和弦 ${c.symbol} ${rootStamp(c.start)}`} style={percent(c.start, c.end)} onClick={() => {onRange(c.start, Math.min(c.end, doc.source.duration)); onSeek(c.start);}}>{c.symbol}</button>) : <span className="rs-no-chords">{data ? '此範圍沒有原分析和弦' : '產生低頻圖時一併讀取'}</span>}
@@ -216,12 +216,12 @@ export function RootSpectrogram({document: doc, api, position, playing, range, g
       </div>
       <p className="rs-current" aria-live="off">目前 {rootStamp(position)} · 原分析 {currentChord?.symbol ?? '未標示'} · 我的根音 {currentRoot?.status === 'confirmed' && currentRoot.root !== null ? ROOT_NAMES[currentRoot.root] : '待聽'}</p>
       <div className="rs-actions" hidden={!playbackControls}>
-        <button className="root-primary" onClick={() => playing ? onPause() : onPlay(rangeValid ? range.start : view.start, rangeValid ? range.end : view.end)}>{playing ? '暫停圖表播放' : '循環 A–B 原曲'}</button>
+        <button className="root-primary" onClick={() => playing ? onPause() : onPlay(rangeValid ? range.start : view.start, rangeValid ? range.end : view.end)}>{playing ? '暫停圖表播放' : presentation?'播放 A–B 原曲':'循環 A–B 原曲'}</button>
         <button onClick={() => {onRange(view.start, view.end); onPlay(view.start, view.end);}}>聽目前圖中範圍</button>
         <span>{rangeValid ? `A ${rootStamp(range.start)} — B ${rootStamp(range.end)}` : '尚未選範圍'}</span>
       </div>
       <p>圖表播放只聽原曲，不加入你已採用的根音或和弦聲音。</p>
-      <details className="rs-notes"><summary>怎麼用圖練習</summary><ol><li>先選 10–30 秒，聽原曲，再觀察低頻亮線隨時間移動。</li><li>亮線可能是泛音；用下面的參考音比較，並聽上方和聲，別只挑最亮或最低的線。</li><li>拖曳選 A–B 並循環。依自己的判斷在原有練習區採用根音，圖中才會顯示。</li></ol><p>頻譜採固定約 0.74 秒窗，起音與換音會被展寬；快速變化仍需回聽。左右聲道能量平均，未分離貝斯。根音圖按 C 到 B 排列，只表示音級，不能解讀為真實低音上下行或八度。</p><p>全部圖表使用本片段內秒數{doc.source.source_start > 0 ? `；0 秒對應原錄音 ${rootStamp(doc.source.source_start)}` : ''}。圖表選段與播放不會採用根音或修改原和弦稿。</p></details>
+      <details className="rs-notes"><summary>怎麼用圖練習</summary><ol><li>先選 10–30 秒，聽原曲，再觀察低頻亮線隨時間移動。</li><li>{presentation?'亮線可能是泛音；配合原曲和聲回聽，別只挑最亮或最低的線。':'亮線可能是泛音；用下面的參考音比較，並聽上方和聲，別只挑最亮或最低的線。'}</li><li>拖曳選 A–B 並循環。依自己的判斷在原有練習區採用根音，圖中才會顯示。</li></ol><p>頻譜採固定約 0.74 秒窗，起音與換音會被展寬；快速變化仍需回聽。左右聲道能量平均，未分離貝斯。根音圖按 C 到 B 排列，只表示音級，不能解讀為真實低音上下行或八度。</p><p>全部圖表使用本片段內秒數{doc.source.source_start > 0 ? `；0 秒對應原錄音 ${rootStamp(doc.source.source_start)}` : ''}。圖表選段與播放不會採用根音或修改原和弦稿。</p></details>
     </>}
   </section>;
 }

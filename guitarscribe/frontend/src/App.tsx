@@ -1,4 +1,5 @@
 import {AuditionControls, type AuditionContent, type AuditionPulse} from './AuditionControls';
+import {MobileDemoPage,mobileDemoUrl} from './MobileDemoPage';
 import {RootPractice} from './RootPractice';
 import {SongStructurePage} from './SongStructurePage';
 import {PerformanceDraftControl} from "./PerformanceDraftControl";
@@ -249,6 +250,7 @@ async function getRevision(revisionId: string): Promise<SongScore> {
 }
 
 export function App() {
+  const [demoJob]=useState(()=>{const p=new URLSearchParams(window.location.search);return p.get('practice')==='demo'?p.get('job'):null;});
   const [structureJob]=useState(()=>{const p=new URLSearchParams(window.location.search);return p.get('practice')==='structure'?p.get('job'):null;});
   const [rootPractice,setRootPractice]=useState(()=>new URLSearchParams(window.location.search).get('practice')==='roots');
   const [expiredRootJob,setExpiredRootJob]=useState<string|null>(null);
@@ -563,7 +565,7 @@ export function App() {
       } catch (restoreError) {
         if (obsolete()) return;
         if (restoreError instanceof ApiError && restoreError.status === 404) {
-          if(new URLSearchParams(window.location.search).get('practice')==='structure'){
+          if(['structure','demo'].includes(new URLSearchParams(window.location.search).get('practice')??'')){
             setAnalysisJob(null);setStatus('idle');return;
           }
           if(new URLSearchParams(window.location.search).get('practice')==='roots'){
@@ -2105,6 +2107,7 @@ export function App() {
     const url=new URL(window.location.href);if(open)url.searchParams.set('practice','roots');else url.searchParams.delete('practice');
     window.history.replaceState(null,'',url);setRootPractice(open);
   }
+  if(demoJob)return <MobileDemoPage key={demoJob} job={demoJob} title={score&&sourceJobId(score)===demoJob?score.song.title:"歌曲練習介紹"} api={API_BASE}/>;
   if(structureJob)return <SongStructurePage key={structureJob} job={structureJob} title={score?.song.title??"歌曲結構"} api={API_BASE}/>;
   if(rootPractice&&score&&sourceJobId(score))return <RootPractice key={sourceJobId(score)} job={sourceJobId(score)!} title={score.song.title} api={API_BASE} onClose={()=>openRootPractice(false)}/>;
   if(rootPractice&&expiredRootJob)return <RootPractice key={expiredRootJob} job={expiredRootJob} title="已保存的根音練習" api={API_BASE} onClose={()=>openRootPractice(false)}/>;
@@ -2126,6 +2129,7 @@ export function App() {
 
           <form className="intake-card" onSubmit={handleSubmit}>
             {!MELODY_ENABLED&&!rootPractice&&productScreen==="home"?<button type="button" disabled={analysisBusy} onClick={openVisualPractice}>視覺化練習</button>:null}
+              {!MELODY_ENABLED&&score&&sourceJobId(score)?<a className="mobile-demo-entry" href={mobileDemoUrl(sourceJobId(score)!)}>手機介紹</a>:null}
             {!MELODY_ENABLED && !score && !rootPractice ? <div className="example-entry"><button type="button" disabled={isLoadingExample || analysisBusy} onClick={()=>void openExample()}>{isLoadingExample ? "載入範例…" : "開啟範例：小手拉大手"}</button><small>內附和弦稿，可直接試播吉他與編輯。</small></div> : null}
             <p role="status">{capabilities ? "分析服務已就緒" : capabilitiesFailed ? "無法取得分析能力，請確認服務後重新整理。" : "正在確認分析能力…"}</p>
             {MELODY_ENABLED && capabilities && !capabilities.melody_available ? <p role="note">目前僅分析拍點與和弦，不會產生旋律；完成後可手動補音。</p> : null}
@@ -2221,6 +2225,7 @@ export function App() {
               <div><strong>{focusMode ? accompanimentView ? "和弦核對" : "專注修譜" : "完整工具"}</strong><p>選一段 → 對照來源 → 修譜與重播 → 保存版本</p></div>
               <button type="button" className="ghost-button" onClick={() => { setShowNewSong(value => !value); }}>{showNewSong ? "收起新曲目" : "分析新曲目"}</button>
               {!MELODY_ENABLED&&sourceJobId(score)?<button type="button" className="ghost-button" onClick={openVisualPractice}>視覺化練習</button>:null}
+              {!MELODY_ENABLED&&score&&sourceJobId(score)?<a className="mobile-demo-entry" href={mobileDemoUrl(sourceJobId(score)!)}>手機介紹</a>:null}
               <button type="button" hidden={!MELODY_ENABLED} className="ghost-button" onClick={switchWorkspace}>{focusMode ? "顯示完整工具" : accompanimentView ? "回到和弦核對" : "回到專注修譜"}</button>
               <button type="button" hidden={accompanimentView && focusMode} className="ghost-button" onClick={openPerformanceControls}>伴奏演奏</button>
               <button type="button" hidden={!MELODY_ENABLED} className="ghost-button" onClick={switchEditorView}>{accompanimentView ? "旋律編輯（實驗）" : "簡潔和弦頁"}</button>

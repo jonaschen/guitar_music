@@ -1,3 +1,4 @@
+import {mobileDemoUrl} from './MobileDemoPage';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {RootPracticeGrid} from './RootPracticeGrid';
 import {RootReusePanel} from './RootReusePanel';
@@ -253,6 +254,7 @@ export function RootPractice({job,title,api,onClose}:{job:string;title:string;ap
   const candidateBusy=['running','cancelling'].includes(evidence.state);
   return <main className="root-practice" aria-label="根音抓歌練習">
     <header className="root-header"><div><h1>{title}</h1><p>根音抓歌練習 · 一段一段，聽出自己的版本</p></div><button type="button" onClick={()=>{player.stop();onClose();}}>返回和弦頁</button></header>
+    <a className="mobile-demo-entry" href={mobileDemoUrl(job)}>手機介紹（不改進度）</a>
     <p className="root-intro">聽原曲、比較單音，決定這段要用哪個根音。參考音仍屬實驗線索，沒有標準答案評分。</p>
     <div className="root-save"><span role="status" aria-label="根音保存狀態">{sheet.message}</span><span>{confirmed} 段已採用 · {(doc?.segments.length??0)-confirmed} 段待聽</span></div>
     {sheet.blocked?<div className="root-problem" role="alert"><p>請先保留本頁內容，再處理保存問題。</p><button onClick={()=>download(sheet.rawDraft(),`root-draft-${job}.json`)}>下載原始草稿</button><button onClick={sheet.retry}>重試保存／載入</button><button disabled={sheet.busy} onClick={()=>{if(confirm('確定已下載需要保留的草稿？載入最新版本會替換本頁未保存內容。'))sheet.loadLatest();}}>載入最新版本</button></div>:null}

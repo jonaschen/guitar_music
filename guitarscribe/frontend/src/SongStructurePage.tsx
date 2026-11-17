@@ -1,3 +1,4 @@
+import {mobileDemoUrl} from './MobileDemoPage';
 import {useEffect,useRef,useState} from 'react';
 import {StructureAnalysisPanel} from './StructureAnalysisPanel';
 import {useSongStructure} from './useSongStructure';
@@ -30,6 +31,7 @@ export function SongStructurePage({api,job,title}:{api:string;job:string;title:s
  async function history(){try{const response=await fetch(sheet.endpoint+'/history');if(!response.ok)throw Error();const data=await response.json();setArchives(data);if(!data.length)setNotice('目前沒有較早的保存版本。');}catch{setNotice('歷次保存暫時無法載入。');}}
  return <main className="song-structure" aria-label="歌曲結構編輯" onPlayCapture={event=>{const current=event.target;if(current instanceof HTMLAudioElement)event.currentTarget.querySelectorAll('audio').forEach(player=>{if(player!==current)player.pause();});}}>
   <header className="ss-header"><div><h1>{title}</h1><p>歌曲結構 · 先選一段，再聽與修正</p></div><a href={rootHref}>返回根音練習</a></header>
+    <a className="mobile-demo-entry" href={mobileDemoUrl(job)}>手機介紹（不改進度）</a>
   <div className="ss-toolbar"><span className="ss-status" role="status" aria-label="結構保存狀態">{sheet.message}</span><button disabled={!sheet.canUndo||sheet.blocked} onClick={()=>{stop();sheet.undo();}}>復原</button><button disabled={!sheet.canRedo||sheet.blocked} onClick={()=>{stop();sheet.redo();}}>重做</button><button disabled={!doc} onClick={()=>download(JSON.stringify(doc,null,2),`song-structure-${job}.json`)}>下載結構備份</button></div>
   {sheet.blocked?<section className="ss-error" role="alert"><p>未保存的草稿會保留在本分頁。請先下載，再處理版本或連線問題。</p><div className="ss-actions"><button onClick={()=>download(sheet.rawDraft(),`structure-draft-${job}.json`)}>下載原始草稿</button><button disabled={sheet.busy} onClick={sheet.retry}>重試保存／載入</button><button disabled={sheet.busy} onClick={()=>{if(confirm('已下載要保留的草稿嗎？載入最新版本會替換本頁草稿。'))sheet.loadLatest();}}>載入最新版本</button></div></section>:null}
   {notice?<p role="status" className="ss-error">{notice}</p>:null}
