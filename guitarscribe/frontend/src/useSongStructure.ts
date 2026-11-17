@@ -24,7 +24,7 @@ export function useSongStructure(api:string,job:string){
     if(canonical(parsed)!==s.saved){s.document=parsed;if(cached.version!==s.version)block('另一分頁已更新；本頁草稿保留，請先下載再載入最新版本。');else setMessage('已恢復尚未保存的結構草稿。');}
     else{sessionStorage.removeItem(key);setMessage('已保存');}
    }catch{block('本機草稿來源或格式不符；請先下載原始草稿，再載入最新版本。');}}
-   else setMessage(doc?'已保存':'這首歌尚無結構，請先分析歌曲結構。');
+   else setMessage(doc?'已保存':'尚未保存歌曲結構；分析完成後，請預覽並套用初稿。');
    if(!result.source_matches){s.sourceBlocked=true;block(result.source_error||'錄音來源已變動，已停止編輯；仍可下載原稿。');}
    setDocument(s.document);setTick(t=>t+1);
   }catch(error){if(!controller.signal.aborted){block('歌曲結構載入失敗，草稿保留；請重試載入。');try{const raw=sessionStorage.getItem(key);if(raw){const cached=JSON.parse(raw);s.document=parseStructure(JSON.stringify(cached.document));setDocument(s.document);}}catch{/* Raw draft remains downloadable. */}}}})();

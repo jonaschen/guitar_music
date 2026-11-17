@@ -100,22 +100,41 @@ class RootPracticeStore:
             return [dict(version=v, document=json.loads(d)) for v, d in db.execute('SELECT version,document FROM root_practice_history WHERE job_id=? ORDER BY version DESC LIMIT 50', (job_id,))]
 
     def save(self, job_id, document, expected_version):
-        document = PracticeDocument.model_validate(document)
-        if document.source.job_id != job_id:
-            raise ValueError('Source mismatch')
-        now = datetime.now(timezone.utc).isoformat()
+        with sqlite3.connect(self.path) as db:
+            db.execute('BEGIN IMMEDIATE')
+            return self._save_locked(db, job_id, document, expected_version)
+
+    def mutate(self, job_id, expected_version, transform):
+        """Commit a server-side edit and its ledger callback in one root transaction."""
         with sqlite3.connect(self.path) as db:
             db.execute('BEGIN IMMEDIATE')
             row = db.execute('SELECT document,version FROM root_practice WHERE job_id=?', (job_id,)).fetchone()
             if (row[1] if row else 0) != expected_version:
+                raise PracticeConflict('根音版本已更新，請重新預覽。')
+            if row is None:
+                raise ValueError('請先保存根音稿，再預覽沿用。')
+            before = PracticeDocument.model_validate_json(row[0]).model_dump(mode='json')
+            now = datetime.now(timezone.utc).isoformat()
+            document, extra = transform(before, db, expected_version + 1, now)
+            snapshot = self._save_locked(db, job_id, document, expected_version, now)
+            return snapshot, extra
+
+    @staticmethod
+    def _save_locked(db, job_id, document, expected_version, now=None):
+        document = PracticeDocument.model_validate(document)
+        if document.source.job_id != job_id:
+            raise ValueError('Source mismatch')
+        now = now or datetime.now(timezone.utc).isoformat()
+        row = db.execute('SELECT document,version FROM root_practice WHERE job_id=?', (job_id,)).fetchone()
+        if (row[1] if row else 0) != expected_version:
+            raise PracticeConflict()
+        if row:
+            old = PracticeDocument.model_validate_json(row[0])
+            if old.source != document.source:
+                raise ValueError('Source fingerprint changed')
+            if old.schema_version == 2 and document.schema_version == 1:
                 raise PracticeConflict()
-            if row:
-                old = PracticeDocument.model_validate_json(row[0])
-                if old.source != document.source:
-                    raise ValueError('Source fingerprint changed')
-                if old.schema_version == 2 and document.schema_version == 1:
-                    raise PracticeConflict()
-                db.execute('INSERT OR IGNORE INTO root_practice_history VALUES (?,?,?)', (job_id, row[1], row[0]))
-            db.execute('INSERT INTO root_practice VALUES (?,?,?,?) ON CONFLICT(job_id) DO UPDATE SET document=excluded.document,version=excluded.version,updated_at=excluded.updated_at',
-                       (job_id, document.model_dump_json(), expected_version + 1, now))
+            db.execute('INSERT OR IGNORE INTO root_practice_history VALUES (?,?,?)', (job_id, row[1], row[0]))
+        db.execute('INSERT INTO root_practice VALUES (?,?,?,?) ON CONFLICT(job_id) DO UPDATE SET document=excluded.document,version=excluded.version,updated_at=excluded.updated_at',
+                   (job_id, document.model_dump_json(), expected_version + 1, now))
         return dict(job_id=job_id, document=document.model_dump(mode='json'), version=expected_version+1, updated_at=now)

@@ -1,5 +1,6 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {RootPracticeGrid} from './RootPracticeGrid';
+import {RootReusePanel} from './RootReusePanel';
 import {RootStructureNav,type PracticeSection} from './RootStructureNav';
 import {RootSpectrogram} from './RootSpectrogram';
 import {regridRoots,subdivideRootBar,rootSegmentLabel} from './rootMetricalSegments';
@@ -29,6 +30,7 @@ export function RootPractice({job,title,api,onClose}:{job:string;title:string;ap
   const [notice,setNotice]=useState(''),[scope,setScope]=useState<PlaybackScope>('segment');
   const [rangeStart,setRangeStart]=useState('0'),[rangeEnd,setRangeEnd]=useState(''),[rangeLoop,setRangeLoop]=useState(true);
   const [rangeNotice,setRangeNotice]=useState('');
+  const comparisonAudio=useRef<{start:number;end:number;sha:string}|null>(null);
   const [gridSettings,setGridSettings]=useState<RootGrid|null>(null),[plan,setPlan]=useState<SegmentPlan|null>(null),[planBusy,setPlanBusy]=useState(false),[planNotice,setPlanNotice]=useState('');
   const [metronomeActive,setMetronomeActive]=useState(false);
   const [archives,setArchives]=useState<Array<{version:number;document:RootDocument}>>([]);
@@ -161,7 +163,7 @@ export function RootPractice({job,title,api,onClose}:{job:string;title:string;ap
     const notes=audioMode==='source'?[]:nextScope!=='segment'?doc.segments.filter(s=>s.status==='confirmed'&&s.root!==null&&s.start<end&&s.end>start).map(s=>({start:Math.max(start,s.start),end:Math.min(end,s.end),root:s.root!})):midi===null?[]:[{start,end,root:midi%12,midi}];
     void player.play({url:`${endpoint}/root-practice/audio?fingerprint=${doc.source.fingerprint}`,start,end,from,loop:nextScope==='range'?rangeLoop:nextScope!=='segment'?false:loop,mode:audioMode,notes});
   }
-  function editRange(start:string,end:string){player.stop();setRangeStart(start);setRangeEnd(end);setScope('range');setRangeNotice('');setPosition(Math.max(0,Math.min(doc?.source.duration??0,Number.isFinite(Number(start))?Number(start):0)));}
+  function editRange(start:string,end:string){comparisonAudio.current=null;player.stop();setRangeStart(start);setRangeEnd(end);setScope('range');setRangeNotice('');setPosition(Math.max(0,Math.min(doc?.source.duration??0,Number.isFinite(Number(start))?Number(start):0)));}
   function dragBoundary(side:'start'|'end',time:number){
     if(!doc)return;
     const start=Number.isFinite(range.start)?range.start:0,end=Number.isFinite(range.end)?range.end:doc.source.duration;
@@ -191,10 +193,13 @@ export function RootPractice({job,title,api,onClose}:{job:string;title:string;ap
     if(scope==='range'&&audioState!=='idle'){player.stop();return;}
     play(null,scope==='range'&&mode==='source'?'source':'mix','range',scope==='range'&&position>=range.start&&position<range.end?position:undefined);
   }
-  function playVisualRange(start:number,end:number,from?:number,repeat=true){
+  function playVisualRange(start:number,end:number,from?:number,repeat=true,audioSha?:string){
     if(!doc||!Number.isFinite(start+end)||start<0||end>doc.source.duration||end-start<.08)return;
+    if(audioSha)comparisonAudio.current={start,end,sha:audioSha};
+    else if(comparisonAudio.current&&(comparisonAudio.current.start!==start||comparisonAudio.current.end!==end))comparisonAudio.current=null;
+    const boundSha=audioSha??comparisonAudio.current?.sha;
     setRangeStart(String(start));setRangeEnd(String(end));setRangeLoop(repeat);setScope('range');setMode('source');setNotice('');setPlaybackBounds({start,end});
-    void player.play({url:`${endpoint}/root-practice/audio?fingerprint=${doc.source.fingerprint}`,start,end,from,loop:repeat,mode:'source',notes:[]});
+    void player.play({url:boundSha?`${endpoint}/song-structure/audio?fingerprint=${doc.source.fingerprint}&audio_sha256=${boundSha}`:`${endpoint}/root-practice/audio?fingerprint=${doc.source.fingerprint}`,start,end,from,loop:repeat,mode:'source',notes:[]});
   }
   function primaryPlayback(){
     if(audioState!=='idle'){player.stop();return;}
@@ -244,7 +249,7 @@ export function RootPractice({job,title,api,onClose}:{job:string;title:string;ap
   const confirmed=doc?.segments.filter(s=>s.status==='confirmed').length??0;
   const playingIndex=doc?.segments.findIndex(s=>position>=s.start&&position<s.end)??-1;
   const playingSegment=playingIndex>=0?doc?.segments[playingIndex]:undefined;
-  const editable=!!doc&&!sheet.blocked;
+  const editable=!!doc&&!sheet.blocked&&!sheet.transaction;
   const candidateBusy=['running','cancelling'].includes(evidence.state);
   return <main className="root-practice" aria-label="根音抓歌練習">
     <header className="root-header"><div><h1>{title}</h1><p>根音抓歌練習 · 一段一段，聽出自己的版本</p></div><button type="button" onClick={()=>{player.stop();onClose();}}>返回和弦頁</button></header>
@@ -253,6 +258,7 @@ export function RootPractice({job,title,api,onClose}:{job:string;title:string;ap
     {sheet.blocked?<div className="root-problem" role="alert"><p>請先保留本頁內容，再處理保存問題。</p><button onClick={()=>download(sheet.rawDraft(),`root-draft-${job}.json`)}>下載原始草稿</button><button onClick={sheet.retry}>重試保存／載入</button><button disabled={sheet.busy} onClick={()=>{if(confirm('確定已下載需要保留的草稿？載入最新版本會替換本頁未保存內容。'))sheet.loadLatest();}}>載入最新版本</button></div>:null}
     {doc&&segment?<>
       <RootStructureNav api={api} job={job} document={doc} active={practiceSection} onSelect={selectPracticeSection}/>
+      <RootReusePanel api={api} job={job} document={doc} version={sheet.version} ready={!sheet.blocked&&!sheet.busy&&sheet.synced&&!gridChanged} serverAction={sheet.serverAction} onListen={(range,audioSha)=>{player.metronome(null);setMetronomeActive(false);playVisualRange(range.start,range.end,undefined,false,audioSha);}} onStop={()=>player.stop()} onGrid={()=>{showTools(true);toolsPanel.current?.scrollIntoView({block:'nearest'});}}/>
       <nav className="root-progression" ref={progression} aria-label="根音行進">{visibleSegments.map(({s,i})=><button type="button" key={s.id} aria-current={segment.id===s.id?'step':undefined} data-playing={audioState==='playing'&&position>=s.start&&position<s.end} aria-label={`第 ${i+1} 段 ${s.root===null?'待聽':ROOT_NAMES[s.root]} ${rootStamp(s.start)}`} onClick={()=>chooseSegment(s.id)}><small>{doc.grid?rootSegmentLabel(doc,s).split(' · ').slice(0,2).join(' · '):i+1}</small>{doc.grid?<small>{rootSegmentLabel(doc,s).split(' · ')[2]}</small>:null}<strong>{s.root===null?'?':ROOT_NAMES[s.root]}</strong><span>{s.status==='confirmed'?'已採用':s.status==='unsure'?'再聽':'待聽'}</span></button>)}</nav>
       <section className="root-workflow-transport" aria-label="主要播放控制">
         <div><strong>先聽原曲，再比較</strong><p aria-label="主要播放範圍">原曲 A–B：{rangeValid?`${rootStamp(range.start)}–${rootStamp(range.end)}`:'請設定有效範圍'}</p>{audioState!=='idle'&&playbackBounds?<p aria-label="正在播放範圍">{audioState==='preparing'?'準備播放':'正在播放'}：{rootStamp(playbackBounds.start)}–{rootStamp(playbackBounds.end)}</p>:null}</div>

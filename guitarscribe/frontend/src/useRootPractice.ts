@@ -4,7 +4,7 @@ import {parseRootDocument,type RootDocument,type RootSnapshot} from './rootPract
 export function useRootPractice(api:string,job:string){
   const [document,setDocument]=useState<RootDocument|null>(null),[message,setMessage]=useState('正在載入練習…');
   const [blocked,setBlocked]=useState(false),[busy,setBusy]=useState(false),[revision,setRevision]=useState(0),[reload,setReload]=useState(0);
-  const state=useRef({version:0,document:null as RootDocument|null,saved:'',alive:true,busy:false,blocked:false});
+  const state=useRef({version:0,document:null as RootDocument|null,saved:'',alive:true,busy:false,blocked:false,transaction:false});
   const undo=useRef<RootDocument[]>([]),redo=useRef<RootDocument[]>([]);
   const draftKey=`guitarscribe.root-practice.v1.${job}`;
   const endpoint=`${api}/api/v1/jobs/${encodeURIComponent(job)}/root-practice`;
@@ -55,14 +55,31 @@ export function useRootPractice(api:string,job:string){
   useEffect(()=>{const timer=setTimeout(()=>void flush(),450);return()=>clearTimeout(timer);},[document,revision]);
   useEffect(()=>{const handler=(event:BeforeUnloadEvent)=>{const s=state.current;if(s.document&&JSON.stringify(s.document)!==s.saved){event.preventDefault();event.returnValue='';}};window.addEventListener('beforeunload',handler);return()=>window.removeEventListener('beforeunload',handler);},[]);
   function update(next:RootDocument,history=true){
-    const s=state.current;if(!s.document||s.blocked)return false;
+    const s=state.current;if(!s.document||s.blocked||s.transaction)return false;
     try{parseRootDocument(JSON.stringify(next),s.document.source);}catch(e){setMessage(e instanceof Error?e.message:'資料無效');return false;}
     if(history){undo.current=s.document.schema_version===1&&next.schema_version===2?[]:[...undo.current.slice(-49),s.document];redo.current=[];}
     s.document=next;setDocument(next);retain();setMessage('尚未保存…');setRevision(v=>v+1);return true;
   }
-  function travel(back:boolean){const from=back?undo:redo,to=back?redo:undo,s=state.current;if(!s.document||s.blocked||!from.current.length)return;const next=from.current.pop()!;to.current.push(s.document);update(next,false);}
+  function travel(back:boolean){const from=back?undo:redo,to=back?redo:undo,s=state.current;if(!s.document||s.blocked||s.transaction||!from.current.length)return;const next=from.current.pop()!;to.current.push(s.document);update(next,false);}
   function retry(){state.current.blocked=false;setBlocked(false);setRevision(v=>v+1);if(!state.current.document)setReload(v=>v+1);}
   function loadLatest(){if(state.current.busy)return;try{sessionStorage.removeItem(draftKey);}catch{/* Loading server remains possible. */}setReload(v=>v+1);}
   function rawDraft(){try{return sessionStorage.getItem(draftKey)??JSON.stringify(state.current.document);}catch{return JSON.stringify(state.current.document);}}
-  return {document,message,blocked,busy,update,undo:()=>travel(true),redo:()=>travel(false),canUndo:!!undo.current.length,canRedo:!!redo.current.length,retry,loadLatest,rawDraft};
+  async function serverAction(path:string,body:unknown){
+    const s=state.current;
+    if(!s.document||s.busy||s.blocked||JSON.stringify(s.document)!==s.saved)throw Error('請等根音保存完成後，再預覽及沿用。');
+    const source=s.document.source,version=s.version;s.transaction=true;s.busy=true;setBusy(true);setMessage('正在保存整批變更…');
+    try{
+      const response=await fetch(endpoint+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      if(!response.ok){const message=response.status===409?'版本或錄音已變動；未覆寫本頁根音。請載入最新版本後重新比較。':'整批操作未確認成功；請載入最新版本確認結果後再試。';block(message);throw Error(message);}
+      const result=await response.json(),snapshot=result.snapshot as RootSnapshot;
+      const next=parseRootDocument(JSON.stringify(snapshot.document),source);
+      if(snapshot.job_id!==job||snapshot.version!==version+1)throw Error('整批保存回覆版本不符，請重新載入確認。');
+      if(!s.alive)return result;
+      s.version=snapshot.version;s.saved=JSON.stringify(next);s.document=next;undo.current=[];redo.current=[];
+      try{sessionStorage.removeItem(draftKey);}catch{/* Server committed. */}
+      setDocument(next);setMessage('已保存');return result;
+    }catch(error){if(s.alive&&!s.blocked)block('整批操作連線中斷；請載入最新版本確認是否已保存，避免重複套用。');throw error;}
+    finally{s.transaction=false;s.busy=false;if(s.alive){setBusy(false);setRevision(v=>v+1);}}
+  }
+  return {document,message,blocked,busy,version:state.current.version,synced:!!document&&JSON.stringify(document)===state.current.saved,transaction:state.current.transaction,serverAction,update,undo:()=>travel(true),redo:()=>travel(false),canUndo:!!undo.current.length,canRedo:!!redo.current.length,retry,loadLatest,rawDraft};
 }

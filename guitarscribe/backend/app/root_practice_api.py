@@ -10,6 +10,7 @@ from .services.root_practice import RootPracticeStore, PracticeDocument, Practic
 from .services.root_candidate_jobs import RootCandidateJobs
 from .services.root_candidates import candidates_for_range
 from .services.root_segments import PracticeGrid, segmentation_plan
+from .root_reuse_api import create_reuse_router
 
 manager = RootCandidateJobs()
 
@@ -122,4 +123,5 @@ def create_root_router(get_job_service):
         result = await asyncio.to_thread(candidates_for_range, evidence, body.start, body.end)
         return dict(result, fingerprint=source['fingerprint'])
 
+    router.include_router(create_reuse_router(get_job_service, get_root_practice_store))
     return router

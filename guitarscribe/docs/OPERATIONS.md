@@ -273,3 +273,11 @@ API 的 GET／PUT 用目前來源驗證和版本 CAS；history 保留最近 50 �
 GET/POST/DELETE `jobs/{job}/song-structure/analysis` 分別查詢、啟動及取消；POST核對來源fingerprint及audio SHA。ready只表示候選可預覽，使用者明確套用才透過結構PUT保存，根音及Score不動。內部已完成run匯入必須核對原manifest／模型／音訊／時間範圍；無對外任意路徑匯入API。同錄音不同job可嚴格重綁候選但不繼承人工編輯。
 
 本輪回退入口與六資料庫一致備份在 `output/evaluation/song-structure-on-demand-2026-11-17/before-deploy/`。回退程式或HTML時保留後續使用者資料，不把舊SQLite覆蓋回去。
+
+## 重複段根音沿用（2026-11-17）
+
+`root-practice/reuse-plan` 為只讀預覽；`reuse-apply` 及 `reuse-ledger/{id}/undo` 經root版本CAS與來源雙hash重驗。SQLite `root_reuse_ledger` 於首次沿用交易才建立，和root snapshot／history同交易提交或回滾。單純查看無root的舊job不建稿或新增ledger table。沒有root schema升版，舊v1可對照；沿用要求已保存v2及明確核對等長完整小節範圍。
+
+GET `reuse-ledger` 依目前root局部內容簽章判斷有效性，最多回傳最近200批；匯出所標有效沿用也以此範圍為準，不作全歷史工時統計。恢復根音舊版本會讓不符的沿用關係失效；不能把ledger當會自動同步的連結。
+
+本輪備份 `output/evaluation/root-reuse-2026-11-17/before-deploy/` 使用SQLite backup API；重啟前同查兩站分析DB與structure-analysis state。回退前端／程式不還原舊資料庫，以免覆寫新練習進度。測試 `serve_root_reuse_fixture.py` 僅建暫存資料庫／24秒合成測試原曲，永不開正式work；其聲音只用於播放事件驗證，不作音樂品質樣本。

@@ -31,7 +31,7 @@ export function StructureAnalysisPanel({endpoint,job,source,disabled,hasDocument
   <p role="status" aria-label="歌曲結構分析狀態">{status?.message??(source?'正在查詢分析狀態…':'正在取得錄音來源…')}{working?` · 已經過 ${rootStamp(status!.elapsed_seconds)}`:''}</p>
   {working?<p>這台電腦完整歌曲約需 15–20 分鐘。可先離開頁面，稍後回來查看；取消分析不會刪掉練習進度。</p>:null}
   <div className="ss-actions">
-   <button className="ss-primary" disabled={!source||disabled||pending||working||status?.state==='unavailable'} onClick={()=>{setApplied(null);void request('POST',hasDocument||status?.state==='ready');}}>{hasDocument||candidate?'重新分析結構':'分析歌曲結構'}</button>
+   <button className={candidate?undefined:"ss-primary"} disabled={!source||disabled||pending||working||status?.state==='unavailable'} onClick={()=>{setApplied(null);void request('POST',hasDocument||status?.state==='ready');}}>{hasDocument||candidate?'重新分析結構':'分析歌曲結構'}</button>
    {working?<button disabled={pending||status?.state==='cancelling'} onClick={()=>void request('DELETE')}>取消結構分析</button>:null}
    <button disabled={!source||pending} onClick={()=>void request()}>更新分析狀態</button>
   </div>

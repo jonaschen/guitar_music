@@ -1,0 +1,86 @@
+{
+  "date": "2026-11-17",
+  "scope": [
+    "comparison",
+    "explicit reuse",
+    "atomic batch undo",
+    "structure notation",
+    "workload and deferred practice"
+  ],
+  "tests": {
+    "new_backend_reuse": 29,
+    "existing_backend_root_unique": 10,
+    "root_browser_regression": 50,
+    "reuse_helpers_and_browser_unique": 14,
+    "isolated_real_api_browser": 2,
+    "typescript_and_production_build": "passed"
+  },
+  "tdd_observations": [
+    "Absent reuse module and absent comparison UI failed before implementation.",
+    "Cross-boundary displayed root intervals failed before clipping while retaining original bounds.",
+    "Dual-hash comparison audio and primary resume failed before binding audio hash to playback range."
+  ],
+  "quality_limitations": [
+    "No new musical accuracy claim.",
+    "Equal fixed-grid bars require explicit listening confirmation; tempo changes are not automatically warped.",
+    "No measured human time-saving percentage.",
+    "Real recording roots are protected; mutation integration uses disposable fixture data."
+  ],
+  "review": [
+    "programmer-session reviewed frontend concurrency, provenance and playback; issues fixed and tested",
+    "partner-session reviewed backend CAS, atomic ledger and missing initial worksheet behavior"
+  ],
+  "artifacts": "output/evaluation/root-reuse-2026-11-17/",
+  "real_fractional_grid": {
+    "source_job": "a3be29912a7045448765290d7cba2f6c",
+    "original_version": 0,
+    "schema_version": 2,
+    "method": "Read initial worksheet from live API, save only in TemporaryDirectory, preview 7 bars at saved 115 BPM",
+    "source_unknown": 7,
+    "fillable": 0,
+    "production_writes": 0
+  },
+  "live_browser": {
+    "results": [
+      {
+        "job": "83a3643ab3814172a046cebf709f3413",
+        "root_schema": 1,
+        "root_version": 38,
+        "sections": 13
+      },
+      {
+        "job": "a3be29912a7045448765290d7cba2f6c",
+        "root_schema": 2,
+        "root_version": 0,
+        "sections": 14
+      },
+      {
+        "job": "84defcef7fd44bbc8a1024b24d65c78e",
+        "candidate_sections": 17
+      }
+    ],
+    "errors": [],
+    "mutations": [],
+    "read_only_plans": 0,
+    "read_only_rank_requests": [
+      "http://127.0.0.1:5273/backend/api/v1/jobs/83a3643ab3814172a046cebf709f3413/root-candidates/rank",
+      "http://127.0.0.1:5273/backend/api/v1/jobs/a3be29912a7045448765290d7cba2f6c/root-candidates/rank"
+    ],
+    "harness_note": "Initial recorder classified all non-plan POST as writes; reviewed existing root-candidates/rank handler as read-only and corrected classification. Original request URLs retained above."
+  },
+  "invariants": {
+    "databases_unchanged": {
+      "song-structure.sqlite3": true,
+      "root-practice.sqlite3": true,
+      "lyric-worksheets.sqlite3": true,
+      "melody-notes.sqlite3": true,
+      "revisions/guitarscribe.sqlite3": true,
+      "jobs/jobs.sqlite3": true
+    },
+    "existing_site_files": 208,
+    "changed_existing_files": [
+      "index.html",
+      "visual-practice-2026-11-14/index.html"
+    ]
+  }
+}
