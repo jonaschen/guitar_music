@@ -3,7 +3,7 @@ name = "guitarscribe"
 version = "0.1.0"
 description = "Guitar practice materials generator"
 authors = [{name = "Developer"}]
-requires-python = ">=3.10,<3.13"
+requires-python = ">=3.11,<3.13"
 dependencies = [
     "pydantic>=2.0,<3",
     "fastapi>=0.115,<1",

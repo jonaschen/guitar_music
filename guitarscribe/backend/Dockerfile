@@ -1,4 +1,4 @@
-FROM python:3.10-bookworm
+FROM python:3.11-bookworm
 
 # System dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
