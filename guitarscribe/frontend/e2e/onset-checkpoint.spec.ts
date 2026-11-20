@@ -8,8 +8,8 @@ const packetReady = existsSync(path.join(packetDirectory, "index.html"))
 
 test.skip(!packetReady, "External checkpoint packet is not ready yet.");
 
-test("external checkpoint offers two mutually exclusive three-track comparisons", async ({ page }, testInfo) => {
-  const base = process.env.GUITARSCRIBE_UI_URL ?? "http://127.0.0.1:4173";
+test("external checkpoint offers two mutually exclusive three-track comparisons", async ({ page, baseURL }, testInfo) => {
+  const base = process.env.GUITARSCRIBE_UI_URL ?? baseURL;
   await page.goto(`${base}/listening/external-checkpoint-2026-10-25/index.html`);
   await expect(page.getByRole("heading", { name: "外部版本比較", exact: true })).toBeVisible();
   await expect(page.getByRole("status")).toHaveText("試聽清單已載入。");

@@ -8,8 +8,8 @@ const packetReady = existsSync(path.join(packetDirectory, "index.html"))
 
 test.skip(!packetReady, "Third-source checkpoint packet is not ready yet.");
 
-test("third-source checkpoint plays original, vocal stem and G melody in both groups", async ({ page }, testInfo) => {
-  const base = process.env.GUITARSCRIBE_UI_URL ?? "http://127.0.0.1:4173";
+test("third-source checkpoint plays original, vocal stem and G melody in both groups", async ({ page, baseURL }, testInfo) => {
+  const base = process.env.GUITARSCRIBE_UI_URL ?? baseURL;
   await page.goto(`${base}/listening/third-source-2026-10-25/index.html`);
   await expect(page.getByRole("heading", { name: "第三來源旋律檢查", exact: true })).toBeVisible();
   await expect(page.getByRole("status")).toHaveText("試聽清單已載入。");

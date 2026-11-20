@@ -45,7 +45,7 @@ function wavFile(): Buffer {
 async function installAudioProbe(page: Page) {
   await page.addInitScript(() => {
     type Automation = { method: string; value: number; time: number };
-    type OscillatorRecord = { frequency: number; starts: number[]; stops: number[]; automation: Automation[] };
+    type OscillatorRecord = { frequency: number; starts: number[]; stops: number[]; stopCalls: number[]; automation: Automation[] };
     const oscillators: OscillatorRecord[] = [];
     const contexts: AudioContext[] = [];
     (window as any).__knownEventsProbe = { oscillators, contexts };
@@ -78,7 +78,7 @@ async function installAudioProbe(page: Page) {
       const context = this;
       if (!contexts.includes(context)) contexts.push(context);
       const oscillator = createOscillator.call(this);
-      const row: OscillatorRecord = { frequency: NaN, starts: [], stops: [], automation: [] };
+      const row: OscillatorRecord = { frequency: NaN, starts: [], stops: [], stopCalls: [], automation: [] };
       oscillators.push(row);
       const connect = oscillator.connect.bind(oscillator);
       oscillator.connect = ((target: AudioNode) => {
@@ -97,6 +97,7 @@ async function installAudioProbe(page: Page) {
       }) as typeof oscillator.start;
       const stop = oscillator.stop.bind(oscillator);
       oscillator.stop = ((time?: number) => {
+        row.stopCalls.push(context.currentTime);
         row.stops.push(time ?? context.currentTime);
         return time === undefined ? stop() : stop(time);
       }) as typeof oscillator.stop;
@@ -118,6 +119,7 @@ async function probe(page: Page) {
         frequency: row.frequency,
         starts: [...row.starts],
         stops: [...row.stops],
+        stopCalls: [...row.stopCalls],
         automation: [...row.automation],
       })),
     };
@@ -144,7 +146,7 @@ async function prepareDiagnostic(page: Page, request: APIRequestContext) {
   const unexpectedWrites: string[] = [];
   page.on("request", browserRequest => {
     if (browserRequest.method() !== "GET" && browserRequest.method() !== "HEAD"
-      && !["/scores/playback/manifest", "/scores/musicxml"].includes(new URL(browserRequest.url()).pathname)) {
+      && !["/scores/playback/manifest", "/scores/musicxml"].includes(new URL(browserRequest.url()).pathname.replace(/^\/backend(?=\/)/, ""))) {
       unexpectedWrites.push(`${browserRequest.method()} ${new URL(browserRequest.url()).pathname}`);
     }
   });
@@ -223,7 +225,7 @@ test("known rest, repeated-note and cross-bar events schedule, pause, resume and
   expect(pausedLong.stops.at(-1)).toBeGreaterThan(longRowStart);
   expect(pausedLong.stops.at(-1)).toBeLessThan(longRowStart + .6);
   expect(paused.now - pausedLong.stops.at(-1)!).toBeGreaterThanOrEqual(0);
-  expect(paused.now - pausedLong.stops.at(-1)!).toBeLessThanOrEqual(.05);
+  expect(Math.abs(pausedLong.stopCalls.at(-1)! - pausedLong.stops.at(-1)!)).toBeLessThanOrEqual(.05);
 
   const beforeResume = paused.oscillators.filter(row => Math.abs(row.frequency - longNoteFrequency) < .01).length;
   await page.getByRole("button", { name: "Play score", exact: true }).click();
@@ -262,7 +264,8 @@ test("known rest, repeated-note and cross-bar events schedule, pause, resume and
   expect(stoppedLoopTail).toBeLessThan(stoppedLongs[1].stops[0]);
   expect(stoppedLoopTail).toBeGreaterThan(loopLongs[1].starts[0]);
   expect(stopped.now - stoppedLoopTail).toBeGreaterThanOrEqual(0);
-  expect(stopped.now - stoppedLoopTail).toBeLessThanOrEqual(.05);
+  // Measure stop scheduling in the same audio context, not Playwright round-trip latency.
+  expect(Math.abs(stoppedLongs[1].stopCalls.at(-1)! - stoppedLoopTail)).toBeLessThanOrEqual(.05);
   const startsAtStop = stopped.oscillators.reduce((total, row) => total + row.starts.length, 0);
   await page.waitForTimeout(350);
   const afterStop = await probe(page);

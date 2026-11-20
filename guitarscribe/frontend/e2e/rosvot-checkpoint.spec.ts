@@ -8,8 +8,8 @@ const packetReady = existsSync(path.join(packetDirectory, "index.html"))
 
 test.skip(!packetReady, "ROSVOT checkpoint packet is not ready yet.");
 
-test("ROSVOT checkpoint serves three groups with three mutually exclusive tracks each", async ({ page }, testInfo) => {
-  const base = process.env.GUITARSCRIBE_UI_URL ?? "http://127.0.0.1:4173";
+test("ROSVOT checkpoint serves three groups with three mutually exclusive tracks each", async ({ page, baseURL }, testInfo) => {
+  const base = process.env.GUITARSCRIBE_UI_URL ?? baseURL;
   const pageUrl = `${base}/listening/rosvot-checkpoint-2026-10-25/index.html`;
   await page.goto(pageUrl);
   await expect(page.getByRole("heading", { name: "ROSVOT 探索性比較", exact: true })).toBeVisible();
