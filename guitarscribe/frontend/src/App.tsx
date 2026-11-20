@@ -979,7 +979,9 @@ export function App() {
   }
 
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
-    setFile(event.target.files?.[0] ?? null);
+    const selected = event.target.files?.[0] ?? null;
+    setFile(selected);
+    if (selected) setYoutubeUrl("");
   }
 
   async function importLrcFile(event: ChangeEvent<HTMLInputElement>) {
@@ -2146,7 +2148,7 @@ export function App() {
             <label className="field">
               <span>YouTube 網址</span>
               <input aria-label="YouTube video URL" aria-invalid={!youtubeUrlValid} aria-describedby="youtube-url-feedback" type="url" disabled={!capabilities?.youtube_enabled} value={youtubeUrl} onChange={(event) => setYoutubeUrl(event.target.value)} placeholder="https://www.youtube.com/watch?v=…" />
-              <small id="youtube-url-feedback">{!youtubeUrlValid ? "請貼上單一 YouTube 影片網址，例如 https://youtu.be/影片代碼。" : capabilities?.youtube_enabled ? "同時選擇音檔與網址時，以網址為準。" : "目前服務未開啟 YouTube，請使用音檔。"}</small>
+              <small id="youtube-url-feedback">{!youtubeUrlValid ? "請貼上單一 YouTube 影片網址，例如 https://youtu.be/影片代碼。" : capabilities?.youtube_enabled ? "選擇音檔會清除網址；填入網址後改用 YouTube。" : "目前服務未開啟 YouTube，請使用音檔。"}</small>
             </label>
 
             <label className="field">分析長度<select aria-label="Analysis duration" value={analysisSeconds} onChange={event => setAnalysisSeconds(event.target.value)}>
