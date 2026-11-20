@@ -20,7 +20,7 @@ class Settings(BaseModel):
     max_upload_bytes: int = 100 * 1024 * 1024
     max_concurrent_jobs: int = Field(default=1, ge=1)
     max_queued_jobs: int = Field(default=3, ge=0)
-    job_ttl_seconds: int = 24 * 60 * 60
+    job_ttl_seconds: int | None = 24 * 60 * 60
     work_dir: Path = Path("/tmp/guitarscribe")
     beat_engine: BeatEngine = BeatEngine.LIBROSA
     beat_recovery_enabled: bool = False
@@ -51,7 +51,8 @@ class Settings(BaseModel):
             max_upload_bytes=int(os.environ.get("GUITARSCRIBE_MAX_UPLOAD_BYTES", str(100 * 1024 * 1024))),
             max_concurrent_jobs=int(os.environ.get("GUITARSCRIBE_MAX_CONCURRENT_JOBS", "1")),
             max_queued_jobs=int(os.environ.get("GUITARSCRIBE_MAX_QUEUED_JOBS", "3")),
-            job_ttl_seconds=int(os.environ.get("GUITARSCRIBE_JOB_TTL_SECONDS", str(24 * 60 * 60))),
+            job_ttl_seconds=(None if os.environ.get("GUITARSCRIBE_KEEP_SONGS", "false").lower() == "true"
+                             else int(os.environ.get("GUITARSCRIBE_JOB_TTL_SECONDS", str(24 * 60 * 60)))),
             work_dir=Path(os.environ.get("GUITARSCRIBE_WORK_DIR", "/tmp/guitarscribe")),
             beat_engine=BeatEngine(os.environ.get("GUITARSCRIBE_BEAT_ENGINE", "librosa")),
             beat_recovery_enabled=os.environ.get("GUITARSCRIBE_BEAT_RECOVERY_ENABLED", "false").lower() == "true",

@@ -286,3 +286,30 @@ def test_job_store_marks_in_progress_work_failed_after_server_restart(tmp_path):
     assert restored.status == JobStatus.FAILED
     assert restored.error == "The server restarted before this analysis completed."
     assert restored.message == "Analysis interrupted by server restart"
+
+
+@pytest.mark.parametrize("keep_songs", [True, False])
+def test_persistent_library_retains_old_audio_and_still_recovers_interrupted_jobs(tmp_path, monkeypatch, keep_songs):
+    from app.core.config import Settings
+    monkeypatch.setenv("GUITARSCRIBE_KEEP_SONGS", str(keep_songs).lower())
+    monkeypatch.setenv("GUITARSCRIBE_JOB_TTL_SECONDS", "86400")
+    store = JobStore(tmp_path / "jobs")
+    old = AnalysisJob(id="old-song", status=JobStatus.COMPLETED, progress=100,
+                      created_at="2000-01-01T00:00:00+00:00", updated_at="2000-01-01T00:00:00+00:00")
+    store.save(old)
+    directory = store.job_dir(old.id); directory.mkdir()
+    audio = directory / "input.wav"; audio.write_bytes(b"original recording")
+    interrupted = old.model_copy(update={"id": "interrupted", "status": JobStatus.CHORD_ANALYSIS})
+    store.save(interrupted)
+    settings = Settings.from_env()
+    service = AnalysisJobService(store, StubPipeline, job_ttl_seconds=settings.job_ttl_seconds)
+    if keep_songs:
+        assert settings.job_ttl_seconds is None
+        assert service.get(old.id).status == JobStatus.COMPLETED
+        assert audio.read_bytes() == b"original recording"
+        assert service.get(interrupted.id).status == JobStatus.FAILED
+    else:
+        assert settings.job_ttl_seconds == 86400
+        with pytest.raises(FileNotFoundError):
+            service.get(old.id)
+        assert not directory.exists()

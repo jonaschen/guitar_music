@@ -59,6 +59,8 @@ class YouTubeAudioDownloader:
         if process.returncode != 0:
             detail = stderr.decode("utf-8", errors="replace").strip().splitlines()[-1:]
             logger.warning("youtube_audio_download_failed detail=%s", " ".join(detail))
+            if "not a bot" in " ".join(detail).lower():
+                raise RuntimeError("YouTube 目前拒絕這台主機下載音訊。請稍後重試，或改用「上傳音檔」；已匯入的歌曲仍可繼續練習。")
             if "this video is not available" in " ".join(detail).lower():
                 raise RuntimeError("目前無法從 YouTube 取得這支影片的音訊。網址已辨識，但來源目前無法下載；請稍後重試，或改用其他來源／上傳音檔。")
             raise RuntimeError(f"Could not download YouTube audio: {' '.join(detail) or 'yt-dlp failed'}")

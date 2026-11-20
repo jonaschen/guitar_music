@@ -96,3 +96,18 @@ async def test_service_can_select_js_runtime_outside_default_path(tmp_path, monk
 
     monkeypatch.setattr('app.sources.youtube.asyncio.create_subprocess_exec', create_process)
     await YouTubeAudioDownloader(js_runtime=settings.youtube_js_runtime).download('https://youtu.be/FjFU9QHdx1g', tmp_path)
+
+
+@pytest.mark.asyncio
+async def test_bot_challenge_explains_upload_fallback_without_requesting_cookies(tmp_path, monkeypatch):
+    class BlockedProcess:
+        returncode = 1
+        async def communicate(self):
+            return b'', 'ERROR: Sign in to confirm you’re not a bot. Use --cookies-from-browser'.encode()
+    async def create_process(*command, **options):
+        return BlockedProcess()
+    monkeypatch.setattr('app.sources.youtube.asyncio.create_subprocess_exec', create_process)
+    with pytest.raises(RuntimeError, match='上傳音檔') as error:
+        await YouTubeAudioDownloader().download('https://youtu.be/example', tmp_path)
+    assert '已匯入的歌曲' in str(error.value)
+    assert 'cookies' not in str(error.value)

@@ -124,7 +124,7 @@ class AnalysisJobService:
         pipeline_factory: Callable[[], AnalysisPipeline],
         max_concurrent_jobs: int = 1,
         max_queued_jobs: int = 3,
-        job_ttl_seconds: int = 24 * 60 * 60,
+        job_ttl_seconds: int | None = 24 * 60 * 60,
         youtube_downloader: YouTubeAudioDownloader | None = None,
     ):
         self.store = store
@@ -133,7 +133,8 @@ class AnalysisJobService:
         self.max_pending_jobs = max_concurrent_jobs + max_queued_jobs
         self.semaphore = asyncio.Semaphore(max_concurrent_jobs)
         self.youtube_downloader = youtube_downloader
-        self.store.cleanup_expired(job_ttl_seconds)
+        if job_ttl_seconds is not None:
+            self.store.cleanup_expired(job_ttl_seconds)
         self.store.mark_interrupted_jobs_failed()
 
     async def submit(
