@@ -71,7 +71,7 @@ def pack(path, entries):
             archive.add(source, arcname=destination, filter=lambda m: None if '__pycache__' in Path(m.name).parts else m)
 
 
-def prepare(repo, cache, out):
+def prepare(repo, cache, out, *, app_only=False):
     repo, cache, out = Path(repo).resolve(), Path(cache).resolve(), Path(out).resolve()
     out.mkdir(parents=True, exist_ok=False)
     commit = subprocess.check_output(['git', '-C', str(repo), 'rev-parse', 'HEAD'], text=True).strip()
@@ -106,6 +106,12 @@ def prepare(repo, cache, out):
             shutil.copy(source, app / 'backend' / helper)
             manifest[helper + '_sha256'] = sha(source)
         pack(out / 'app.tar.gz', [(app / 'backend', 'app/backend'), (app / 'rhythm-patterns', 'app/rhythm-patterns'), (site, 'site')])
+        if app_only:
+            manifest['release_kind'] = 'app_only'
+            manifest['artifacts'] = {'app.tar.gz': {'sha256': sha(out / 'app.tar.gz'), 'bytes': (out / 'app.tar.gz').stat().st_size}}
+            (out / 'manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n')
+            return manifest
+
         runtime = [
             (cache / 'guitarscribe-runtime/lib/python3.12/site-packages', 'runtime/main/lib/python3.12/site-packages'),
             (cache / 'guitarscribe-structure-runtime/lib/python3.12/site-packages', 'runtime/structure/lib/python3.12/site-packages'),
@@ -146,8 +152,9 @@ def prepare(repo, cache, out):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--repo', type=Path, required=True)
-    parser.add_argument('--cache', type=Path, required=True)
+    parser.add_argument('--cache', type=Path, default=Path.home() / '.cache')
+    parser.add_argument('--app-only', action='store_true', help='Build only code; never inspect or package work/runtime')
     parser.add_argument('--out', type=Path, required=True)
     args = parser.parse_args()
-    result = prepare(args.repo, args.cache, args.out)
+    result = prepare(args.repo, args.cache, args.out, app_only=args.app_only)
     print(json.dumps({'commit': result['commit'], 'artifacts': result['artifacts']}, indent=2))

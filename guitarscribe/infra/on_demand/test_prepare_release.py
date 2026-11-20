@@ -44,3 +44,29 @@ def test_changed_audio_cannot_publish_as_consistent_backup(tmp_path, monkeypatch
     monkeypatch.setattr(release.shutil, 'copytree', concurrent_edit)
     with pytest.raises(RuntimeError, match='changed during backup'):
         release.private_work_copy(source, tmp_path / 'backup')
+
+
+def test_app_only_release_cannot_read_or_package_personal_work_or_runtime(tmp_path, monkeypatch):
+    import io
+    import tarfile
+    payload=io.BytesIO()
+    with tarfile.open(fileobj=payload, mode='w') as archive:
+        for name, data in [('backend/app/__init__.py',b''),('frontend/package.json',b'{}'),('rhythm-patterns/example.json',b'{}')]:
+            info=tarfile.TarInfo('guitarscribe/'+name);info.size=len(data);archive.addfile(info,io.BytesIO(data))
+    def check_output(args, **kwargs):
+        return 'a'*40 if 'rev-parse' in args else payload.getvalue()
+    def run(args, *, cwd, **kwargs):
+        if args==['npm','run','build']:
+            site=Path(cwd)/'dist';(site/'assets').mkdir(parents=True)
+            (site/'index.html').write_text('<body></body>');(site/'assets/app.js').write_text('application')
+    monkeypatch.setattr(release.subprocess,'check_output',check_output)
+    monkeypatch.setattr(release.subprocess,'run',run)
+    monkeypatch.setattr(release,'private_work_copy',lambda *a:pytest.fail('code release touched private work'))
+    out=tmp_path/'release'
+    result=release.prepare(tmp_path/'repo',tmp_path/'missing-runtime',out,app_only=True)
+    assert set(result['artifacts'])=={'app.tar.gz'}
+    assert result['release_kind']=='app_only'
+    with tarfile.open(out/'app.tar.gz') as archive:
+        names=archive.getnames()
+        assert 'site/index.html' in names and 'app/backend/host_activity.py' in names
+        assert not any(name.startswith(('work/','runtime/')) for name in names)
