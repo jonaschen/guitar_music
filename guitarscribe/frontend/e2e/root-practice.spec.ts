@@ -39,6 +39,9 @@ async function setup(page:Page, advanced=true){
   if(advanced&&await page.getByText('練習設定與進階工具',{exact:true}).count()){
     const tools=page.locator('details.root-advanced');
     if(!await tools.evaluate(el=>(el as HTMLDetailsElement).open))await page.getByText('練習設定與進階工具',{exact:true}).click();
+    // Native details toggle dispatches asynchronously. Wait for the actual saved
+    // preference before callers immediately reload the page.
+    await expect.poll(()=>page.evaluate(()=>sessionStorage.getItem('guitarscribe.root-tools'))).toBe('open');
   }
   return Object.assign(server,{score});
 }
