@@ -44,6 +44,8 @@ gcloud compute ssh guitarscribe-personal --project=hanana-491223 --zone=asia-eas
 
 系統單元：`guitarscribe-backup.service/.timer`、`guitarscribe-idle.service/.timer`。應用是 **guitarscribe 使用者的** `guitarscribe.service`，不是 root system unit，也不是本機的 `guitarscribe-friends-web`。先 `id -u guitarscribe`，再使用對應 `/run/user/<uid>` 的 XDG_RUNTIME_DIR 與 user bus 查 `systemctl --user status`／journal。不要假設 UID 永遠1501。
 
+新版主機的 `/backend/cloud/maintenance` 提供備份狀態與可用磁碟；持久紀錄在 `/srv/guitarscribe/maintenance/backup-status.json`，不放進 work 造成遞迴備份。`complete` 才是已完成，`pending` 是之後又有修改，`deferred` 為分析或其他備份中；`failed/interrupted/unknown` 不可當成功。舊版404代表尚未部署，回到timer／manifest核對。詳見 `guitarscribe/docs/Cloud_Maintenance_2026-11-21.md`。
+
 先查 `systemctl show guitarscribe-backup.service -p ActiveState -p Result`、`journalctl -u guitarscribe-backup.service -n 20`、`df -h /srv/guitarscribe`。應用故障再查該使用者服務日誌。不要 `cat environment/access.json` 來蒐集狀態，也不要貼完整 job payload。
 
 重啟／停止／更新前：核對使用者是否正使用、最後活動、jobs 的 active 狀態、structure-analysis 的 running/cancelling、root candidate lock 與備份進程。`host_activity.active_analysis(work)` 能查分析；近期 activity 不能被當成「肯定無未存草稿」。使用者正在編輯時延後服務中斷；繼續本機獨立工作。需要重啟的安全窗口與授權依當下上下文判斷，不把本 skill 當額外授權來源。

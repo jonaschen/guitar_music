@@ -373,6 +373,59 @@ def backup_workspace(work, store, *, prefix='backups', temp_root, now=None,
                         new_blobs=new_blobs, new_bytes=new_bytes)
 
 
+def observed_backup(work, store, *, status_file=None, clock=time.time, runner=None, **kwargs):
+    """Persist only verified completion; status lives outside the backed-up tree."""
+    runner = runner or backup_workspace
+    if status_file is None:
+        return runner(work, store, **kwargs)
+    path, work = Path(status_file).resolve(), Path(work).resolve()
+    if path == work or work in path.parents:
+        raise ValueError('Backup status must stay outside the workspace')
+    path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    with path.with_suffix('.lock').open('a') as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            raise BackupSkipped('Another observed backup is active') from None
+        try:
+            previous = json.loads(path.read_text())
+            success = previous.get('last_success') if isinstance(previous, dict) else None
+        except (OSError, ValueError):
+            success = None
+        started = clock()
+        record = dict(schema_version=1, state='running', started_at=started, last_success=success)
+        def write():
+            with tempfile.NamedTemporaryFile(mode='w', dir=path.parent, prefix='.backup-status-', delete=False) as output:
+                temporary = Path(output.name)
+                try:
+                    os.fchmod(output.fileno(), 0o600)
+                    json.dump(record, output, allow_nan=False)
+                    output.flush(); os.fsync(output.fileno())
+                    temporary.replace(path)
+                finally:
+                    temporary.unlink(missing_ok=True)
+            descriptor = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY)
+            try: os.fsync(descriptor)
+            finally: os.close(descriptor)
+        write()
+        try:
+            result = runner(work, store, **kwargs)
+            if result.get('status') != 'complete':
+                raise BackupInvalid('Backup did not publish a completed manifest')
+            record.update(state='complete', finished_at=clock(), last_success=dict(
+                snapshot_at=started, completed_at=clock(), manifest=result['manifest'],
+                manifest_sha256=result['manifest_sha256'], files=result['files']))
+            write()
+            return result
+        except BackupSkipped:
+            record.update(state='deferred', finished_at=clock())
+            write(); raise
+        except Exception as error:
+            record.update(state='interrupted' if isinstance(error, InterruptedError) else 'failed',
+                          finished_at=clock(), error_type=type(error).__name__)
+            write(); raise
+
+
 def validate_manifest(manifest, *, max_bytes):
     try:
         if (manifest['schema_version'] != 1 or manifest['application'] != 'guitarscribe'
@@ -497,6 +550,7 @@ def main(argv=None):
     backup.add_argument('--bucket', required=True)
     backup.add_argument('--prefix', default='backups')
     backup.add_argument('--temp-root', type=Path, required=True)
+    backup.add_argument('--status-file', type=Path)
     restore = commands.add_parser('restore')
     source = restore.add_mutually_exclusive_group(required=True)
     source.add_argument('--bucket')
@@ -509,7 +563,7 @@ def main(argv=None):
     os.umask(0o077)
     try:
         if args.command == 'backup':
-            result = backup_workspace(args.work, GCSObjects(args.bucket), prefix=args.prefix, temp_root=args.temp_root)
+            result = observed_backup(args.work, GCSObjects(args.bucket), prefix=args.prefix, temp_root=args.temp_root, status_file=args.status_file)
         else:
             store = GCSObjects(args.bucket) if args.bucket else DirectoryObjects(args.objects_dir)
             result = restore_workspace(store, args.manifest, args.target, max_bytes=args.max_bytes,

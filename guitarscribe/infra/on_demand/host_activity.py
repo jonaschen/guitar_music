@@ -4,6 +4,7 @@ import fcntl
 import math
 import os
 import sqlite3
+import shutil
 import time
 from contextlib import closing
 from pathlib import Path
@@ -100,6 +101,43 @@ def recover_boot_state(work, boot_id):
     return True
 
 
+def maintenance_status(work, status_file, *, now=None):
+    """Bounded public-to-the-owner summary; never returns backup paths or errors."""
+    now = time.time() if now is None else now
+    def stamp(value):
+        return value if type(value) in (int, float) and math.isfinite(value) and 0 <= value <= now + 60 else None
+    state, last_success, started, finished, snapshot_at = 'unknown', None, None, None, None
+    try:
+        path = Path(status_file)
+        if path.stat().st_size > 16384: raise ValueError('Oversized status')
+        raw = json.loads(path.read_text())
+        if not isinstance(raw, dict): raise ValueError('Invalid status')
+        started, finished = stamp(raw.get('started_at')), stamp(raw.get('finished_at'))
+        success = raw.get('last_success') or {}
+        if not isinstance(success, dict): raise ValueError('Invalid completion')
+        snapshot_at, last_success = stamp(success.get('snapshot_at')), stamp(success.get('completed_at'))
+        state = raw.get('state')
+        if state not in ('complete','running','deferred','failed','interrupted'): state = 'unknown'
+        if state == 'running' and (started is None or now-started > 1200): state = 'interrupted'
+        if state == 'complete' and (snapshot_at is None or last_success is None): state = 'unknown'
+    except (OSError, ValueError, TypeError):
+        state = 'unknown'
+    latest_edit = 0
+    try:
+        work = Path(work)
+        for pattern in ('*.sqlite3*', 'revisions/*.sqlite3*', 'jobs/*.sqlite3*'):
+            for path in work.glob(pattern):
+                if path.is_file(): latest_edit = max(latest_edit, path.stat().st_mtime)
+        available = shutil.disk_usage(work).free
+    except OSError:
+        available = None
+        if state == 'complete': state = 'unknown'
+    if state == 'complete' and snapshot_at < latest_edit: state = 'pending'
+    return dict(backup=dict(state=state, last_success_at=last_success,
+                           snapshot_at=snapshot_at, last_attempt_at=started, finished_at=finished),
+                disk_available_bytes=available, disk_low=available is not None and available < 3*1024**3)
+
+
 def create_app():
     from fastapi import Request, HTTPException
     from starlette.responses import JSONResponse
@@ -121,6 +159,10 @@ def create_app():
     def library():
         return {'songs': song_library(os.environ['GUITARSCRIBE_WORK_DIR'])}
 
+    @api.get('/cloud/maintenance')
+    def maintenance():
+        return maintenance_status(work, os.environ.get('GUITARSCRIBE_BACKUP_STATUS_FILE', '/srv/guitarscribe/maintenance/backup-status.json'))
+
     @api.post('/cloud/activity')
     def heartbeat(request: Request):
         if request.headers.get('x-guitarscribe-activity') != 'visible':
@@ -128,7 +170,7 @@ def create_app():
         activity.touch()
         return {'ok': True}
 
-    # Both cloud routes remain behind the existing authentication gate.
+    # Cloud routes remain behind the existing authentication gate.
     app = web_app()
 
     async def wrapped(scope, receive, send):

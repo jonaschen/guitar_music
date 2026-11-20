@@ -55,6 +55,8 @@ def configure_maintenance():
         return
     temporary = ROOT / 'backup-tmp'; temporary.mkdir(exist_ok=True)
     run('chown', 'guitarscribe:guitarscribe', str(temporary))
+    status = ROOT / 'maintenance'; status.mkdir(exist_ok=True, mode=0o700)
+    run('chown', 'guitarscribe:guitarscribe', str(status))
     bucket = metadata('instance/attributes/guitarscribe-bucket')
     if not all(c.isalnum() or c in '.-_' for c in bucket):
         raise ValueError('Invalid backup bucket')
@@ -66,7 +68,7 @@ Type=oneshot
 User=guitarscribe
 Group=guitarscribe
 WorkingDirectory=/srv/guitarscribe/app/backend
-ExecStart=/srv/guitarscribe/runtime/main/bin/python backup_work.py backup --work /srv/guitarscribe/work --bucket {bucket} --temp-root /srv/guitarscribe/backup-tmp
+ExecStart=/srv/guitarscribe/runtime/main/bin/python backup_work.py backup --work /srv/guitarscribe/work --bucket {bucket} --temp-root /srv/guitarscribe/backup-tmp --status-file /srv/guitarscribe/maintenance/backup-status.json
 TimeoutStartSec=15min
 MemoryMax=2G
 CPUQuota=50%
