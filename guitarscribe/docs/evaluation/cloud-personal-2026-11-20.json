@@ -1,0 +1,240 @@
+{
+  "date": "2026-11-20",
+  "deployment": {
+    "project_id": "hanana-491223",
+    "project_number": "324350766154",
+    "region": "asia-east1",
+    "zone": "asia-east1-b",
+    "service": "guitarscribe",
+    "url": "https://guitarscribe-324350766154.asia-east1.run.app",
+    "instance": "guitarscribe-personal",
+    "machine_type": "e2-standard-2",
+    "boot_disk_gib": 40,
+    "boot_disk_type": "pd-standard",
+    "network": "guitarscribe-private",
+    "subnet": "guitarscribe-private",
+    "internal_ip": "10.88.0.2",
+    "bucket": "hanana-491223-guitarscribe-private",
+    "secret": "guitarscribe-access",
+    "ledger_object": "control/usage.json",
+    "max_run_seconds": 7200,
+    "rolling_window_days": 31,
+    "rolling_limit_hours": 40,
+    "monthly_target_twd": 300,
+    "phase": "personal_only",
+    "status": "ready",
+    "gateway_image": "asia-east1-docker.pkg.dev/hanana-491223/guitarscribe/gateway@sha256:eca767503c1112f14fb6a3b36ae65d3005dc8ac1e12c112f06502316767edddd",
+    "initial_release": "releases/2026-11-20-v2",
+    "app_release": "releases/2026-11-20-v3",
+    "keep_songs": true,
+    "app_commit": "27afecb3817c5aa97c9c4651314e2691ce194bd0",
+    "app_sha256": "bda2d8db8f6fdaa32305a27928c5453a7d86a6110cd9c7848823f0b1273fd5c4",
+    "youtube_cloud_import": "blocked_by_source_bot_check_on_2026-11-20"
+  },
+  "tests": {
+    "cloud_gateway_host_backup_release": 94,
+    "backend_jobs_youtube": 35,
+    "tdd_regressions": [
+      "persistent old songs retained across startup",
+      "bot challenge gives upload fallback",
+      "failed attempts cannot hide older completed songs"
+    ]
+  },
+  "migration": {
+    "database_count": 6,
+    "artifact_count": 143,
+    "migration_hashes_match": true,
+    "no_progress_changes": true,
+    "songs_in_library": 25,
+    "rows": [
+      {
+        "job": "84defcef7fd44bbc8a1024b24d65c78e",
+        "sections": 9,
+        "audio_range": 206,
+        "source_matches": true
+      },
+      {
+        "job": "83a3643ab3814172a046cebf709f3413",
+        "sections": 13,
+        "audio_range": 206,
+        "source_matches": true
+      },
+      {
+        "job": "a3be29912a7045448765290d7cba2f6c",
+        "sections": 14,
+        "audio_range": 206,
+        "source_matches": true
+      }
+    ]
+  },
+  "browser": {
+    "base": "https://guitarscribe-324350766154.asia-east1.run.app",
+    "results": [
+      {
+        "job": "84defcef7fd44bbc8a1024b24d65c78e",
+        "sections": 9,
+        "section": "副歌",
+        "start": 118.13,
+        "end": 157.15,
+        "visible_chords": 21,
+        "total_chords": 161,
+        "chord_version": 0,
+        "spectrum_colors": 8196,
+        "unchanged": true
+      },
+      {
+        "job": "83a3643ab3814172a046cebf709f3413",
+        "sections": 13,
+        "section": "副歌",
+        "start": 63.3,
+        "end": 99.3,
+        "visible_chords": 24,
+        "total_chords": 161,
+        "chord_version": 0,
+        "spectrum_colors": 7732,
+        "unchanged": true
+      },
+      {
+        "job": "a3be29912a7045448765290d7cba2f6c",
+        "sections": 14,
+        "section": "副歌",
+        "start": 95.95,
+        "end": 121.49,
+        "visible_chords": 16,
+        "total_chords": 166,
+        "chord_version": 0,
+        "spectrum_colors": 8869,
+        "unchanged": true
+      }
+    ],
+    "writes": [],
+    "errors": []
+  },
+  "first_wake": {
+    "before": {
+      "state": "stopped",
+      "used_seconds": 1188,
+      "limit_seconds": 144000,
+      "remaining_seconds": 142812,
+      "window_days": 31,
+      "can_wake": true,
+      "stop_at": null
+    },
+    "after": {
+      "state": "running",
+      "used_seconds": 10188,
+      "limit_seconds": 144000,
+      "remaining_seconds": 133812,
+      "window_days": 31,
+      "can_wake": false,
+      "stop_at": 1795183896.897745
+    },
+    "ready_seconds": 49.08
+  },
+  "persistence_before_restart": {
+    "job_id": "67feaa67f6a647b081badeaf3a6b357a",
+    "saved_version": 3,
+    "saved_sha256": "45553b823c887f6dbca9f89e966fac7886db582e93d1f247ff06fb2de28ca104",
+    "scope_unchanged": true,
+    "undo_redo": true,
+    "reload": true,
+    "stale_tab_conflict": true,
+    "errors": []
+  },
+  "persistence_after_restart": {
+    "after": {
+      "state": "running",
+      "used_seconds": 12012,
+      "limit_seconds": 144000,
+      "remaining_seconds": 131988,
+      "window_days": 31,
+      "can_wake": false,
+      "stop_at": 1795185701.056803
+    },
+    "persistence_passed": true,
+    "old_job_retained": true,
+    "chord_version": 3,
+    "saved_sha256": "45553b823c887f6dbca9f89e966fac7886db582e93d1f247ff06fb2de28ca104",
+    "hash_serialization": "same JSON.stringify as before restart"
+  },
+  "fixture_cleanup": {
+    "completed": true,
+    "original_six_databases_unchanged": true
+  },
+  "backup": {
+    "first_backup": {
+      "status": "complete",
+      "manifest": "backups/manifests/20261120T121343Z-282ace04eb5a44bab718b13d5ea67bd1.json",
+      "manifest_sha256": "ad46cdf13c82b49f43c9b59f0adcbeb0421a5ca508c5b7d0b3e555dc5186acff",
+      "files": 150,
+      "new_blobs": 128,
+      "new_bytes": 1269998299
+    },
+    "second_backup": {
+      "status": "complete",
+      "files": 150,
+      "new_blobs": 0,
+      "new_bytes": 0
+    },
+    "real_gcs_restore": {
+      "status": "restored",
+      "files": 150,
+      "target": "/srv/guitarscribe/restore-verification-20261120",
+      "sha256_and_sqlite_verified": true
+    },
+    "final_backup": {
+      "status": "complete",
+      "manifest": "backups/manifests/20261120T124621Z-600d82e850e94185af67a918f02c9aaa.json",
+      "manifest_sha256": "fe32a182621fc82772b287252f3c8b846aff12a98e058beed7dd5fa01a98031a",
+      "files": 150,
+      "new_blobs": 4,
+      "new_bytes": 4587557
+    }
+  },
+  "structure_runtime": {
+    "synthetic_audio_seconds": 12,
+    "state": "ready",
+    "elapsed_seconds": 88.906,
+    "candidate_not_applied": true,
+    "music_accuracy_claimed": false
+  },
+  "release": {
+    "private_prefix": "releases/2026-11-20-v3",
+    "installed_files_sha256_match": 270
+  },
+  "limitations": [
+    "YouTube source bot challenge blocks new cloud downloads in this test; upload and existing recordings remain available",
+    "Local and cloud copies do not synchronize",
+    "No physical phone or Safari test",
+    "40-hour VM usage guard is not a total billing cap"
+  ],
+  "handoff": {
+    "vm": {
+      "state": "stopped",
+      "used_seconds": 3615,
+      "limit_seconds": 144000,
+      "remaining_seconds": 140385,
+      "window_days": 31,
+      "can_wake": true,
+      "stop_at": null
+    },
+    "anonymous_routes": 401,
+    "credential_in_git": false,
+    "temporary_fixture_and_restore_copy_removed": true
+  },
+  "ci_scope": {
+    "local_and_live_checks": "passed as listed; not a claim that the entire repository CI is green",
+    "preexisting_base_run": "https://github.com/jonaschen/guitar_music/actions/runs/44090189688",
+    "base_commit": "7925dcc6a6d8673be3a930d89c10327485357be3",
+    "backend": {
+      "failed": 32,
+      "passed": 1373,
+      "skipped": 3
+    },
+    "frontend": {
+      "passed": 219,
+      "conclusion": "failure"
+    },
+    "new_push_run": "not yet completed"
+  }
+}

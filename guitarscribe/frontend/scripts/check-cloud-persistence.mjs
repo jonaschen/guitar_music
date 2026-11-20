@@ -12,6 +12,13 @@ const prefix='/backend/api/v1/jobs/'+job;
 const get=async suffix=>{const r=await context.request.get(base+prefix+suffix);expect(r.ok()).toBe(true);return r.json();};
 const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
 try{
+ if(process.argv.includes('--after-restart')){
+  const checkpoint=JSON.parse(await fs.readFile(new URL('../../output/cloud-control/persistence-before-restart.json',import.meta.url),'utf8'));
+  expect(checkpoint.job_id).toBe(job);const saved=await get('/chord-practice');expect(hash(saved)).toBe(checkpoint.saved_sha256);
+  expect((await get('')).created_at.startsWith('2000-')).toBe(true);
+  const result={persistence_passed:true,old_job_retained:true,chord_version:saved.version,saved_sha256:hash(saved)};
+  await fs.writeFile(new URL('../../output/cloud-control/persistence-after-restart.json',import.meta.url),JSON.stringify(result,null,2));console.log(JSON.stringify(result));
+ }else{
  const original=await get('');expect(original.score.song.title).toBe('Cloud persistence verification (temporary)');
  const before={score:original.score,roots:await get('/root-practice'),structure:await get('/song-structure')};
  await context.route(base+'/**',async route=>{
@@ -46,4 +53,5 @@ try{
  const after={score:(await get('')).score,roots:await get('/root-practice'),structure:await get('/song-structure')};expect(hash(after)).toBe(hash(before));expect(errors).toEqual([]);
  const result={job_id:job,saved_version:saved.version,saved_sha256:hash(saved),scope_unchanged:true,undo_redo:true,reload:true,stale_tab_conflict:true,errors};
  await fs.writeFile(new URL('../../output/cloud-control/persistence-before-restart.json',import.meta.url),JSON.stringify(result,null,2));console.log(JSON.stringify(result));
+ }
 }finally{await browser.close();}

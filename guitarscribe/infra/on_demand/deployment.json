@@ -20,9 +20,12 @@
   "rolling_limit_hours": 40,
   "monthly_target_twd": 300,
   "phase": "personal_only",
-  "status": "verification_in_progress",
+  "status": "ready",
   "gateway_image": "asia-east1-docker.pkg.dev/hanana-491223/guitarscribe/gateway@sha256:eca767503c1112f14fb6a3b36ae65d3005dc8ac1e12c112f06502316767edddd",
   "initial_release": "releases/2026-11-20-v2",
   "app_release": "releases/2026-11-20-v3",
-  "keep_songs": true
+  "keep_songs": true,
+  "app_commit": "27afecb3817c5aa97c9c4651314e2691ce194bd0",
+  "app_sha256": "bda2d8db8f6fdaa32305a27928c5453a7d86a6110cd9c7848823f0b1273fd5c4",
+  "youtube_cloud_import": "blocked_by_source_bot_check_on_2026-11-20"
 }
