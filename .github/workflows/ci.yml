@@ -36,7 +36,12 @@ jobs:
       - name: Build backend test image
         run: docker build --tag guitarscribe-backend-ci ./backend
       - name: Run backend test suite
-        run: docker run --rm guitarscribe-backend-ci pytest -q
+        run: >-
+          docker run --rm
+          -v "$PWD/docs:/docs:ro"
+          -v "$PWD/rhythm-patterns:/rhythm-patterns:ro"
+          -e GUITARSCRIBE_RHYTHM_PATTERNS_DIR=/rhythm-patterns
+          guitarscribe-backend-ci pytest -q
 
   frontend:
     name: Frontend build and E2E
@@ -51,11 +56,27 @@ jobs:
           node-version: 20
           cache: npm
           cache-dependency-path: guitarscribe/frontend/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install isolated browser API dependencies
+        run: python -m pip install -e '../backend[dev,quality]'
       - name: Install frontend dependencies
         run: npm ci
       - name: Build frontend
         run: npm run build
       - name: Install Playwright browser
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium webkit
       - name: Run frontend E2E suite
-        run: npx playwright test --workers=1 --reporter=line
+        run: npx playwright test --config playwright.ci.config.ts --reporter=line
+      - name: Check WebKit touch and practice workflows
+        run: npx playwright test --config playwright.webkit.config.ts --reporter=line
+      - name: Preserve browser failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-failure-evidence
+          path: |
+            guitarscribe/frontend/test-results
+            guitarscribe/output/webkit-test-results
+          retention-days: 7

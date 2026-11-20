@@ -179,15 +179,15 @@ test("submitting a new analysis invalidates a pending startup revision before jo
   await page.goto("/?revision=slow-startup");
   await expect.poll(() => Boolean(slowRevision)).toBe(true);
   await page.locator('input[type="file"][accept*=".wav"]').setInputFiles({ name: "new-song.wav", mimeType: "audio/wav", buffer: Buffer.from("audio") });
-  const createRequest = page.waitForRequest(request => new URL(request.url()).pathname === "/api/v1/jobs" && request.method() === "POST");
+  const createRequest = page.waitForRequest(request => new URL(request.url()).pathname === "/backend/api/v1/jobs" && request.method() === "POST");
   await page.getByRole("button", { name: "Start analysis", exact: true }).click();
   await createRequest;
   await expect.poll(() => Boolean(createJob)).toBe(true);
 
-  const slowResponse = page.waitForResponse(response => new URL(response.url()).pathname === "/revisions/slow-startup");
+  const slowResponse = page.waitForResponse(response => new URL(response.url()).pathname === "/backend/revisions/slow-startup");
   await slowRevision!.fulfill({ json: makeScore(64, "g") });
   await slowResponse;
-  await expect(page.getByRole("heading", { name: "No song loaded yet" })).toBeVisible();
+  await expect(page.getByText("先選擇音檔或貼上 YouTube 網址，完成分析後會顯示和弦核對頁。", { exact: true })).toBeVisible();
   await expect(page.getByLabel("Current working version")).toContainText("尚未載入樂譜");
 
   await createJob!.fulfill({ json: { id: "new-analysis", status: "queued", progress: 0, artifacts: [], message: "Queued" } });
@@ -215,13 +215,13 @@ test("an older save response cannot replace the URL after a new analysis starts"
   await page.goto("/?job=analysis-job");
   await expect(page.getByLabel("Current working version")).toContainText("原分析音符");
   await page.getByRole("button", { name: "顯示完整工具", exact: true }).click();
-  const saveRequest = page.waitForRequest(request => new URL(request.url()).pathname === "/revisions" && request.method() === "POST");
+  const saveRequest = page.waitForRequest(request => new URL(request.url()).pathname === "/backend/revisions" && request.method() === "POST");
   await page.getByRole("button", { name: "保存目前工作版本", exact: true }).click();
   await saveRequest;
   await expect.poll(() => Boolean(oldSave)).toBe(true);
 
   await page.locator('input[type="file"][accept*=".wav"]').setInputFiles({ name: "new-song.wav", mimeType: "audio/wav", buffer: Buffer.from("audio") });
-  const createRequest = page.waitForRequest(request => new URL(request.url()).pathname === "/api/v1/jobs" && request.method() === "POST");
+  const createRequest = page.waitForRequest(request => new URL(request.url()).pathname === "/backend/api/v1/jobs" && request.method() === "POST");
   await page.getByRole("button", { name: "Start analysis", exact: true }).click();
   await createRequest;
   await expect.poll(() => Boolean(createJob)).toBe(true);
@@ -229,7 +229,7 @@ test("an older save response cannot replace the URL after a new analysis starts"
   await expect.poll(() => new URL(page.url()).searchParams.get("job")).toBe("new-job");
   await expect(new URL(page.url()).searchParams.has("revision")).toBe(false);
 
-  const saveResponse = page.waitForResponse(response => new URL(response.url()).pathname === "/revisions");
+  const saveResponse = page.waitForResponse(response => new URL(response.url()).pathname === "/backend/revisions");
   await oldSave!.fulfill({ json: { revision_id: "stale-save" } });
   await saveResponse;
   await expect.poll(() => new URL(page.url()).searchParams.get("job")).toBe("new-job");

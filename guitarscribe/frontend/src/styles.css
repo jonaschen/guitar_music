@@ -1079,7 +1079,7 @@ body:has(.chord-product) { background: #12161c; }
 .notation-measure { border-right: 1px solid #68717c; border-bottom: 1px solid #424b58; min-height: 104px; padding: 8px 16px 16px; }
 .notation-measure:nth-child(4n+1) { border-left: 1px solid #68717c; }
 .measure-number { display: block; margin-bottom: 8px; }
-.measure-chords { display: flex; flex-wrap: wrap; gap: 0 8px; align-items: center; }
+.song-sheet .measure-chords { display: flex; flex-wrap: wrap; gap: 0 8px; align-items: center; }
 .song-sheet .measure-chords button { background: transparent; border: 0; padding: 0 4px; font-size: 20px; font-weight: 600; border-radius: 0; }
 .tie-mark { color: #919aa7; font-weight: 400; }
 .current-measure { background: #f2a55015; box-shadow: inset 0 -3px #f2a550; }
