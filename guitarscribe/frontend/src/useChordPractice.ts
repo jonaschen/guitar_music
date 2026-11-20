@@ -5,8 +5,8 @@ const canonical=(v:unknown):string=>JSON.stringify(v,(_,x)=>x&&typeof x==='objec
 export function useChordPractice(api:string,job:string){
  const endpoint=`${api}/api/v1/jobs/${encodeURIComponent(job)}`,key=`guitarscribe.chords.draft.v1.${job}`;
  const [document,setDocument]=useState<ChordPracticeDocument|null>(null),[structure,setStructure]=useState<StructureDocument|null>(null),[lock,setLock]=useState<ChordLock|null>(null);
- const [message,setMessage]=useState('正在載入段落與和弦…'),[blocked,setBlocked]=useState(false),[busy,setBusy]=useState(false),[tick,setTick]=useState(0),[reload,setReload]=useState(0);
- const state=useRef({document:null as ChordPracticeDocument|null,structure:null as StructureDocument|null,structureVersion:0,lock:null as ChordLock|null,version:0,saved:'',blocked:false,busy:false,alive:true,hard:false});
+ const [message,setMessage]=useState('正在載入段落與和弦…'),[blocked,setBlocked]=useState(false),[busy,setBusy]=useState(false),[tick,setTick]=useState(0),[reload,setReload]=useState(0),[reuseBusy,setReuseBusy]=useState(false);
+ const state=useRef({document:null as ChordPracticeDocument|null,structure:null as StructureDocument|null,structureVersion:0,lock:null as ChordLock|null,version:0,saved:'',blocked:false,busy:false,alive:true,hard:false,external:false});
  const undo=useRef<ChordPracticeDocument[]>([]),redo=useRef<ChordPracticeDocument[]>([]);
  function readDraft(){try{return sessionStorage.getItem(key);}catch{return null;}}
  function clearDraft(){try{sessionStorage.removeItem(key);}catch{/* Server snapshot is still authoritative. */}}
@@ -52,9 +52,36 @@ export function useChordPractice(api:string,job:string){
   async function check(){const s=state.current;if(running||s.blocked||window.document.hidden)return;running=true;try{const r=await fetch(endpoint+'/song-structure',{signal:controller.signal});if(!r.ok)return;const snapshot=await r.json();if(!controller.signal.aborted&&(!snapshot.source_matches||snapshot.version!==s.lock?.structure_version||!snapshot.current_source||!s.document||!sameSource(snapshot.current_source,s.document.source)))block('歌曲結構或來源已變動，請保存草稿備份後重新載入並選段。');}catch{/* PUT also checks the current source and structure. */}finally{running=false;}}
   const timer=setInterval(()=>void check(),15000);window.addEventListener('focus',check);return()=>{clearInterval(timer);window.removeEventListener('focus',check);controller.abort();};
  },[lock?.section_id,lock?.structure_version,endpoint]);
- function update(next:ChordPracticeDocument,record=true){const s=state.current;if(s.blocked||!s.document||!s.lock)return false;try{const parsed=parseChordPractice(JSON.stringify(next),s.document.source);if(record){undo.current.push(s.document);undo.current=undo.current.slice(-50);redo.current=[];}s.document=parsed;setDocument(parsed);retain();setMessage('等待保存…');setTick(t=>t+1);return true;}catch(e){setMessage(String(e));return false;}}
- function travel(back:boolean){const from=back?undo:redo,to=back?redo:undo,s=state.current;if(s.blocked||!s.document||!from.current.length)return;if(!s.lock)return;const past=from.current[from.current.length-1];try{const next=restoreChordScope(s.document,past,s.lock);to.current.push(s.document);from.current.pop();update(next,false);}catch(e){setMessage(String(e));}}
- return {document,structure,lock,message,blocked,busy,synced:!!document&&canonical(document)===state.current.saved,selectLock,unlock,update,undo:()=>travel(true),redo:()=>travel(false),canUndo:!!undo.current.length,canRedo:!!redo.current.length,
+ function update(next:ChordPracticeDocument,record=true){const s=state.current;if(s.blocked||s.external||!s.document||!s.lock)return false;try{const parsed=parseChordPractice(JSON.stringify(next),s.document.source);if(record){undo.current.push(s.document);undo.current=undo.current.slice(-50);redo.current=[];}s.document=parsed;setDocument(parsed);retain();setMessage('等待保存…');setTick(t=>t+1);return true;}catch(e){setMessage(String(e));return false;}}
+ function travel(back:boolean){const from=back?undo:redo,to=back?redo:undo,s=state.current;if(s.blocked||s.external||!s.document||!from.current.length)return;if(!s.lock)return;const past=from.current[from.current.length-1];try{const next=restoreChordScope(s.document,past,s.lock);to.current.push(s.document);from.current.pop();update(next,false);}catch(e){setMessage(String(e));}}
+ async function mutateReuse(path:string,body:any){
+  const s=state.current;
+  if(s.blocked||s.busy||!s.document||!s.lock||canonical(s.document)!==s.saved)throw Error('請先等待和弦保存完成。');
+  const expected=body.request?.expected_version??body.expected_version;
+  if(expected!==s.version)throw Error('和弦已變動，請重新預覽。');
+  s.busy=true;s.external=true;setBusy(true);setReuseBusy(true);
+  try{
+   const response=await fetch(endpoint+'/chord-practice'+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+   if(!s.alive)return null;
+   if(!response.ok){
+    if(response.status===409)block('和弦、來源或段落版本已變動；請重新載入後再比較。');
+    throw Error(response.status===409?'版本已變動，未沿用。請載入最新版本。':'這次沿用未完成，請重新預覽或查看紀錄。');
+   }
+   const result=await response.json(),snapshot=result.snapshot;
+   if(!s.alive)return null;
+   const parsed=parseChordPractice(JSON.stringify(snapshot?.document),s.document.source);
+   if(snapshot.job_id!==job||snapshot.version!==expected+1||!snapshot.source_matches)throw Error('沿用回覆無法核對。');
+   s.document=parsed;s.version=snapshot.version;s.saved=canonical(parsed);
+   clearDraft();undo.current=[];redo.current=[];setDocument(parsed);
+   if(!s.blocked)setMessage(path.endsWith('/undo')?'已復原這批沿用':'已保存沿用和弦');
+   return result;
+  }catch(e){
+   // A lost response may follow a committed batch. Never retry blindly.
+   if(s.alive&&!s.blocked)block('沿用結果需要重新核對；請載入最新版本查看紀錄，再決定下一步。');
+   throw e;
+  }finally{s.busy=false;s.external=false;if(s.alive){setBusy(false);setReuseBusy(false);setTick(t=>t+1);}}
+ }
+ return {document,structure,lock,message,blocked,busy,reuseBusy,version:state.current.version,structureVersion:state.current.structureVersion,mutateReuse,synced:!!document&&canonical(document)===state.current.saved,selectLock,unlock,update,undo:()=>travel(true),redo:()=>travel(false),canUndo:!!undo.current.length,canRedo:!!redo.current.length,
   retry:()=>{if(state.current.hard||!state.current.document){setReload(r=>r+1);return;}state.current.blocked=false;setBlocked(false);setTick(t=>t+1);},
   loadLatest:()=>{if(state.current.busy)return;clearDraft();setReload(r=>r+1);},rawDraft:()=>readDraft()??JSON.stringify(state.current.document)};
 }

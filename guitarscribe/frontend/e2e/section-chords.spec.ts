@@ -74,3 +74,45 @@ test('late successful save never hides a structure-change block reason',async({p
  try{await expect.poll(()=>server.version).toBe(1);server.structureVersion++;await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await expect(page.getByRole('alert')).toContainText('歌曲結構或來源已變動');}finally{release();}
  await expect(page.getByRole('button',{name:'重試保存／載入',exact:true})).toBeEnabled();await expect(page.getByRole('alert')).toContainText('歌曲結構或來源已變動');await expect(page.getByRole('button',{name:'採用／更新和弦',exact:true})).toBeDisabled();
 });
+
+async function reuseSetup(page:Page){
+ const server=await setup(page);server.document=applyChordRange(seed,{start:0,end:4},{start:0,end:2},'C');server.version=7;await page.reload();
+ const seen={plans:0,applies:0,hold:null as Promise<void>|null,loseResponse:false};
+ await page.route('**/chord-practice/reuse-*',async r=>{
+  const path=new URL(r.request().url()).pathname;
+  if(path.endsWith('/reuse-ledger'))return r.fulfill({json:{job_id:source.job_id,version:server.version,source_matches:true,operations:[]}});
+  const body=r.request().postDataJSON();
+  if(path.endsWith('/reuse-plan')){seen.plans++;await seen.hold;return r.fulfill({json:{job_id:source.job_id,version:body.expected_version,structure_version:body.structure_version,plan_id:'a'.repeat(64),request:body,can_apply:body.alignment_confirmed,rows:[{id:'b'.repeat(64),start:4,end:6,symbol:'C',status:'fillable'}]}});}
+  if(path.endsWith('/reuse-apply')){seen.applies++;server.document=applyChordRange(server.document,{start:4,end:10},{start:4,end:6},'C');server.version++;
+   if(seen.loseResponse)return r.abort();return r.fulfill({json:{snapshot:{job_id:source.job_id,version:server.version,document:server.document,current_source:source,source_matches:true},operation:{}}});}
+  return r.fulfill({status:404});
+ });
+ await page.getByText('沿用其他段的和弦',{exact:true}).click();return {server,seen};
+}
+test('chord reuse requires explicit comparison and changing a range invalidates its plan',async({page})=>{
+ const {seen}=await reuseSetup(page);
+ await page.getByRole('button',{name:'預覽可沿用和弦',exact:true}).click();
+ await expect(page.getByRole('button',{name:'套用勾選和弦',exact:true})).toBeDisabled();
+ await page.getByLabel('我已比較兩段原曲，確認核心對齊').check();
+ await expect(page.getByLabel('和弦沿用預覽')).toHaveCount(0);
+ await page.getByRole('button',{name:'預覽可沿用和弦',exact:true}).click();
+ await expect(page.getByRole('button',{name:'套用勾選和弦',exact:true})).toBeEnabled();
+ await page.getByLabel('來源核心結束秒數').fill('2');await expect(page.getByLabel('和弦沿用預覽')).toHaveCount(0);
+ await expect(page.getByLabel('我已比較兩段原曲，確認核心對齊')).not.toBeChecked();expect(seen.applies).toBe(0);
+ await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+test('late preview cannot apply after manual editing and saving changes the chord version',async({page})=>{
+ const {seen,server}=await reuseSetup(page);let release!:()=>void;seen.hold=new Promise<void>(r=>release=r);
+ await page.getByLabel('我已比較兩段原曲，確認核心對齊').check();await page.getByRole('button',{name:'預覽可沿用和弦',exact:true}).click();
+ await expect.poll(()=>seen.plans).toBe(1);
+ await page.getByLabel('和弦名稱',{exact:true}).fill('Dm');await page.getByRole('button',{name:'採用／更新和弦',exact:true}).click();
+ await expect(page.getByLabel('和弦保存狀態')).toHaveText('已保存');release();await expect(page.getByRole('button',{name:'預覽可沿用和弦',exact:true})).toBeEnabled();
+ await expect(page.getByLabel('和弦沿用預覽')).toHaveCount(0);expect(server.version).toBe(8);expect(seen.applies).toBe(0);
+});
+test('lost reuse response blocks repeat apply and recovers the committed snapshot on reload',async({page})=>{
+ const {seen,server}=await reuseSetup(page);seen.loseResponse=true;
+ await page.getByLabel('我已比較兩段原曲，確認核心對齊').check();await page.getByRole('button',{name:'預覽可沿用和弦',exact:true}).click();
+ await page.getByRole('button',{name:'套用勾選和弦',exact:true}).click();await expect(page.getByRole('alert')).toContainText('沿用結果需要重新核對');
+ await expect(page.getByRole('button',{name:'採用／更新和弦',exact:true})).toBeDisabled();expect(seen.applies).toBe(1);
+ await page.reload();await expect(page.getByRole('button',{name:'編輯和弦 4.000–6.000',exact:true})).toContainText('C');expect(server.version).toBe(8);expect(seen.applies).toBe(1);
+});

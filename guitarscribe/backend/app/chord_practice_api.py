@@ -8,6 +8,7 @@ from .core.config import Settings
 from .models.jobs import JobStatus
 from .services.chord_practice import ChordPracticeStore, ChordSave, ChordConflict, initial_document, read_structure
 from .services.song_structure import source_for_job, StructureConflict
+from .services.chord_reuse import ChordReuseService, ReuseRequest, ReuseApply, ReuseUndo, ReuseNotFound
 
 
 def get_chord_practice_store():
@@ -43,6 +44,7 @@ def create_chord_practice_router(get_job_service):
     async def run(action):
         try: return await asyncio.to_thread(action)
         except ChordConflict as error: raise HTTPException(409, str(error))
+        except ReuseNotFound as error: raise HTTPException(404, str(error))
         except ValueError as error: raise HTTPException(422, str(error))
         except sqlite3.OperationalError:
             raise HTTPException(503, '保存資料暫時忙碌，請保留草稿後重試。')
@@ -78,5 +80,36 @@ def create_chord_practice_router(get_job_service):
     @router.get('/{job_id}/chord-practice/history')
     async def history(job_id: str, store=Depends(get_chord_practice_store)):
         return await run(lambda: store.history(job_id))
+
+    def reuse_snapshot(result):
+        saved = result['snapshot']
+        source = saved['document']['source']
+        return {**result, 'snapshot': snapshot(saved, source, dict(source=source))}
+
+    @router.post('/{job_id}/chord-practice/reuse-plan')
+    async def reuse_plan(job_id: str, body: ReuseRequest, service=Depends(get_job_service),
+                         store=Depends(get_chord_practice_store), structure_path=Depends(get_chord_structure_path)):
+        return await run(lambda: ChordReuseService(store, structure_path).plan(
+            job_id, body, lambda: current(job_id, service)[0]))
+
+    @router.post('/{job_id}/chord-practice/reuse-apply')
+    async def reuse_apply(job_id: str, body: ReuseApply, service=Depends(get_job_service),
+                          store=Depends(get_chord_practice_store), structure_path=Depends(get_chord_structure_path)):
+        return await run(lambda: reuse_snapshot(ChordReuseService(store, structure_path).apply(
+            job_id, body, lambda: current(job_id, service)[0])))
+
+    @router.get('/{job_id}/chord-practice/reuse-ledger')
+    async def reuse_ledger(job_id: str, service=Depends(get_job_service),
+                           store=Depends(get_chord_practice_store), structure_path=Depends(get_chord_structure_path)):
+        def source():
+            try: return current(job_id, service)[0]
+            except HTTPException: return None
+        return await run(lambda: ChordReuseService(store, structure_path).ledger(job_id, source))
+
+    @router.post('/{job_id}/chord-practice/reuse-ledger/{operation_id}/undo')
+    async def reuse_undo(job_id: str, operation_id: str, body: ReuseUndo, service=Depends(get_job_service),
+                         store=Depends(get_chord_practice_store), structure_path=Depends(get_chord_structure_path)):
+        return await run(lambda: reuse_snapshot(ChordReuseService(store, structure_path).undo(
+            job_id, operation_id, body, lambda: current(job_id, service)[0])))
 
     return router

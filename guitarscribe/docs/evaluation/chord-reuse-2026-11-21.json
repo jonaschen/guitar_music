@@ -1,0 +1,137 @@
+{
+  "date": "2026-11-21",
+  "scope": "L1 chord reuse backend and CI Python 3.11 repair",
+  "files": [
+    "backend/app/services/chord_reuse.py",
+    "backend/app/chord_practice_api.py",
+    "backend/tests/test_chord_reuse.py"
+  ],
+  "tests": {
+    "chord_root_regression": {
+      "passed": 96,
+      "seconds": 322.18
+    },
+    "final_chord_reuse": {
+      "passed": 30,
+      "seconds": 86.01
+    }
+  },
+  "contract": {
+    "prefix": "/api/v1/jobs/{job}/chord-practice",
+    "plan": "POST reuse-plan",
+    "apply": "POST reuse-apply",
+    "ledger": "GET reuse-ledger",
+    "undo": "POST reuse-ledger/{operation_id}/undo",
+    "request_fields": [
+      "expected_version",
+      "structure_version",
+      "source_section_id",
+      "target_section_id",
+      "source_range",
+      "target_range",
+      "fingerprint",
+      "audio_sha256",
+      "alignment_confirmed"
+    ],
+    "apply_fields": [
+      "plan_id",
+      "request",
+      "selected_row_ids"
+    ],
+    "undo_fields": [
+      "expected_version",
+      "structure_version",
+      "fingerprint",
+      "audio_sha256"
+    ],
+    "row_fields": [
+      "id",
+      "target_id",
+      "source_ids",
+      "start",
+      "end",
+      "source_start",
+      "source_end",
+      "symbol",
+      "status"
+    ],
+    "statuses": [
+      "fillable",
+      "already_same",
+      "target_protected",
+      "source_unknown"
+    ],
+    "mutation_result": [
+      "snapshot",
+      "operation"
+    ],
+    "changes": "[{row_id,before:ChordSegment,after:ChordSegment}]"
+  },
+  "behavior": {
+    "offset_seconds": true,
+    "grid_required": false,
+    "preserves_target_reference_symbols": true,
+    "confirmed_nc_supported": true,
+    "unknown_source_skipped": true,
+    "confirmed_target_protected": true,
+    "undo_only_checks_affected_target_fragments": true,
+    "later_source_decision_does_not_block_undo": true,
+    "atomic_chord_history_ledger": true,
+    "structure_then_chord_lock": true,
+    "real_user_data_written": false
+  },
+  "ci": {
+    "docker_build": "completed",
+    "image": "guitarscribe-backend-ci:20261121",
+    "log": "/tmp/guitarscribe-backend-ci-build-20261121.log",
+    "python_base": "3.11-bookworm",
+    "requires_python": ">=3.11,<3.13",
+    "full_container_test": "passed",
+    "passed": 1438,
+    "skipped": 3,
+    "warnings": 5,
+    "seconds": 183.47,
+    "full_test_log": "/tmp/guitarscribe-backend-ci-full-tmpfs-20261121.log",
+    "missing_resources_reproduction": {
+      "failed": 2,
+      "seconds": 4.75,
+      "log": "/tmp/guitarscribe-backend-ci-missing-resources-20261121.log"
+    },
+    "mounts": {
+      "/docs": "guitarscribe/docs:ro",
+      "/rhythm-patterns": "guitarscribe/rhythm-patterns:ro",
+      "/app/app": "guitarscribe/backend/app:ro",
+      "/app/tests": "guitarscribe/backend/tests:ro",
+      "/app/pyproject.toml": "guitarscribe/backend/pyproject.toml:ro"
+    },
+    "environment": {
+      "GUITARSCRIBE_RHYTHM_PATTERNS_DIR": "/rhythm-patterns",
+      "PYTHONDONTWRITEBYTECODE": "1"
+    },
+    "tmpfs": "/tmp:rw,size=1g",
+    "skipped_reasons": [
+      "Original author source not installed",
+      "User systemd is unavailable (2 tests)"
+    ],
+    "new_skips_added": false,
+    "notes": [
+      "Image dependencies were built before L1 implementation; final app/tests/pyproject were mounted read-only for the complete suite.",
+      "Initial full suite on Docker overlay storage was stopped after slow disk I/O; only the completed tmpfs run is counted."
+    ],
+    "runtime_commit": "48b7849b772f6b3282463cc0d1e8a875c8b8da39"
+  },
+  "coordination": "Owner thread 01a1cf64-9d85-7a30-9b11-e34209b23f8c; send_message_to_thread transport unavailable after initial contract accepted.",
+  "files_sha256": {
+    "backend/app/services/chord_reuse.py": "71faee0d646d970856b507c9f039a04e5a44a8048dddab4f10516daf27a8ff11",
+    "backend/app/chord_practice_api.py": "3fff617c734fad53aaff028e1f486a1e0692f1d2f17d4b08c40a0a34e56d352e",
+    "backend/tests/test_chord_reuse.py": "954ed2eb8597a0a6fc7f189ab33b9be2ab53392491b2636a15c78ac90c378809"
+  },
+  "music_accuracy": "Not evaluated; validation covers software behavior and transactional persistence.",
+  "deployment": "No deployment, no private work writes. L1 backend remains uncommitted for owner integration.",
+  "frontend": {
+    "production_build": "passed",
+    "real_api_flow": "passed; original source/target audio, preview, apply, reload, undo; structure/roots/Score hashes unchanged",
+    "webkit_practice_and_mobile": "20 passed, includes 3 new reuse fault-injection scenarios; Linux WebKit, not physical iPhone",
+    "deployment": "pending"
+  }
+}

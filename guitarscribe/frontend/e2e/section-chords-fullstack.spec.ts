@@ -1,5 +1,6 @@
 import {test,expect} from '@playwright/test';
 test('real section entry, clipped chord save, reload, CAS conflict and undo preserve structure roots and Score',async({page,context,request})=>{
+ test.setTimeout(120000);
  const base='/backend/api/v1/jobs/fixture-song',get=async(p:string)=>(await (await request.get(base+p)).json());
  const before=await get('/chord-practice');expect(before.version).toBe(0);
  await page.goto('/?practice=structure&job=fixture-song');await page.getByRole('button',{name:'選取第 2 段 副歌',exact:true}).click();await page.getByRole('link',{name:'鎖定這段練和弦',exact:true}).click();await expect(page.getByRole('heading',{name:'已鎖定：副歌',exact:true})).toBeVisible();
@@ -13,4 +14,32 @@ test('real section entry, clipped chord save, reload, CAS conflict and undo pres
  await page.getByRole('button',{name:'播放原曲範圍',exact:true}).click();await expect.poll(()=>page.locator('audio').evaluate(a=>(a as HTMLAudioElement).currentTime)).toBeGreaterThanOrEqual(4);await page.getByRole('button',{name:'暫停原曲',exact:true}).click();
  const history=await get('/chord-practice/history');expect(history.map((s:any)=>s.version)).toEqual([2,1]);
  expect(await (await request.get('/backend/fixture/invariants')).json()).toEqual({root_unchanged:true,structure_unchanged:true,score_unchanged:true});await other.close();
+ // Reuse a confirmed source slice into a different empty section, then undo only this batch.
+ await page.getByRole('button',{name:'解除鎖定／換段',exact:true}).click();
+ await page.getByLabel('要練習的歌曲段落',{exact:true}).selectOption('intro');
+ await page.getByRole('button',{name:'鎖定這段練和弦',exact:true}).click();
+ await page.getByText('沿用其他段的和弦',{exact:true}).click();
+ await page.getByLabel('沿用來源段落',{exact:true}).selectOption('chorus');
+ await page.getByLabel('來源核心開始秒數').fill('4');
+ await page.getByLabel('來源核心結束秒數').fill('6');
+ await page.getByLabel('目標核心開始秒數').fill('0');
+ await page.getByRole('button',{name:'聽來源核心',exact:true}).click();
+ await expect.poll(()=>page.locator('audio').evaluate(a=>(a as HTMLAudioElement).currentTime)).toBeGreaterThanOrEqual(4);
+ await page.getByRole('button',{name:'聽目標核心',exact:true}).click();
+ await expect.poll(()=>page.locator('audio').evaluate(a=>(a as HTMLAudioElement).currentTime)).toBeLessThan(2);
+ await page.getByLabel('我已比較兩段原曲，確認核心對齊').check();
+ await page.getByRole('button',{name:'預覽可沿用和弦',exact:true}).click();
+ await expect(page.getByLabel('和弦沿用預覽')).toContainText('Am/C');
+ await page.getByRole('button',{name:'套用勾選和弦',exact:true}).click();
+ await expect(page.getByLabel('和弦保存狀態')).toHaveText('已保存沿用和弦');
+ let reused=await get('/chord-practice');expect(reused.version).toBe(4);
+ expect(reused.document.segments.find((s:any)=>s.start===0)).toMatchObject({end:2,symbol:'Am/C',original_symbol:'C'});
+ expect(reused.document.segments.find((s:any)=>s.start===2)).toMatchObject({end:4,symbol:null});
+ await page.reload();await page.getByText('沿用其他段的和弦',{exact:true}).click();
+ await page.getByRole('button',{name:'復原這批沿用',exact:true}).click();
+ await expect(page.getByLabel('和弦保存狀態')).toHaveText('已復原這批沿用');
+ reused=await get('/chord-practice');expect(reused.version).toBe(5);
+ expect(reused.document.segments.filter((s:any)=>s.end<=4).every((s:any)=>s.symbol===null)).toBe(true);
+ expect(reused.document.segments.find((s:any)=>s.start===4).symbol).toBe('Am/C');
+ expect(await (await request.get('/backend/fixture/invariants')).json()).toEqual({root_unchanged:true,structure_unchanged:true,score_unchanged:true});
 });
