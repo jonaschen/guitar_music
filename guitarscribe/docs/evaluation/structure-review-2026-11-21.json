@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "songs": [
+    {
+      "source": {
+        "job_id": "84defcef7fd44bbc8a1024b24d65c78e",
+        "fingerprint": "1123397a357d01d5039371ffa115c86579da663d1fb92dc4ed1fa0cf391ade96",
+        "audio_sha256": "364f87e0c51d1b12fb2076c79f24c213115c6b1bbca308502423c7e202189390",
+        "duration": 287.82297052154195,
+        "source_start": 0.0
+      },
+      "candidate_sha256": "b22ce198433174a526fe96cbe30063300f475497975b8c63de0690e0d09dbb3a",
+      "current_sections": 9,
+      "original_sections": 17,
+      "baseline_complete": true,
+      "pending_sections": 9,
+      "confirmed_names": 4,
+      "confirmed_boundaries": 0,
+      "name_changed_original_sections": 0,
+      "boundary_changed_original_sections": 14,
+      "net_changed_original_fraction": 0.8235294117647058,
+      "removed_internal_boundaries": 8,
+      "added_internal_boundaries": 0,
+      "section_count_reduction": 8,
+      "semantic_accuracy": null,
+      "active_review_seconds": null,
+      "independent_reference": false,
+      "interpretation": "Net differences from retained model sections, not click count, listening time or independent accuracy.",
+      "saved_version": null
+    },
+    {
+      "source": {
+        "job_id": "83a3643ab3814172a046cebf709f3413",
+        "fingerprint": "b2cd10b791110f0f7e00d7eba2bc6817726c828d6696e68a7ec47b10ae4fab2a",
+        "audio_sha256": "20eec0a5cfad88d81a95b6362764ad9e350d16d661729c9c8a0f60b1fcc45423",
+        "duration": 258.1066666666667,
+        "source_start": 0.0
+      },
+      "candidate_sha256": "b786bca8fd8c42c667c80735f499f2c6139996026ad26f1992cf30adb09ecc56",
+      "current_sections": 13,
+      "original_sections": 14,
+      "baseline_complete": true,
+      "pending_sections": 13,
+      "confirmed_names": 5,
+      "confirmed_boundaries": 0,
+      "name_changed_original_sections": 3,
+      "boundary_changed_original_sections": 2,
+      "net_changed_original_fraction": 0.35714285714285715,
+      "removed_internal_boundaries": 1,
+      "added_internal_boundaries": 0,
+      "section_count_reduction": 1,
+      "semantic_accuracy": null,
+      "active_review_seconds": null,
+      "independent_reference": false,
+      "interpretation": "Net differences from retained model sections, not click count, listening time or independent accuracy.",
+      "saved_version": null
+    },
+    {
+      "source": {
+        "job_id": "a3be29912a7045448765290d7cba2f6c",
+        "fingerprint": "e8af51ef717ac29e9ae4af8dcf94c7bdd5db5aec46fecc0dc7c1cd213ec6f50d",
+        "audio_sha256": "c5bace9475e843af08a825e995ad4b962a98c19e2c1d519ef20c23bd26d05ade",
+        "duration": 304.47167800453514,
+        "source_start": 0.0
+      },
+      "candidate_sha256": "36b98f3bfb1d1623d62749f122093bd9e2cea6b0fb01d5cce7990f4ac16ed1bd",
+      "current_sections": 14,
+      "original_sections": 14,
+      "baseline_complete": true,
+      "pending_sections": 14,
+      "confirmed_names": 0,
+      "confirmed_boundaries": 0,
+      "name_changed_original_sections": 0,
+      "boundary_changed_original_sections": 0,
+      "net_changed_original_fraction": 0.0,
+      "removed_internal_boundaries": 0,
+      "added_internal_boundaries": 0,
+      "section_count_reduction": 0,
+      "semantic_accuracy": null,
+      "active_review_seconds": null,
+      "independent_reference": false,
+      "interpretation": "Net differences from retained model sections, not click count, listening time or independent accuracy.",
+      "saved_version": null
+    }
+  ],
+  "semantic_quality": "awaiting_independent_reference",
+  "correction_time": "not_measured",
+  "music_accuracy_claim": false,
+  "provenance": {
+    "created_at": "2026-11-20T22:10:44.288507+00:00",
+    "sqlite_sha256": "3a512f2e89767584c14408cf9daeef85f70c7ce292056378eb0391002638c6b7",
+    "rows": [
+      {
+        "job": "83a3643ab3814172a046cebf709f3413",
+        "version": 1
+      },
+      {
+        "job": "a3be29912a7045448765290d7cba2f6c",
+        "version": 1
+      },
+      {
+        "job": "84defcef7fd44bbc8a1024b24d65c78e",
+        "version": 27
+      }
+    ],
+    "live_state": "not_read_vm_idle"
+  },
+  "verification": "24 unit tests, including original independent-reference scorer controls; API/source mismatch and duplicate recording rejected"
+}
