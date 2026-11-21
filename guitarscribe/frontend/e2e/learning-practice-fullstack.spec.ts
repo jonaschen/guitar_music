@@ -34,7 +34,7 @@ test('personal hypotheses persist with evidence and CAS; theory playback stays s
  await page.getByRole('button',{name:'逐音候選 A',exact:true}).click();await expect.poll(()=>page.evaluate(()=>(window as any).referenceTones.length)).toBe(6);
  await page.evaluate(()=>window.dispatchEvent(new Event('pagehide')));expect(await page.evaluate(()=>(window as any).referenceTones.slice(3).every((r:any)=>r.stops.includes('now')))).toBe(true);
  await page.getByLabel('目前主音假設').selectOption('A');await page.getByLabel('開啟主音參考聲（原曲會暫停）').check();await page.getByRole('button',{name:'聽目前主音參考聲',exact:true}).click();await expect.poll(()=>page.evaluate(()=>(window as any).referenceTones.length)).toBe(7);await page.getByRole('button',{name:'停止主音參考聲',exact:true}).click();
- for(const width of [390,1440]){await page.setViewportSize({width,height:900});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
+ for(const width of [390,1440]){await page.setViewportSize({width,height:900});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);const checkbox=await page.getByLabel('開啟理論參考音（原曲會暫停）').boundingBox();expect(checkbox!.width).toBeLessThan(28);}
  await page.getByLabel('理論候選 A').fill('C/E');await expect(page.getByLabel('候選 A 的組成音')).toContainText('根音 C · 低音 E');
  await page.getByRole('button',{name:'填入候選 A',exact:true}).click();await expect(page.getByLabel('和弦名稱',{exact:true})).toHaveValue('C/E');
  expect((await get('/chord-practice')).version).toBe(0);
