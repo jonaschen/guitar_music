@@ -17,7 +17,7 @@
 - 程式與環境 `/srv/guitarscribe/{app,site,runtime,protocol.json,environment}`；**雲端 `/srv/guitarscribe/work` 是最新資料**。本機 `guitarscribe/output/web-preview/work` 是獨立舊副本，不雙向同步。
 - 私人桶 `hanana-491223-guitarscribe-private`：`releases/` 是安裝程式／初始快照，`backups/` 是不可覆寫的已保存資料備份，`control/usage.json` 是啟動帳本。不要混淆初始快照與最新備份。
 - 本機密碼 `guitarscribe/output/cloud-control/access.json`，VM `/srv/guitarscribe/access.json`；Secret Manager `guitarscribe-access`，部署指定版本。不要貼內容、放進 Git 或借用其他服務密碼。SSH key 在同本機目錄 `ssh`，不提交。
-- `.installed` 與 `release-manifest.json` 記錄主機版本。`bootstrap.py` 已安裝分支保留 work，只設定維護單元；**改 metadata 不代表已升級 app**。
+- `.installed` 與 `release-manifest.json` 是初始安裝／遷移紀錄；新版現用程式看 `app-release-manifest.json`（先核對 deployment.json）。`bootstrap.py` 已安裝分支保留 work，只設定維護單元；**改 metadata 不代表已升級 app**。
 
 ## 狀態如何解讀
 

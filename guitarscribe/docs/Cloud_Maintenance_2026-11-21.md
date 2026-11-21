@@ -1,6 +1,6 @@
 # 個人雲端：保存、備份、保留與費用檢查
 
-目前此改版已在本機測試，**尚未部署**。正式版本以 deployment.json 與服務實查為準。
+此改版已部署至個人雲端；正式版本以 deployment.json 與服務實查為準。本次資料保護與發布結果見 [改版紀錄](Cloud_Update_2026-11-21.md)。
 
 ## 使用者會看到什麼
 
@@ -42,4 +42,4 @@
 
 ## 驗證
 
-TDD：新維護測試先因缺少 maintenance_status 失敗；加入實作後，維護／原備份／主機回復共40項通過。瀏覽器測試先因缺少備份狀態欄失敗；實作後 pending→failed→complete、不消失原稿提示、390px無溢出通過。證據在本機 output/maintenance-{red,green,browser-red,browser-green}-2026-11-21.log。正式機版本未宣稱通過。
+TDD：新維護測試先因缺少 maintenance_status 失敗；加入實作後，維護／原備份／主機回復共40項通過。瀏覽器測試先因缺少備份狀態欄失敗；實作後 pending→failed→complete、不消失原稿提示、390px無溢出通過。證據在本機 output/maintenance-{red,green,browser-red,browser-green}-2026-11-21.log。正式站另驗證狀態 API 與新備份紀錄；實際結果見本次改版紀錄。

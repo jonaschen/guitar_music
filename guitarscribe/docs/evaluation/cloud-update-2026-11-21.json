@@ -1,0 +1,154 @@
+{
+  "anonymous_401": true,
+  "real_songs_readonly": [
+    {
+      "job_id": "84defcef7fd44bbc8a1024b24d65c78e",
+      "structure_version": 27,
+      "sections": 9,
+      "chord_version": 0,
+      "audio_range": 206
+    },
+    {
+      "job_id": "83a3643ab3814172a046cebf709f3413",
+      "structure_version": 1,
+      "sections": 13,
+      "chord_version": 0,
+      "audio_range": 206
+    },
+    {
+      "job_id": "a3be29912a7045448765290d7cba2f6c",
+      "structure_version": 1,
+      "sections": 14,
+      "chord_version": 0,
+      "audio_range": 206
+    }
+  ],
+  "owned_fixture": {
+    "job_id": "6b26ce1d8cc94ba6b5b4ff7ae3c55c0b",
+    "chord_save_reload_and_conflict": true,
+    "learning_save_reload_and_conflict": true,
+    "recording_energy": true,
+    "root_and_structure_unchanged": true
+  },
+  "maintenance": {
+    "backup": {
+      "state": "unknown",
+      "last_success_at": null,
+      "snapshot_at": null,
+      "last_attempt_at": null,
+      "finished_at": null
+    },
+    "disk_available_bytes": 31382110208,
+    "disk_low": false
+  },
+  "ci": {
+    "run": 44842766057,
+    "app_commit": "90533685d7da660c586ce247e21f74da9593d5c6",
+    "backend_passed": 1461,
+    "backend_existing_skips": 3,
+    "frontend_passed": 351,
+    "frontend_existing_skips": 7,
+    "webkit_practice_passed": 20,
+    "webkit_learning_passed": 4
+  },
+  "reused_chords": {
+    "owned_fixture": "6b26ce1d8cc94ba6b5b4ff7ae3c55c0b",
+    "plan_apply_reload_undo": true,
+    "source_preserved": true,
+    "final_version": 3
+  },
+  "browser": [
+    {
+      "browser": "chromium",
+      "width": 1440,
+      "real_song": "84defcef7fd44bbc8a1024b24d65c78e",
+      "section": "section-8",
+      "source_only_playback": true,
+      "reference_count": 0,
+      "recording_energy": true,
+      "page_errors": [],
+      "overflow": false
+    },
+    {
+      "browser": "webkit",
+      "width": 390,
+      "real_song": "84defcef7fd44bbc8a1024b24d65c78e",
+      "section": "section-8",
+      "source_only_playback": true,
+      "reference_count": 0,
+      "recording_energy": true,
+      "page_errors": [],
+      "overflow": false
+    }
+  ],
+  "fixture_cleaned": true,
+  "six_original_databases_unchanged": true,
+  "verified_functional_base_commit": "90533685d7da660c586ce247e21f74da9593d5c6",
+  "app_commit": "f269caa1d7926901530308d1e5f3640f5bc57a44",
+  "app_release": "releases/2026-11-21-v5",
+  "app_sha256": "8fb26454f2f11838fc4541913f507b6dd20602d2cbb0a624b4600d7d0274a16a",
+  "library_count_during_fixture": 26,
+  "final_host": {
+    "commit": "f269caa1d7926901530308d1e5f3640f5bc57a44",
+    "installed_files_match": 277,
+    "six_original_databases_unchanged": true,
+    "fixture_absent": true,
+    "library_count": 25,
+    "backup": {
+      "state": "complete",
+      "last_success_at": 1795221877.101206,
+      "snapshot_at": 1795221783.6119502,
+      "last_attempt_at": 1795221783.6119502,
+      "finished_at": 1795221877.101205
+    },
+    "disk_available_bytes": 31372812288,
+    "keep_songs": true,
+    "active_analysis": false,
+    "activity_age_seconds": 133.4
+  },
+  "completed_backup": {
+    "snapshot_at": 1795221783.6119502,
+    "completed_at": 1795221877.101206,
+    "manifest": "backups/manifests/20261121T004303Z-1b5037f47b834f6f868d30aefb5e40cd.json",
+    "manifest_sha256": "8a5971d4a600a42bbbabe8f0e6d3c07eddc4664e16c08fb3bdc1659861977d9a",
+    "files": 150
+  },
+  "final_style_ci_run": 44845440050,
+  "final_style_ci_status": "success",
+  "final_cloud_status": {
+    "checked_at": "2026-11-21T00:50:25.902118+00:00",
+    "vm": "TERMINATED",
+    "gateway_ready": true,
+    "anonymous_http": 401,
+    "authenticated": {
+      "http_status": 200,
+      "state": "stopped",
+      "used_seconds": 7725,
+      "limit_seconds": 144000,
+      "remaining_seconds": 136275,
+      "window_days": 31,
+      "can_wake": true,
+      "stop_at": null
+    },
+    "backup_manifest_count": 6,
+    "latest_backup": {
+      "name": "backups/manifests/20261121T004303Z-1b5037f47b834f6f868d30aefb5e40cd.json",
+      "generation": "1795221876956835",
+      "timeCreated": "2026-11-21T00:44:36.961000+00:00",
+      "size": "51657"
+    }
+  },
+  "maintenance_run_settled_seconds": 1666,
+  "final_ci": {
+    "run": 44845440050,
+    "commit": "f269caa1d7926901530308d1e5f3640f5bc57a44",
+    "status": "success",
+    "backend_passed": 1462,
+    "backend_existing_skips": 3,
+    "frontend_passed": 351,
+    "frontend_existing_skips": 7,
+    "webkit_practice_passed": 20,
+    "webkit_learning_passed": 4,
+    "cloud_passed": 98
+  }
+}
