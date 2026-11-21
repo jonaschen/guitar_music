@@ -43,6 +43,7 @@ jobs:
         run: >-
           docker run --rm
           -v "$PWD/docs:/docs:ro"
+          -v "$PWD/infra:/infra:ro"
           -v "$PWD/rhythm-patterns:/rhythm-patterns:ro"
           -e GUITARSCRIBE_RHYTHM_PATTERNS_DIR=/rhythm-patterns
           guitarscribe-backend-ci pytest -q

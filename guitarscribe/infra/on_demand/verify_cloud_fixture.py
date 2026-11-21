@@ -43,7 +43,12 @@ def seed():
     identifier = uuid4().hex
     # Persist the ownership marker BEFORE inserting anything, so an interrupted
     # verification can still clean only its own data.
-    state = dict(job_id=identifier, baseline=db_hashes())
+    baseline = db_hashes()
+    tables = {}
+    for name in baseline:
+        with closing(sqlite3.connect((WORK / name).resolve().as_uri() + '?mode=ro', uri=True)) as db:
+            tables[name] = [row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")]
+    state = dict(job_id=identifier, baseline=baseline, baseline_tables=tables)
     with MARKER.open('x') as stream: json.dump(state, stream)
     MARKER.chmod(0o600)
     store = JobStore(WORK / 'jobs')
@@ -76,9 +81,10 @@ def clean():
     job = JobStore(WORK / 'jobs').load(identifier)
     assert job.score.song.title == 'Cloud persistence verification (temporary)'
     for name, tables, key in [
-        ('chord-practice.sqlite3', ['chord_practice', 'chord_practice_history'], 'job_id'),
-        ('root-practice.sqlite3', ['root_practice', 'root_practice_history'], 'job_id'),
+        ('chord-practice.sqlite3', ['chord_practice', 'chord_practice_history', 'chord_context', 'chord_reuse_ledger'], 'job_id'),
+        ('root-practice.sqlite3', ['root_practice', 'root_practice_history', 'root_reuse_ledger'], 'job_id'),
         ('song-structure.sqlite3', ['song_structure', 'song_structure_history'], 'job_id'),
+        ('learning-practice.sqlite3', ['learning_practice', 'learning_history'], 'job_id'),
         ('jobs/jobs.sqlite3', ['jobs'], 'id'),
     ]:
         path = WORK / name
@@ -88,8 +94,15 @@ def clean():
             for table in tables:
                 if db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (table,)).fetchone():
                     db.execute(f'DELETE FROM {table} WHERE {key}=?', (identifier,))
-                    empty = empty and db.execute(f'SELECT count(*) FROM {table}').fetchone()[0] == 0
-        if name not in state['baseline'] and name == 'chord-practice.sqlite3' and empty:
+                    count = db.execute(f'SELECT count(*) FROM {table}').fetchone()[0]
+                    empty = empty and count == 0
+                    # Remove only an empty, known table created by this owned
+                    # verification. Existing user schema and rows remain intact.
+                    if count == 0 and name in state.get('baseline_tables', {}) and table not in state['baseline_tables'][name]:
+                        db.execute(f'DROP TABLE {table}')
+            remaining = [row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")]
+            empty = empty and all(table in tables and db.execute(f'SELECT count(*) FROM {table}').fetchone()[0] == 0 for table in remaining)
+        if name not in state['baseline'] and name in ('chord-practice.sqlite3', 'learning-practice.sqlite3') and empty:
             for suffix in ('', '-wal', '-shm'): Path(str(path) + suffix).unlink(missing_ok=True)
     shutil.rmtree(WORK / 'jobs' / identifier)
     candidate = WORK / 'structure-analysis' / hashlib.sha256(identifier.encode()).hexdigest()

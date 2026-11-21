@@ -1,0 +1,21 @@
+{
+  "status": "passed",
+  "duration_seconds": 600,
+  "runner_seconds": 606,
+  "cycles_minimum_asserted": 11,
+  "exact_cycle_count": "not_retained_by_line_reporter",
+  "page_errors": 0,
+  "checks": [
+    "adopt chord and observe real API save",
+    "reload and read retained decision",
+    "play inside 4–6 second range",
+    "pagehide immediately pauses original audio",
+    "root/structure/Score remain unchanged each cycle"
+  ],
+  "fixture": "disposable local synthetic 220 Hz recording",
+  "browser": "Chromium 1187 on Linux",
+  "physical_iphone": false,
+  "limits": "Ten minutes only; no claim of multi-hour stability or bounded heap growth.",
+  "log": "output/practice-soak-2026-11-21-r2.log",
+  "initial_failure": "Rebuilding shared dist removed index during a reload; fixture now snapshots index/assets before serving."
+}
