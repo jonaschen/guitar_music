@@ -75,6 +75,11 @@ jobs:
         run: npx playwright test --config playwright.ci.config.ts --reporter=line
       - name: Check WebKit touch and practice workflows
         run: npx playwright test --config playwright.webkit.config.ts --reporter=line
+      - name: Check learning notes and reference playback in WebKit
+        working-directory: guitarscribe/frontend
+        env:
+          GUITARSCRIBE_TEST_BROWSER: webkit
+        run: npx playwright test --config playwright.learning.config.ts
       - name: Preserve browser failure evidence
         if: failure()
         uses: actions/upload-artifact@v4

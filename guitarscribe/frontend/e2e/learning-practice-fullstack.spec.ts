@@ -1,0 +1,54 @@
+import {test,expect} from '@playwright/test';
+test('personal hypotheses persist with evidence and CAS; theory playback stays separate from original audio',async({page,context,request})=>{
+ test.setTimeout(120000);
+ const base='/backend/api/v1/jobs/fixture-song';
+ const get=async(p:string)=>(await (await request.get(base+p)).json());
+ const source=(await get('/song-structure')).current_source;
+ const url='/?practice=chords&job=fixture-song&structure=chorus&structure_source='+source.fingerprint+'&section_start=4&section_end=10';
+ await page.addInitScript(()=>{(window as any).referenceTones=[];const create=AudioContext.prototype.createOscillator;AudioContext.prototype.createOscillator=function(){const osc=create.call(this),start=osc.start.bind(osc),stop=osc.stop.bind(osc);const row:any={frequency:0,stops:[]};(window as any).referenceTones.push(row);osc.start=(when=0)=>{row.frequency=osc.frequency.value;return start(when)};osc.stop=(when?:number)=>{row.stops.push(when??'now');return stop(when)};return osc;};});
+ await page.goto(url);await expect(page.getByText('主音與調式假設',{exact:true})).toBeVisible();
+ await page.getByText('主音與調式假設',{exact:true}).click();
+ await expect(page.getByLabel('目前主音假設')).toHaveValue('');
+ const other=await context.newPage();await other.goto(url);await other.getByText('主音與調式假設',{exact:true}).click();await expect(other.getByLabel('目前主音假設')).toHaveValue('');
+ await page.getByLabel('目前主音假設').selectOption('A');await page.getByLabel('目前調式假設').selectOption('minor');
+ await page.getByLabel('調性判斷筆記').fill('句尾停在 A，仍要和 C 大調比較');
+ await page.getByRole('button',{name:'把目前 A–B 記為依據',exact:true}).click();
+ await page.getByRole('button',{name:'採用並保存調性假設',exact:true}).click();await expect(page.getByLabel('學習筆記保存狀態')).toHaveText('調性假設已保存');
+ let saved=await get('/learning-practice');expect(saved.version).toBe(1);expect(saved.document.song.evidence[0]).toMatchObject({start:4,end:10});
+ expect(saved.document.song).toMatchObject({tonic:'A',mode:'minor'});
+ await expect(page.getByLabel('關係調比較')).toContainText('C 大調');
+ await other.getByLabel('目前主音假設').selectOption('G');await other.getByRole('button',{name:'採用並保存調性假設',exact:true}).click();await expect(other.getByLabel('學習筆記保存狀態')).toContainText('另一頁');
+ expect((await get('/learning-practice')).version).toBe(1);await other.reload();await other.getByText('主音與調式假設',{exact:true}).click();await expect(other.getByLabel('目前主音假設')).toHaveValue('G');await expect(other.getByLabel('學習筆記保存狀態')).toContainText('草稿');await other.getByLabel('調性判斷筆記').fill('衝突後繼續補記但不能升版本');await other.reload();await other.getByText('主音與調式假設',{exact:true}).click();await expect(other.getByRole('button',{name:'採用並保存調性假設',exact:true})).toBeDisabled();await expect(other.getByLabel('調性判斷筆記')).toHaveValue('衝突後繼續補記但不能升版本');await other.close();
+ await page.reload();await page.getByText('主音與調式假設',{exact:true}).click();await expect(page.getByLabel('目前主音假設')).toHaveValue('A');
+ await page.getByLabel('只記目前這段錄音的假設').check();await page.getByLabel('目前主音假設').selectOption('C');await page.getByLabel('目前調式假設').selectOption('major');
+ await page.getByRole('button',{name:'採用並保存調性假設',exact:true}).click();await expect(page.getByLabel('學習筆記保存狀態')).toHaveText('調性假設已保存');saved=await get('/learning-practice');expect(saved.document.song.tonic).toBe('A');expect(saved.document.local[0]).toMatchObject({start:4,end:10,tonic:'C'});
+ await page.getByText('比較和弦組成音',{exact:true}).click();await page.getByLabel('理論候選 A').fill('G');await page.getByLabel('理論候選 B').fill('Gm');
+ await expect(page.getByLabel('候選差異音')).toContainText('B');await expect(page.getByLabel('候選差異音')).toContainText('Bb');
+ await expect(page.getByRole('button',{name:'合奏候選 A',exact:true})).toBeDisabled();expect(await page.evaluate(()=>(window as any).referenceTones.length)).toBe(0);
+ await page.getByLabel('開啟理論參考音（原曲會暫停）').check();await page.getByRole('button',{name:'合奏候選 A',exact:true}).click();
+ await expect.poll(()=>page.evaluate(()=>(window as any).referenceTones.length)).toBe(3);
+ expect(await page.locator('audio').evaluate(a=>(a as HTMLAudioElement).paused)).toBe(true);
+ await page.getByRole('button',{name:'播放原曲範圍',exact:true}).click();await expect.poll(()=>page.locator('audio').evaluate(a=>(a as HTMLAudioElement).paused)).toBe(false);
+ expect(await page.evaluate(()=>(window as any).referenceTones.every((r:any)=>r.stops.includes('now')))).toBe(true);
+ await page.getByRole('button',{name:'暫停原曲',exact:true}).click();
+ await page.getByRole('button',{name:'逐音候選 A',exact:true}).click();await expect.poll(()=>page.evaluate(()=>(window as any).referenceTones.length)).toBe(6);
+ await page.evaluate(()=>window.dispatchEvent(new Event('pagehide')));expect(await page.evaluate(()=>(window as any).referenceTones.slice(3).every((r:any)=>r.stops.includes('now')))).toBe(true);
+ await page.getByLabel('目前主音假設').selectOption('A');await page.getByLabel('開啟主音參考聲（原曲會暫停）').check();await page.getByRole('button',{name:'聽目前主音參考聲',exact:true}).click();await expect.poll(()=>page.evaluate(()=>(window as any).referenceTones.length)).toBe(7);await page.getByRole('button',{name:'停止主音參考聲',exact:true}).click();
+ for(const width of [390,1440]){await page.setViewportSize({width,height:900});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
+ await page.getByLabel('理論候選 A').fill('C/E');await expect(page.getByLabel('候選 A 的組成音')).toContainText('根音 C · 低音 E');
+ await page.getByRole('button',{name:'填入候選 A',exact:true}).click();await expect(page.getByLabel('和弦名稱',{exact:true})).toHaveValue('C/E');
+ expect((await get('/chord-practice')).version).toBe(0);
+ expect(await (await request.get('/backend/fixture/invariants')).json()).toEqual({root_unchanged:true,structure_unchanged:true,score_unchanged:true});
+});
+
+test('lost save response preserves the draft, blocks blind retry and reconciles the committed server version',async({page,request})=>{
+ const base='/backend/api/v1/jobs/fixture-song';const initial=await (await request.get(base+'/learning-practice')).json();const source=initial.document.source;
+ await page.goto('/?practice=chords&job=fixture-song&structure=chorus&structure_source='+source.fingerprint+'&section_start=4&section_end=10');
+ await page.getByText('主音與調式假設',{exact:true}).click();await expect(page.getByLabel('目前主音假設')).toBeVisible();
+ let puts=0;await page.route('**/learning-practice',async route=>{if(route.request().method()!=='PUT')return route.continue();puts++;await route.fetch();await route.abort('failed');});
+ await page.getByLabel('調性判斷筆記').fill('斷線前已送出的個人依據');await page.getByRole('button',{name:'採用並保存調性假設',exact:true}).click();
+ await expect(page.getByLabel('學習筆記保存狀態')).toContainText('草稿');await expect(page.getByRole('button',{name:'採用並保存調性假設',exact:true})).toBeDisabled();expect(puts).toBe(1);
+ const committed=await (await request.get(base+'/learning-practice')).json();expect(committed.version).toBe(initial.version+1);expect(committed.document.song.note).toBe('斷線前已送出的個人依據');
+ await page.reload();await page.getByText('主音與調式假設',{exact:true}).click();await expect(page.getByLabel('調性判斷筆記')).toHaveValue('斷線前已送出的個人依據');await expect(page.getByLabel('學習筆記保存狀態')).toContainText('另一頁');
+ page.once('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:'載入最新學習筆記',exact:true}).click();await expect(page.getByLabel('學習筆記保存狀態')).not.toContainText('另一頁');await expect(page.getByLabel('調性判斷筆記')).toHaveValue('斷線前已送出的個人依據');expect(puts).toBe(1);
+});

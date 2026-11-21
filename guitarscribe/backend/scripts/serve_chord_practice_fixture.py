@@ -14,6 +14,8 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 import uvicorn
 from app.models.jobs import JobStatus
+from app.learning_practice_api import create_learning_router,get_learning_store
+from app.services.learning_practice import LearningStore
 from app.models.score import SongScore
 from app.services.root_practice import RootPracticeStore, initial_document
 from app.services.song_structure import SongStructureStore, source_for_job
@@ -55,6 +57,8 @@ def create_fixture(directory):
     api.include_router(create_root_router(lambda: service))
     api.include_router(create_song_structure_router(lambda: service))
     api.include_router(create_chord_practice_router(lambda: service))
+    api.include_router(create_learning_router(lambda: service))
+    api.dependency_overrides[get_learning_store] = lambda: LearningStore(directory / "learning-practice.sqlite3")
     api.dependency_overrides[get_root_practice_store] = lambda: roots
     api.dependency_overrides[get_song_structure_store] = lambda: structures
     api.dependency_overrides[get_chord_practice_store] = lambda: chords

@@ -1,0 +1,17 @@
+import {useEffect,useRef,useState} from 'react';
+import {chordTones,compareChordTones} from './chordTheory';
+import {TheoryAudio,STOP_REFERENCE,stopReference} from './TheoryAudio';
+import './learningPractice.css';
+export function ChordTheoryPanel({initial,onChoose,onStopOriginal,scopeKey,disabled=false}:{scopeKey:string;initial:string;onChoose:(symbol:string)=>void;onStopOriginal:()=>void;disabled?:boolean}){
+ const [a,setA]=useState(initial),[b,setB]=useState(''),[enabled,setEnabled]=useState(false),[volume,setVolume]=useState(.12),[error,setError]=useState('');
+ const sound=useRef(new TheoryAudio());
+ useEffect(()=>{const stop=()=>sound.current.stop(),hidden=()=>{if(document.hidden)stop();};window.addEventListener(STOP_REFERENCE,stop);window.addEventListener('pagehide',stop);document.addEventListener('visibilitychange',hidden);return()=>{window.removeEventListener(STOP_REFERENCE,stop);window.removeEventListener('pagehide',stop);document.removeEventListener('visibilitychange',hidden);sound.current.dispose();};},[]);
+ useEffect(()=>{sound.current.stop();},[a,b,enabled,disabled,initial,scopeKey]);
+ const comparison=compareChordTones(a,b);
+ function play(symbol:string,sequential:boolean){const chord=chordTones(symbol);if(!enabled||disabled||!chord)return;stopReference();onStopOriginal();setError('');void sound.current.play(chord.tones.map(t=>t.midi),volume,sequential).catch(()=>setError('參考音暫時無法播放，請再按一次。'));}
+ return <details className="learning-panel" onToggle={e=>{if(!e.currentTarget.open)sound.current.stop();}}><summary>比較和弦組成音</summary><p>這是樂理定義，不是從錄音測得的音。用原曲與低頻圖檢查自己的候選；不會自動改寫和弦。</p>
+ <fieldset disabled={disabled}>{(['A','B'] as const).map((label,i)=>{const value=i?b:a,chord=chordTones(value);return <section key={label}><label>理論候選 {label}<input aria-label={`理論候選 ${label}`} value={value} maxLength={64} placeholder={i?'例如 Gm':'例如 G、C/E'} onChange={e=>(i?setB:setA)(e.target.value)}/></label><div aria-label={`候選 ${label} 的組成音`}>{chord?<><p>根音 {chord.root}{chord.bass?` · 低音 ${chord.bass}`:''}</p><p>{chord.tones.map(t=>`${t.name}（${t.degree}）`).join('、')}</p></>:<p>{value?'尚未支援這個寫法；可以仍在和弦欄手動填寫。':'請輸入候選，沒有預設答案。'}</p>}</div><div className="learning-actions"><button disabled={!enabled||!chord} onClick={()=>play(value,true)}>逐音候選 {label}</button><button disabled={!enabled||!chord} onClick={()=>play(value,false)}>合奏候選 {label}</button><button disabled={!chord} onClick={()=>{sound.current.stop();onChoose(value.trim());}}>填入候選 {label}</button></div></section>;})}
+ <p aria-label="候選差異音">{comparison?comparison.samePitchClasses?'兩者的組成音音級相同；根音、低音與音樂功能仍可能不同。':`A 獨有：${comparison.onlyA.map(t=>t.name).join('、')||'無'}；B 獨有：${comparison.onlyB.map(t=>t.name).join('、')||'無'}`:'輸入兩個支援的和弦，即可比較差異音。'}</p>
+ <label><input type="checkbox" checked={enabled} onChange={e=>setEnabled(e.target.checked)}/>開啟理論參考音（原曲會暫停）</label><label>參考音音量<input aria-label="理論參考音音量" type="range" min="0" max=".3" step=".01" value={volume} onChange={e=>{sound.current.stop();setVolume(Number(e.target.value));}}/></label><button onClick={()=>sound.current.stop()}>停止參考音</button></fieldset>
+ <p>參考音固定在示範音域，不代表錄音的八度、配器或轉位。斜線後是低音；此處合奏示範的是根音排列的組成音。填入後，仍須按「採用／更新和弦」保存。</p>{error?<p role="status">{error}</p>:null}</details>;
+}
