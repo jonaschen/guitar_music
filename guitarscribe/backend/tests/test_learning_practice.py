@@ -71,6 +71,13 @@ def test_api_unknown_read_does_not_create_database_and_source_loss_retains_saved
         url='/api/v1/jobs/song/learning-practice';reply=client.get(url);assert reply.status_code==200
         body=reply.json();assert body['document']['song']['tonic'] is None and body['source_matches']
         assert not store.path.exists()
+        energy=dict(fingerprint=body['document']['source']['fingerprint'],audio_sha256=body['document']['source']['audio_sha256'],start=1.,end=2.)
+        observation=client.post(url+'/pitch-energy',json=energy)
+        assert observation.status_code==200 and observation.json()['state']=='insufficient'
+        assert not store.path.exists()
+        assert client.post(url+'/pitch-energy',json={**energy,'audio_sha256':'c'*64}).status_code==409
+        assert client.post(url+'/pitch-energy',json={**energy,'end':13.}).status_code==422
+        assert client.post(url+'/pitch-energy',json={**energy,'end':1.1}).status_code==422
         document=body['document'];document['song'].update(tonic='A',mode='minor')
         assert client.put(url,json=dict(document=document,expected_version=0)).status_code==200
         assert client.put(url,json=dict(document=document,expected_version=0)).status_code==409

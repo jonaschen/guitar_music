@@ -212,6 +212,8 @@ class ChordPracticeStore:
                 preserve_scope(before, document, section)
                 if row:
                     db.execute('INSERT INTO chord_practice_history VALUES (?,?,?,?)', (job,row[1],row[0],row[2]))
+                from .chord_context import record_context
+                record_context(db, self, job, before, document, structure, section)
                 now = datetime.now(timezone.utc).isoformat()
                 db.execute('INSERT INTO chord_practice VALUES (?,?,?,?) ON CONFLICT(job_id) DO UPDATE SET document=excluded.document, version=excluded.version, updated_at=excluded.updated_at',
                            (job, body.document.model_dump_json(), body.expected_version+1, now))

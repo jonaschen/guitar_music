@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from .core.config import Settings
 from .models.jobs import JobStatus
+from .services.chord_context import review_context
 from .services.chord_practice import ChordPracticeStore, ChordSave, ChordConflict, initial_document, read_structure
 from .services.song_structure import source_for_job, StructureConflict
 from .services.chord_reuse import ChordReuseService, ReuseRequest, ReuseApply, ReuseUndo, ReuseNotFound
@@ -60,6 +61,7 @@ def create_chord_practice_router(get_job_service):
                 return snapshot(result, None, None, error.detail)
             if result['document'] is None: result['document'] = initial_document(job, source)
             structure, _ = read_structure(structure_path, job_id)
+            result['context_review'] = review_context(store, job_id, result['document'], structure)
             return snapshot(result, source, structure)
         return await run(action)
 

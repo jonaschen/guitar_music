@@ -52,3 +52,29 @@ test('lost save response preserves the draft, blocks blind retry and reconciles 
  await page.reload();await page.getByText('主音與調式假設',{exact:true}).click();await expect(page.getByLabel('調性判斷筆記')).toHaveValue('斷線前已送出的個人依據');await expect(page.getByLabel('學習筆記保存狀態')).toContainText('另一頁');
  page.once('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:'載入最新學習筆記',exact:true}).click();await expect(page.getByLabel('學習筆記保存狀態')).not.toContainText('另一頁');await expect(page.getByLabel('調性判斷筆記')).toHaveValue('斷線前已送出的個人依據');expect(puts).toBe(1);
 });
+
+test('changing adopted roots marks overlapping chords for review without deleting the chord decision',async({page,request})=>{
+ const base='/backend/api/v1/jobs/fixture-song',source=(await (await request.get(base+'/song-structure')).json()).current_source;
+ await page.goto('/?practice=chords&job=fixture-song&structure=chorus&structure_source='+source.fingerprint+'&section_start=4&section_end=10');
+ await page.getByLabel('和弦開始秒數').fill('4');await page.getByLabel('和弦結束秒數').fill('6');await page.getByLabel('和弦名稱',{exact:true}).fill('G');await page.getByRole('button',{name:'採用／更新和弦',exact:true}).click();
+ const current=async()=>(await (await request.get(base+'/chord-practice')).json());
+ await expect.poll(async()=>(await current()).document.segments.find((s:any)=>s.start===4)?.symbol).toBe('G');
+ let chords=await current(),id=chords.document.segments.find((s:any)=>s.start===4).id;expect(chords.context_review[id].state).toBe('current');
+ const root=await (await request.get(base+'/root-practice')).json();for(const segment of root.document.segments){if(segment.start<6&&segment.end>4){segment.root=2;segment.status='confirmed';}}
+ expect((await request.put(base+'/root-practice',{data:{expected_version:root.version,document:root.document}})).ok()).toBe(true);
+ await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await expect(page.getByText('根音或段落交界已變動，請重聽後重新採用。',{exact:true})).toBeVisible();
+ chords=await current();expect(chords.document.segments.find((s:any)=>s.id===id).symbol).toBe('G');expect(chords.context_review[id].state).toBe('needs_review');
+ await page.getByRole('button',{name:'採用／更新和弦',exact:true}).click();await expect.poll(async()=>{const c=await current();const s=c.document.segments.find((r:any)=>r.start===4);return s.id!==id&&c.context_review[s.id]?.state==='current';}).toBe(true);
+ await expect(page.getByText('根音或段落交界已變動，請重聽後重新採用。',{exact:true})).toHaveCount(0);
+});
+
+
+test('recording energy uses the selected source range and never adopts chord or root decisions',async({page,request})=>{
+ const base='/backend/api/v1/jobs/fixture-song',source=(await (await request.get(base+'/song-structure')).json()).current_source;
+ const before=await (await request.get(base+'/chord-practice')).json();
+ await page.goto('/?practice=chords&job=fixture-song&structure=chorus&structure_source='+source.fingerprint+'&section_start=4&section_end=10');
+ await page.getByText('錄音音級線索',{exact:true}).click();await page.getByRole('button',{name:'查看這段錄音的音級能量',exact:true}).click();
+ await expect(page.getByLabel('錄音音級線索狀態')).toContainText('已取得');await expect(page.getByLabel('A 相對能量',{exact:true})).toHaveAttribute('value','0');
+ expect((await (await request.get(base+'/chord-practice')).json()).document).toEqual(before.document);
+ await page.getByLabel('和弦開始秒數').fill('9.8');await expect(page.getByRole('button',{name:'查看這段錄音的音級能量',exact:true})).toBeDisabled();await expect(page.getByLabel('錄音十二音級能量')).toHaveCount(0);
+});

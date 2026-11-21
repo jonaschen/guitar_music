@@ -6,11 +6,12 @@ export class TheoryAudio {
  private sources=new Set<OscillatorNode>();
  private gains=new Set<GainNode>();
  private generation=0;
- stop(){this.generation++;for(const source of this.sources){try{source.stop();}catch{/* Already ended. */}source.disconnect();}this.sources.clear();for(const gain of this.gains)gain.disconnect();this.gains.clear();if(this.context?.state==='running')void this.context.suspend().catch(()=>{});}
+ stop(){this.generation++;for(const source of this.sources){try{source.stop();}catch{/* Already ended. */}source.disconnect();}this.sources.clear();for(const gain of this.gains)gain.disconnect();this.gains.clear();if(this.context&&this.context.state!=='closed')void this.context.suspend().catch(()=>{});}
  async play(midis:number[],volume:number,sequential=false){
   this.stop();if(!midis.length||midis.some(m=>!Number.isFinite(m)||m<24||m>96))return;
   const ticket=this.generation,context=this.context??new AudioContext();this.context=context;await context.resume();
-  if(ticket!==this.generation||document.hidden)return;
+  if(ticket!==this.generation)return;
+  if(document.hidden){this.stop();return;}
   const start=context.currentTime+.03;
   midis.forEach((midi,index)=>{
    const osc=context.createOscillator(),gain=context.createGain(),at=start+(sequential?index*.4:0),duration=sequential ? .36 : .9;

@@ -2,6 +2,7 @@
 import argparse
 import hashlib
 import math
+import shutil
 from pathlib import Path
 import struct
 import sys
@@ -86,7 +87,12 @@ def main():
     with TemporaryDirectory(prefix='guitarscribe-section-chords-') as temporary:
         app = FastAPI()
         app.mount('/backend', create_fixture(Path(temporary)))
-        app.mount('/', StaticFiles(directory=args.frontend, html=True))
+        # Keep a stable browser build while independent development rebuilds dist.
+        site = Path(temporary) / 'site'
+        site.mkdir()
+        shutil.copy2(args.frontend / 'index.html', site / 'index.html')
+        shutil.copytree(args.frontend / 'assets', site / 'assets')
+        app.mount('/', StaticFiles(directory=site, html=True))
         uvicorn.run(app, host='127.0.0.1', port=args.port, log_level='warning')
 
 

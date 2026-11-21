@@ -64,7 +64,7 @@ gcloud compute ssh guitarscribe-personal --project=hanana-491223 --zone=asia-eas
 
 - 成功備份以最後發布的 `status=complete` manifest、SHA與generation為準；檔案用SHA去重、SQLite走backup API，不直接拷含WAL的DB。先確認分析停止再手動備份。
 - 還原一律到**不存在的新目錄**，核對所有SHA／SQLite integrity／邏輯內容。驗證成功不代表獲准覆蓋線上work。若要切換，先保留當前進度並安排停止窗口。不得以初始personal-work.tar.gz復原使用者後續編輯。
-- 純程式更新只替換app/site，保留舊版可退回；不要發布本機整個dist/public/listening，裡面可能有私人音訊。前端清潔建置只取index/assets及必要導覽。
+- 純程式更新使用 `python3 guitarscribe/infra/on_demand/prepare_release.py --repo <repo> --app-only --out <新的輸出目錄>`。它從已提交 HEAD 清潔建置，只產生 app.tar.gz／manifest.json，完全不讀 work 或 runtime。核對 manifest 的 release_kind=app_only 與 SHA。只替換 app/site，保留舊版可退回；不要發布本機整個 dist/public/listening，裡面可能有私人音訊。前端清潔建置只取 index/assets 及必要導覽。
 - 確認 `GUITARSCRIBE_KEEP_SONGS=true`；不可回到會按TTL刪舊歌的版本，也不可設TTL=0（會全部過期）。跨boot中斷分析回收不能重用舊PID發signal。
 - 入口以immutable image digest部署並保留revision回退；Cloud Run必須使用h2c/`--use-http2`保留大音檔上傳，不改成默認HTTP/1的32MiB限制。
 - 驗證覆蓋登入、歌曲清單、原音訊Range、保存衝突、重開後資料、至少一首正式歌唯讀流程。人工進度用前後hash或資料版本核對；寫入測試只用有所有權marker的臨時fixture，清除自己建立的資料。
