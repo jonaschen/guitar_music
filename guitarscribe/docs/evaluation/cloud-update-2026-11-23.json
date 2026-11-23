@@ -126,10 +126,14 @@
     "recovery_capo_real_api": 4
   },
   "long_soak": {
-    "state": "running",
+    "state": "passed",
     "requested_ms": 7200000,
     "frontend_fixture_commit": "bcd04c1284f915c254a690ba0a80b88835517e0e",
-    "scope": "Isolated disposable chord-practice fixture; no private recordings. Later optional degree/Capo additions are covered separately."
+    "scope": "Isolated disposable chord-practice fixture; no private recordings. Later optional degree/Capo additions are covered separately.",
+    "elapsed_ms": 7200014,
+    "cycles": 412,
+    "page_errors": [],
+    "evidence": "practice-soak-2026-11-23.json"
   },
   "limitations": [
     "No independent musical accuracy claim",
@@ -151,5 +155,93 @@
     "stop_at": null,
     "maintenance_usage_seconds": 795,
     "actual_billing": "not_checked"
+  },
+  "billing_inspection": {
+    "billing_enabled": true,
+    "account_attached": true,
+    "bigquery_dataset_listing": {
+      "project": "hanana-491223",
+      "exit_code": 0,
+      "accessible_datasets_returned": 0
+    },
+    "actual_cost": "unknown",
+    "scope": "Read-only project billing attachment and dataset metadata; no export enabled, query issued, budget or service changed; an export in another project was not searched."
+  },
+  "selected_tdd_red_evidence": [
+    {
+      "log": "retry-browser-red-20261123.log",
+      "sha256": "ab47653d10ed87b7a759e23978001cfa848aa777346d98afd2f9095517bafd5a",
+      "result": "2 failed / 1 passed",
+      "meaning": "Retained upload retry controls missing; original YouTube exclusion passed."
+    },
+    {
+      "log": "progress-browser-red-20261123.log",
+      "sha256": "6e4bfd3607ca53da82504e48da27e37f597578c581625d4ffde35eb2ab2cd387",
+      "result": "1 failed",
+      "meaning": "Stage elapsed-time region absent before implementation."
+    },
+    {
+      "log": "degrees-theory-red-20261123.log",
+      "sha256": "5610f0df99f6a193d0db266cc8313be80d221cc740a760379eb0272aa5d88801",
+      "result": "1 failed",
+      "meaning": "relativeChord missing before implementation."
+    },
+    {
+      "log": "degrees-browser-red-20261123.log",
+      "sha256": "cfc2c7e4fab3c7b43233806de1a2235e491b05855d6818db50866c13def29855",
+      "result": "1 failed",
+      "meaning": "Optional degree-reading UI absent before implementation."
+    },
+    {
+      "log": "capo-red-20261123.log",
+      "sha256": "c9bda1f02d264a182978f3746288d62f072938d6ea480128b5747852afe07d80",
+      "result": "6 failed / 1 passed",
+      "meaning": "Incomplete root fallback, limits, silence, tuning, path movement, preferred position and slash coverage reproduced."
+    },
+    {
+      "log": "capo-browser-red-20261123.log",
+      "sha256": "de15aa4ec70e4de9542cb2f3ad5596ab8457772d2d047581a1b793f9b3fb6fd0",
+      "result": "1 failed",
+      "meaning": "Capo comparison UI absent before implementation."
+    },
+    {
+      "log": "release-workspace-red-20261123.log",
+      "sha256": "2be8a27c7d443dea05aca1df814c93cc9fbc41b70504673f7f92c1ed2d94c75e",
+      "result": "collection error",
+      "meaning": "Snapshot helper did not exist yet; this is a new-interface TDD scaffold, not a reproduced deployed defect."
+    },
+    {
+      "log": "app-release-red-20261123.log",
+      "sha256": "8af7a1fb1983d840c41006cde46e78cf2b869ff938b8fdfb935936ac8c230fd7",
+      "result": "collection error",
+      "meaning": "Release helper did not exist yet; this is a new-interface TDD scaffold, not a reproduced deployed defect."
+    }
+  ],
+  "storage_baseline": {
+    "checked_at": "2026-11-23T13:48:56+00:00",
+    "bucket_backups_bytes": 1282941367,
+    "bucket_releases_bytes": 4272649990,
+    "vm_available_bytes_during_release": 31347773440,
+    "vm_disk_low_during_release": false,
+    "method": "gcloud storage du --summarize on the two prefixes; authenticated maintenance API for earlier VM available bytes",
+    "note": "Stored object bytes and observed disk space, not billable usage charges; VM remains stopped. No objects deleted or retention changed."
+  },
+  "documentation_checkpoint_ci": {
+    "commit": "c8e9a7454ec9cc54a17c5dabf6168289897933fd",
+    "url": "https://github.com/jonaschen/guitar_music/actions/runs/45184440193",
+    "conclusion": "success",
+    "same_counts_as_application_ci": true
+  },
+  "handoff_readonly_status": {
+    "checked_at": "2026-11-23T14:07:17.773727+00:00",
+    "vm": "TERMINATED",
+    "http_status": 200,
+    "state": "stopped",
+    "used_seconds": 8520,
+    "limit_seconds": 144000,
+    "remaining_seconds": 135480,
+    "window_days": 31,
+    "can_wake": true,
+    "stop_at": null
   }
 }

@@ -14,7 +14,7 @@
 | 跨曲診斷與錄音／job 區分 | `guitarscribe/docs/Cross_Song_Health_2026-11-02.md` |
 | 第一拍刷奏／和聲覆蓋 | `guitarscribe/docs/Downbeat_Rhythm_2026-10-31.md`；`guitarscribe/docs/Downbeat_Harmony_2026-11-01.md` |
 | 手機、簡潔頁、編輯及和弦按法 | `guitarscribe/docs/Chord_Web_Mobile_2026-10-27.md` 對應小節 |
-| 執行、部署及回退 | `guitarscribe/docs/OPERATIONS.md`；目前服務設定（避免輸出密鑰） |
+| 個人雲端部署及回退 | `guitarscribe/docs/APP_RELEASE_RUNBOOK.md`、`guitarscribe/infra/on_demand/deployment.json`；舊本機站才用 `OPERATIONS.md` |
 
 2026-11-02 的「答答聲可以跟拍」只涵蓋文件指定的兩段 click；不是所有和弦／整曲驗收。`fixed-dbn-recovery-v1` 在現有主機明確啟用，但程式預設仍關閉。不能從預設值推論線上狀態，也不能把歷史「等待啟用」當現況。
 
@@ -27,9 +27,9 @@
 - 本機既有 Python 環境位於 `/home/jonas/.cache/guitarscribe-runtime/bin/python`，依賴不一定在系統 Python；路徑不存在就查目前啟動方式，不任意重裝所有模型。
 - 診斷產物多在 `guitarscribe/output/evaluation/`（未進 Git）；報告連結存在不代表其他 checkout 已有資料。沒有原始快取就記錄驗證缺口。
 
-## 線上維運條件
+## 歷史本機維運（非個人雲端）
 
-目前受邀站與開發站是兩套資料：`guitarscribe/output/web-preview/work`、`guitarscribe/output/work`。重啟前核實兩邊受影響工作的 queued／running 等實際狀態；讀取失敗不是「沒有工作」。避免中斷使用者分析，可繼續離線開發等工作結束。
+歷史受邀站與開發站是兩套資料：`guitarscribe/output/web-preview/work`、`guitarscribe/output/work`；都不是雲端最新人工稿。只有明確處理這些本機站時，才依本節核對服務。重啟前核實受影響工作的 queued／running 等實際狀態；讀取失敗不是「沒有工作」。避免中斷使用者分析，可繼續離線開發等工作結束。
 
 站點設定見 `output/web-preview/deployment.json`；邀請憑證在 `output/web-preview/access.json`，不可列印、提交或放報告。不要輸出整份環境或帶 token 的服務設定。服務名稱與回退方法見 OPERATIONS。
 

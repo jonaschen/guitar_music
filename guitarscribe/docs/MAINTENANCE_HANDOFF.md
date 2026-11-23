@@ -1,6 +1,6 @@
 # GuitarScribe 維護與交接入口
 
-這是下一個 session 的起點；最後整理日期：2026-11-23。當下部署值以 `infra/on_demand/deployment.json` 與實際查詢為準。**新版v9已部署，備份還原與停機結算完成；兩小時本機持續操作測試仍在執行。** 完整證據見 [11-23發布紀錄](Cloud_Update_2026-11-23.md) 及 [驗證JSON](evaluation/cloud-update-2026-11-23.json)。
+這是下一個 session 的起點；最後整理日期：2026-11-23。當下部署值以 `infra/on_demand/deployment.json` 與實際查詢為準。**新版v9已部署，備份還原與停機結算完成；兩小時本機持續操作測試已通過（412次循環）。** 完整證據見 [11-23發布紀錄](Cloud_Update_2026-11-23.md) 及 [驗證JSON](evaluation/cloud-update-2026-11-23.json)。
 
 ## 現用版本摘要
 
@@ -9,7 +9,10 @@
 - 25首歌、6份既有DB及144個原檔保持；唯一新增schema為空retry表。280個安裝檔案與包SHA一致。
 - 最近實證備份：11-23 21:22:29台北完成、150檔，manifest `backups/manifests/20261123T132105Z-47337d37f482436a8cce20bcff7d349a.json`；generation／SHA見發布紀錄。已還原到新目錄並逐表逐檔核對，未覆蓋正式work。
 - 11-23 21:26:49查核：VM休息、可喚醒，帳本使用8520秒／剩135480秒；為當次歷史狀態，不是費用帳單。
+- 長測：2小時／412次編輯、保存、原曲回聽與重開通過；測試固定bcd04c1網頁版本，後加級數／Capo另有CI與真API證據。第一輪5秒保存逾時、最終寫入成功的證據與原因未知一併保留，見 [持續操作紀錄](evaluation/practice-soak-2026-11-23.json)。
 - 本輪CI：後端1483＋3 skip、infra116、前端358＋7 skip、WebKit20＋學習5＋真API恢復／Capo4；跳過原因、長測界線與未知見發布紀錄。
+
+最後交接只讀查核為11-23 22:07:17台北：仍正常休息、可喚醒、帳本數字未變。本輪R1–R9已收尾；後續真實工程與外部證據見文末，並非所有歷史規劃都已完成。
 
 ## 先掌握產品與工作狀態
 
@@ -82,6 +85,27 @@ gcloud compute ssh guitarscribe-personal --project=hanana-491223 --zone=asia-eas
 | 中斷上傳分析 | failed/cancelled且保留原音檔時按重新分析 | 不是從stage斷點續算；舊歌不會被覆蓋 |
 | 測試逾時 | 追蹤request與UI保存狀態、本機RAM／其他建置負載 | 不直接放寬斷言宣稱通過 |
 
+## 日常維護與儲存基準
+
+每次接手先做只讀狀態查核；每次發布前後做備份與版本／人工稿核對；需要檢查容量或帳務時再讀相應資料，不為例行查核開啟VM。這是接手流程，不是已設定的代理排程。
+
+11-23 21:48台北，私人桶backups共1,282,941,367 bytes，releases共4,272,649,990 bytes；正式驗證期間VM可用31,347,773,440 bytes、disk_low=false。這是一次基準，不是容量承諾。狀態API低於3 GiB會標記disk_low；先查新增來源、模型／包、備份暫存及未完成還原，保留使用者稿和可用回退證據。
+
+```sh
+gcloud storage du --summarize \
+  gs://hanana-491223-guitarscribe-private/backups/ \
+  gs://hanana-491223-guitarscribe-private/releases/ \
+  --project=hanana-491223
+```
+
+上述命令只列儲存量，不讀音訊內容、不啟動VM。備份依SHA去重，SQLite版本仍會增加新blob；目前沒有新增自動刪除政策。容量持續增加時先提出具體保留範圍並保存可還原證據，不直接刪除舊備份／初始runtime或用通配符清空output。
+
+## 實際費用的查核界線
+
+11-23已只讀確認專案啟用計費並連結帳務帳號；列出本專案可存取的BigQuery datasets沒有回傳任何資料集，因此沒有取得可查詢的billing export。這不代表帳號其他專案沒有匯出，也不代表本月費用為零。未為查核開啟服務、建立匯出或改預算。
+
+接手可先從Cloud Billing既有報表按專案、服務／SKU及可用資源欄位核對，必須把同專案其他服務區分開。若只有整個專案總額，標明它不是GuitarScribe單獨費用；沒有明細就保留未知。`cloud_status.py` 的運行帳本不是帳單，不能乘一個假定價格就回報實際台幣花費。未來若需要設billing export或調整資源，再依使用者當時授權、成本與資料範圍決定，不由日常狀態查詢自動設定。
+
 ## 資料契約與本輪變更
 
 - jobs metadata 在 `work/jobs/jobs.sqlite3`，每個job的音訊／診斷在`work/jobs/<id>`。人工結構、根音、和弦、學習筆記各有獨立來源指紋與版本檢查，不能拿新分析直接重建它們。
@@ -96,6 +120,26 @@ gcloud compute ssh guitarscribe-personal --project=hanana-491223 --zone=asia-eas
 ## 開發與驗證
 
 目前可用Python：`/home/jonas/.cache/guitarscribe-runtime/bin/python`。本機`guitarscribe/.venv`與`.tooling-venv`未必有FastAPI；不要看到venv便當完整runtime。其他主機依backend `pyproject.toml`與CI安裝隔離環境；不要把登入憑證／runtime私檔打包成skill。
+
+本輪環境核對：本機Python 3.12.3／Node 24.14.0；CI後端Docker及瀏覽器fixture是Python 3.11、Node 20，infra job是Python 3.12。雲端app包目標為Ubuntu 24.04 x86_64／CPython 3.12，主runtime在 `/srv/guitarscribe/runtime/main`、結構模型在獨立 `runtime/structure`；模型／原生插件清單由既有protocol與初始安裝紀錄管理。CI不是雲端的完整映像；一般改版只更新app，不順便升級Python、模型或原生依賴。
+
+本輪5個後端warnings主要來自TestClient／audio解碼／pkg_resources的依賴棄用通知；另有pytest-asyncio loop scope提示。沒有把warning改成skip或放寬斷言。未來升級依賴時以相同音訊／事件及API契約重驗，不只以pip安裝成功判斷相容。
+
+### 找到要修的程式
+
+下表路徑分別相對 `guitarscribe/backend/app`、`guitarscribe/frontend/src`；配套測試在backend/tests與frontend/e2e，先用同名模組／功能搜尋。
+
+| 功能 | 後端入口 | 前端入口 |
+| --- | --- | --- |
+| 上傳、進度、取消／重試 | `api.py`、`services/jobs.py`、`analyzers/worker.py`、`core/pipeline.py` | `App.tsx`、`AnalysisProgress.tsx` |
+| 歌曲結構與候選工作 | `song_structure_api.py`、`services/song_structure.py`、`services/structure_analysis_jobs.py` | `SongStructurePage.tsx`、`StructureAnalysisPanel.tsx`、`useSongStructure.ts` |
+| 根音／低頻與沿用 | `root_practice_api.py`、`services/root_practice.py` | `RootPractice.tsx`、`RootSpectrogram.tsx`、`useRootPractice.ts` |
+| 鎖定段落、完整和弦及沿用 | `chord_practice_api.py`、`services/chord_practice.py` | `SectionChordPractice.tsx`、`useChordPractice.ts`、`ChordReusePanel.tsx` |
+| 主音／調式、級數與組成音 | `learning_practice_api.py`、`services/learning_practice.py` | `TonalHypothesisPanel.tsx`、`ChordDegreeView.tsx`、`chordTheory.ts` |
+| Capo、轉調及指型 | `services/capo.py`及`api.py`相關route | `CapoAdvice.tsx`、`ChordFingerings.tsx`、`App.tsx`的retuneScore |
+| 個人雲端、備份、發布 | `guitarscribe/infra/on_demand`（相對repo） | 同目錄的gateway／toolbar；不從舊ngrok腳本部署 |
+
+`root-practice.sqlite3`、`song-structure.sqlite3`、`chord-practice.sqlite3`、`learning-practice.sqlite3`各有獨立版本及來源契約；更改某層不應直接改另一層的資料。原Score revision與這些練習稿也不能互相當替代來源。
 
 ```sh
 # 在 guitarscribe/backend

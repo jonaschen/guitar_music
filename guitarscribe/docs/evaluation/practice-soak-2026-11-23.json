@@ -1,0 +1,80 @@
+{
+  "date": "2026-11-23",
+  "state": "passed",
+  "requested_duration_ms": 7200000,
+  "fixture_build": {
+    "assets_sha256": {
+      "assets/AlphaTabScore-Dz00he2M.js": "d384bab7d123b0b863f07a7a458f23852c6126531e9c92d50da2c07841b5ec8a",
+      "assets/Bravura-BVtSfpnN.woff2": "181e0e7c4889f9ad57dde0a11988fa61b941617aa499ecdb9dfd4713896c2b19",
+      "assets/alphaTab.worker-BQCj0a_w.js": "e48f42ed0c6e5ac6df54ce21dafb771972ac600357567a4eb2174da876ced3b2",
+      "assets/alphaTab.worklet-C9PLHa2u.js": "f47e9cd065a042e2327bef9fb88c9fd48eacb4594f2793bc020baa2b889cdfcd",
+      "assets/index-B93Ezr4h.css": "a612e67f821e482bd509458317a79ce987bc6f87b52e6b9d46e2f35a33c132a0",
+      "assets/index-ChMCQaj9.js": "613b2f40f4b493cdd31950b9fac0309caa2f548de999ef4075548889704d0163",
+      "assets/rootSpectrum.worker-B5N4ZDsn.js": "ea24d2a1632004689ef14468b51993fb53c96002796dff5df06a983ac30e337a"
+    },
+    "served_assets_match_v6": true,
+    "frontend_fixture_commit": "bcd04c1284f915c254a690ba0a80b88835517e0e",
+    "note": "Current served fixture assets verified over HTTP; later main build not assumed."
+  },
+  "earlier_attempt": {
+    "result": "failed",
+    "test_duration_ms": 387395,
+    "start_time": "2026-11-23T11:53:06.544Z",
+    "successful_cycles_before_failure": 20,
+    "failure": "The 21st save poll expected G7 but still read Am/C after the 5000 ms assertion deadline. Later inspected UI showed G7 saved.",
+    "cause": "Unknown; concurrent backend tests/build and memory pressure were observed, but causation was not established.",
+    "log_sha256": "5fa41a84fe13e2cf9af30285c23d616cd253d64b0a445852e3d2f60ccb958df1",
+    "trace_available": false,
+    "trace_note": "Trace was inspected at failure, then overwritten by a second invocation using the same output directory. New config uses unique output directories; failure summary is now attached in finally.",
+    "assertions_relaxed": false,
+    "persisted_fixture_evidence": {
+      "sqlite_integrity": "ok",
+      "job_id": "fixture-song",
+      "version": 21,
+      "updated_at": "2026-11-23T11:59:45.203139+00:00",
+      "selected_segment_symbol": "G7",
+      "database_copy_sha256": "fd9b992dc2b592b3e70a5a9c90920f0ca6f1785599c7633a2c6ebfdaadbc4c61",
+      "note": "Read-only inspection of the surviving first-run disposable database confirms the 21st edit was eventually persisted. This does not establish the delay cause or prove it met the 5-second assertion."
+    }
+  },
+  "current_attempt": {
+    "started_fixture_at": "2026-11-23T12:09:52Z",
+    "personal_data": false,
+    "description": "Disposable synthetic audio; alternate G7 and Am/C, save via real API, play source A-B, pause on pagehide, reload, check root/structure/score unchanged.",
+    "result": "passed",
+    "test_started_at": "2026-11-23T12:09:57.548Z",
+    "test_duration_ms": 7200558,
+    "elapsed_ms": 7200014,
+    "cycles": 412,
+    "page_errors": [],
+    "log_sha256": "36334bde518ea9f2e5038424a96748073bfb81e5910d6531f480c5037cb19329",
+    "checks": [
+      "saved chord matches requested symbol via real API",
+      "original playback remains inside selected A-B",
+      "pagehide pauses original audio",
+      "reload retains saved chord",
+      "root, structure and original Score remain unchanged"
+    ],
+    "heap_samples": 412,
+    "heap_min_bytes": 10000000,
+    "heap_max_bytes": 13400000
+  },
+  "limits": [
+    "Fixture frontend matches bcd04c1 assets. The optional degree/Capo additions are tested separately, not included in this two-hour run.",
+    "No claim about physical iPhone, all real recordings, memory leak absence or musical correctness.",
+    "Later read-only performance samples cover only part of this run, not the earlier failure."
+  ],
+  "partial_run_readonly_observations": {
+    "first_at": "2026-11-23T13:30:48.224662+00:00",
+    "last_at": "2026-11-23T14:09:55.711431+00:00",
+    "samples": 157,
+    "read_errors": [],
+    "read_ms_median": 22.92,
+    "read_ms_p95": 60.95,
+    "read_ms_max": 1747.38,
+    "system_available_kib_min": 3337316,
+    "api_rss_kib_min": 142808,
+    "api_rss_kib_max": 149620,
+    "note": "Began partway through the second run. Does not explain the first failure, measure the whole browser process tree, or establish memory-leak absence."
+  }
+}
