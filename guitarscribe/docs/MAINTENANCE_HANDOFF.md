@@ -9,6 +9,7 @@
 - 當前排序及舊清單對照：[總盤點](Backlog_Review_2026-11-23.md)。原137個未勾選條目有逐行索引，不等於137個產品缺口。
 - 上一輪已發布功能：[11-21故事](Remaining_Stories_2026-11-21.md)、[11-21發布證據](Cloud_Update_2026-11-21.md)。
 - 最新操作：[根音／圖上A–B](Root_Visual_Practice_User_Guide_2026-11-14.md)、[結構整理](Song_Structure_User_Guide_2026-11-17.md)、[鎖定段落與和弦沿用](Section_Chord_Practice_2026-11-17.md)、[調性／組成音工具](Learning_Practice_2026-11-21.md)。
+- 本輪操作：[中斷分析恢復與和弦級數](Recovery_and_Degrees_2026-11-23.md)。發布是否完成看本文件版本摘要，操作文件不代替部署證據。
 - 不重啟自動主旋律、不強推新模型、不要求重新驗已接受片段。個人使用、原介面介紹；不擴大成公開分享或多帳號。
 - 工程驗證不能代替獨立音樂標註、實體手機與實際帳單；剩餘項要分清未完成工程、待外部證據與已停止方向。
 
@@ -113,6 +114,8 @@ GUITARSCRIBE_TEST_PYTHON=/home/jonas/.cache/guitarscribe-runtime/bin/python GUIT
 
 ## 發布、備份與回退
 
+逐步命令與可重用更新工具見 [程式發布操作手冊](APP_RELEASE_RUNBOOK.md)。`apply_app_release.py` 已覆蓋身份／SHA／tar檢查、只交換程式、資料核對與失敗回退；`release_workspace.py` 是只讀證據工具，拒絕原稿變更並只接受明確允許的空retry表。工具與測試在Git內，不依賴output裡的一次性腳本。
+
 1. 確認當前commit／工作樹，跑適當測試並確認遠端CI。僅提交所屬檔案；程式與文件可分段提交。
 2. 使用`prepare_release.py --app-only`從**已提交HEAD**清潔建置，產生新的輸出目錄；manifest必須為`release_kind=app_only`，只有app包，核對commit與SHA。不搬本機work、不發布整個public/listening。
 3. 透過正常入口喚醒（若已有人使用，先核對時段）；IAP查看最近activity、queued/running分析、結構分析、root-candidate lock與backup service。使用者活動／分析變動便延後中斷，繼續本機工作。
@@ -131,4 +134,10 @@ GUITARSCRIBE_TEST_PYTHON=/home/jonas/.cache/guitarscribe-runtime/bin/python GUIT
 
 下一個 session 應能回答：線上是哪個app版本、服務是正常休息還是故障、最近可驗證備份是哪份、雲端人工稿在哪裡、哪些測試實跑／未跑、哪些功能尚未完成、現在下一個可執行項目是什麼。
 
-當次收尾需更新本文件的版本摘要、總盤點R1–R7、Next_Decision／Autonomous_Development最新入口與驗證JSON；不能只留下聊天說「完成」。skill本身不是背景排程器，session結束後不會自行工作。
+當次收尾需更新本文件的版本摘要、總盤點R1–R8、Next_Decision／Autonomous_Development最新入口與驗證JSON；不能只留下聊天說「完成」。skill本身不是背景排程器，session結束後不會自行工作。
+
+## 換電腦或 session 的必要條件
+
+Git內保存程式、故事、手冊與 `skills/guitarscribe-autopilot`；目前本機的skill安裝是指向它的連結。接手者需要能讀這個repo，並在可執行工具的環境讀取SKILL.md。只有相同帳號登入並不表示每個客戶端都已安裝本機skill或擁有這台電腦的檔案。
+
+唯讀雲端檢查需要Python 3與已授權的gcloud身分；完整開發依CI準備Node 20、Python與依賴；實際部署另需GCP/IAP權限和既有授權檔。憑證走安全管道／Secret Manager，不放skill、Git或聊天。缺憑證時仍可讀文件與做本機工程，明列尚未查證的雲端部分，不能自行重設或重建服務。

@@ -2,3 +2,5 @@
 
 .learning-energy-row{display:grid;grid-template-columns:5.5rem minmax(1rem,1fr) 5rem;gap:.35rem;align-items:center;font-size:.85rem;margin:.35rem 0}.learning-energy-row meter{width:100%}.learning-energy-row output{text-align:right}
 .learning-panel label:has(input[type="checkbox"]){display:flex;align-items:center;gap:.5rem}.learning-panel input[type="checkbox"]{width:1.1rem;height:1.1rem;min-height:0;flex:0 0 1.1rem;margin:0;padding:0;accent-color:#176b94}
+
+.learning-degrees{padding-left:1.5rem;line-height:1.8}.learning-degrees li{padding:.25rem 0;overflow-wrap:anywhere}.learning-degrees li>span{font-size:.85rem;color:#526477}

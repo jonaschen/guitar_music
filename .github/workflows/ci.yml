@@ -92,4 +92,5 @@ jobs:
             guitarscribe/frontend/test-results
             guitarscribe/output/webkit-test-results
             guitarscribe/output/recovery-test-results
+            guitarscribe/output/learning-test-results
           retention-days: 7

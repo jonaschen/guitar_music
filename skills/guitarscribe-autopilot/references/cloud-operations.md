@@ -60,7 +60,7 @@ gcloud compute ssh guitarscribe-personal --project=hanana-491223 --zone=asia-eas
 
 ## 備份、復原、發布
 
-詳細可執行步驟在 `guitarscribe/docs/Google_Cloud_Personal_2026-11-20.md`；工具是 `guitarscribe/infra/on_demand/{backup_work,prepare_release,bootstrap}.py`。
+備份與初始安裝見 `guitarscribe/docs/Google_Cloud_Personal_2026-11-20.md`；現用app更新與回退命令見 `guitarscribe/docs/APP_RELEASE_RUNBOOK.md`。工具是 `guitarscribe/infra/on_demand/{backup_work,prepare_release,apply_app_release,release_workspace}.py`。新版更新工具核對舊／新commit、SHA、備份與活動，只交換app/site；空retry表需明確例外，其他原資料差異仍拒絕。不要再依賴output的一次性發布腳本。
 
 - 成功備份以最後發布的 `status=complete` manifest、SHA與generation為準；檔案用SHA去重、SQLite走backup API，不直接拷含WAL的DB。先確認分析停止再手動備份。
 - 還原一律到**不存在的新目錄**，核對所有SHA／SQLite integrity／邏輯內容。驗證成功不代表獲准覆蓋線上work。若要切換，先保留當前進度並安排停止窗口。不得以初始personal-work.tar.gz復原使用者後續編輯。

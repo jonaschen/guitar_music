@@ -69,4 +69,5 @@ def test_app_only_release_cannot_read_or_package_personal_work_or_runtime(tmp_pa
     with tarfile.open(out/'app.tar.gz') as archive:
         names=archive.getnames()
         assert 'site/index.html' in names and 'app/backend/host_activity.py' in names
+        assert 'app/backend/apply_app_release.py' in names and 'app/backend/release_workspace.py' in names
         assert not any(name.startswith(('work/','runtime/')) for name in names)

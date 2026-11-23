@@ -78,3 +78,40 @@ test('recording energy uses the selected source range and never adopts chord or 
  expect((await (await request.get(base+'/chord-practice')).json()).document).toEqual(before.document);
  await page.getByLabel('和弦開始秒數').fill('9.8');await expect(page.getByRole('button',{name:'查看這段錄音的音級能量',exact:true})).toBeDisabled();await expect(page.getByLabel('錄音十二音級能量')).toHaveCount(0);
 });
+
+test('relative degrees are an optional reading of a hypothesis, never a chord edit or guessed key',async({page,request})=>{
+ const base='/backend/api/v1/jobs/fixture-song',get=async(path:string)=>(await (await request.get(base+path)).json());
+ const source=(await get('/song-structure')).current_source;
+ await page.goto('/?practice=chords&job=fixture-song&structure=chorus&structure_source='+source.fingerprint+'&section_start=4&section_end=10');
+ for(const [start,end,symbol] of [[4,6,'C/E'],[6,8,'Am'],[8,10,'G7']] as const){
+  await page.getByLabel('和弦開始秒數').fill(String(start));await page.getByLabel('和弦結束秒數').fill(String(end));
+  await page.getByLabel('和弦名稱',{exact:true}).fill(symbol);await page.getByRole('button',{name:'採用／更新和弦',exact:true}).click();
+  await expect.poll(async()=>(await get('/chord-practice')).document.segments.find((s:any)=>s.start===start)?.symbol).toBe(symbol);
+ }
+ const before=await get('/chord-practice'),roots=await get('/root-practice'),notes=await get('/learning-practice');
+ await page.getByLabel('和弦開始秒數').fill('4');await page.getByLabel('和弦結束秒數').fill('10');
+ await page.getByText('主音與調式假設',{exact:true}).click();
+ await page.getByLabel('目前主音假設').selectOption('C');await page.getByLabel('目前調式假設').selectOption('major');
+ await page.getByText('用級數理解這段和弦',{exact:true}).click();
+ const list=page.getByLabel('依假設換算的和弦行進');
+ await expect(list).toContainText('C/E');await expect(list).not.toContainText('→');
+ await page.getByLabel('和弦級數顯示方式').selectOption('roman');
+ await expect(list).toContainText('C/E → I');await expect(list).toContainText('低音 E（3 級）');
+ await expect(list).toContainText('Am → vi');await expect(list).toContainText('G7 → V7');
+ await expect(page.getByLabel('級數使用的假設')).toContainText('尚未保存');
+ await page.getByLabel('目前主音假設').selectOption('A');await page.getByLabel('目前調式假設').selectOption('minor');
+ await expect(list).toContainText('C/E → ♭III');await expect(list).toContainText('Am → i');
+ await page.getByLabel('和弦級數顯示方式').selectOption('numbers');await expect(list).toContainText('Am → 1m');
+ await page.getByLabel('目前調式假設').selectOption('unknown');await expect(list).not.toContainText('→');
+ await expect(page.getByText('主音或調式尚未確定，先保留實際和弦名稱。',{exact:true})).toBeVisible();
+ expect((await get('/chord-practice')).document).toEqual(before.document);
+ expect(await get('/root-practice')).toEqual(roots);expect(await get('/learning-practice')).toEqual(notes);
+ for(const width of [390,1440]){await page.setViewportSize({width,height:900});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
+ await page.getByLabel('和弦結束秒數').fill('6');
+ page.once('dialog',dialog=>dialog.accept());await page.getByLabel('只記目前這段錄音的假設').check();
+ await page.getByLabel('目前主音假設').selectOption('C');await page.getByLabel('目前調式假設').selectOption('major');
+ await page.getByLabel('和弦級數顯示方式').selectOption('roman');await expect(list).toContainText('C/E → I');await expect(list).not.toContainText('Am');
+ await page.getByLabel('和弦結束秒數').fill('10');await page.getByLabel('和弦開始秒數').fill('8');
+ await expect(list.locator('li')).toHaveCount(0);await expect(page.getByText('目前 A–B 不在這個假設的範圍內。',{exact:true})).toBeVisible();
+ expect((await get('/chord-practice')).document).toEqual(before.document);expect(await get('/learning-practice')).toEqual(notes);
+});

@@ -101,7 +101,7 @@ def prepare(repo, cache, out, *, app_only=False):
         host = Path(__file__).with_name('host_activity.py')
         shutil.copy(host, app / 'backend/host_activity.py')
         manifest['host_wrapper_sha256'] = sha(host)
-        for helper in ('prepare_release.py', 'backup_work.py'):
+        for helper in ('prepare_release.py', 'backup_work.py', 'release_workspace.py', 'apply_app_release.py'):
             source = Path(__file__).with_name(helper)
             shutil.copy(source, app / 'backend' / helper)
             manifest[helper + '_sha256'] = sha(source)

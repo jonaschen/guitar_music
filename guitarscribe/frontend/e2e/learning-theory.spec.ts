@@ -22,3 +22,24 @@ test('relative major and minor are comparison hypotheses, preserving degree spel
  expect(relativeKey('A','minor')).toEqual({tonic:'C',mode:'major'});
  expect(relativeKey('A','other')).toBeNull();
 });
+
+test('relative chord labels preserve tonic hypotheses, quality, spelling and independent bass',async()=>{
+ const {relativeChord}=await import('../src/chordTheory');
+ expect(relativeChord('Am','C','major')).toMatchObject({roman:'vi',number:'6m'});
+ expect(relativeChord('E7','A','minor')).toMatchObject({roman:'V7',number:'5(7)'});
+ expect(relativeChord('C','A','minor')).toMatchObject({roman:'♭III',number:'♭3'});
+ expect(relativeChord('F','A','minor')).toMatchObject({roman:'♭VI',number:'♭6'});
+ expect(relativeChord('G#dim','A','minor')?.roman).toBe('vii°');
+ expect(relativeChord('Bb','C','major')?.roman).toBe('♭VII');
+ expect(relativeChord('D#m','C','major')?.roman).toBe('♯ii');
+ expect(relativeChord('E#','C#','major')?.roman).toBe('III');
+ expect(relativeChord('C/E','C','major')).toMatchObject({roman:'I',bassName:'E',bassDegree:'3'});
+ expect(relativeChord('Bdim7','C','major')?.roman).toBe('vii°7');
+ expect(relativeChord('Bm7b5','C','major')?.roman).toBe('viiø7');
+ expect(relativeChord('Gsus4','C','major')?.roman).toBe('Vsus4');
+ expect(relativeChord('G5','C','major')?.roman).toBe('V(no3)');
+ expect(relativeChord('Cmaj7','C','major')?.number).toBe('1(maj7)');
+ expect(relativeChord('C6','C','major')?.roman).toBe('I(add6)');
+ expect(relativeChord('C/E','C','major')?.roman).toBe('I');
+ for(const args of [['G',null,'major'],['G','C','unknown'],['G','C','other'],['Ccomplex','C','major'],['N.C.','C','major']] as const){expect(relativeChord(...args)).toBeNull();}
+});

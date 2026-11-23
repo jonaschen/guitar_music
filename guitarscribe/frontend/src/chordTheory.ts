@@ -37,3 +37,32 @@ export function relativeKey(tonic:string,mode:string){
  if(pitchClass(tonic)===null)return null;
  return mode==='major'?{tonic:spelled(tonic,6,9),mode:'minor'}:mode==='minor'?{tonic:spelled(tonic,3,3),mode:'major'}:null;
 }
+
+// One-based, major-referential degrees: A minor's C is bIII, E7 is V7.
+// This labels a stated hypothesis; it does not infer key or harmonic function.
+function degreeFromTonic(note:string,tonic:string){
+ const pc=pitchClass(note),center=pitchClass(tonic);if(pc===null||center===null)return null;
+ const index=(letters.indexOf(note[0])-letters.indexOf(tonic[0])+7)%7;
+ let alteration=mod(pc-center-natural[index]);if(alteration>6)alteration-=12;
+ if(Math.abs(alteration)>2)return null;
+ return {index,prefix:alteration>0?'♯'.repeat(alteration):'♭'.repeat(-alteration)};
+}
+export function relativeChord(symbol:string,tonic:string|null,mode:string){
+ if(!tonic||!['major','minor'].includes(mode))return null;
+ const chord=chordTones(symbol);if(!chord)return null;
+ const degree=degreeFromTonic(chord.root,tonic);if(!degree)return null;
+ const raw=chord.symbol.slice(chord.root.length).split('/')[0];
+ const quality=({maj:'',M:'',min:'m',M7:'maj7'} as Record<string,string>)[raw]??raw;
+ const suffixes:Record<string,[string,string]>={
+  '':['',''],m:['','m'],dim:['°','°'],aug:['+','+'],
+  '7':['7','(7)'],maj7:['maj7','(maj7)'],m7:['7','m(7)'],
+  m7b5:['ø7','ø(7)'],dim7:['°7','°(7)'],sus2:['sus2','(sus2)'],sus4:['sus4','(sus4)'],
+  '5':['(no3)','(no3)'],'6':['(add6)','(6)'],m6:['(add6)','m(6)'],add9:['(add9)','(add9)'],
+ };
+ const suffix=suffixes[quality];if(!suffix)return null;
+ let roman=['I','II','III','IV','V','VI','VII'][degree.index];
+ if(['m','m7','m6','m7b5','dim','dim7'].includes(quality))roman=roman.toLowerCase();
+ const bass=chord.bass?degreeFromTonic(chord.bass,tonic):null;
+ return {roman:degree.prefix+roman+suffix[0],number:degree.prefix+(degree.index+1)+suffix[1],
+  bassName:chord.bass,bassDegree:bass?bass.prefix+(bass.index+1):null};
+}
