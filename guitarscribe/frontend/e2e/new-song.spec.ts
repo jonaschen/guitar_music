@@ -78,7 +78,7 @@ test("edits made while a new analysis runs require explicit result confirmation"
   await page.route("**/api/v1/youtube-jobs", r => r.fulfill({json:{id:"new",status:"queued",progress:0}}));
   await page.route("**/api/v1/jobs/new", r => r.fulfill({json:complete
     ? {id:"new",status:"completed",progress:100,score:{...score,song:{...score.song,title:"New song"},provenance:{...score.provenance,parameters:{candidate_source_job_id:"new"}}}}
-    : {id:"new",status:"processing",progress:50}}));
+    : {id:"new",status:"chord_analysis",progress:50}}));
   await page.route("**/scores/melody/edit", r => {
     const updated = structuredClone(r.request().postDataJSON().score);
     updated.melody[0].fret=3;
@@ -87,7 +87,7 @@ test("edits made while a new analysis runs require explicit result confirmation"
   await page.getByRole("button",{name:"分析新曲目",exact:true}).click();
   await page.getByLabel("YouTube video URL").fill("https://www.youtube.com/watch?v=S8RWhc_LmMc");
   await page.getByRole("button",{name:"Start analysis",exact:true}).click();
-  await expect(page.locator(".job-progress progress")).toHaveAttribute("value", "50");
+  await expect(page.getByRole("region",{name:"分析進度",exact:true})).toContainText("辨認和弦");
   await page.getByRole("button",{name:"Tab n C4 2弦1格",exact:true}).click();
   await page.getByLabel("Tab fret",{exact:true}).fill("3");
   await page.getByRole("button",{name:"Apply note",exact:true}).click();
@@ -154,11 +154,11 @@ test('failed replacement restores a saved revision link and keeps edits made dur
   await page.goto('/?revision=saved-old&view=accompaniment');
   let failed=false;
   await page.route('**/api/v1/youtube-jobs', r=>r.fulfill({json:{id:'replacement',status:'queued',progress:0}}));
-  await page.route('**/api/v1/jobs/replacement', r=>r.fulfill({json:{id:'replacement',status:failed?'failed':'processing',progress:50,message:'Analysis ended'}}));
+  await page.route('**/api/v1/jobs/replacement', r=>r.fulfill({json:{id:'replacement',status:failed?'failed':'chord_analysis',progress:50,message:'Analysis ended'}}));
   await page.getByRole('button',{name:'分析新曲目',exact:true}).click();
   await page.getByLabel('YouTube video URL').fill('https://www.youtube.com/watch?v=S8RWhc_LmMc');
   await page.getByRole('button',{name:'Start analysis',exact:true}).click();
-  await expect(page.locator('.job-progress progress')).toHaveAttribute('value','50');
+  await expect(page.getByRole('region',{name:'分析進度',exact:true})).toContainText('辨認和弦');
   await page.getByRole('button',{name:'顯示完整工具',exact:true}).click();
   await page.getByRole('combobox',{name:'Max capo',exact:true}).selectOption('7');
   failed=true;
@@ -176,12 +176,12 @@ test('failed replacement restores a saved revision link and keeps edits made dur
 test('cancel button restores the prior source and releases the new-analysis form', async ({page}) => {
   await setup(page);
   await page.route('**/api/v1/youtube-jobs', r=>r.fulfill({json:{id:'running',status:'queued',progress:0}}));
-  await page.route('**/api/v1/jobs/running', r=>r.fulfill({json:{id:'running',status:'processing',progress:50}}));
+  await page.route('**/api/v1/jobs/running', r=>r.fulfill({json:{id:'running',status:'chord_analysis',progress:50}}));
   await page.route('**/api/v1/jobs/running/cancel', r=>r.fulfill({json:{id:'running',status:'cancelled',progress:50,message:'Cancelled'}}));
   await page.getByRole('button',{name:'分析新曲目',exact:true}).click();
   await page.getByLabel('YouTube video URL').fill('https://www.youtube.com/watch?v=S8RWhc_LmMc');
   await page.getByRole('button',{name:'Start analysis',exact:true}).click();
-  await expect(page.locator('.job-progress progress')).toHaveAttribute('value','50');
+  await expect(page.getByRole('region',{name:'分析進度',exact:true})).toContainText('辨認和弦');
   await page.getByRole('button',{name:'Cancel analysis',exact:true}).click();
   await expect(page).toHaveURL(/job=old/);
   await expect(page.getByRole('button',{name:'Start analysis',exact:true})).toBeEnabled();
