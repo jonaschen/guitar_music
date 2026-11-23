@@ -78,7 +78,7 @@ sudo python3 /tmp/guitarscribe-NEW/apply_app_release.py \
 - 正式歌不寫入。需要驗證保存時用 `verify_cloud_fixture.py` 的所有權marker流程；完成後清除自己建立的fixture，再比較原資料。新功能仍須先通過本機真API瀏覽器測試與CI。
 - 核對 `KEEP_SONGS=true`、backup timer運作、主機沒有新分析。再做完整備份並等待成功。若要證明可還原，用 `backup_work.py restore` 到新且不存在的目錄，核對manifest SHA與SQLite；不要覆蓋線上work。
 - 更新 `deployment.json` 的 app_release/app_commit/app_sha256/previous_app_release，以及交接文件和驗證JSON。保存CI連結、備份object/generation/SHA、原資料前後證據、失敗與界線。
-- 若VM是本次維護自行喚醒，確認沒有人接續操作／沒有分析／備份後，從正常入口停止並核對帳本。若狀態改變，先保留工作，不能直接停機。
+- 若VM是本次維護自行喚醒，確認沒有人接續操作／沒有分析／備份後，經IAP執行 `sudo systemctl poweroff`，再查 `/cloud/status` 核對停止與帳本結算。現用入口沒有 `/cloud/stop` API。若狀態改變，先保留工作，不能直接停機。
 
 ## 手動回退／中途中斷
 
@@ -91,3 +91,24 @@ sudo python3 /tmp/guitarscribe-NEW/apply_app_release.py \
 5. 將回退後版本寫回deployment與交接。新 `job_retries` 表保留；已提交的新工作及人工稿也保留。回退的是程式，不是使用者進度。
 
 工具不涵蓋磁碟損毀、runtime版本升級或破壞性schema migration；這些需另訂恢復計畫，不能直接套用app-only步驟。
+
+## 備份還原演練的具體命令
+
+以下在VM執行；先由本輪 `backup-status.json` 的 `last_success` 取得manifest及SHA，再從GCS metadata核對generation。`MANIFEST`、`SHA256`、`NEW`必須換成剛查證的值。目標目錄不能事先建立；腳本會拒絕覆寫現有目錄。
+
+```sh
+sudo /srv/guitarscribe/runtime/main/bin/python \
+  /srv/guitarscribe/app/backend/backup_work.py restore \
+  --bucket hanana-491223-guitarscribe-private \
+  --manifest MANIFEST --manifest-sha256 SHA256 \
+  --target /srv/guitarscribe/restored-NEW
+
+sudo python3 /srv/guitarscribe/app/backend/release_workspace.py \
+  --work /srv/guitarscribe/restored-NEW \
+  --out /srv/guitarscribe/releases/NEW/restored-workspace.json \
+  --compare /srv/guitarscribe/releases/NEW/workspace-final.json
+```
+
+`workspace-final.json`須在備份前的無寫入窗口以同一snapshot工具產生；只有相同資料版本才能逐表逐檔相等。備份之後又有使用者保存時，不能把差異當毀損，也不能覆蓋新稿來讓比對通過。restore本身已檢查每個object的generation、大小、SHA／MD5與SQLite integrity／邏輯hash；第二次比對用來證明與已記錄的人工稿版本一致。
+
+保存本輪結果後，只清除這次建立且核對過的還原目錄；不要廣泛清理 `restored-*`、`releases/` 或備份桶。線上work復原是另一個需要先保存現況、明確選擇資料版本的維護工作，不能因演練成功就自動切換。

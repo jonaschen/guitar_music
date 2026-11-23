@@ -1,6 +1,15 @@
 # GuitarScribe 維護與交接入口
 
-這是下一個 session 的起點；最後整理日期：2026-11-23。當下部署值以 `infra/on_demand/deployment.json` 與實際查詢為準。**本輪開發／驗證進行中，尚未宣稱新版已部署。** 收尾會補實際 commit、備份與驗證紀錄。
+這是下一個 session 的起點；最後整理日期：2026-11-23。當下部署值以 `infra/on_demand/deployment.json` 與實際查詢為準。**新版v9已部署，備份還原與停機結算完成；兩小時本機持續操作測試仍在執行。** 完整證據見 [11-23發布紀錄](Cloud_Update_2026-11-23.md) 及 [驗證JSON](evaluation/cloud-update-2026-11-23.json)。
+
+## 現用版本摘要
+
+- app：`1de9ee21255a560138b250fa0ec97aff81e444fc`，`releases/2026-11-23-v9`；正式程式完整CI成功。文件提交可能較新，不能把文件HEAD誤當線上app commit。
+- 前版：v5／`f269caa`，程式與manifest保留在VM `releases/2026-11-23-v9/previous`。
+- 25首歌、6份既有DB及144個原檔保持；唯一新增schema為空retry表。280個安裝檔案與包SHA一致。
+- 最近實證備份：11-23 21:22:29台北完成、150檔，manifest `backups/manifests/20261123T132105Z-47337d37f482436a8cce20bcff7d349a.json`；generation／SHA見發布紀錄。已還原到新目錄並逐表逐檔核對，未覆蓋正式work。
+- 11-23 21:26:49查核：VM休息、可喚醒，帳本使用8520秒／剩135480秒；為當次歷史狀態，不是費用帳單。
+- 本輪CI：後端1483＋3 skip、infra116、前端358＋7 skip、WebKit20＋學習5＋真API恢復／Capo4；跳過原因、長測界線與未知見發布紀錄。
 
 ## 先掌握產品與工作狀態
 
@@ -29,6 +38,8 @@ python3 skills/guitarscribe-autopilot/scripts/cloud_status.py --repo "$PWD"
 不要列印 `access.json`、token或完整環境。若缺登入或權限，先記錄哪一步不能查；不要重建資源、重設帳密或拿初始快照覆蓋現況。
 
 工作樹可能有使用者私人素材、舊顧問筆記及 `.tsbuildinfo` 修改。只提交本次檔案；不可 `git add .`、清理全部未追蹤檔或用 reset 覆蓋他人工作。
+
+本輪查詢其他Codex session的工具連線失敗，因此沒有宣稱已通知 `programmer-session`。本輪程式與文件均以明確檔案清單提交；後續若恢復並行協作，先協調檔案所有權，部署仍由單一session負責。
 
 ## 服務與資料位置
 
@@ -79,6 +90,8 @@ gcloud compute ssh guitarscribe-personal --project=hanana-491223 --zone=asia-eas
 - 新表是向後相容的附加schema，不改既有jobs rows。**發布前後不能只要求整個SQLite dump hash相同**：核對既有tables/rows不變，新增表允許且應為空；回退程式不刪表、不還原舊DB。完成過重試後，備份須包含新表和新job音檔。
 - task取消前可能尚未進入coroutine，回收由完成callback涵蓋；只有取得semaphore者釋放它。CPU thread無法強殺，重複取消也需等到結束再清來源及釋放容量。
 - 上傳大小檢查最多讀limit+1 bytes；舊同步入口先驗大小才建暫存檔，避免超限漏清理。
+- 相對級數只讀個人主音／調式假設和已填和弦，不寫資料、不自動判斷調性。小調採同主音大音階參照，局部假設不延伸到其範圍外；來源／版本不符時停止換算。
+- Capo建議API新增選填 `preferred_fret`，回傳完整覆蓋數、換把／把位成本與逐和弦 `voicing_plan`。非標準調弦拒絕；不完整root-note備用品不算完整和弦。計算移至worker，原稿只讀；明確採用後先核對所選指型仍存在，再用既有revision／Undo流程更新編曲，原發聲和弦與獨立練習稿保留。這是工程啟發式，不是人體工學或音樂真值。
 
 ## 開發與驗證
 
@@ -124,7 +137,7 @@ GUITARSCRIBE_TEST_PYTHON=/home/jonas/.cache/guitarscribe-runtime/bin/python GUIT
 6. 暫停backup timer，停止應用user service，僅交換app/site，啟動服務。KEEP_SONGS=true、既有runtime／environment／protocol／work保留；30秒健康檢查失敗便退回舊程式。必須恢復backup timer。
 7. 驗證匿名401／登入成功、歌曲清單、原音訊Range、至少一首正式歌唯讀、版本／草稿保護。資料比較以既有table rows與檔案為準，記錄預期schema新增；寫入只用所有權marker的臨時fixture。
 8. 更新`app-release-manifest.json`與repo `deployment.json`，記錄實際部署app commit、包SHA、前版保留路徑、CI和備份。正式工作不能被本機快照回灌。
-9. 完成驗證／完整備份後，確認沒有使用者活動或分析，再由正常入口停止自行喚醒的VM，核對帳本結算。不要刪磁碟來省錢。
+9. 完成驗證／完整備份後，確認沒有使用者活動或分析，才經IAP在自行喚醒的VM執行 `sudo systemctl poweroff`，再由 `/cloud/status` 核對停止及帳本結算。現用入口只有喚醒／狀態，沒有 `/cloud/stop` API；一般使用者關閉頁面後由閒置規則休息。不要刪磁碟來省錢。
 
 **回退**：核對當下工作安全窗口，停止user service，把目前app/site移到保留目錄，再把本次release的`previous/app`、`previous/site`移回並啟動；只退程式，保留work和新schema。核對health、版本、原稿與backup timer後更新deployment紀錄。不可用初始personal-work.tar.gz回復人工進度。
 
@@ -134,10 +147,26 @@ GUITARSCRIBE_TEST_PYTHON=/home/jonas/.cache/guitarscribe-runtime/bin/python GUIT
 
 下一個 session 應能回答：線上是哪個app版本、服務是正常休息還是故障、最近可驗證備份是哪份、雲端人工稿在哪裡、哪些測試實跑／未跑、哪些功能尚未完成、現在下一個可執行項目是什麼。
 
-當次收尾需更新本文件的版本摘要、總盤點R1–R8、Next_Decision／Autonomous_Development最新入口與驗證JSON；不能只留下聊天說「完成」。skill本身不是背景排程器，session結束後不會自行工作。
+當次收尾需更新本文件的版本摘要、總盤點R1–R9、Next_Decision／Autonomous_Development最新入口與驗證JSON；不能只留下聊天說「完成」。skill本身不是背景排程器，session結束後不會自行工作。
+
+## 尚未完成的工程與後續切入點
+
+這些是舊規劃的真實剩餘項，不因本輪R1–R9交付而自動完成，也不是都卡在人耳。逐項原始索引及處置依據見 [137條盤點](evaluation/backlog-inventory-2026-11-23.json)。
+
+| 優先 | 後續項目 | 開始前固定的契約／首批測試 |
+| --- | --- | --- |
+| 1 | 完整stage快取與拍點／和弦單層重算 | 來源音訊SHA、裁切、engine/model版本、參數共同決定cache key；缺檔／損毀／參數變更必須miss。取消不得留下可用但未完成的cache。新候選存新分支，不覆寫原分析或人工稿；不重新啟用旋律。 |
+| 2 | 指型套用範圍 | 明示單次／所選段／相同和弦範圍及影響數；先測重複名稱但不同低音、手動指型、來源變更、Undo／重開。現有單次及全曲最佳化不等於完整範圍選擇。 |
+| 3 | 全層TempoMap與有限漂移 | 先明定單一版本／秒數契約，再測pickup、不完整小節、局部anchors、短和弦、跨變速、裁切與各匯出。現用手動拍格／受保護恢復保留，不一次替換全部時間層。 |
+| 4 | 通用錯誤標註／資源baseline | 標記錯誤類別、錄音範圍、原始版本與人工意圖；標記不是核准參考。記CPU/RAM與各stage耗時需固定環境，不能由這次CI秒數推估真歌分析ETA。 |
+| 5 | 次要閱譜擴充 | 全曲虛擬化、完整Nashville格式、錄音驅動刷奏型等仍未全做；目前已可用的選段級數與手動模板保留。 |
+
+Q1代表性歌曲的獨立標註、Q2實體手機Safari／真實網路、實際月帳單屬外部證據；與上述工程分開。旋律、多人公開分享、ASR、演奏評分與PDF擴充維持停止／未納入範圍。
+
+接手提示可直接使用：「使用 `$guitarscribe-autopilot`，先讀 `guitarscribe/docs/MAINTENANCE_HANDOFF.md`，核對Git、雲端版本與備份，再從最新故事盤點接續。保留雲端人工稿，工程自行驗證，不要求我先完成測試。」
 
 ## 換電腦或 session 的必要條件
 
-Git內保存程式、故事、手冊與 `skills/guitarscribe-autopilot`；目前本機的skill安裝是指向它的連結。接手者需要能讀這個repo，並在可執行工具的環境讀取SKILL.md。只有相同帳號登入並不表示每個客戶端都已安裝本機skill或擁有這台電腦的檔案。
+Git內保存程式、故事、手冊與 `skills/guitarscribe-autopilot`；根目錄 `AGENTS.md` 也會引導支援該格式的開發代理先讀本文件。目前本機的skill安裝是指向它的連結。接手者需要能讀這個repo，並在可執行工具的環境讀取SKILL.md。只有相同帳號登入並不表示每個客戶端都已安裝本機skill或擁有這台電腦的檔案。
 
 唯讀雲端檢查需要Python 3與已授權的gcloud身分；完整開發依CI準備Node 20、Python與依賴；實際部署另需GCP/IAP權限和既有授權檔。憑證走安全管道／Secret Manager，不放skill、Git或聊天。缺憑證時仍可讀文件與做本機工程，明列尚未查證的雲端部分，不能自行重設或重建服務。

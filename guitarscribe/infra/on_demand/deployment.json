@@ -23,12 +23,12 @@
   "status": "ready",
   "gateway_image": "asia-east1-docker.pkg.dev/hanana-491223/guitarscribe/gateway@sha256:eca767503c1112f14fb6a3b36ae65d3005dc8ac1e12c112f06502316767edddd",
   "initial_release": "releases/2026-11-20-v2",
-  "app_release": "releases/2026-11-21-v5",
+  "app_release": "releases/2026-11-23-v9",
   "keep_songs": true,
-  "app_commit": "f269caa1d7926901530308d1e5f3640f5bc57a44",
-  "app_sha256": "8fb26454f2f11838fc4541913f507b6dd20602d2cbb0a624b4600d7d0274a16a",
+  "app_commit": "1de9ee21255a560138b250fa0ec97aff81e444fc",
+  "app_sha256": "2e213c9597426bcc2416dde401ba01a6ce5d08b2ba368617817dc33b60f90ed5",
   "youtube_cloud_import": "blocked_by_source_bot_check_on_2026-11-20",
   "app_manifest": "/srv/guitarscribe/app-release-manifest.json",
-  "previous_app_release": "releases/2026-11-21-v4",
+  "previous_app_release": "releases/2026-11-21-v5",
   "backup_status_file": "/srv/guitarscribe/maintenance/backup-status.json"
 }

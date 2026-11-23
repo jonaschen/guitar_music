@@ -1,0 +1,155 @@
+{
+  "date": "2026-11-23",
+  "app_commit": "1de9ee21255a560138b250fa0ec97aff81e444fc",
+  "release": "releases/2026-11-23-v9",
+  "package": {
+    "sha256": "2e213c9597426bcc2416dde401ba01a6ce5d08b2ba368617817dc33b60f90ed5",
+    "bytes": 2010203
+  },
+  "manifest_generation": "1795438568500493",
+  "previous_app_commit": "f269caa1d7926901530308d1e5f3640f5bc57a44",
+  "previous_app_release": "releases/2026-11-21-v5",
+  "cloud_gateway_changed": false,
+  "runtime_changed": false,
+  "verification": {
+    "commit": "1de9ee21255a560138b250fa0ec97aff81e444fc",
+    "databases": 6,
+    "files": 144,
+    "allowed_additions": [
+      "jobs/jobs.sqlite3:job_retries"
+    ],
+    "saved_progress_unchanged": true,
+    "previous_code": "/srv/guitarscribe/releases/2026-11-23-v9/previous"
+  },
+  "installed_files_match": 280,
+  "library_count": 25,
+  "public_readonly": {
+    "anonymous_401": true,
+    "library_count": 25,
+    "real_songs_readonly": [
+      {
+        "job_id": "84defcef7fd44bbc8a1024b24d65c78e",
+        "structure_version": 27,
+        "sections": 9,
+        "chord_version": 0,
+        "audio_range": 206
+      },
+      {
+        "job_id": "83a3643ab3814172a046cebf709f3413",
+        "structure_version": 1,
+        "sections": 13,
+        "chord_version": 0,
+        "audio_range": 206
+      },
+      {
+        "job_id": "a3be29912a7045448765290d7cba2f6c",
+        "structure_version": 1,
+        "sections": 14,
+        "chord_version": 0,
+        "audio_range": 206
+      }
+    ],
+    "capo_readonly": true,
+    "retry_missing_404": true
+  },
+  "browser_readonly": [
+    {
+      "browser": "chromium",
+      "width": 1440,
+      "real_song": "84defcef7fd44bbc8a1024b24d65c78e",
+      "section": "section-8",
+      "source_only_playback": true,
+      "reference_count": 0,
+      "recording_energy": true,
+      "relative_degrees": true,
+      "capo_readonly": {
+        "covered": 160,
+        "total": 160
+      },
+      "server_writes": [],
+      "page_errors": [],
+      "overflow": false
+    },
+    {
+      "browser": "webkit",
+      "width": 390,
+      "real_song": "84defcef7fd44bbc8a1024b24d65c78e",
+      "section": "section-8",
+      "source_only_playback": true,
+      "reference_count": 0,
+      "recording_energy": true,
+      "relative_degrees": true,
+      "capo_readonly": {
+        "covered": 160,
+        "total": 160
+      },
+      "server_writes": [],
+      "page_errors": [],
+      "overflow": false
+    }
+  ],
+  "backup_before": {
+    "manifest": "backups/manifests/20261123T131701Z-35c8dc026d214abda176c4f8e6551a2c.json",
+    "generation": "1795439954345431",
+    "manifest_sha256": "9f095574e6c042ac5c5e0f4d1db1d043e9c62ad8f2c2e87054441e66f74b7723",
+    "files": 150
+  },
+  "backup_after_and_restore": {
+    "status": "restored",
+    "target": "/srv/guitarscribe/restored-20261123-v9",
+    "files": 150,
+    "manifest": "backups/manifests/20261123T132105Z-47337d37f482436a8cce20bcff7d349a.json",
+    "manifest_sha256": "c48837a037dc41884a8f177de869d339f746b03f1ff39aafbfaae4d2896450de",
+    "generation": "1795440149382445",
+    "sqlite_databases": 6,
+    "matches_final_workspace": true,
+    "owned_restore_directory_removed": true
+  },
+  "ci": {
+    "url": "https://github.com/jonaschen/guitar_music/actions/runs/45178334278",
+    "conclusion": "success",
+    "backend": {
+      "passed": 1483,
+      "skipped": 3,
+      "warnings": 5
+    },
+    "infra": {
+      "passed": 116,
+      "skipped": 0
+    },
+    "frontend": {
+      "passed": 358,
+      "skipped": 7
+    },
+    "webkit": 20,
+    "learning_webkit": 5,
+    "recovery_capo_real_api": 4
+  },
+  "long_soak": {
+    "state": "running",
+    "requested_ms": 7200000,
+    "frontend_fixture_commit": "bcd04c1284f915c254a690ba0a80b88835517e0e",
+    "scope": "Isolated disposable chord-practice fixture; no private recordings. Later optional degree/Capo additions are covered separately."
+  },
+  "limitations": [
+    "No independent musical accuracy claim",
+    "No physical iPhone validation",
+    "Actual cloud billing not checked",
+    "First soak timed out at save 21; resource contention suspected, not proven; failure log retained, initial trace was overwritten",
+    "Cross-session coordination tool unavailable; no message claimed sent"
+  ],
+  "final_state": {
+    "checked_at": "2026-11-23T13:26:49.045775+00:00",
+    "vm": "TERMINATED",
+    "http_status": 200,
+    "state": "stopped",
+    "used_seconds": 8520,
+    "limit_seconds": 144000,
+    "remaining_seconds": 135480,
+    "window_days": 31,
+    "can_wake": true,
+    "stop_at": null,
+    "maintenance_usage_seconds": 795,
+    "actual_billing": "not_checked"
+  }
+}

@@ -42,823 +42,2113 @@
       "source": "GuitarScribe_Lyrics_and_Score_Playback_Addendum.md",
       "line": 1165,
       "section": "24. 整合檢查表",
-      "item": "- [ ] 三份交接文件皆已閱讀。"
+      "item": "- [ ] 三份交接文件皆已閱讀。",
+      "review": {
+        "id": 1,
+        "status": "superseded",
+        "reason": "舊文件閱讀檢查改由現用維護交接入口導航；不能把歷史的閱讀勾選當產品功能缺口。",
+        "evidence": [
+          "guitarscribe/docs/MAINTENANCE_HANDOFF.md"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_Lyrics_and_Score_Playback_Addendum.md",
       "line": 1166,
       "section": "24. 整合檢查表",
-      "item": "- [ ] 歌詞文字取得與歌詞對時是不同功能。"
+      "item": "- [ ] 歌詞文字取得與歌詞對時是不同功能。",
+      "review": {
+        "id": 2,
+        "status": "implemented_current",
+        "reason": "人工歌詞／逐行時間標記、重複時間事件及原稿保護已有；沒有自動抓第三方歌詞。",
+        "evidence": [
+          "guitarscribe/docs/Listen_And_Mark_Lyrics_2026-11-07.md",
+          "guitarscribe/docs/Lyrics_Worksheet_2026-11-07.md"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_Lyrics_and_Score_Playback_Addendum.md",
       "line": 1167,
       "section": "24. 整合檢查表",
-      "item": "- [ ] MVP 沒有自動抓取第三方歌詞。"
+      "item": "- [ ] MVP 沒有自動抓取第三方歌詞。",
+      "review": {
+        "id": 3,
+        "status": "implemented_current",
+        "reason": "人工歌詞／逐行時間標記、重複時間事件及原稿保護已有；沒有自動抓第三方歌詞。",
+        "evidence": [
+          "guitarscribe/docs/Listen_And_Mark_Lyrics_2026-11-07.md",
+          "guitarscribe/docs/Lyrics_Worksheet_2026-11-07.md"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_Lyrics_and_Score_Playback_Addendum.md",
       "line": 1168,
       "section": "24. 整合檢查表",
-      "item": "- [ ] 重複副歌保留為不同時間事件。"
+      "item": "- [ ] 重複副歌保留為不同時間事件。",
+      "review": {
+        "id": 4,
+        "status": "implemented_current",
+        "reason": "人工歌詞／逐行時間標記、重複時間事件及原稿保護已有；沒有自動抓第三方歌詞。",
+        "evidence": [
+          "guitarscribe/docs/Listen_And_Mark_Lyrics_2026-11-07.md",
+          "guitarscribe/docs/Lyrics_Worksheet_2026-11-07.md"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_Lyrics_and_Score_Playback_Addendum.md",
       "line": 1169,
       "section": "24. 整合檢查表",
-      "item": "- [ ] 逐行 timing 先於逐字 timing。"
+      "item": "- [ ] 逐行 timing 先於逐字 timing。",
+      "review": {
+        "id": 5,
+        "status": "implemented_current",
+        "reason": "人工歌詞／逐行時間標記、重複時間事件及原稿保護已有；沒有自動抓第三方歌詞。",
+        "evidence": [
+          "guitarscribe/docs/Listen_And_Mark_Lyrics_2026-11-07.md",
+          "guitarscribe/docs/Lyrics_Worksheet_2026-11-07.md"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_Lyrics_and_Score_Playback_Addendum.md",
       "line": 1170,
       "section": "24. 整合檢查表",
-      "item": "- [ ] 人工 timing 不被自動對時覆蓋。"
+      "item": "- [ ] 人工 timing 不被自動對時覆蓋。",
+      "review": {
+        "id": 6,
+        "status": "implemented_current",
+        "reason": "人工歌詞／逐行時間標記、重複時間事件及原稿保護已有；沒有自動抓第三方歌詞。",
+        "evidence": [
+          "guitarscribe/docs/Listen_And_Mark_Lyrics_2026-11-07.md",
+          "guitarscribe/docs/Lyrics_Worksheet_2026-11-07.md"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_Lyrics_and_Score_Playback_Addendum.md",
       "line": 1171,
       "section": "24. 整合檢查表",
-      "item": "- [ ] 原曲同步與合成播放使用不同 master clock。"
+      "item": "- [ ] 原曲同步與合成播放使用不同 master clock。",
+      "review": {
+        "id": 7,
+        "status": "implemented_current",
+        "reason": "原曲媒體時鐘與合成事件排程分離，播放manifest、移調／按法失效、停止與loop清理已有回歸；不以是否命名TransportController判斷功能。",
+        "evidence": [
+          "guitarscribe/frontend/src/transportClock.ts",
+          "guitarscribe/frontend/src/App.tsx",
+          "guitarscribe/docs/Key_Playback_Fix_2026-11-06.md"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_Lyrics_and_Score_Playback_Addendum.md",
       "line": 1172,
       "section": "24. 整合檢查表",
-      "item": "- [ ] React render loop 不是音樂時鐘。"
+      "item": "- [ ] React render loop 不是音樂時鐘。",
+      "review": {
+        "id": 8,
+        "status": "implemented_current",
+        "reason": "原曲媒體時鐘與合成事件排程分離，播放manifest、移調／按法失效、停止與loop清理已有回歸；不以是否命名TransportController判斷功能。",
+        "evidence": [
+          "guitarscribe/frontend/src/transportClock.ts",
+          "guitarscribe/frontend/src/App.tsx",
+          "guitarscribe/docs/Key_Playback_Fix_2026-11-06.md"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_Lyrics_and_Score_Playback_Addendum.md",
       "line": 1173,
       "section": "24. 整合檢查表",
-      "item": "- [ ] PlaybackCompiler 與 UI 解耦。"
+      "item": "- [ ] PlaybackCompiler 與 UI 解耦。",
+      "review": {
+        "id": 9,
+        "status": "implemented_current",
+        "reason": "原曲媒體時鐘與合成事件排程分離，播放manifest、移調／按法失效、停止與loop清理已有回歸；不以是否命名TransportController判斷功能。",
+        "evidence": [
+          "guitarscribe/frontend/src/transportClock.ts",
+          "guitarscribe/frontend/src/App.tsx",
+          "guitarscribe/docs/Key_Playback_Fix_2026-11-06.md"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_Lyrics_and_Score_Playback_Addendum.md",
       "line": 1174,
       "section": "24. 整合檢查表",
-      "item": "- [ ] 和弦播放使用實際 voicing 音高。"
+      "item": "- [ ] 和弦播放使用實際 voicing 音高。",
+      "review": {
+        "id": 10,
+        "status": "implemented_current",
+        "reason": "原曲媒體時鐘與合成事件排程分離，播放manifest、移調／按法失效、停止與loop清理已有回歸；不以是否命名TransportController判斷功能。",
+        "evidence": [
+          "guitarscribe/frontend/src/transportClock.ts",
+          "guitarscribe/frontend/src/App.tsx",
+          "guitarscribe/docs/Key_Playback_Fix_2026-11-06.md"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_Lyrics_and_Score_Playback_Addendum.md",
       "line": 1175,
       "section": "24. 整合檢查表",
-      "item": "- [ ] Capo、Key、voicing 改變會使 compilation stale。"
+      "item": "- [ ] Capo、Key、voicing 改變會使 compilation stale。",
+      "review": {
+        "id": 11,
+        "status": "implemented_current",
+        "reason": "原曲媒體時鐘與合成事件排程分離，播放manifest、移調／按法失效、停止與loop清理已有回歸；不以是否命名TransportController判斷功能。",
+        "evidence": [
+          "guitarscribe/frontend/src/transportClock.ts",
+          "guitarscribe/frontend/src/App.tsx",
+          "guitarscribe/docs/Key_Playback_Fix_2026-11-06.md"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_Lyrics_and_Score_Playback_Addendum.md",
       "line": 1176,
       "section": "24. 整合檢查表",
-      "item": "- [ ] Stop、seek、loop 可清除 active notes。"
+      "item": "- [ ] Stop、seek、loop 可清除 active notes。",
+      "review": {
+        "id": 12,
+        "status": "implemented_current",
+        "reason": "原曲媒體時鐘與合成事件排程分離，播放manifest、移調／按法失效、停止與loop清理已有回歸；不以是否命名TransportController判斷功能。",
+        "evidence": [
+          "guitarscribe/frontend/src/transportClock.ts",
+          "guitarscribe/frontend/src/App.tsx",
+          "guitarscribe/docs/Key_Playback_Fix_2026-11-06.md"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_Lyrics_and_Score_Playback_Addendum.md",
       "line": 1177,
       "section": "24. 整合檢查表",
-      "item": "- [ ] YouTube drift 與 media offset 有處理方案。"
+      "item": "- [ ] YouTube drift 與 media offset 有處理方案。",
+      "review": {
+        "id": 13,
+        "status": "partial",
+        "reason": "現用播放走下載後的原音檔及source_start_seconds；不是YouTube iframe漂移校正器。通用drift／TempoMap仍未完成。",
+        "evidence": [
+          "guitarscribe/docs/Source_Transport_Checkpoint_2026-10-14.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_Lyrics_and_Score_Playback_Addendum.md",
       "line": 1178,
       "section": "24. 整合檢查表",
-      "item": "- [ ] 原曲未變調時有警告。"
+      "item": "- [ ] 原曲未變調時有警告。",
+      "review": {
+        "id": 14,
+        "status": "implemented_current",
+        "reason": "原曲媒體時鐘與合成事件排程分離，播放manifest、移調／按法失效、停止與loop清理已有回歸；不以是否命名TransportController判斷功能。",
+        "evidence": [
+          "guitarscribe/frontend/src/transportClock.ts",
+          "guitarscribe/frontend/src/App.tsx",
+          "guitarscribe/docs/Key_Playback_Fix_2026-11-06.md"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_Lyrics_and_Score_Playback_Addendum.md",
       "line": 1179,
       "section": "24. 整合檢查表",
-      "item": "- [ ] 歌詞、和弦、小節及旋律會同步高亮。"
+      "item": "- [ ] 歌詞、和弦、小節及旋律會同步高亮。",
+      "review": {
+        "id": 15,
+        "status": "partial_out_of_scope",
+        "reason": "現用歌詞／和弦／時間播放及既有匯出有測試；旋律已停止，PDF及全格式視覺等價未完成，使用者已選原介面討論、不需新增匯出。",
+        "evidence": [
+          "guitarscribe/docs/Key_Notes_Release_2026-11-06.md",
+          "guitarscribe/docs/Google_Cloud_Personal_2026-11-20.md"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_Lyrics_and_Score_Playback_Addendum.md",
       "line": 1180,
       "section": "24. 整合檢查表",
-      "item": "- [ ] LRC、ChordPro、MIDI 匯出語意一致。"
+      "item": "- [ ] LRC、ChordPro、MIDI 匯出語意一致。",
+      "review": {
+        "id": 16,
+        "status": "partial_out_of_scope",
+        "reason": "現用歌詞／和弦／時間播放及既有匯出有測試；旋律已停止，PDF及全格式視覺等價未完成，使用者已選原介面討論、不需新增匯出。",
+        "evidence": [
+          "guitarscribe/docs/Key_Notes_Release_2026-11-06.md",
+          "guitarscribe/docs/Google_Cloud_Personal_2026-11-20.md"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_Lyrics_and_Score_Playback_Addendum.md",
       "line": 1181,
       "section": "24. 整合檢查表",
-      "item": "- [ ] 測試素材可合法使用。"
+      "item": "- [ ] 測試素材可合法使用。",
+      "review": {
+        "id": 17,
+        "status": "ongoing_process",
+        "reason": "是每輪來源、品質分層及證據追溯的持續規則，不是做一次就永遠完成的功能。不得把工程綠燈當音樂真值。",
+        "evidence": [
+          "skills/guitarscribe-autopilot/SKILL.md",
+          "guitarscribe/docs/Autonomous_Development.md"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_Lyrics_and_Score_Playback_Addendum.md",
       "line": 1182,
       "section": "24. 整合檢查表",
-      "item": "- [ ] 自動歌詞辨識以 feature flag 隔離。"
+      "item": "- [ ] 自動歌詞辨識以 feature flag 隔離。",
+      "review": {
+        "id": 18,
+        "status": "not_in_current_scope",
+        "reason": "ASR／forced alignment、逐字karaoke、麥克風追譜／評分仍未做或停用；保留人工逐行流程，不啟用外部音訊服務。",
+        "evidence": [
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md",
+          "guitarscribe/docs/Listen_And_Mark_Lyrics_2026-11-07.md"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_Lyrics_and_Score_Playback_Addendum.md",
       "line": 1183,
       "section": "24. 整合檢查表",
-      "item": "- [ ] 麥克風演奏評分不在本輪 MVP。"
+      "item": "- [ ] 麥克風演奏評分不在本輪 MVP。",
+      "review": {
+        "id": 19,
+        "status": "not_in_current_scope",
+        "reason": "ASR／forced alignment、逐字karaoke、麥克風追譜／評分仍未做或停用；保留人工逐行流程，不啟用外部音訊服務。",
+        "evidence": [
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md",
+          "guitarscribe/docs/Listen_And_Mark_Lyrics_2026-11-07.md"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_UI_Key_and_Chord_Voicings_Addendum.md",
       "line": 812,
       "section": "17. 整合檢查表",
-      "item": "- [ ] 主文件與追加文件都已閱讀。"
+      "item": "- [ ] 主文件與追加文件都已閱讀。",
+      "review": {
+        "id": 20,
+        "status": "superseded",
+        "reason": "舊文件閱讀檢查改由現用維護交接入口導航；不能把歷史的閱讀勾選當產品功能缺口。",
+        "evidence": [
+          "guitarscribe/docs/MAINTENANCE_HANDOFF.md"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_UI_Key_and_Chord_Voicings_Addendum.md",
       "line": 813,
       "section": "17. 整合檢查表",
-      "item": "- [ ] Source Key 不會被 UI 移調覆蓋。"
+      "item": "- [ ] Source Key 不會被 UI 移調覆蓋。",
+      "review": {
+        "id": 21,
+        "status": "implemented_current",
+        "reason": "Source／Target／Shape／Sounding、Capo與base_fret、slash移調、voicing ID及重新計算均有現行模型、轉調與十二音級回歸。",
+        "evidence": [
+          "guitarscribe/backend/app/services/transposition.py",
+          "guitarscribe/backend/app/models/score.py",
+          "guitarscribe/backend/tests/test_transposition.py"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_UI_Key_and_Chord_Voicings_Addendum.md",
       "line": 814,
       "section": "17. 整合檢查表",
-      "item": "- [ ] Target Key 是 arrangement 狀態。"
+      "item": "- [ ] Target Key 是 arrangement 狀態。",
+      "review": {
+        "id": 22,
+        "status": "implemented_current",
+        "reason": "Source／Target／Shape／Sounding、Capo與base_fret、slash移調、voicing ID及重新計算均有現行模型、轉調與十二音級回歸。",
+        "evidence": [
+          "guitarscribe/backend/app/services/transposition.py",
+          "guitarscribe/backend/app/models/score.py",
+          "guitarscribe/backend/tests/test_transposition.py"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_UI_Key_and_Chord_Voicings_Addendum.md",
       "line": 815,
       "section": "17. 整合檢查表",
-      "item": "- [ ] Capo 與 base fret 沒有混用。"
+      "item": "- [ ] Capo 與 base fret 沒有混用。",
+      "review": {
+        "id": 23,
+        "status": "implemented_current",
+        "reason": "Source／Target／Shape／Sounding、Capo與base_fret、slash移調、voicing ID及重新計算均有現行模型、轉調與十二音級回歸。",
+        "evidence": [
+          "guitarscribe/backend/app/services/transposition.py",
+          "guitarscribe/backend/app/models/score.py",
+          "guitarscribe/backend/tests/test_transposition.py"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_UI_Key_and_Chord_Voicings_Addendum.md",
       "line": 816,
       "section": "17. 整合檢查表",
-      "item": "- [ ] Shape Key 與 Sounding Key 有獨立欄位或可明確推導。"
+      "item": "- [ ] Shape Key 與 Sounding Key 有獨立欄位或可明確推導。",
+      "review": {
+        "id": 24,
+        "status": "implemented_current",
+        "reason": "Source／Target／Shape／Sounding、Capo與base_fret、slash移調、voicing ID及重新計算均有現行模型、轉調與十二音級回歸。",
+        "evidence": [
+          "guitarscribe/backend/app/services/transposition.py",
+          "guitarscribe/backend/app/models/score.py",
+          "guitarscribe/backend/tests/test_transposition.py"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_UI_Key_and_Chord_Voicings_Addendum.md",
       "line": 817,
       "section": "17. 整合檢查表",
-      "item": "- [ ] slash chord bass 會一起移調。"
+      "item": "- [ ] slash chord bass 會一起移調。",
+      "review": {
+        "id": 25,
+        "status": "implemented_current",
+        "reason": "Source／Target／Shape／Sounding、Capo與base_fret、slash移調、voicing ID及重新計算均有現行模型、轉調與十二音級回歸。",
+        "evidence": [
+          "guitarscribe/backend/app/services/transposition.py",
+          "guitarscribe/backend/app/models/score.py",
+          "guitarscribe/backend/tests/test_transposition.py"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_UI_Key_and_Chord_Voicings_Addendum.md",
       "line": 818,
       "section": "17. 整合檢查表",
-      "item": "- [ ] melody notes 會一起移調。"
+      "item": "- [ ] melody notes 會一起移調。",
+      "review": {
+        "id": 26,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_UI_Key_and_Chord_Voicings_Addendum.md",
       "line": 819,
       "section": "17. 整合檢查表",
-      "item": "- [ ] ChordEvent 與 ChordVoicing 已分離。"
+      "item": "- [ ] ChordEvent 與 ChordVoicing 已分離。",
+      "review": {
+        "id": 27,
+        "status": "implemented_current",
+        "reason": "Source／Target／Shape／Sounding、Capo與base_fret、slash移調、voicing ID及重新計算均有現行模型、轉調與十二音級回歸。",
+        "evidence": [
+          "guitarscribe/backend/app/services/transposition.py",
+          "guitarscribe/backend/app/models/score.py",
+          "guitarscribe/backend/tests/test_transposition.py"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_UI_Key_and_Chord_Voicings_Addendum.md",
       "line": 820,
       "section": "17. 整合檢查表",
-      "item": "- [ ] 和弦事件引用 voicing ID。"
+      "item": "- [ ] 和弦事件引用 voicing ID。",
+      "review": {
+        "id": 28,
+        "status": "implemented_current",
+        "reason": "Source／Target／Shape／Sounding、Capo與base_fret、slash移調、voicing ID及重新計算均有現行模型、轉調與十二音級回歸。",
+        "evidence": [
+          "guitarscribe/backend/app/services/transposition.py",
+          "guitarscribe/backend/app/models/score.py",
+          "guitarscribe/backend/tests/test_transposition.py"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_UI_Key_and_Chord_Voicings_Addendum.md",
       "line": 821,
       "section": "17. 整合檢查表",
-      "item": "- [ ] 常用指型資料經過驗證。"
+      "item": "- [ ] 常用指型資料經過驗證。",
+      "review": {
+        "id": 29,
+        "status": "implemented_current",
+        "reason": "已有常用／CAGED／延伸／slash指型與必要音、低音、琴格等檢查；未知和弦的單根音fallback明示不完整，不能宣稱有完整按法。人體工學難度仍是估計。",
+        "evidence": [
+          "guitarscribe/backend/app/services/voicings.py",
+          "guitarscribe/backend/app/services/slash_voicings.py",
+          "guitarscribe/backend/tests/test_extended_voicings.py",
+          "guitarscribe/backend/tests/test_slash_voicings.py"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_UI_Key_and_Chord_Voicings_Addendum.md",
       "line": 822,
       "section": "17. 整合檢查表",
-      "item": "- [ ] 動態候選經過可演奏性檢查。"
+      "item": "- [ ] 動態候選經過可演奏性檢查。",
+      "review": {
+        "id": 30,
+        "status": "implemented_current",
+        "reason": "已有常用／CAGED／延伸／slash指型與必要音、低音、琴格等檢查；未知和弦的單根音fallback明示不完整，不能宣稱有完整按法。人體工學難度仍是估計。",
+        "evidence": [
+          "guitarscribe/backend/app/services/voicings.py",
+          "guitarscribe/backend/app/services/slash_voicings.py",
+          "guitarscribe/backend/tests/test_extended_voicings.py",
+          "guitarscribe/backend/tests/test_slash_voicings.py"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_UI_Key_and_Chord_Voicings_Addendum.md",
       "line": 823,
       "section": "17. 整合檢查表",
-      "item": "- [ ] 可選擇套用範圍。"
+      "item": "- [ ] 可選擇套用範圍。",
+      "review": {
+        "id": 31,
+        "status": "partial",
+        "reason": "單一和弦採用與全曲最佳化已有；任意指型在occurrence／section／song之間選範圍及影響預覽未完整交付，舊勾選不能代替程式。",
+        "evidence": [
+          "guitarscribe/frontend/src/App.tsx",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_UI_Key_and_Chord_Voicings_Addendum.md",
       "line": 824,
       "section": "17. 整合檢查表",
-      "item": "- [ ] 全曲最佳化考慮前後手位。"
+      "item": "- [ ] 全曲最佳化考慮前後手位。",
+      "review": {
+        "id": 32,
+        "status": "implemented_current",
+        "reason": "SongVoicingOptimizer已有全序列動態規劃，考慮共同音與手位轉換；不是逐顆貪婪最容易。",
+        "evidence": [
+          "guitarscribe/backend/app/services/voicing_optimizer.py",
+          "guitarscribe/backend/tests/test_voicing_optimizer.py"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_UI_Key_and_Chord_Voicings_Addendum.md",
       "line": 825,
       "section": "17. 整合檢查表",
-      "item": "- [ ] 轉調後會重新計算 voicing。"
+      "item": "- [ ] 轉調後會重新計算 voicing。",
+      "review": {
+        "id": 33,
+        "status": "implemented_current",
+        "reason": "Source／Target／Shape／Sounding、Capo與base_fret、slash移調、voicing ID及重新計算均有現行模型、轉調與十二音級回歸。",
+        "evidence": [
+          "guitarscribe/backend/app/services/transposition.py",
+          "guitarscribe/backend/app/models/score.py",
+          "guitarscribe/backend/tests/test_transposition.py"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_UI_Key_and_Chord_Voicings_Addendum.md",
       "line": 826,
       "section": "17. 整合檢查表",
-      "item": "- [ ] YouTube 原曲未變調時有警告。"
+      "item": "- [ ] YouTube 原曲未變調時有警告。",
+      "review": {
+        "id": 34,
+        "status": "implemented_current",
+        "reason": "Source／Target／Shape／Sounding、Capo與base_fret、slash移調、voicing ID及重新計算均有現行模型、轉調與十二音級回歸。",
+        "evidence": [
+          "guitarscribe/backend/app/services/transposition.py",
+          "guitarscribe/backend/app/models/score.py",
+          "guitarscribe/backend/tests/test_transposition.py"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_UI_Key_and_Chord_Voicings_Addendum.md",
       "line": 827,
       "section": "17. 整合檢查表",
-      "item": "- [ ] JSON Schema 與 API 已有版本。"
+      "item": "- [ ] JSON Schema 與 API 已有版本。",
+      "review": {
+        "id": 35,
+        "status": "implemented_current",
+        "reason": "Source／Target／Shape／Sounding、Capo與base_fret、slash移調、voicing ID及重新計算均有現行模型、轉調與十二音級回歸。",
+        "evidence": [
+          "guitarscribe/backend/app/services/transposition.py",
+          "guitarscribe/backend/app/models/score.py",
+          "guitarscribe/backend/tests/test_transposition.py"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_UI_Key_and_Chord_Voicings_Addendum.md",
       "line": 828,
       "section": "17. 整合檢查表",
-      "item": "- [ ] 自動測試涵蓋十二個 pitch class。"
+      "item": "- [ ] 自動測試涵蓋十二個 pitch class。",
+      "review": {
+        "id": 36,
+        "status": "implemented_current",
+        "reason": "Source／Target／Shape／Sounding、Capo與base_fret、slash移調、voicing ID及重新計算均有現行模型、轉調與十二音級回歸。",
+        "evidence": [
+          "guitarscribe/backend/app/services/transposition.py",
+          "guitarscribe/backend/app/models/score.py",
+          "guitarscribe/backend/tests/test_transposition.py"
+        ]
+      }
     },
     {
       "source": "GuitarScribe_UI_Key_and_Chord_Voicings_Addendum.md",
       "line": 829,
       "section": "17. 整合檢查表",
-      "item": "- [ ] 匯出格式保持一致。"
+      "item": "- [ ] 匯出格式保持一致。",
+      "review": {
+        "id": 37,
+        "status": "partial_out_of_scope",
+        "reason": "現用歌詞／和弦／時間播放及既有匯出有測試；旋律已停止，PDF及全格式視覺等價未完成，使用者已選原介面討論、不需新增匯出。",
+        "evidence": [
+          "guitarscribe/docs/Key_Notes_Release_2026-11-06.md",
+          "guitarscribe/docs/Google_Cloud_Personal_2026-11-20.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 604,
       "section": "QR0：可信基準、Adapter 與診斷環境",
-      "item": "- [ ] `QA-001` 建立首批 6 首合法 bake-off excerpts（Easy 3、Medium 2、Hard 1），最終擴充至 12–20 首。"
+      "item": "- [ ] `QA-001` 建立首批 6 首合法 bake-off excerpts（Easy 3、Medium 2、Hard 1），最終擴充至 12–20 首。",
+      "review": {
+        "id": 38,
+        "status": "awaiting_independent_reference",
+        "reason": "已有固定跨來源與公開參考實驗，但缺代表目標華語流行來源的獨立標註與特定人工聽感；不由其他模型輸出補成真值，不重問已接受片段。",
+        "evidence": [
+          "guitarscribe/docs/MIREX_Mixed_Baseline_Result_2026-11-06.md",
+          "guitarscribe/docs/Remaining_Stories_2026-11-21.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 605,
       "section": "QR0：可信基準、Adapter 與診斷環境",
-      "item": "- [ ] `REG-001b2` 記錄各 stage 耗時與 CPU/RAM 用量，並以首批合法 excerpts 建立第一份真實 baseline bundle。"
+      "item": "- [ ] `REG-001b2` 記錄各 stage 耗時與 CPU/RAM 用量，並以首批合法 excerpts 建立第一份真實 baseline bundle。",
+      "review": {
+        "id": 39,
+        "status": "partial",
+        "reason": "已有階段日誌、canonical chord adapter與不可變實驗證據；全stage raw contracts、完整CPU/RAM baseline仍未統一。停止的旋律引擎不為此重開。",
+        "evidence": [
+          "guitarscribe/backend/app/analyzers/chords/canonical_adapter.py",
+          "guitarscribe/docs/Timing_Batch_Result_2026-11-04.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 606,
       "section": "QR0：可信基準、Adapter 與診斷環境",
-      "item": "- [ ] `ARCH-001b` 將現有 Librosa／Chordino fallback／pYIN／Basic Pitch 以 adapter 接入 canonical contracts，且先保存 raw result 才投影到正式模型。"
+      "item": "- [ ] `ARCH-001b` 將現有 Librosa／Chordino fallback／pYIN／Basic Pitch 以 adapter 接入 canonical contracts，且先保存 raw result 才投影到正式模型。",
+      "review": {
+        "id": 40,
+        "status": "partial",
+        "reason": "已有階段日誌、canonical chord adapter與不可變實驗證據；全stage raw contracts、完整CPU/RAM baseline仍未統一。停止的旋律引擎不為此重開。",
+        "evidence": [
+          "guitarscribe/backend/app/analyzers/chords/canonical_adapter.py",
+          "guitarscribe/docs/Timing_Batch_Result_2026-11-04.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 607,
       "section": "QR0：可信基準、Adapter 與診斷環境",
-      "item": "- [ ] `DBG-002b` 以 wavesurfer.js Regions／Timeline／Minimap 取代目前 provisional canvas，支援縮放與可拖曳區域。"
+      "item": "- [ ] `DBG-002b` 以 wavesurfer.js Regions／Timeline／Minimap 取代目前 provisional canvas，支援縮放與可拖曳區域。",
+      "review": {
+        "id": 41,
+        "status": "superseded",
+        "reason": "自製低頻圖已提供縮放、游標、定位與A–B選區；功能目的已有現用實作，不為舊套件名換成wavesurfer。",
+        "evidence": [
+          "guitarscribe/docs/Root_Visual_Practice_User_Guide_2026-11-14.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 608,
       "section": "QR0：可信基準、Adapter 與診斷環境",
-      "item": "- [ ] `DBG-004` 一鍵保存 `wrong beat`、`wrong chord`、`wrong melody`、`should be silence` 與選取區間。"
+      "item": "- [ ] `DBG-004` 一鍵保存 `wrong beat`、`wrong chord`、`wrong melody`、`should be silence` 與選取區間。",
+      "review": {
+        "id": 42,
+        "status": "unimplemented_engineering",
+        "reason": "通用wrong beat/chord/melody/silence的一鍵研究標註入口仍未做；現用練習筆記可保留判斷，但不是相同資料契約。",
+        "evidence": [
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 609,
       "section": "QR0：可信基準、Adapter 與診斷環境",
-      "item": "- [ ] `REG-001` 保存目前 commit、參數、輸出音訊、JSON、metrics 與人工備註為不可覆蓋 baseline。"
+      "item": "- [ ] `REG-001` 保存目前 commit、參數、輸出音訊、JSON、metrics 與人工備註為不可覆蓋 baseline。",
+      "review": {
+        "id": 43,
+        "status": "partial",
+        "reason": "已有階段日誌、canonical chord adapter與不可變實驗證據；全stage raw contracts、完整CPU/RAM baseline仍未統一。停止的旋律引擎不為此重開。",
+        "evidence": [
+          "guitarscribe/backend/app/analyzers/chords/canonical_adapter.py",
+          "guitarscribe/docs/Timing_Batch_Result_2026-11-04.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 610,
       "section": "QR0：可信基準、Adapter 與診斷環境",
-      "item": "- [ ] 完成 BeatNet、Omnizart、autochord、Chordino、Demucs 與模型權重的授權／維護決策記錄。"
+      "item": "- [ ] 完成 BeatNet、Omnizart、autochord、Chordino、Demucs 與模型權重的授權／維護決策記錄。",
+      "review": {
+        "id": 44,
+        "status": "research_deferred",
+        "reason": "現用已固定Beat This／DBN與隔離runtime；舊清單所有候選的統一授權／再散布／primary決策未全部核實。保持已驗證執行鏈，不為舊引擎名新增模型。",
+        "evidence": [
+          "guitarscribe/docs/evaluation/Learned_Timing_Engine_2026-10-24.md",
+          "guitarscribe/docs/Google_Cloud_Personal_2026-11-20.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 619,
       "section": "QR1：Timing Engine Bake-off",
-      "item": "- [ ] BeatNet 放入獨立 Python 3.9 optional worker/container；不污染主 Python dependency graph。"
+      "item": "- [ ] BeatNet 放入獨立 Python 3.9 optional worker/container；不污染主 Python dependency graph。",
+      "review": {
+        "id": 45,
+        "status": "research_deferred",
+        "reason": "現用已固定Beat This／DBN與隔離runtime；舊清單所有候選的統一授權／再散布／primary決策未全部核實。保持已驗證執行鏈，不為舊引擎名新增模型。",
+        "evidence": [
+          "guitarscribe/docs/evaluation/Learned_Timing_Engine_2026-10-24.md",
+          "guitarscribe/docs/Google_Cloud_Personal_2026-11-20.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 620,
       "section": "QR1：Timing Engine Bake-off",
-      "item": "- [ ] 對相同 6 段比較 beat、downbeat、tempo、meter、phase error、速度、記憶體與人工 click audition。"
+      "item": "- [ ] 對相同 6 段比較 beat、downbeat、tempo、meter、phase error、速度、記憶體與人工 click audition。",
+      "review": {
+        "id": 46,
+        "status": "awaiting_independent_reference",
+        "reason": "已有固定跨來源與公開參考實驗，但缺代表目標華語流行來源的獨立標註與特定人工聽感；不由其他模型輸出補成真值，不重問已接受片段。",
+        "evidence": [
+          "guitarscribe/docs/MIREX_Mixed_Baseline_Result_2026-11-06.md",
+          "guitarscribe/docs/Remaining_Stories_2026-11-21.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 621,
       "section": "QR1：Timing Engine Bake-off",
-      "item": "- [ ] 保留多個 tempo／meter／phase 候選；不在 benchmark 前直接替換預設引擎。"
+      "item": "- [ ] 保留多個 tempo／meter／phase 候選；不在 benchmark 前直接替換預設引擎。",
+      "review": {
+        "id": 47,
+        "status": "ongoing_process",
+        "reason": "是每輪來源、品質分層及證據追溯的持續規則，不是做一次就永遠完成的功能。不得把工程綠燈當音樂真值。",
+        "evidence": [
+          "skills/guitarscribe-autopilot/SKILL.md",
+          "guitarscribe/docs/Autonomous_Development.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 622,
       "section": "QR1：Timing Engine Bake-off",
-      "item": "- [ ] BeatNet license／model redistribution 完成審查後，才能成為 primary candidate；現有 Librosa 保留 fallback。"
+      "item": "- [ ] BeatNet license／model redistribution 完成審查後，才能成為 primary candidate；現有 Librosa 保留 fallback。",
+      "review": {
+        "id": 48,
+        "status": "research_deferred",
+        "reason": "現用已固定Beat This／DBN與隔離runtime；舊清單所有候選的統一授權／再散布／primary決策未全部核實。保持已驗證執行鏈，不為舊引擎名新增模型。",
+        "evidence": [
+          "guitarscribe/docs/evaluation/Learned_Timing_Engine_2026-10-24.md",
+          "guitarscribe/docs/Google_Cloud_Personal_2026-11-20.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 630,
       "section": "QR2：Canonical TempoMap 與人工校正",
-      "item": "- [ ] 建立 versioned `TempoMap {beats, downbeats, meter, tempoSegments, pickup, anchors, version}`。"
+      "item": "- [ ] 建立 versioned `TempoMap {beats, downbeats, meter, tempoSegments, pickup, anchors, version}`。",
+      "review": {
+        "id": 49,
+        "status": "partial",
+        "reason": "有pickup、受保護拍格恢復、手動anchors與局部MusicXML回歸；全層共享版本化TempoMap、有限漂移內插及所有匯出一致性仍未完整交付。",
+        "evidence": [
+          "guitarscribe/docs/Guarded_Timing_Recovery_2026-11-02.md",
+          "guitarscribe/docs/MusicXML_Local_Timing_2026-10-05.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 631,
       "section": "QR2：Canonical TempoMap 與人工校正",
-      "item": "- [ ] 支援 pickup、不完整第一小節、half/double tempo 候選與 1–3 個 timing anchors。"
+      "item": "- [ ] 支援 pickup、不完整第一小節、half/double tempo 候選與 1–3 個 timing anchors。",
+      "review": {
+        "id": 50,
+        "status": "partial",
+        "reason": "有pickup、受保護拍格恢復、手動anchors與局部MusicXML回歸；全層共享版本化TempoMap、有限漂移內插及所有匯出一致性仍未完整交付。",
+        "evidence": [
+          "guitarscribe/docs/Guarded_Timing_Recovery_2026-11-02.md",
+          "guitarscribe/docs/MusicXML_Local_Timing_2026-10-05.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 632,
       "section": "QR2：Canonical TempoMap 與人工校正",
-      "item": "- [ ] anchors 間局部 tempo interpolation，支援穩定曲與有限 tempo drift。"
+      "item": "- [ ] anchors 間局部 tempo interpolation，支援穩定曲與有限 tempo drift。",
+      "review": {
+        "id": 51,
+        "status": "partial",
+        "reason": "有pickup、受保護拍格恢復、手動anchors與局部MusicXML回歸；全層共享版本化TempoMap、有限漂移內插及所有匯出一致性仍未完整交付。",
+        "evidence": [
+          "guitarscribe/docs/Guarded_Timing_Recovery_2026-11-02.md",
+          "guitarscribe/docs/MusicXML_Local_Timing_2026-10-05.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 633,
       "section": "QR2：Canonical TempoMap 與人工校正",
-      "item": "- [ ] Beat／Downbeat audition 使用不同 click；加入 waveform 拖曳與 keyboard correction。"
+      "item": "- [ ] Beat／Downbeat audition 使用不同 click；加入 waveform 拖曳與 keyboard correction。",
+      "review": {
+        "id": 52,
+        "status": "partial",
+        "reason": "有pickup、受保護拍格恢復、手動anchors與局部MusicXML回歸；全層共享版本化TempoMap、有限漂移內插及所有匯出一致性仍未完整交付。",
+        "evidence": [
+          "guitarscribe/docs/Guarded_Timing_Recovery_2026-11-02.md",
+          "guitarscribe/docs/MusicXML_Local_Timing_2026-10-05.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 634,
       "section": "QR2：Canonical TempoMap 與人工校正",
-      "item": "- [ ] chords、melody、lyrics、playback、MusicXML、MIDI 全部只讀同一 TempoMap revision。"
+      "item": "- [ ] chords、melody、lyrics、playback、MusicXML、MIDI 全部只讀同一 TempoMap revision。",
+      "review": {
+        "id": 53,
+        "status": "partial",
+        "reason": "有pickup、受保護拍格恢復、手動anchors與局部MusicXML回歸；全層共享版本化TempoMap、有限漂移內插及所有匯出一致性仍未完整交付。",
+        "evidence": [
+          "guitarscribe/docs/Guarded_Timing_Recovery_2026-11-02.md",
+          "guitarscribe/docs/MusicXML_Local_Timing_2026-10-05.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 635,
       "section": "QR2：Canonical TempoMap 與人工校正",
-      "item": "- [ ] 加入 first-boundary、pickup、tempo change 與 MusicXML measure regression fixtures。"
+      "item": "- [ ] 加入 first-boundary、pickup、tempo change 與 MusicXML measure regression fixtures。",
+      "review": {
+        "id": 54,
+        "status": "partial",
+        "reason": "有pickup、受保護拍格恢復、手動anchors與局部MusicXML回歸；全層共享版本化TempoMap、有限漂移內插及所有匯出一致性仍未完整交付。",
+        "evidence": [
+          "guitarscribe/docs/Guarded_Timing_Recovery_2026-11-02.md",
+          "guitarscribe/docs/MusicXML_Local_Timing_2026-10-05.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 666,
       "section": "QR3：Chord Engine Bake-off 與可伴奏草稿",
-      "item": "- [ ] 在統一 major／minor／N.C. label set 下比較現有 decoder、Omnizart、autochord；Chordino 僅作可選傳統 baseline。"
+      "item": "- [ ] 在統一 major／minor／N.C. label set 下比較現有 decoder、Omnizart、autochord；Chordino 僅作可選傳統 baseline。",
+      "review": {
+        "id": 55,
+        "status": "research_deferred",
+        "reason": "已有自動和弦定位／固定消融與失敗結論；沒有新的獨立參考與可否證機制，不重做小幅權重調整或把失敗候選升預設。",
+        "evidence": [
+          "guitarscribe/docs/Independent_Bass_Evidence_Result_2026-11-06.md",
+          "guitarscribe/docs/Diatonic_Candidate_Result_2026-11-06.md",
+          "guitarscribe/docs/Chord_Stem_Ablation_2026-11-06.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 667,
       "section": "QR3：Chord Engine Bake-off 與可伴奏草稿",
-      "item": "- [ ] 將 harmonic change detector 納入人工標註 excerpt bake-off，依 boundary F-measure 校準 threshold，並與候選引擎共同比較。"
+      "item": "- [ ] 將 harmonic change detector 納入人工標註 excerpt bake-off，依 boundary F-measure 校準 threshold，並與候選引擎共同比較。",
+      "review": {
+        "id": 56,
+        "status": "research_deferred",
+        "reason": "已有自動和弦定位／固定消融與失敗結論；沒有新的獨立參考與可否證機制，不重做小幅權重調整或把失敗候選升預設。",
+        "evidence": [
+          "guitarscribe/docs/Independent_Bass_Evidence_Result_2026-11-06.md",
+          "guitarscribe/docs/Diatonic_Candidate_Result_2026-11-06.md",
+          "guitarscribe/docs/Chord_Stem_Ablation_2026-11-06.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 668,
       "section": "QR3：Chord Engine Bake-off 與可伴奏草稿",
-      "item": "- [ ] 以人工標註 excerpt 校準 sequence decoder 權重，並將低信心孤立 outlier 明確標記為 review。"
+      "item": "- [ ] 以人工標註 excerpt 校準 sequence decoder 權重，並將低信心孤立 outlier 明確標記為 review。",
+      "review": {
+        "id": 57,
+        "status": "research_deferred",
+        "reason": "已有自動和弦定位／固定消融與失敗結論；沒有新的獨立參考與可否證機制，不重做小幅權重調整或把失敗候選升預設。",
+        "evidence": [
+          "guitarscribe/docs/Independent_Bass_Evidence_Result_2026-11-06.md",
+          "guitarscribe/docs/Diatonic_Candidate_Result_2026-11-06.md",
+          "guitarscribe/docs/Chord_Stem_Ablation_2026-11-06.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 670,
       "section": "QR3：Chord Engine Bake-off 與可伴奏草稿",
-      "item": "- [ ] 自動 report 已包含 duration-weighted chord accuracy、boundary tolerance 與 fragmentation ratio；仍需完成 Easy set 人工伴奏測試。"
+      "item": "- [ ] 自動 report 已包含 duration-weighted chord accuracy、boundary tolerance 與 fragmentation ratio；仍需完成 Easy set 人工伴奏測試。",
+      "review": {
+        "id": 58,
+        "status": "awaiting_independent_reference",
+        "reason": "已有固定跨來源與公開參考實驗，但缺代表目標華語流行來源的獨立標註與特定人工聽感；不由其他模型輸出補成真值，不重問已接受片段。",
+        "evidence": [
+          "guitarscribe/docs/MIREX_Mixed_Baseline_Result_2026-11-06.md",
+          "guitarscribe/docs/Remaining_Stories_2026-11-21.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 671,
       "section": "QR3：Chord Engine Bake-off 與可伴奏草稿",
-      "item": "- [ ] 選定 primary/fallback 後再逐層評估 dominant 7、maj7、min7、sus、slash/inversion。"
+      "item": "- [ ] 選定 primary/fallback 後再逐層評估 dominant 7、maj7、min7、sus、slash/inversion。",
+      "review": {
+        "id": 59,
+        "status": "research_deferred",
+        "reason": "已有自動和弦定位／固定消融與失敗結論；沒有新的獨立參考與可否證機制，不重做小幅權重調整或把失敗候選升預設。",
+        "evidence": [
+          "guitarscribe/docs/Independent_Bass_Evidence_Result_2026-11-06.md",
+          "guitarscribe/docs/Diatonic_Candidate_Result_2026-11-06.md",
+          "guitarscribe/docs/Chord_Stem_Ablation_2026-11-06.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 711,
       "section": "QR4：主旋律重新研究與重建",
-      "item": "- [ ] 主歌問題定位：取得具體秒數，對照 Original／Vocal stem／Contour melody，再決定來源或 F0 修正。"
+      "item": "- [ ] 主歌問題定位：取得具體秒數，對照 Original／Vocal stem／Contour melody，再決定來源或 F0 修正。",
+      "review": {
+        "id": 60,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 712,
       "section": "QR4：主旋律重新研究與重建",
-      "item": "- [ ] 器樂接手：保留 accompaniment 作來源證據，另驗證 lead 候選與區段切換；禁止將伴奏直接當主旋律。"
+      "item": "- [ ] 器樂接手：保留 accompaniment 作來源證據，另驗證 lead 候選與區段切換；禁止將伴奏直接當主旋律。",
+      "review": {
+        "id": 61,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 714,
       "section": "QR4：主旋律重新研究與重建",
-      "item": "- [ ] 整曲輪廓聽驗與伴奏整合：先通過新分析的已知片段及副歌，再考慮接入 Play score；目前仍 Experimental。"
+      "item": "- [ ] 整曲輪廓聽驗與伴奏整合：先通過新分析的已知片段及副歌，再考慮接入 Play score；目前仍 Experimental。",
+      "review": {
+        "id": 62,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 715,
       "section": "QR4：主旋律重新研究與重建",
-      "item": "- [ ] 記譜／Tab：另行驗證音符、起音與拍長，不得回寫並破壞已驗證的播放輪廓。"
+      "item": "- [ ] 記譜／Tab：另行驗證音符、起音與拍長，不得回寫並破壞已驗證的播放輪廓。",
+      "review": {
+        "id": 63,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 716,
       "section": "QR4：主旋律重新研究與重建",
-      "item": "- [ ] Basic Pitch 僅接受單一 vocal／lead stem；full mix 僅可作 diagnostic candidate。"
+      "item": "- [ ] Basic Pitch 僅接受單一 vocal／lead stem；full mix 僅可作 diagnostic candidate。",
+      "review": {
+        "id": 64,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 717,
       "section": "QR4：主旋律重新研究與重建",
-      "item": "- [ ] Omnizart vocal note／contour 作第二意見，不直接寫正式 SongScore。"
+      "item": "- [ ] Omnizart vocal note／contour 作第二意見，不直接寫正式 SongScore。",
+      "review": {
+        "id": 65,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 718,
       "section": "QR4：主旋律重新研究與重建",
-      "item": "- [ ] 先分類 Vocal／Instrumental Lead／No Melody，再依區段選擇來源。"
+      "item": "- [ ] 先分類 Vocal／Instrumental Lead／No Melody，再依區段選擇來源。",
+      "review": {
+        "id": 66,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 719,
       "section": "QR4：主旋律重新研究與重建",
-      "item": "- [ ] 建立 phrase graph，以音程連續性、節奏位置、休止、重複動機及和弦／調性相容度解碼。"
+      "item": "- [ ] 建立 phrase graph，以音程連續性、節奏位置、休止、重複動機及和弦／調性相容度解碼。",
+      "review": {
+        "id": 67,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 720,
       "section": "QR4：主旋律重新研究與重建",
-      "item": "- [ ] 合併 vibrato／slide／裝飾音，處理 octave error；輪廓穩定後才量化。"
+      "item": "- [ ] 合併 vibrato／slide／裝飾音，處理 octave error；輪廓穩定後才量化。",
+      "review": {
+        "id": 68,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 721,
       "section": "QR4：主旋律重新研究與重建",
-      "item": "- [ ] 同時保留 humanized timing 與 notated timing；低信心段落保持空白。"
+      "item": "- [ ] 同時保留 humanized timing 與 notated timing；低信心段落保持空白。",
+      "review": {
+        "id": 69,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 722,
       "section": "QR4：主旋律重新研究與重建",
-      "item": "- [ ] Melody-only blind recognition test 成為 release gate，不再以 note count 或 detector confidence 驗收。"
+      "item": "- [ ] Melody-only blind recognition test 成為 release gate，不再以 note count 或 detector confidence 驗收。",
+      "review": {
+        "id": 70,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 732,
       "section": "QR5：Compact Lead Sheet 與演奏流程",
-      "item": "- [ ] 旋律音高／拍長／增刪／切分合併與片段試聽。"
+      "item": "- [ ] 旋律音高／拍長／增刪／切分合併與片段試聽。",
+      "review": {
+        "id": 71,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 733,
       "section": "QR5：Compact Lead Sheet 與演奏流程",
-      "item": "- [ ] 修訂音符 → Play score／Tab／MIDI／MusicXML 一致性；保存入口不依賴和弦選取。"
+      "item": "- [ ] 修訂音符 → Play score／Tab／MIDI／MusicXML 一致性；保存入口不依賴和弦選取。",
+      "review": {
+        "id": 72,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 734,
       "section": "QR5：Compact Lead Sheet 與演奏流程",
-      "item": "- [ ] 原始分析、工作版本、已確認參考三者分離；修正意圖與局部重分析規劃接續實作。"
+      "item": "- [ ] 原始分析、工作版本、已確認參考三者分離；修正意圖與局部重分析規劃接續實作。",
+      "review": {
+        "id": 73,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 736,
       "section": "QR5：Compact Lead Sheet 與演奏流程",
-      "item": "- [ ] 預設入口改為 Quick Chord Chart；Vocal Melody Beta 與 Live Experimental 為次要模式。"
+      "item": "- [ ] 預設入口改為 Quick Chord Chart；Vocal Melody Beta 與 Live Experimental 為次要模式。",
+      "review": {
+        "id": 74,
+        "status": "implemented_current",
+        "reason": "預設簡潔和弦／原曲閱讀與局部編輯已有；不確定拍格用真實秒數，停止的Beta／Live入口不重開。",
+        "evidence": [
+          "guitarscribe/docs/Continuous_Reading_2026-11-06.md",
+          "guitarscribe/frontend/e2e/chord-product.spec.ts"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 737,
       "section": "QR5：Compact Lead Sheet 與演奏流程",
-      "item": "- [ ] 結果第一屏顯示 transport、Key／Capo 與前 8–16 小節；進階 analyzer／revision／export 收入 More。"
+      "item": "- [ ] 結果第一屏顯示 transport、Key／Capo 與前 8–16 小節；進階 analyzer／revision／export 收入 More。",
+      "review": {
+        "id": 75,
+        "status": "implemented_current",
+        "reason": "預設簡潔和弦／原曲閱讀與局部編輯已有；不確定拍格用真實秒數，停止的Beta／Live入口不重開。",
+        "evidence": [
+          "guitarscribe/docs/Continuous_Reading_2026-11-06.md",
+          "guitarscribe/frontend/e2e/chord-product.spec.ts"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 738,
       "section": "QR5：Compact Lead Sheet 與演奏流程",
-      "item": "- [ ] 4／8 小節一行，延續用 `%`／延長線；加入 section、repeat collapse 與 virtualization。"
+      "item": "- [ ] 4／8 小節一行，延續用 `%`／延長線；加入 section、repeat collapse 與 virtualization。",
+      "review": {
+        "id": 76,
+        "status": "partial",
+        "reason": "已做段落／重複沿用、選段羅馬／數字閱讀、原曲控制與復原；完整Nashville格式、全曲虛擬化與所有控制合併在單一sticky區尚非已完成。",
+        "evidence": [
+          "guitarscribe/docs/Section_Chord_Practice_2026-11-17.md",
+          "guitarscribe/docs/Recovery_and_Degrees_2026-11-23.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 739,
       "section": "QR5：Compact Lead Sheet 與演奏流程",
-      "item": "- [ ] Chord／Roman Numeral／Nashville Number 切換，非調內低信心事件標示待確認。"
+      "item": "- [ ] Chord／Roman Numeral／Nashville Number 切換，非調內低信心事件標示待確認。",
+      "review": {
+        "id": 77,
+        "status": "partial",
+        "reason": "已做段落／重複沿用、選段羅馬／數字閱讀、原曲控制與復原；完整Nashville格式、全曲虛擬化與所有控制合併在單一sticky區尚非已完成。",
+        "evidence": [
+          "guitarscribe/docs/Section_Chord_Practice_2026-11-17.md",
+          "guitarscribe/docs/Recovery_and_Degrees_2026-11-23.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 740,
       "section": "QR5：Compact Lead Sheet 與演奏流程",
-      "item": "- [ ] contextual editor 使用 Bar／Beat／Slot；raw seconds 降為次要資訊。"
+      "item": "- [ ] contextual editor 使用 Bar／Beat／Slot；raw seconds 降為次要資訊。",
+      "review": {
+        "id": 78,
+        "status": "implemented_current",
+        "reason": "預設簡潔和弦／原曲閱讀與局部編輯已有；不確定拍格用真實秒數，停止的Beta／Live入口不重開。",
+        "evidence": [
+          "guitarscribe/docs/Continuous_Reading_2026-11-06.md",
+          "guitarscribe/frontend/e2e/chord-product.spec.ts"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 741,
       "section": "QR5：Compact Lead Sheet 與演奏流程",
-      "item": "- [ ] sticky transport 整合 loop、slowdown、metronome、transpose、Capo 與 Undo／Redo。"
+      "item": "- [ ] sticky transport 整合 loop、slowdown、metronome、transpose、Capo 與 Undo／Redo。",
+      "review": {
+        "id": 79,
+        "status": "partial",
+        "reason": "已做段落／重複沿用、選段羅馬／數字閱讀、原曲控制與復原；完整Nashville格式、全曲虛擬化與所有控制合併在單一sticky區尚非已完成。",
+        "evidence": [
+          "guitarscribe/docs/Section_Chord_Practice_2026-11-17.md",
+          "guitarscribe/docs/Recovery_and_Degrees_2026-11-23.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 751,
       "section": "QR6：Worker、Cache 與可恢復性",
-      "item": "- [ ] 所有 CPU-heavy analyzers 移出 Web process，API health check 在任何 stage 都能即時回應。"
+      "item": "- [ ] 所有 CPU-heavy analyzers 移出 Web process，API health check 在任何 stage 都能即時回應。",
+      "review": {
+        "id": 80,
+        "status": "partial",
+        "reason": "R1–R6補實際資源／取消／上傳／恢復缺口；已有非阻塞thread／子程序及健康檢查，不等於全部移出Web process。elapsed已做，ETA未做；保留來源從頭重試不等於stage斷點續算。長測另列實際結果。",
+        "evidence": [
+          "guitarscribe/docs/Recovery_and_Degrees_2026-11-23.md",
+          "guitarscribe/docs/MAINTENANCE_HANDOFF.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 752,
       "section": "QR6：Worker、Cache 與可恢復性",
-      "item": "- [ ] stage 顯示 elapsed time 與合理 ETA range；不假裝精準百分比。"
+      "item": "- [ ] stage 顯示 elapsed time 與合理 ETA range；不假裝精準百分比。",
+      "review": {
+        "id": 81,
+        "status": "partial",
+        "reason": "R1–R6補實際資源／取消／上傳／恢復缺口；已有非阻塞thread／子程序及健康檢查，不等於全部移出Web process。elapsed已做，ETA未做；保留來源從頭重試不等於stage斷點續算。長測另列實際結果。",
+        "evidence": [
+          "guitarscribe/docs/Recovery_and_Degrees_2026-11-23.md",
+          "guitarscribe/docs/MAINTENANCE_HANDOFF.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 753,
       "section": "QR6：Worker、Cache 與可恢復性",
-      "item": "- [ ] 以 input hash、engine/model version、parameter hash cache 每個 stage artifact。"
+      "item": "- [ ] 以 input hash、engine/model version、parameter hash cache 每個 stage artifact。",
+      "review": {
+        "id": 82,
+        "status": "unimplemented_engineering",
+        "reason": "完整input/model/parameter hash的逐stage快取與Timing／Chord的通用單層重跑未交付。局部診斷快取不等於完整續算架構；不重開旋律。",
+        "evidence": [
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 754,
       "section": "QR6：Worker、Cache 與可恢復性",
-      "item": "- [ ] Timing／Chord／Melody 可單獨 retry 與版本比較，不重跑 download／separation。"
+      "item": "- [ ] Timing／Chord／Melody 可單獨 retry 與版本比較，不重跑 download／separation。",
+      "review": {
+        "id": 83,
+        "status": "unimplemented_engineering",
+        "reason": "完整input/model/parameter hash的逐stage快取與Timing／Chord的通用單層重跑未交付。局部診斷快取不等於完整續算架構；不重開旋律。",
+        "evidence": [
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 755,
       "section": "QR6：Worker、Cache 與可恢復性",
-      "item": "- [ ] server restart 後 active job 可恢復或明確續跑，不只保留 completed result。"
+      "item": "- [ ] server restart 後 active job 可恢復或明確續跑，不只保留 completed result。",
+      "review": {
+        "id": 84,
+        "status": "partial",
+        "reason": "R1–R6補實際資源／取消／上傳／恢復缺口；已有非阻塞thread／子程序及健康檢查，不等於全部移出Web process。elapsed已做，ETA未做；保留來源從頭重試不等於stage斷點續算。長測另列實際結果。",
+        "evidence": [
+          "guitarscribe/docs/Recovery_and_Degrees_2026-11-23.md",
+          "guitarscribe/docs/MAINTENANCE_HANDOFF.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 977,
       "section": "Capo 建議工具（追加文件 §5）",
-      "item": "- [ ] **`CapoAdvisor` 服務**（追加文件 §9）"
+      "item": "- [ ] **`CapoAdvisor` 服務**（追加文件 §9）",
+      "review": {
+        "id": 85,
+        "status": "implemented_current",
+        "reason": "R9已補完整指型覆蓋、最高Capo／琴格、偏好把位、slash限制、全曲路徑成本與明確採用；完整CI及真API保存／重開通過，v9正式發布與實曲唯讀驗證完成。",
+        "evidence": [
+          "guitarscribe/backend/app/services/capo.py",
+          "guitarscribe/frontend/src/CapoAdvice.tsx",
+          "guitarscribe/docs/Recovery_and_Degrees_2026-11-23.md",
+          "guitarscribe/docs/evaluation/cloud-update-2026-11-23.json"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 1030,
       "section": "其他 M3 待辦",
-      "item": "- [ ] **刷奏型選擇**（主文件 §2.3）"
+      "item": "- [ ] **刷奏型選擇**（主文件 §2.3）",
+      "review": {
+        "id": 86,
+        "status": "partial",
+        "reason": "手動刷奏模板與播放已有；以錄音onset自動選刷法仍未完成，不影響不混入合成和弦的原曲／低頻練習。",
+        "evidence": [
+          "guitarscribe/docs/Downbeat_Rhythm_2026-10-31.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 1112,
       "section": "❌ 待完成",
-      "item": "- [ ] **非功能測試**（主文件 §11.3）"
+      "item": "- [ ] **非功能測試**（主文件 §11.3）",
+      "review": {
+        "id": 87,
+        "status": "partial",
+        "reason": "R1–R6補實際資源／取消／上傳／恢復缺口；已有非阻塞thread／子程序及健康檢查，不等於全部移出Web process。elapsed已做，ETA未做；保留來源從頭重試不等於stage斷點續算。長測另列實際結果。",
+        "evidence": [
+          "guitarscribe/docs/Recovery_and_Degrees_2026-11-23.md",
+          "guitarscribe/docs/MAINTENANCE_HANDOFF.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 1124,
       "section": "❌ 待完成",
-      "item": "- [ ] **資源限制完善**（主文件 §12）"
+      "item": "- [ ] **資源限制完善**（主文件 §12）",
+      "review": {
+        "id": 88,
+        "status": "partial",
+        "reason": "R1–R6補實際資源／取消／上傳／恢復缺口；已有非阻塞thread／子程序及健康檢查，不等於全部移出Web process。elapsed已做，ETA未做；保留來源從頭重試不等於stage斷點續算。長測另列實際結果。",
+        "evidence": [
+          "guitarscribe/docs/Recovery_and_Degrees_2026-11-23.md",
+          "guitarscribe/docs/MAINTENANCE_HANDOFF.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 1144,
       "section": "追加文件整合檢查表",
-      "item": "- [ ] Capo 與 base_fret 沒有混用 — *model 已分離，但尚無實際 voicing 使用 base_fret*"
+      "item": "- [ ] Capo 與 base_fret 沒有混用 — *model 已分離，但尚無實際 voicing 使用 base_fret*",
+      "review": {
+        "id": 89,
+        "status": "implemented_current",
+        "reason": "Source／Target／Shape／Sounding、Capo與base_fret、slash移調、voicing ID及重新計算均有現行模型、轉調與十二音級回歸。",
+        "evidence": [
+          "guitarscribe/backend/app/services/transposition.py",
+          "guitarscribe/backend/app/models/score.py",
+          "guitarscribe/backend/tests/test_transposition.py"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 1150,
       "section": "追加文件整合檢查表",
-      "item": "- [ ] 常用指型資料經過驗證 — *尚無指型資料庫*"
+      "item": "- [ ] 常用指型資料經過驗證 — *尚無指型資料庫*",
+      "review": {
+        "id": 90,
+        "status": "implemented_current",
+        "reason": "已有常用／CAGED／延伸／slash指型與必要音、低音、琴格等檢查；未知和弦的單根音fallback明示不完整，不能宣稱有完整按法。人體工學難度仍是估計。",
+        "evidence": [
+          "guitarscribe/backend/app/services/voicings.py",
+          "guitarscribe/backend/app/services/slash_voicings.py",
+          "guitarscribe/backend/tests/test_extended_voicings.py",
+          "guitarscribe/backend/tests/test_slash_voicings.py"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 1151,
       "section": "追加文件整合檢查表",
-      "item": "- [ ] 動態候選經過可演奏性檢查 — *尚未實作*"
+      "item": "- [ ] 動態候選經過可演奏性檢查 — *尚未實作*",
+      "review": {
+        "id": 91,
+        "status": "implemented_current",
+        "reason": "已有常用／CAGED／延伸／slash指型與必要音、低音、琴格等檢查；未知和弦的單根音fallback明示不完整，不能宣稱有完整按法。人體工學難度仍是估計。",
+        "evidence": [
+          "guitarscribe/backend/app/services/voicings.py",
+          "guitarscribe/backend/app/services/slash_voicings.py",
+          "guitarscribe/backend/tests/test_extended_voicings.py",
+          "guitarscribe/backend/tests/test_slash_voicings.py"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 1152,
       "section": "追加文件整合檢查表",
-      "item": "- [ ] 可選擇套用範圍 — *尚未實作*"
+      "item": "- [ ] 可選擇套用範圍 — *尚未實作*",
+      "review": {
+        "id": 92,
+        "status": "partial",
+        "reason": "單一和弦採用與全曲最佳化已有；任意指型在occurrence／section／song之間選範圍及影響預覽未完整交付，舊勾選不能代替程式。",
+        "evidence": [
+          "guitarscribe/frontend/src/App.tsx",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 1153,
       "section": "追加文件整合檢查表",
-      "item": "- [ ] 全曲最佳化考慮前後手位 — *尚未實作*"
+      "item": "- [ ] 全曲最佳化考慮前後手位 — *尚未實作*",
+      "review": {
+        "id": 93,
+        "status": "implemented_current",
+        "reason": "SongVoicingOptimizer已有全序列動態規劃，考慮共同音與手位轉換；不是逐顆貪婪最容易。",
+        "evidence": [
+          "guitarscribe/backend/app/services/voicing_optimizer.py",
+          "guitarscribe/backend/tests/test_voicing_optimizer.py"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 1154,
       "section": "追加文件整合檢查表",
-      "item": "- [ ] 轉調後會重新計算 voicing — *尚未實作*"
+      "item": "- [ ] 轉調後會重新計算 voicing — *尚未實作*",
+      "review": {
+        "id": 94,
+        "status": "implemented_current",
+        "reason": "Source／Target／Shape／Sounding、Capo與base_fret、slash移調、voicing ID及重新計算均有現行模型、轉調與十二音級回歸。",
+        "evidence": [
+          "guitarscribe/backend/app/services/transposition.py",
+          "guitarscribe/backend/app/models/score.py",
+          "guitarscribe/backend/tests/test_transposition.py"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 1158,
       "section": "追加文件整合檢查表",
-      "item": "- [ ] 匯出格式保持一致 — JSON、ChordPro、LRC、MIDI、MusicXML 已可輸出；PDF 匯出與跨格式視覺校對仍待完成。"
+      "item": "- [ ] 匯出格式保持一致 — JSON、ChordPro、LRC、MIDI、MusicXML 已可輸出；PDF 匯出與跨格式視覺校對仍待完成。",
+      "review": {
+        "id": 95,
+        "status": "partial_out_of_scope",
+        "reason": "現用歌詞／和弦／時間播放及既有匯出有測試；旋律已停止，PDF及全格式視覺等價未完成，使用者已選原介面討論、不需新增匯出。",
+        "evidence": [
+          "guitarscribe/docs/Key_Notes_Release_2026-11-06.md",
+          "guitarscribe/docs/Google_Cloud_Personal_2026-11-20.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 1234,
       "section": "第二階段：播放時鐘與原曲同步",
-      "item": "- [ ] **TransportController / master clock abstraction**"
+      "item": "- [ ] **TransportController / master clock abstraction**",
+      "review": {
+        "id": 96,
+        "status": "implemented_current",
+        "reason": "原曲媒體時鐘與合成事件排程分離，播放manifest、移調／按法失效、停止與loop清理已有回歸；不以是否命名TransportController判斷功能。",
+        "evidence": [
+          "guitarscribe/frontend/src/transportClock.ts",
+          "guitarscribe/frontend/src/App.tsx",
+          "guitarscribe/docs/Key_Playback_Fix_2026-11-06.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 1264,
       "section": "後續實驗與明確排除",
-      "item": "- [ ] **歌詞自動對時**：已提供依小節／拍點的結構輔助 fallback；UI 會顯示 Suggested 與各行 confidence，不宣稱為語音辨識或 forced alignment；仍待評估 vocal/ASR timing。"
+      "item": "- [ ] **歌詞自動對時**：已提供依小節／拍點的結構輔助 fallback；UI 會顯示 Suggested 與各行 confidence，不宣稱為語音辨識或 forced alignment；仍待評估 vocal/ASR timing。",
+      "review": {
+        "id": 97,
+        "status": "not_in_current_scope",
+        "reason": "ASR／forced alignment、逐字karaoke、麥克風追譜／評分仍未做或停用；保留人工逐行流程，不啟用外部音訊服務。",
+        "evidence": [
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md",
+          "guitarscribe/docs/Listen_And_Mark_Lyrics_2026-11-07.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 1265,
       "section": "後續實驗與明確排除",
-      "item": "- [ ] **歌詞辨識初稿**：feature flag `FEATURE_LYRICS_TRANSCRIPTION=false`；保留 raw result、不可視為確定歌詞。"
+      "item": "- [ ] **歌詞辨識初稿**：feature flag `FEATURE_LYRICS_TRANSCRIPTION=false`；保留 raw result、不可視為確定歌詞。",
+      "review": {
+        "id": 98,
+        "status": "not_in_current_scope",
+        "reason": "ASR／forced alignment、逐字karaoke、麥克風追譜／評分仍未做或停用；保留人工逐行流程，不啟用外部音訊服務。",
+        "evidence": [
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md",
+          "guitarscribe/docs/Listen_And_Mark_Lyrics_2026-11-07.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 1266,
       "section": "後續實驗與明確排除",
-      "item": "- [ ] **逐字 karaoke timing**：不阻塞逐行 MVP。"
+      "item": "- [ ] **逐字 karaoke timing**：不阻塞逐行 MVP。",
+      "review": {
+        "id": 99,
+        "status": "not_in_current_scope",
+        "reason": "ASR／forced alignment、逐字karaoke、麥克風追譜／評分仍未做或停用；保留人工逐行流程，不啟用外部音訊服務。",
+        "evidence": [
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md",
+          "guitarscribe/docs/Listen_And_Mark_Lyrics_2026-11-07.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/Roadmap_status.md",
       "line": 1267,
       "section": "後續實驗與明確排除",
-      "item": "- [ ] **麥克風追譜與演奏評分**：獨立專案階段，不納入目前 MVP。"
+      "item": "- [ ] **麥克風追譜與演奏評分**：獨立專案階段，不納入目前 MVP。",
+      "review": {
+        "id": 100,
+        "status": "not_in_current_scope",
+        "reason": "ASR／forced alignment、逐字karaoke、麥克風追譜／評分仍未做或停用；保留人工逐行流程，不啟用外部音訊服務。",
+        "evidence": [
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md",
+          "guitarscribe/docs/Listen_And_Mark_Lyrics_2026-11-07.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/Human_Assisted_Transcription_Plan_2026-09-30.md",
       "line": 46,
       "section": "第一優先：可獨立完成修譜的編輯流程（QR4＋QR5；M3／M4 資產）",
-      "item": "- [ ] 音符選取與小節／片段聚焦，不再把整首密集音符擠在同一屏。"
+      "item": "- [ ] 音符選取與小節／片段聚焦，不再把整首密集音符擠在同一屏。",
+      "review": {
+        "id": 101,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/Human_Assisted_Transcription_Plan_2026-09-30.md",
       "line": 47,
       "section": "第一優先：可獨立完成修譜的編輯流程（QR4＋QR5；M3／M4 資產）",
-      "item": "- [ ] 修改音高／八度、起點、終點／拍長；新增漏音、刪除誤音、切分／合併同音。"
+      "item": "- [ ] 修改音高／八度、起點、終點／拍長；新增漏音、刪除誤音、切分／合併同音。",
+      "review": {
+        "id": 102,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/Human_Assisted_Transcription_Plan_2026-09-30.md",
       "line": 48,
       "section": "第一優先：可獨立完成修譜的編輯流程（QR4＋QR5；M3／M4 資產）",
-      "item": "- [ ] 沒有可用候選時也能新增或替換一段，不依賴失敗的舊音符初稿；不要為了顯得完整而虛構音符。"
+      "item": "- [ ] 沒有可用候選時也能新增或替換一段，不依賴失敗的舊音符初稿；不要為了顯得完整而虛構音符。",
+      "review": {
+        "id": 103,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/Human_Assisted_Transcription_Plan_2026-09-30.md",
       "line": 49,
       "section": "第一優先：可獨立完成修譜的編輯流程（QR4＋QR5；M3／M4 資產）",
-      "item": "- [ ] 空白／休止與「尚未辨識」分清楚，使用者可確認該段沒有主旋律。"
+      "item": "- [ ] 空白／休止與「尚未辨識」分清楚，使用者可確認該段沒有主旋律。",
+      "review": {
+        "id": 104,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/Human_Assisted_Transcription_Plan_2026-09-30.md",
       "line": 50,
       "section": "第一優先：可獨立完成修譜的編輯流程（QR4＋QR5；M3／M4 資產）",
-      "item": "- [ ] 原曲 A–B loop，原始輪廓與修訂譜面試聽可切換，明確標明目前聽哪一版。"
+      "item": "- [ ] 原曲 A–B loop，原始輪廓與修訂譜面試聽可切換，明確標明目前聽哪一版。",
+      "review": {
+        "id": 105,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/Human_Assisted_Transcription_Plan_2026-09-30.md",
       "line": 51,
       "section": "第一優先：可獨立完成修譜的編輯流程（QR4＋QR5；M3／M4 資產）",
-      "item": "- [ ] 修改納入 Undo／Redo，標記人工來源；不能因 `edited=true` 就把模型 confidence 改成 1。"
+      "item": "- [ ] 修改納入 Undo／Redo，標記人工來源；不能因 `edited=true` 就把模型 confidence 改成 1。",
+      "review": {
+        "id": 106,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/Human_Assisted_Transcription_Plan_2026-09-30.md",
       "line": 52,
       "section": "第一優先：可獨立完成修譜的編輯流程（QR4＋QR5；M3／M4 資產）",
-      "item": "- [ ] 保存／重新載入與來源 job 的對應；保存入口不依賴必須先選一顆和弦。"
+      "item": "- [ ] 保存／重新載入與來源 job 的對應；保存入口不依賴必須先選一顆和弦。",
+      "review": {
+        "id": 107,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/Human_Assisted_Transcription_Plan_2026-09-30.md",
       "line": 53,
       "section": "第一優先：可獨立完成修譜的編輯流程（QR4＋QR5；M3／M4 資產）",
-      "item": "- [ ] 修訂後的 Play score、MIDI、MusicXML、Tab 使用同一組修訂音符；重新計算受影響指板配置，不保留舊音高的弦／格。"
+      "item": "- [ ] 修訂後的 Play score、MIDI、MusicXML、Tab 使用同一組修訂音符；重新計算受影響指板配置，不保留舊音高的弦／格。",
+      "review": {
+        "id": 108,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/Human_Assisted_Transcription_Plan_2026-09-30.md",
       "line": 54,
       "section": "第一優先：可獨立完成修譜的編輯流程（QR4＋QR5；M3／M4 資產）",
-      "item": "- [ ] 在時間非法、越界、重疊或吉他不可彈時提示處理選項，不悄悄刪音或改成另一個音。"
+      "item": "- [ ] 在時間非法、越界、重疊或吉他不可彈時提示處理選項，不悄悄刪音或改成另一個音。",
+      "review": {
+        "id": 109,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/Human_Assisted_Transcription_Plan_2026-09-30.md",
       "line": 60,
       "section": "第二優先：把修正變成可追溯參考（QR0＋QR5）",
-      "item": "- [ ] 編輯紀錄包含：來源指紋與 job、原分析版本、父 revision、事件 ID 或時間範圍、操作、before/after、原曲時間、顯示 Key／Capo 與使用者意圖。"
+      "item": "- [ ] 編輯紀錄包含：來源指紋與 job、原分析版本、父 revision、事件 ID 或時間範圍、操作、before/after、原曲時間、顯示 Key／Capo 與使用者意圖。",
+      "review": {
+        "id": 110,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/Human_Assisted_Transcription_Plan_2026-09-30.md",
       "line": 61,
       "section": "第二優先：把修正變成可追溯參考（QR0＋QR5）",
-      "item": "- [ ] 刪除、切分與合併也需記錄；不能只保存目前剩餘事件的 `edited` 旗標。"
+      "item": "- [ ] 刪除、切分與合併也需記錄；不能只保存目前剩餘事件的 `edited` 旗標。",
+      "review": {
+        "id": 111,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/Human_Assisted_Transcription_Plan_2026-09-30.md",
       "line": 62,
       "section": "第二優先：把修正變成可追溯參考（QR0＋QR5）",
-      "item": "- [ ] 意圖區分「修正辨識」「編曲／簡化」「未分類」；未分類預設不加入原曲正確答案集合。"
+      "item": "- [ ] 意圖區分「修正辨識」「編曲／簡化」「未分類」；未分類預設不加入原曲正確答案集合。",
+      "review": {
+        "id": 112,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/Human_Assisted_Transcription_Plan_2026-09-30.md",
       "line": 63,
       "section": "第二優先：把修正變成可追溯參考（QR0＋QR5）",
-      "item": "- [ ] 另外確認某段為可用參考，並可撤銷確認／解除鎖定；編輯過不等於人工已完整審核。"
+      "item": "- [ ] 另外確認某段為可用參考，並可撤銷確認／解除鎖定；編輯過不等於人工已完整審核。",
+      "review": {
+        "id": 113,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/Human_Assisted_Transcription_Plan_2026-09-30.md",
       "line": 64,
       "section": "第二優先：把修正變成可追溯參考（QR0＋QR5）",
-      "item": "- [ ] 比較分析初稿與核准參考，找出音高／八度／起音／拍長／和弦／小節位置的錯誤類型。"
+      "item": "- [ ] 比較分析初稿與核准參考，找出音高／八度／起音／拍長／和弦／小節位置的錯誤類型。",
+      "review": {
+        "id": 114,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/Human_Assisted_Transcription_Plan_2026-09-30.md",
       "line": 65,
       "section": "第二優先：把修正變成可追溯參考（QR0＋QR5）",
-      "item": "- [ ] 先限同一首歌／同一來源範圍內使用；不宣稱保存修正就會自動訓練模型，不自動上傳或跨歌曲套用。"
+      "item": "- [ ] 先限同一首歌／同一來源範圍內使用；不宣稱保存修正就會自動訓練模型，不自動上傳或跨歌曲套用。",
+      "review": {
+        "id": 115,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/Human_Assisted_Transcription_Plan_2026-09-30.md",
       "line": 71,
       "section": "第三優先：有人工約束的局部重新分析（QR2／QR3／QR4）",
-      "item": "- [ ] 選擇範圍及要重算的層：拍點、和弦、旋律或來源路由；使用足夠前後文，但僅提出目標範圍內的修改。"
+      "item": "- [ ] 選擇範圍及要重算的層：拍點、和弦、旋律或來源路由；使用足夠前後文，但僅提出目標範圍內的修改。",
+      "review": {
+        "id": 116,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/Human_Assisted_Transcription_Plan_2026-09-30.md",
       "line": 72,
       "section": "第三優先：有人工約束的局部重新分析（QR2／QR3／QR4）",
-      "item": "- [ ] 可引用已確認的音符、和弦、小節起點、來源類型及明確設定的調性作參考／約束。"
+      "item": "- [ ] 可引用已確認的音符、和弦、小節起點、來源類型及明確設定的調性作參考／約束。",
+      "review": {
+        "id": 117,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/Human_Assisted_Transcription_Plan_2026-09-30.md",
       "line": 73,
       "section": "第三優先：有人工約束的局部重新分析（QR2／QR3／QR4）",
-      "item": "- [ ] 候選與人工鎖定衝突時列出差異，不為了滿足模型或樂理規則偷偷改鎖定內容。"
+      "item": "- [ ] 候選與人工鎖定衝突時列出差異，不為了滿足模型或樂理規則偷偷改鎖定內容。",
+      "review": {
+        "id": 118,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/Human_Assisted_Transcription_Plan_2026-09-30.md",
       "line": 74,
       "section": "第三優先：有人工約束的局部重新分析（QR2／QR3／QR4）",
-      "item": "- [ ] 重分析結果存新分支，支援前後試聽、逐項接受／拒絕及復原；失敗保留原工作版本。"
+      "item": "- [ ] 重分析結果存新分支，支援前後試聽、逐項接受／拒絕及復原；失敗保留原工作版本。",
+      "review": {
+        "id": 119,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/Human_Assisted_Transcription_Plan_2026-09-30.md",
       "line": 75,
       "section": "第三優先：有人工約束的局部重新分析（QR2／QR3／QR4）",
-      "item": "- [ ] 固定使用的模型／設定／參考 revision，避免過期回應覆寫新編輯；保留快取與來源證據。"
+      "item": "- [ ] 固定使用的模型／設定／參考 revision，避免過期回應覆寫新編輯；保留快取與來源證據。",
+      "review": {
+        "id": 120,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/issues/candidate-editor.md",
       "line": 11,
       "section": "驗收",
-      "item": "- [ ] 顯示候選來源、參數、區段與未驗收狀態。"
+      "item": "- [ ] 顯示候選來源、參數、區段與未驗收狀態。",
+      "review": {
+        "id": 121,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/issues/candidate-editor.md",
       "line": 12,
       "section": "驗收",
-      "item": "- [ ] 接受候選為新分支，不覆蓋人工修訂；可取消、Undo、重載。"
+      "item": "- [ ] 接受候選為新分支，不覆蓋人工修訂；可取消、Undo、重載。",
+      "review": {
+        "id": 122,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/issues/candidate-editor.md",
       "line": 13,
       "section": "驗收",
-      "item": "- [ ] 修譜、播放、匯出使用同一份確認後資料。"
+      "item": "- [ ] 修譜、播放、匯出使用同一份確認後資料。",
+      "review": {
+        "id": 123,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/issues/candidate-editor.md",
       "line": 14,
       "section": "驗收",
-      "item": "- [ ] G 的短音／休止保持；可讀譜簡化不能靜默改變播放旋律。"
+      "item": "- [ ] G 的短音／休止保持；可讀譜簡化不能靜默改變播放旋律。",
+      "review": {
+        "id": 124,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/issues/candidate-editor.md",
       "line": 15,
       "section": "驗收",
-      "item": "- [ ] 完成一次使用者的選段改音與保存回放測試。"
+      "item": "- [ ] 完成一次使用者的選段改音與保存回放測試。",
+      "review": {
+        "id": 125,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/issues/instrumental-melody.md",
       "line": 15,
       "section": "驗收",
-      "item": "- [ ] 使用者能辨認候選跟隨原伴奏中的主旋律；失敗也必須記錄。"
+      "item": "- [ ] 使用者能辨認候選跟隨原伴奏中的主旋律；失敗也必須記錄。",
+      "review": {
+        "id": 126,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/issues/instrumental-melody.md",
       "line": 16,
       "section": "驗收",
-      "item": "- [ ] 以其他器樂段落驗證，不將單段成功視為全曲通過。"
+      "item": "- [ ] 以其他器樂段落驗證，不將單段成功視為全曲通過。",
+      "review": {
+        "id": 127,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/issues/instrumental-melody.md",
       "line": 17,
       "section": "驗收",
-      "item": "- [ ] 採用前完成依賴／授權檢查，正式 worker 與預設分析不被試驗污染。"
+      "item": "- [ ] 採用前完成依賴／授權檢查，正式 worker 與預設分析不被試驗污染。",
+      "review": {
+        "id": 128,
+        "status": "frozen",
+        "reason": "屬旋律轉錄／候選／人工旋律分支；部分既有編輯與保存已實作，整體產品方向已明確停止並隱藏。保留資料與測試，不為清掉checkbox重新啟動。",
+        "evidence": [
+          "README.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/issues/quality-gates.md",
       "line": 14,
       "section": "驗收／節奏",
-      "item": "- [ ] 每個迭代固定一個品質層、可重現基準與停止條件。"
+      "item": "- [ ] 每個迭代固定一個品質層、可重現基準與停止條件。",
+      "review": {
+        "id": 129,
+        "status": "ongoing_process",
+        "reason": "是每輪來源、品質分層及證據追溯的持續規則，不是做一次就永遠完成的功能。不得把工程綠燈當音樂真值。",
+        "evidence": [
+          "skills/guitarscribe-autopilot/SKILL.md",
+          "guitarscribe/docs/Autonomous_Development.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/issues/quality-gates.md",
       "line": 15,
       "section": "驗收／節奏",
-      "item": "- [ ] 每個使用者回饋連回 issue／commit／候選，明確標注聽感與工程結果。"
+      "item": "- [ ] 每個使用者回饋連回 issue／commit／候選，明確標注聽感與工程結果。",
+      "review": {
+        "id": 130,
+        "status": "ongoing_process",
+        "reason": "是每輪來源、品質分層及證據追溯的持續規則，不是做一次就永遠完成的功能。不得把工程綠燈當音樂真值。",
+        "evidence": [
+          "skills/guitarscribe-autopilot/SKILL.md",
+          "guitarscribe/docs/Autonomous_Development.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/issues/quality-gates.md",
       "line": 16,
       "section": "驗收／節奏",
-      "item": "- [ ] 逐步擴大代表性歌曲／人聲與器樂片段，不以單曲宣布 release gate 通過。"
+      "item": "- [ ] 逐步擴大代表性歌曲／人聲與器樂片段，不以單曲宣布 release gate 通過。",
+      "review": {
+        "id": 131,
+        "status": "awaiting_independent_reference",
+        "reason": "已有固定跨來源與公開參考實驗，但缺代表目標華語流行來源的獨立標註與特定人工聽感；不由其他模型輸出補成真值，不重問已接受片段。",
+        "evidence": [
+          "guitarscribe/docs/MIREX_Mixed_Baseline_Result_2026-11-06.md",
+          "guitarscribe/docs/Remaining_Stories_2026-11-21.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/issues/quality-gates.md",
       "line": 17,
       "section": "驗收／節奏",
-      "item": "- [ ] 來源錯誤、分音錯誤、拍點錯誤、播放錯誤分開判斷。"
+      "item": "- [ ] 來源錯誤、分音錯誤、拍點錯誤、播放錯誤分開判斷。",
+      "review": {
+        "id": 132,
+        "status": "ongoing_process",
+        "reason": "是每輪來源、品質分層及證據追溯的持續規則，不是做一次就永遠完成的功能。不得把工程綠燈當音樂真值。",
+        "evidence": [
+          "skills/guitarscribe-autopilot/SKILL.md",
+          "guitarscribe/docs/Autonomous_Development.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/issues/quality-gates.md",
       "line": 18,
       "section": "驗收／節奏",
-      "item": "- [ ] 正式出貨需工程、人工聽感與產品操作三類證據。"
+      "item": "- [ ] 正式出貨需工程、人工聽感與產品操作三類證據。",
+      "review": {
+        "id": 133,
+        "status": "ongoing_process",
+        "reason": "是每輪來源、品質分層及證據追溯的持續規則，不是做一次就永遠完成的功能。不得把工程綠燈當音樂真值。",
+        "evidence": [
+          "skills/guitarscribe-autopilot/SKILL.md",
+          "guitarscribe/docs/Autonomous_Development.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/issues/timing-alignment.md",
       "line": 11,
       "section": "驗收",
-      "item": "- [ ] 原曲、旋律、和弦對照同一分析時間與起點。"
+      "item": "- [ ] 原曲、旋律、和弦對照同一分析時間與起點。",
+      "review": {
+        "id": 134,
+        "status": "partial",
+        "reason": "來源起點、loop／seek／裁切等工程回歸已有，不能擴大為所有錄音、旋律／伴奏的音樂同步都通過；新TempoMap仍需另驗。",
+        "evidence": [
+          "guitarscribe/docs/Source_Transport_Checkpoint_2026-10-14.md",
+          "guitarscribe/docs/Guarded_Timing_Recovery_2026-11-02.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/issues/timing-alignment.md",
       "line": 12,
       "section": "驗收",
-      "item": "- [ ] Bar 30–31 前後至少連續 8 小節人工合奏驗收。"
+      "item": "- [ ] Bar 30–31 前後至少連續 8 小節人工合奏驗收。",
+      "review": {
+        "id": 135,
+        "status": "historical_awaiting_human",
+        "reason": "歷史Bar30–31合奏條款保留原範圍與證據；現階段不重問已接受片段，也不把其他click通過擴張成該合奏已通過。",
+        "evidence": [
+          "guitarscribe/docs/issues/timing-alignment.md",
+          "guitarscribe/docs/Guarded_Timing_Recovery_2026-11-02.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/issues/timing-alignment.md",
       "line": 13,
       "section": "驗收",
-      "item": "- [ ] 時間修正經共享 TempoMap，編輯、Play score、MIDI 不各用自己的格線。"
+      "item": "- [ ] 時間修正經共享 TempoMap，編輯、Play score、MIDI 不各用自己的格線。",
+      "review": {
+        "id": 136,
+        "status": "partial",
+        "reason": "有pickup、受保護拍格恢復、手動anchors與局部MusicXML回歸；全層共享版本化TempoMap、有限漂移內插及所有匯出一致性仍未完整交付。",
+        "evidence": [
+          "guitarscribe/docs/Guarded_Timing_Recovery_2026-11-02.md",
+          "guitarscribe/docs/MusicXML_Local_Timing_2026-10-05.md",
+          "guitarscribe/docs/Backlog_Review_2026-11-23.md"
+        ]
+      }
     },
     {
       "source": "guitarscribe/docs/issues/timing-alignment.md",
       "line": 14,
       "section": "驗收",
-      "item": "- [ ] 回歸跳轉／循環／裁切起點及其他已通過伴奏片段。"
+      "item": "- [ ] 回歸跳轉／循環／裁切起點及其他已通過伴奏片段。",
+      "review": {
+        "id": 137,
+        "status": "partial",
+        "reason": "來源起點、loop／seek／裁切等工程回歸已有，不能擴大為所有錄音、旋律／伴奏的音樂同步都通過；新TempoMap仍需另驗。",
+        "evidence": [
+          "guitarscribe/docs/Source_Transport_Checkpoint_2026-10-14.md",
+          "guitarscribe/docs/Guarded_Timing_Recovery_2026-11-02.md"
+        ]
+      }
     }
-  ]
+  ],
+  "reviewed_commit": "1de9ee21255a560138b250fa0ec97aff81e444fc",
+  "review_note": "Every original unchecked item is classified with evidence. These are dispositions of historical requirements, not 137 independent current stories. Release evidence is recorded in cloud-update-2026-11-23.json.",
+  "review_counts": {
+    "superseded": 3,
+    "implemented_current": 36,
+    "partial": 24,
+    "partial_out_of_scope": 4,
+    "ongoing_process": 6,
+    "not_in_current_scope": 6,
+    "frozen": 43,
+    "awaiting_independent_reference": 4,
+    "unimplemented_engineering": 3,
+    "research_deferred": 7,
+    "historical_awaiting_human": 1
+  }
 }
