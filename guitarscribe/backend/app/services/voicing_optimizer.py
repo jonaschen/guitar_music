@@ -50,8 +50,10 @@ class SongVoicingOptimizer:
         )
 
     @classmethod
-    def _optimize_segment(cls, candidate_sets: list[list[ChordVoicing]]) -> list[ChordVoicing]:
-        costs = [candidate.difficulty for candidate in candidate_sets[0]]
+    def _optimize_segment(cls, candidate_sets: list[list[ChordVoicing]], *, intrinsic_cost=None, transition_cost=None) -> list[ChordVoicing]:
+        intrinsic_cost = intrinsic_cost or (lambda candidate: candidate.difficulty)
+        transition_cost = transition_cost or cls.transition_cost
+        costs = [intrinsic_cost(candidate) for candidate in candidate_sets[0]]
         backpointers: list[list[int]] = []
         for candidates in candidate_sets[1:]:
             previous_candidates = candidate_sets[len(backpointers)]
@@ -59,11 +61,11 @@ class SongVoicingOptimizer:
             pointers: list[int] = []
             for candidate in candidates:
                 options = [
-                    cost + cls.transition_cost(previous, candidate)
+                    cost + transition_cost(previous, candidate)
                     for cost, previous in zip(costs, previous_candidates)
                 ]
                 best_previous = min(range(len(options)), key=options.__getitem__)
-                next_costs.append(options[best_previous] + candidate.difficulty)
+                next_costs.append(options[best_previous] + intrinsic_cost(candidate))
                 pointers.append(best_previous)
             costs = next_costs
             backpointers.append(pointers)

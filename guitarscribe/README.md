@@ -1,6 +1,6 @@
 # GuitarScribe
 
-朋友只需維護者提供的 HTTPS 網址與邀請密碼，請先看 [根目錄的中文入門指南](../README.md)。下列命令是維護者本機測試用，並非朋友使用前提：
+現用個人雲端與操作入口見 [中文入門指南](../README.md)；新 session 先讀 [維護交接](docs/MAINTENANCE_HANDOFF.md)。下列 Docker 命令是本機測試配置，不是現用雲端的發布或資料還原方式：
 
 ```bash
 docker compose -f compose.trial.yml up -d --build

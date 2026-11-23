@@ -1119,3 +1119,11 @@ body:has(.chord-product) { background: #12161c; }
  .notation-measure { padding:8px; }
  .song-sheet .tie-mark { display:inline; }
 }
+
+.capo-advice { margin: .8rem 0; padding: .8rem; border: 1px solid var(--border, #cbd5e1); border-radius: .6rem; text-align: left; overflow-wrap: anywhere; }
+.capo-advice summary { cursor: pointer; font-weight: 600; }
+.capo-advice p { font-size: .88rem; line-height: 1.6; }
+.capo-advice-fields, .capo-advice-options { display: flex; flex-wrap: wrap; gap: .8rem; }
+.capo-advice-fields label { display: grid; gap: .3rem; max-width: 100%; }
+.capo-advice-fields input { width: 7rem; max-width: 100%; }
+.capo-advice-options section { flex: 1 1 13rem; min-width: 0; padding: .7rem; border: 1px solid var(--border, #cbd5e1); border-radius: .4rem; }

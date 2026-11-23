@@ -1061,10 +1061,15 @@ async def get_chord_voicings(symbol: str, capo: int = 0, max_fret: int = 15) -> 
 class CapoRecommendationRequest(BaseModel):
     score: SongScore
     max_capo: int = Field(default=8, ge=0, le=12)
+    preferred_fret: int | None = Field(default=None, ge=0, le=24)
 
 @app.post("/scores/capo-recommendations", response_model=list[CapoRecommendation])
 async def capo_recommendations(request: CapoRecommendationRequest) -> list[CapoRecommendation]:
-    return CapoAdvisor().recommend(request.score, request.max_capo)
+    from .analyzers.worker import run_blocking_analysis
+    try:
+        return await run_blocking_analysis(CapoAdvisor().recommend, request.score, request.max_capo, request.preferred_fret)
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
 
 @app.post("/scores/optimize-voicings", response_model=SongScore)
 async def optimize_voicings(score: SongScore) -> SongScore:

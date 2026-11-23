@@ -17,6 +17,7 @@ import type { AccidentalPreference, AnalysisJob, PlaybackManifest, PlaybackTrack
 import {AnalysisProgress} from './AnalysisProgress';
 import { ChordDiagram } from "./ChordDiagram";
 import { ChordFingerings } from "./ChordFingerings";
+import {CapoAdvice} from './CapoAdvice';
 import { createMediaTransportClock, createReviewTransportClock } from "./transportClock";
 import { DiagnosticTimeline } from "./DiagnosticTimeline";
 import { guitarEnvelope } from "./guitarEnvelope";
@@ -363,7 +364,7 @@ export function App() {
   const [accidentalPreference, setAccidentalPreference] = useState<AccidentalPreference>("auto");
   const [capo, setCapo] = useState(0);
   const [isRetuningScore, setIsRetuningScore] = useState(false);
-  const [capoRecommendations, setCapoRecommendations] = useState<Array<{ capo: number; shape_key: string; difficulty: number; open_chords: number; barre_chords: number; covered_chords: number }>>([]);
+  const [capoRecommendations, setCapoRecommendations] = useState<Array<{ capo: number; shape_key: string; difficulty: number; open_chords: number; barre_chords: number; covered_chords: number; total_chords:number; voicing_plan:Record<string,string> }>>([]);
   const [selectedChordId, setSelectedChordId] = useState<string | null>(null);
   const [chordEditScope, setChordEditScope] = useState<ChordEditScope | null>(null);
   const [compactEditOpen, setCompactEditOpen] = useState(false);
@@ -1001,13 +1002,20 @@ export function App() {
     }
   }
 
-  async function retuneScore(nextKey: string, nextCapo = capo, nextPreference = accidentalPreference) {
+  async function retuneScore(nextKey: string, nextCapo = capo, nextPreference = accidentalPreference, voicingPlan?:Record<string,string>) {
     if (!score) return;
     setIsRetuningScore(true);
     setError("");
     try {
       const nextSemitones = semitoneDelta(score.key_context.source.key, nextKey);
       const updated = await postTranspose(score, nextSemitones, nextPreference, nextCapo);
+      if(voicingPlan){
+        for(const [id,voicing] of Object.entries(voicingPlan)){
+          const chord=updated.chords.find(c=>c.id===id);
+          if(!chord?.available_voicings?.some(v=>v.id===voicing&&v.capo===nextCapo&&!v.tags.includes('incomplete')))throw Error('建議按法已無法核對，原譜保留；請重新比較。');
+          chord.voicing_id=voicing;
+        }
+      }
       recordScoreChange({ ...updated, guitar: { ...updated.guitar, capo: nextCapo } });
     } catch (transposeError) {
       if (!isCurrentWork()) return;
@@ -2313,7 +2321,7 @@ export function App() {
                   onStop={() => { audioRef.current?.pause(); stopSynth(false); }} onTools={openPerformanceControls}
                   onPlay={(mode, start, end, loop, from) => void toggleSynthPlayback({start, end, loop, from, reviewMode: mode})}
                   editPanel={compactChordEditor} speed={playbackRate} onSpeed={setSpeed}
-                  fingeringGuide={!MELODY_ENABLED?<ChordFingerings score={score} apiBase={API_BASE}/>:null}
+                  fingeringGuide={!MELODY_ENABLED?<><ChordFingerings score={score} apiBase={API_BASE}/><CapoAdvice score={score} apiBase={API_BASE} disabled={isRetuningScore} onChoose={(value,plan)=>void retuneScore(score.key_context.target.key,value,undefined,plan)}/></>:null}
                   playbackControls={!MELODY_ENABLED?<AuditionControls score={score} content={auditionContent} pulse={auditionPulse} onContent={v=>changeAudition(v,auditionPulse)} onPulse={v=>changeAudition(auditionContent,v)} sourceVolume={sourceVolume} guitarVolume={synthVolumes.guitar} onSourceVolume={updateSourceVolume} onGuitarVolume={updateGuitarVolume}/>:null}
                   keyControls={!MELODY_ENABLED ? <><small className="key-estimate">原曲推估：{score.key_context.source.key}{score.key_context.source.mode==="minor"?"小調":"大調"}（和弦估計，未確認）</small><label title="只移調伴奏，不更正原曲調性推估">伴奏移調（{score.key_context.target.mode==="minor"?"小調":"大調"}） <select aria-label="歌曲調性" value={score.key_context.target.key} disabled={isRetuningScore} onChange={e=>void retuneScore(e.target.value)}>{PITCH_TO_FLAT_KEY.map(key=><option key={key} value={key}>{key}</option>)}{!PITCH_TO_FLAT_KEY.includes(score.key_context.target.key)?<option value={score.key_context.target.key}>{score.key_context.target.key}</option>:null}</select></label><label>Capo <select aria-label="歌曲 Capo" value={capo} disabled={isRetuningScore} onChange={e=>void retuneScore(score.key_context.target.key,Number(e.target.value))}>{Array.from({length:9},(_,n)=><option key={n} value={n}>{n}</option>)}</select></label></>:null}
                   secondaryActions={!MELODY_ENABLED ? <><PerformanceDraftControl score={score} apiBase={API_BASE} onCommit={(base,next)=>{if(scoreRef.current!==base)return false;audioRef.current?.pause();stopSynth(false);return recordScoreChange(next);}}/><DownbeatRhythmControl score={score} onCommit={(base,next)=>{if(scoreRef.current!==base)return false;audioRef.current?.pause();stopSynth(false);setChordPerformance('original');return recordScoreChange(next);}}/><button type="button" disabled={!undoHistory.length} onClick={undoScoreChange}>復原</button><button type="button" disabled={!redoHistory.length} onClick={redoScoreChange}>重做</button></>:null}
@@ -2391,7 +2399,7 @@ export function App() {
                 </div>
 
                 <div className="capo-advisor"><button type="button" className="ghost-button" onClick={() => void findEasierCapo()}>Find easier capo</button>
-                  <button type="button" className="ghost-button" onClick={() => void optimizeSongVoicings()}>Optimize song voicings</button>{capoRecommendations.length > 0 ? <div className="capo-options">{capoRecommendations.slice(0, 3).map((option) => <button key={option.capo} type="button" className="voicing-card" onClick={() => void retuneScore(score.key_context.target.key, option.capo)}><strong>Capo {option.capo} · {option.shape_key} shape</strong><span>Difficulty {option.difficulty}/5 · {option.open_chords} open · {option.barre_chords} barre</span></button>)}</div> : null}</div>
+                  <button type="button" className="ghost-button" onClick={() => void optimizeSongVoicings()}>Optimize song voicings</button>{capoRecommendations.length > 0 ? <div className="capo-options">{capoRecommendations.slice(0, 3).map((option) => <button key={option.capo} type="button" className="voicing-card" disabled={option.covered_chords<option.total_chords} onClick={() => void retuneScore(score.key_context.target.key, option.capo, undefined, option.voicing_plan)}><strong>Capo {option.capo} · {option.shape_key} shape</strong><span>Difficulty {option.difficulty}/5 · {option.open_chords} open · {option.barre_chords} barre · 完整按法 {option.covered_chords}/{option.total_chords}</span></button>)}</div> : null}</div>
 
                 <div className="toolbar secondary-toolbar">
                   <label className="field compact-field">

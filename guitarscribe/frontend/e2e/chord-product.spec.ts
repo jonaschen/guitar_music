@@ -1049,6 +1049,28 @@ test('failed YouTube import does not offer retained-upload retry',async({page})=
   await expect(page.getByRole('button',{name:'用保留音檔重新分析',exact:true})).toHaveCount(0);
 });
 
+test('capo advice explains coverage and movement, preserves the score, and rejects stale preferences',async({page})=>{
+ await setup(page);let writes=0,requests:any[]=[];let release!:()=>void;
+ await page.route('**/revisions',r=>{writes++;return r.fulfill({json:{revision_id:'unexpected'}});});
+ await page.route('**/scores/capo-recommendations',async r=>{
+  requests.push(r.request().postDataJSON());
+  if(requests.length===2)await new Promise<void>(resolve=>{release=resolve;});
+  return r.fulfill({json:[{capo:0,shape_key:'C',difficulty:1,open_chords:1,barre_chords:0,covered_chords:1,total_chords:1,transition_cost:.2,position_penalty:0,ranking_score:1.2,voicing_plan:{c:'open-c'}},
+   {capo:2,shape_key:'Bb',difficulty:5,open_chords:0,barre_chords:0,covered_chords:0,total_chords:1,transition_cost:0,position_penalty:0,ranking_score:5,voicing_plan:{}}]}).catch(()=>{});
+ });
+ await page.getByText('比較較容易的 Capo 按法',{exact:true}).click();
+ await page.getByLabel('建議最高 Capo').fill('2');await page.getByLabel('偏好把位').fill('4');
+ await page.getByRole('button',{name:'比較按法方案',exact:true}).click();
+ await expect(page.getByLabel('Capo 方案 0')).toContainText('完整按法 1 / 1');await expect(page.getByLabel('Capo 方案 0')).toContainText('換把成本 0.2');
+ await expect(page.getByRole('button',{name:'採用 Capo 2',exact:true})).toBeDisabled();
+ expect(requests[0].preferred_fret).toBe(4);expect(requests[0].max_capo).toBe(2);expect(writes).toBe(0);
+ await expect(page.getByLabel('歌曲 Capo')).toHaveValue('0');
+ await page.getByRole('button',{name:'比較按法方案',exact:true}).click();await expect.poll(()=>requests.length).toBe(2);
+ await page.getByLabel('偏好把位').fill('7');release();await page.waitForTimeout(200);
+ await expect(page.getByLabel('Capo 方案 0')).toHaveCount(0);expect(writes).toBe(0);
+ for(const width of [390,1440]){await page.setViewportSize({width,height:900});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
+});
+
 test('analysis displays elapsed stage time rather than an invented completion percentage',async({page})=>{
   await setup(page);
   const now=Date.now();let stage='chord_analysis';
