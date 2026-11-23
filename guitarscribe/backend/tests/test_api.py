@@ -134,8 +134,8 @@ class StubUploadFile:
         self.filename = filename
         self._buffer = BytesIO(content)
 
-    async def read(self) -> bytes:
-        return self._buffer.getvalue()
+    async def read(self, size=-1) -> bytes:
+        return self._buffer.read(size)
 
 
 def make_score() -> SongScore:
@@ -634,3 +634,27 @@ async def test_listening_control_does_not_require_an_analysis_job():
     # G continues across bars 3/4; playback can share a source span without
     # removing the new bar's attack or resetting its beat numbering.
     assert len([e for e in three.json()["events"] if e["track"] == "guitar"]) == 20
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('legacy', [True, False])
+async def test_oversized_upload_is_read_with_bound_and_leaves_no_tempfile(tmp_path, monkeypatch, legacy):
+    import tempfile
+    from app.api import create_analysis_job
+    monkeypatch.setenv('GUITARSCRIBE_MAX_UPLOAD_BYTES', '4')
+    monkeypatch.setattr(tempfile, 'tempdir', str(tmp_path))
+    class Oversized:
+        filename = 'large.wav'
+        requested = []
+        async def read(self, size=-1):
+            self.requested.append(size)
+            return b'x' * 5
+    upload = Oversized()
+    if legacy:
+        with pytest.raises(Exception) as error:
+            await analyze_audio(audio_file=upload, rights_confirmed=True, pipeline=None)
+    else:
+        with pytest.raises(Exception) as error:
+            await create_analysis_job(audio_file=upload, rights_confirmed=True, job_service=None)
+    assert getattr(error.value, 'status_code', None) == 413
+    assert upload.requested == [5]  # Never read the entire untrusted upload into RAM.
+    assert list(tmp_path.glob('guitarscribe_upload_*')) == []

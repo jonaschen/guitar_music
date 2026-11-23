@@ -81,6 +81,8 @@ jobs:
         env:
           GUITARSCRIBE_TEST_BROWSER: webkit
         run: npx playwright test --config playwright.learning.config.ts
+      - name: Check interrupted uploads with real job APIs in Chromium and WebKit
+        run: npx playwright test --config playwright.recovery.config.ts
       - name: Preserve browser failure evidence
         if: failure()
         uses: actions/upload-artifact@v4
@@ -89,4 +91,5 @@ jobs:
           path: |
             guitarscribe/frontend/test-results
             guitarscribe/output/webkit-test-results
+            guitarscribe/output/recovery-test-results
           retention-days: 7

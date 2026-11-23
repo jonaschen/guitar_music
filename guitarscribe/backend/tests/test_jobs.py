@@ -253,6 +253,51 @@ async def test_job_service_rejects_submissions_when_the_pending_queue_is_full(tm
     service.cancel(second.id)
     await asyncio.sleep(0)
 
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('wait_in_queue', [False, True])
+async def test_cancelling_queued_job_frees_capacity_without_starting_it(tmp_path, wait_in_queue):
+    running = WaitingPipeline()
+    service = AnalysisJobService(
+        JobStore(tmp_path / 'jobs'), lambda: running,
+        max_concurrent_jobs=1, max_queued_jobs=1,
+    )
+    first = await service.submit('first.wav', b'audio', 'off', 'full')
+    await running.started.wait()
+    second = await service.submit('second.wav', b'audio', 'off', 'full')
+    cancelled_task = service.tasks[second.id]
+    if wait_in_queue:
+        await asyncio.sleep(0)
+    try:
+        service.cancel(second.id)
+        await asyncio.gather(cancelled_task, return_exceptions=True)
+        # A cancelled waiting job must not permanently fill the queue or
+        # release the running job's slot.
+        replacement = await service.submit('replacement.wav', b'audio', 'off', 'full')
+        await asyncio.sleep(0)
+        assert service.get(replacement.id).status == JobStatus.QUEUED
+        assert service.get(first.id).status == JobStatus.RESOLVING
+        assert service.get(second.id).status == JobStatus.CANCELLED
+        assert (service.store.job_dir(second.id) / 'input.wav').read_bytes() == b'audio'
+    finally:
+        tasks = list(service.tasks.values())
+        for identifier in list(service.tasks):
+            service.cancel(identifier)
+        await asyncio.gather(*tasks, return_exceptions=True)
+
+
+@pytest.mark.asyncio
+async def test_cancel_before_first_task_step_does_not_block_future_uploads(tmp_path):
+    service = AnalysisJobService(JobStore(tmp_path / 'jobs'), StubPipeline,
+                                 max_concurrent_jobs=1, max_queued_jobs=0)
+    first = await service.submit('first.wav', b'audio', 'off', 'full')
+    task = service.tasks[first.id]
+    service.cancel(first.id)
+    await asyncio.gather(task, return_exceptions=True)
+    second = await service.submit('second.wav', b'audio', 'off', 'full')
+    await wait_for_terminal(service, second.id)
+    assert service.get(second.id).status == JobStatus.COMPLETED
+
 def test_job_store_removes_only_expired_directories(tmp_path):
     import os
     import time

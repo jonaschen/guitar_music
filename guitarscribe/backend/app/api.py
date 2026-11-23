@@ -345,8 +345,9 @@ async def create_analysis_job(
     """Queue a local upload for analysis and return immediately."""
     if not rights_confirmed:
         raise HTTPException(status_code=400, detail="Rights must be confirmed")
-    content = await audio_file.read()
-    if len(content) > Settings.from_env().max_upload_bytes:
+    limit = Settings.from_env().max_upload_bytes
+    content = await audio_file.read(limit + 1)
+    if len(content) > limit:
         raise HTTPException(status_code=413, detail="Audio upload exceeds the configured size limit")
     try:
         return await job_service.submit(
@@ -383,6 +384,20 @@ async def create_youtube_analysis_job(
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+
+@app.post('/api/v1/jobs/{job_id}/retry', response_model=AnalysisJob, status_code=202, tags=['Analysis jobs'])
+async def retry_analysis_job(job_id: str,
+    _rate_limit: None = Depends(enforce_submission_rate_limit),
+    job_service: AnalysisJobService = Depends(get_job_service)) -> AnalysisJob:
+    try:
+        return await job_service.retry(job_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail='Analysis job not found') from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except JobQueueFullError as exc:
+        raise HTTPException(status_code=503, detail=str(exc), headers={'Retry-After': '30'}) from exc
 
 
 @app.get("/api/v1/jobs/{job_id}", response_model=AnalysisJob, tags=["Analysis jobs"], summary="Read job status and result")
@@ -686,12 +701,13 @@ async def analyze_audio(
     suffix = safe_audio_suffix(audio_file.filename)
     temp_path: Path | None = None
     try:
+        limit = Settings.from_env().max_upload_bytes
+        content = await audio_file.read(limit + 1)
+        if len(content) > limit:
+            raise HTTPException(status_code=413, detail="Audio upload exceeds the configured size limit")
         with tempfile.NamedTemporaryFile(delete=False, suffix=suffix, prefix="guitarscribe_upload_") as temp_file:
-            content = await audio_file.read()
-            if len(content) > Settings.from_env().max_upload_bytes:
-                raise HTTPException(status_code=413, detail="Audio upload exceeds the configured size limit")
-            temp_file.write(content)
             temp_path = Path(temp_file.name)
+            temp_file.write(content)
 
         return await pipeline.run(
             SourceRequest(

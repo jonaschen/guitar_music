@@ -123,6 +123,8 @@ export type JobStatus =
 
 export interface AnalysisJob {
   id: string;
+  retry_of?: string | null;
+  can_retry?: boolean;
   status: JobStatus;
   progress: number;
   message: string;

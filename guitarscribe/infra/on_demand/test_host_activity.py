@@ -46,6 +46,7 @@ def test_structure_analysis_blocks_idle_and_boot_grace_is_preserved(tmp_path):
 
 def test_late_analysis_guard_covers_all_heavy_entries():
     for path in ('/backend/api/v1/jobs', '/backend/api/v1/youtube-jobs',
+                 '/backend/api/v1/jobs/song/retry',
                  '/backend/api/v1/jobs/song/song-structure/analysis', '/backend/api/v1/jobs/song/root-candidates'):
         assert host.analysis_request('POST', path)
         assert not host.analysis_request('GET', path)

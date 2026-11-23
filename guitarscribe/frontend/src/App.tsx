@@ -14,6 +14,7 @@ import { ChangeEvent, FormEvent, lazy, Suspense, useEffect, useRef, useState } f
 import { ChordEntryAudit } from "./ChordEntryAudit";
 import { ChordGridCandidate } from "./ChordGridCandidate";
 import type { AccidentalPreference, AnalysisJob, PlaybackManifest, PlaybackTrack, SongScore } from "./types";
+import {AnalysisProgress} from './AnalysisProgress';
 import { ChordDiagram } from "./ChordDiagram";
 import { ChordFingerings } from "./ChordFingerings";
 import { createMediaTransportClock, createReviewTransportClock } from "./transportClock";
@@ -292,6 +293,8 @@ export function App() {
   const bounds = songBounds(score);
   const [rhythmOptions, setRhythmOptions] = useState<SongScore["rhythm"][]>([]);
   const [analysisJob, setAnalysisJob] = useState<AnalysisJob | null>(null);
+  const [retryJob, setRetryJob] = useState<AnalysisJob | null>(null);
+  const [retryBusy, setRetryBusy] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const sourceSegmentRef = useRef(false);
   const sourceLoadAbortRef = useRef<AbortController | null>(null);
@@ -563,6 +566,7 @@ export function App() {
           setError("This analysis completed without a recoverable score. Please run it again.");
         } else if (job.status === "failed" || job.status === "cancelled") {
           setStatus("error");
+          setRetryJob(job.can_retry ? job : null);
           setError(analysisErrorMessage(job.error ?? job.message));
         }
       } catch (restoreError) {
@@ -890,6 +894,7 @@ export function App() {
       url.searchParams.delete("revision"); url.searchParams.set("job", createdJob.id);
       window.history.replaceState({}, "", url);
       setAnalysisJob(createdJob);
+      setRetryJob(null);
       window.localStorage.setItem("guitarscribe.activeJobId", createdJob.id);
     } catch (submitError) {
       pendingAnalysisBase.current = undefined;
@@ -900,6 +905,7 @@ export function App() {
   }
 
   function recoverFailedAnalysis(failed: AnalysisJob) {
+    setRetryJob(failed.can_retry ? failed : null);
     const origin = pendingAnalysisOrigin.current;
     pendingAnalysisBase.current = undefined;
     pendingAnalysisOrigin.current = null;
@@ -924,6 +930,39 @@ export function App() {
       if (source) localStorage.setItem("guitarscribe.activeJobId", source);
       else localStorage.removeItem("guitarscribe.activeJobId");
     } catch { /* The restored URL remains usable without browser storage. */ }
+  }
+
+  async function retryRetainedUpload() {
+    if (!retryJob || submitInFlight.current || analysisBusy) return;
+    if (hasUnsavedChanges && !window.confirm("目前工作譜有未保存修改。重新分析完成後將切換曲目；請先保存，或確認繼續。")) return;
+    submitInFlight.current = true;
+    setRetryBusy(true); setError("");
+    pendingAnalysisBase.current = scoreRef.current;
+    pendingAnalysisOrigin.current = score ? {score, job: analysisJob, revision: new URLSearchParams(location.search).get('revision')} : null;
+    try {
+      audioRef.current?.pause(); stopSynth(false); referenceStopRef.current();
+      workGenerationRef.current++; revisionRequestRef.current++;
+      setIsLoadingRevision(false); setRestorePreview(null);
+      const response = await fetch(`${API_BASE}/api/v1/jobs/${encodeURIComponent(retryJob.id)}/retry`, {method:'POST'});
+      if (!response.ok) {
+        const body = await response.text();
+        let detail = body;
+        try { detail = JSON.parse(body).detail ?? body; } catch { /* proxy may return plain text */ }
+        throw new Error(detail);
+      }
+      const next: AnalysisJob = await response.json();
+      const url = new URL(location.href); url.searchParams.delete('revision'); url.searchParams.set('job', next.id);
+      history.replaceState({}, '', url);
+      localStorage.setItem('guitarscribe.activeJobId', next.id);
+      setRetryJob(null);
+      // The idempotent response may already be terminal after a lost reply.
+      // Let the existing poll/restore path handle it, including source binding.
+      setAnalysisJob({...next, status:'queued'}); setStatus('queued');
+    } catch (error) {
+      pendingAnalysisBase.current = undefined; pendingAnalysisOrigin.current = null;
+      setStatus('error');
+      setError(`未能確認重新分析的狀態，可再按一次查回同一工作。${error instanceof Error ? error.message : ''}`);
+    } finally { submitInFlight.current = false; setRetryBusy(false); }
   }
 
   async function cancelCurrentJob() {
@@ -2203,16 +2242,14 @@ export function App() {
 
         {!MELODY_ENABLED && score?.song.source_type === "example" && productScreen === "song" ? <p className="example-note">範例不含原曲音檔。要聽原曲跟彈，<button type="button" onClick={()=>{setYoutubeUrl(score.song.source_url ?? "");setShowNewSong(true);}}>用這首歌曲開始分析</button>。</p> : null}
         {error ? <p className="error-banner" role="alert">{error}</p> : null}
+        {retryJob ? <section aria-label="恢復中斷的分析">
+          <p>使用保留音檔從頭分析，原有歌曲與修改不會被覆蓋。</p>
+          <button type="button" className="ghost-button" disabled={retryBusy || analysisBusy} onClick={()=>void retryRetainedUpload()}>
+            {retryBusy ? '正在確認重新分析…' : '用保留音檔重新分析'}
+          </button>
+        </section> : null}
         {analysisJob && !["completed", "failed", "cancelled"].includes(analysisJob.status) ? (
-          <section className="job-progress" aria-live="polite">
-            <div>
-              <strong>{analysisJob.message}</strong>
-              <span>{analysisJob.progress}%</span>
-            </div>
-            <progress value={analysisJob.progress} max="100">{analysisJob.progress}%</progress>
-            {analysisJob.status === "vocal_separation" ? <p className="job-stage-note">This stage may stay at 66% while Demucs is actively processing. You can leave this page open; do not submit the same song again.</p> : null}
-            <button className="ghost-button" type="button" onClick={() => void cancelCurrentJob()}>Cancel analysis</button>
-          </section>
+          <AnalysisProgress job={analysisJob} onCancel={()=>void cancelCurrentJob()}/>
         ) : null}
 
         <section className="workspace" hidden={!MELODY_ENABLED && productScreen !== "song"}>

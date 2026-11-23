@@ -2,6 +2,8 @@
 
 以下路徑相對 GuitarScribe Git 根目錄。這是定位入口，不是保證環境永遠相同；每次以目前檔案、使用者新指示與執行狀態為準。不要為一次小修改讀完所有文件。
 
+目前正式平台是個人 Google Cloud。先讀 `guitarscribe/docs/MAINTENANCE_HANDOFF.md` 與本 skill 的 `cloud-operations.md`；下方本機／ngrok段落只適用於歷史本機站，不能據此判斷現行雲端服務。
+
 ## 決策與證據
 
 | 要做的事 | 先讀 |

@@ -4,7 +4,7 @@
 
 ## 快速接手
 
-1. 找到 Git repo（目前 `/home/jonas/gemini-home/music_analysis`），讀 `guitarscribe/infra/on_demand/deployment.json`、`guitarscribe/docs/Remaining_Stories_2026-11-21.md` 與 `git status --short`。有其他 session 時協調檔案所有權，單一負責者部署。
+1. 找到 Git repo（目前 `/home/jonas/gemini-home/music_analysis`），讀 `guitarscribe/docs/MAINTENANCE_HANDOFF.md`、`guitarscribe/infra/on_demand/deployment.json` 與 `git status --short`。交接入口連到最新故事及驗證；有其他 session 時協調檔案所有權，單一負責者部署。
 2. 執行本 skill 的 `scripts/cloud_status.py --repo <repo>`。它只查指定 VM／Cloud Run／備份 manifest 清單與登入狀態，不開機、不讀歌曲、不改 gcloud 預設專案。可用 `--output <repo>/guitarscribe/output/cloud-control/status-YYYYMMDD.json` 保存證據。
 3. 確認憑證可用即可，不印 token／密碼。若 gcloud 未登入／權限不符或本機 access.json 缺失，回報無法查核的部分；不要為了巡檢重設密碼或替換服務帳戶。
 4. 判斷是正常休息、登入問題、入口故障、VM／應用故障，還是來源服務拒絕。沿下表縮小範圍，再做所需處置。單純狀態查詢不需要喚醒；功能測試／修復確實需要運行時才在現有授權內啟動。

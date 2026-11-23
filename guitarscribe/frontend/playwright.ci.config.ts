@@ -9,7 +9,7 @@ process.env.GUITARSCRIBE_API_URL=api;
 process.env.GUITARSCRIBE_TEST_PYTHON=python;
 const normal='http://127.0.0.1:4191',legacy='http://127.0.0.1:4190';
 const modern=['chord-product','root-practice','root-reuse','section-chords','structure-editor','song-structure'].map(n=>`**/${n}.spec.ts`);
-const fullstack=['structure','root-reuse','section-chords','learning-practice'].map(n=>`**/${n}-fullstack.spec.ts`);
+const fullstack=['structure','root-reuse','section-chords','learning-practice','analysis-recovery'].map(n=>`**/${n}-fullstack.spec.ts`);
 const launchOptions=process.env.GUITARSCRIBE_CHROME ? {executablePath:process.env.GUITARSCRIBE_CHROME}:{};
 const vite=(port:number,archived:boolean)=>({
  command:`npm run dev -- --host 127.0.0.1 --port ${port} --strictPort`,url:`http://127.0.0.1:${port}`,

@@ -38,6 +38,7 @@ def song_library(work):
 
 def analysis_request(method, path):
     return method == 'POST' and (path in ('/backend/api/v1/jobs', '/backend/api/v1/youtube-jobs')
+        or (path.startswith('/backend/api/v1/jobs/') and path.endswith('/retry'))
         or path.endswith('/song-structure/analysis') or path.endswith('/root-candidates'))
 
 

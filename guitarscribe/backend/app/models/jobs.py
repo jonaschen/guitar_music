@@ -34,6 +34,8 @@ ACTIVE_JOB_STATUSES = {
 
 class AnalysisJob(BaseModel):
     id: str
+    retry_of: str | None = None
+    can_retry: bool = False
     status: JobStatus = JobStatus.QUEUED
     progress: int = Field(default=0, ge=0, le=100)
     message: str = "Queued for analysis"

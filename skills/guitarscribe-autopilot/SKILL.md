@@ -11,7 +11,7 @@ description: 持續開發及維護 GuitarScribe，檢查個人 Google Cloud 狀�
 
 使用者詢問網站無法開啟、雲端狀態、備份、費用控制或改版時，先讀 [個人雲端維護](references/cloud-operations.md)。依其中的唯讀腳本取得當下證據；網站顯示休息不等於故障，狀態檢查不自動啟動 VM。實際資源與發布版本以專案 deployment.json 及雲端查詢為準，不能沿用聊天中的舊 PID、帳單或候選網址。
 
-最新工作切片先讀 `guitarscribe/docs/Remaining_Stories_2026-11-21.md`（若存在），再按接續流程核對。使用者已確認目前練習主線可用；擴充時保留原曲／低頻／人工和弦稿，雲端 work 是最新資料，不用本機舊資料覆蓋。
+新 session 先讀 `guitarscribe/docs/MAINTENANCE_HANDOFF.md`，由其中連到最新故事盤點、部署證據與未完成項，再按接續流程核對。它含本機可用測試環境、重試資料契約、schema變更下的資料比對與回退方法；不要拿舊總表未勾選數直接當待做功能數。使用者已確認目前練習主線可用；擴充時保留原曲／低頻／人工和弦稿，雲端 work 是最新資料，不用本機舊資料覆蓋。
 
 ## 接續工作
 

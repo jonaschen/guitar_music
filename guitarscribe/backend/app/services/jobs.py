@@ -10,6 +10,7 @@ from typing import Callable
 from uuid import uuid4
 
 from ..core.pipeline import AnalysisPipeline
+from ..analyzers.worker import run_blocking_analysis
 from ..models.audio import SourceRequest, SourceType
 from ..models.jobs import ACTIVE_JOB_STATUSES, AnalysisJob, JobStatus
 from ..sources.youtube import YouTubeAudioDownloader
@@ -67,6 +68,18 @@ class JobStore:
                 "CREATE TABLE IF NOT EXISTS jobs (id TEXT PRIMARY KEY, payload TEXT NOT NULL, updated_at TEXT NOT NULL)"
             )
             connection.execute("CREATE INDEX IF NOT EXISTS jobs_updated_at_idx ON jobs(updated_at)")
+            connection.execute("CREATE TABLE IF NOT EXISTS job_retries (parent_id TEXT PRIMARY KEY, child_id TEXT NOT NULL)")
+
+    def retry_for(self, job_id: str) -> str | None:
+        with self._connect() as connection:
+            row = connection.execute("SELECT child_id FROM job_retries WHERE parent_id = ?", (job_id,)).fetchone()
+        return row['child_id'] if row else None
+
+    def save_retry(self, parent_id: str, job: AnalysisJob) -> None:
+        with self._connect() as connection:
+            connection.execute("INSERT INTO job_retries(parent_id, child_id) VALUES (?, ?)", (parent_id, job.id))
+            connection.execute("INSERT INTO jobs(id, payload, updated_at) VALUES (?, ?, ?)",
+                               (job.id, job.model_dump_json(), job.updated_at))
 
     def job_dir(self, job_id: str) -> Path:
         return self.root / job_id
@@ -170,7 +183,7 @@ class AnalysisJobService:
             "analysis_job_submitted job_id=%s bytes=%s melody_mode=%s separate_vocals=%s chord_complexity=%s",
             job_id, len(content), melody_mode, separate_vocals, chord_complexity,
         )
-        self.tasks[job_id] = asyncio.create_task(self._run(job_id))
+        self._start_task(job_id)
         return job
 
     async def submit_youtube(
@@ -191,15 +204,93 @@ class AnalysisJobService:
         )
         self.store.job_dir(job_id).mkdir(parents=True, exist_ok=True)
         self.store.save(job)
-        self.tasks[job_id] = asyncio.create_task(self._run(job_id))
+        self._start_task(job_id)
         return job
+
+    def _start_task(self, job_id: str) -> None:
+        task = asyncio.create_task(self._run(job_id))
+        self.tasks[job_id] = task
+        # A task cancelled before its first step never enters _run's finally.
+        # Keep capacity occupied until the task (including worker cleanup) ends.
+        task.add_done_callback(lambda finished: self.tasks.pop(job_id, None))
 
     def _ensure_queue_capacity(self) -> None:
         if len(self.tasks) >= self.max_pending_jobs:
             raise JobQueueFullError("Analysis queue is full; wait for a running job to finish and try again.")
 
     def get(self, job_id: str) -> AnalysisJob:
-        return self.store.load(job_id)
+        job = self.store.load(job_id)
+        job.can_retry = (job.status in {JobStatus.FAILED, JobStatus.CANCELLED}
+                         and job.source_type == SourceType.LOCAL
+                         and self._retained_input(job) is not None)
+        return job
+
+    def _retained_input(self, job: AnalysisJob) -> Path | None:
+        """A cancelled copy may need its retained ancestor's original upload."""
+        visited = set()
+        while job.id not in visited:
+            visited.add(job.id)
+            if job.source_type != SourceType.LOCAL:
+                return None
+            directory = self.store.job_dir(job.id)
+            if not directory.is_symlink():
+                candidates = [p for p in directory.glob('input.*')
+                              if not p.is_symlink() and p.is_file()
+                              and p.suffix == safe_audio_suffix(p.name) and p.stat().st_size > 0]
+                if len(candidates) == 1:
+                    return candidates[0]
+            if not job.retry_of:
+                return None
+            try:
+                job = self.store.load(job.retry_of)
+            except FileNotFoundError:
+                return None
+        return None
+
+    async def retry(self, job_id: str) -> AnalysisJob:
+        original = self.store.load(job_id)
+        if original.status not in {JobStatus.FAILED, JobStatus.CANCELLED} or original.source_type != SourceType.LOCAL:
+            raise ValueError('只能重新分析中斷或取消的上傳音檔。')
+        # A lost response or double-click returns the same child, including after
+        # restart. Retry that child explicitly if it later fails again.
+        if previous := self.store.retry_for(job_id):
+            try:
+                return self.get(previous)
+            except FileNotFoundError as exc:
+                raise ValueError('先前的重試已到期，請重新上傳音檔。') from exc
+        if self._retained_input(original) is None:
+            raise ValueError('原上傳音檔已不在伺服器，請重新選擇音檔。')
+        self._ensure_queue_capacity()
+        now = _now()
+        job = original.model_copy(update=dict(id=uuid4().hex, retry_of=job_id, can_retry=False,
+            status=JobStatus.QUEUED, progress=0, message='已排隊，將用保留音檔從頭分析。',
+            error=None, score=None, artifacts=[], created_at=now, updated_at=now))
+        directory = self.store.job_dir(job.id)
+        directory.mkdir()
+        try:
+            self.store.save_retry(job_id, job)
+        except Exception:
+            directory.rmdir()
+            raise
+        self._start_task(job.id)
+        return job
+
+    def _copy_retry_input(self, job: AnalysisJob, directory: Path) -> None:
+        parent = self.store.load(job.retry_of)
+        source = self._retained_input(parent)
+        if source is None:
+            raise ValueError('原上傳音檔已不在伺服器，請重新選擇音檔。')
+        temporary = directory / '.retry-input-copy'
+        try:
+            shutil.copyfile(source, temporary)
+            temporary.replace(directory / source.name)
+        finally:
+            temporary.unlink(missing_ok=True)
+        title = source.parent / 'source-title.txt'
+        if title.is_file() and not title.is_symlink():
+            with title.open(encoding='utf-8') as stream:
+                text = ' '.join(stream.read(2048).split())[:300]
+            (directory / 'source-title.txt').write_text(text, encoding='utf-8')
 
     def cancel(self, job_id: str) -> AnalysisJob:
         job = self.get(job_id)
@@ -210,15 +301,19 @@ class AnalysisJobService:
             job.message = "Analysis cancelled"
             job.updated_at = _now()
             self.store.save(job)
-        return job
+        return self.get(job_id)
 
     async def _run(self, job_id: str) -> None:
         started = time.monotonic()
-        await self.semaphore.acquire()
-        logger.info("analysis_job_started job_id=%s", job_id)
+        acquired = False
         try:
+            await self.semaphore.acquire()
+            acquired = True
+            logger.info("analysis_job_started job_id=%s", job_id)
             job = self.get(job_id)
             directory = self.store.job_dir(job_id)
+            if job.retry_of:
+                await run_blocking_analysis(self._copy_retry_input, job, directory)
             if job.source_type == SourceType.YOUTUBE:
                 if self.youtube_downloader is None or not job.source_url:
                     raise RuntimeError("YouTube import is not enabled on this server")
@@ -303,5 +398,6 @@ class AnalysisJobService:
                 self.store.save(job)
                 logger.exception("analysis_job_failed job_id=%s duration_seconds=%.3f", job_id, time.monotonic() - started)
         finally:
-            self.semaphore.release()
+            if acquired:
+                self.semaphore.release()
             self.tasks.pop(job_id, None)

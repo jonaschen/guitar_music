@@ -1016,3 +1016,52 @@ test('listen marking unavailable source still allows immediate notation',async({
 test('listen marking button stays put between long and short phrases',async({page})=>{
   await page.setViewportSize({width:320,height:844});await markerFixture(page,score);await quickLyrics(page,'一個很長的句子需要在這個手機畫面分成兩行但不應該推動按鈕\n短句');await page.getByRole('button',{name:'播放原曲',exact:true}).click();const mark=page.getByRole('button',{name:'這句從這裡開始',exact:true});await expect(mark).toBeEnabled();await mark.scrollIntoViewIfNeeded();const before=await mark.boundingBox();await mark.click();await expect(page.locator('.marking-current strong')).toHaveText('短句');const after=await mark.boundingBox();expect(Math.abs(after!.y-before!.y)).toBeLessThan(1);await page.screenshot({path:'../output/evaluation/listen-mark-2026-11-07/short-phrase-320.png',fullPage:true});
 });
+
+for(const lostResponse of [false,true])test(`retained upload retry restores after reload and deduplicates requests (${lostResponse})`,async({page})=>{
+  await setup(page);let attempts=0,uploads=0;
+  await page.route('**/api/v1/jobs/interrupted',r=>r.fulfill({json:{id:'interrupted',status:'failed',progress:35,can_retry:true,error:'The server restarted before this analysis completed.'}}));
+  await page.route('**/api/v1/jobs/interrupted/retry',async r=>{
+    attempts++;
+    if(lostResponse&&attempts===1)return r.abort('failed');
+    await new Promise(resolve=>setTimeout(resolve,150));
+    return r.fulfill({json:{id:'retry-child',retry_of:'interrupted',status:'queued',progress:0}});
+  });
+  await page.route('**/api/v1/jobs',r=>{uploads++;return r.abort();});
+  await page.route('**/api/v1/jobs/retry-child',r=>r.fulfill({json:{id:'retry-child',status:'completed',progress:100,score}}));
+  await page.route('**/api/v1/jobs/retry-child/audio',r=>r.fulfill({contentType:'audio/wav',body:sourceWav()}));
+  await page.goto('/?job=interrupted');
+  await expect(page.getByText('使用保留音檔從頭分析，原有歌曲與修改不會被覆蓋。',{exact:true})).toBeVisible();
+  const retry=page.getByRole('button',{name:'用保留音檔重新分析',exact:true});
+  await retry.click();
+  if(lostResponse){await expect(retry).toBeEnabled();await retry.click();}
+  await expect(page).toHaveURL(/job=retry-child/);
+  await expect(page.getByRole('heading',{name:'Entry preview test',exact:true})).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('heading',{name:'Entry preview test',exact:true})).toBeVisible();
+  expect(attempts).toBe(lostResponse?2:1);expect(uploads).toBe(0);
+});
+
+test('failed YouTube import does not offer retained-upload retry',async({page})=>{
+  await setup(page);
+  await page.route('**/api/v1/jobs/missing-upload',r=>r.fulfill({json:{id:'missing-upload',status:'failed',can_retry:false,error:'YouTube download unavailable'}}));
+  await page.goto('/?job=missing-upload');
+  await expect(page.getByRole('alert')).toBeVisible();
+  await expect(page.getByRole('button',{name:'用保留音檔重新分析',exact:true})).toHaveCount(0);
+});
+
+test('analysis displays elapsed stage time rather than an invented completion percentage',async({page})=>{
+  await setup(page);
+  const now=Date.now();let stage='chord_analysis';
+  await page.route('**/api/v1/jobs/slow',r=>r.fulfill({json:{id:'slow',status:stage,progress:55,message:'Recognizing chords',
+    created_at:new Date(now-185000).toISOString(),updated_at:new Date(now-65000).toISOString()}}));
+  await page.goto('/?job=slow');
+  const panel=page.getByRole('region',{name:'分析進度',exact:true});
+  await expect(panel).toContainText('辨認和弦');
+  await expect(panel).toContainText(/本階段已經過 1 分/);
+  await expect(panel).toContainText(/總共已經過 3 分/);
+  await expect(panel).not.toContainText('55%');
+  await expect(panel.getByRole('progressbar')).not.toHaveAttribute('value');
+  await page.reload();await expect(panel).toContainText(/本階段已經過 1 分/);
+  stage='queued';await expect(panel).toContainText('等待分析名額');
+  await expect(panel).toContainText(/已等待 3 分/);
+});
